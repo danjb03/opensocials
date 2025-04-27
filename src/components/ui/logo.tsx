@@ -9,7 +9,7 @@ const Logo = ({ className = '' }: LogoProps) => {
   return (
     <Link to="/" className={`block ${className}`}>
       <img 
-        src="/lovable-uploads/2c8624f4-39bb-424c-bfe5-aa9b8999ebd7.png" 
+        src="/lovable-uploads/7780980e-8910-4ad1-a0df-28190a7f66bb.png" 
         alt="OS Logo" 
         className="h-8 w-auto"
       />
