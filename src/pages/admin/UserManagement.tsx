@@ -46,7 +46,6 @@ const UserManagement = () => {
 
   const fetchUserRequests = async () => {
     try {
-      // Modified query to properly join with profiles table
       const { data, error } = await supabase
         .from('user_roles')
         .select(`
@@ -56,7 +55,14 @@ const UserManagement = () => {
         .eq('status', filter);
 
       if (error) throw error;
-      setUserRequests(data || []);
+      
+      // Cast the data to ensure it matches the UserRequest type
+      const typedData = (data || []).map(item => ({
+        ...item,
+        status: item.status as 'pending' | 'approved' | 'declined'
+      })) as UserRequest[];
+      
+      setUserRequests(typedData);
     } catch (error) {
       toast.error('Error fetching user requests', {
         description: error instanceof Error ? error.message : 'Unknown error'
