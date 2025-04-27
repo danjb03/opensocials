@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,14 +36,19 @@ const AuthPage = () => {
 
         if (error) throw error;
 
-        // Insert role after successful signup
+        // Insert role after successful signup with 'pending' status
         const { error: roleError } = await supabase
           .from('user_roles')
-          .insert([{ user_id: (await supabase.auth.getUser()).data.user?.id, role }]);
+          .insert([{ 
+            user_id: (await supabase.auth.getUser()).data.user?.id, 
+            role, 
+            status: 'pending' 
+          }]);
 
         if (roleError) throw roleError;
 
-        toast.success('Check your email to confirm your account');
+        toast.success('Account created! Awaiting admin approval.');
+        navigate('/');
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -117,6 +121,7 @@ const AuthPage = () => {
                 >
                   <option value="creator">Creator</option>
                   <option value="brand">Brand</option>
+                  <option value="admin">Admin</option>
                 </select>
               </div>
             </>
