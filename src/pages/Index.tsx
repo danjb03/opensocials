@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/lib/auth';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -75,6 +74,11 @@ const Index = () => {
           </div>
         ) : (
           <div className="mt-8 space-y-4">
+            {role === 'super_admin' && (
+              <Button asChild variant="default" className="mr-4">
+                <Link to="/super-admin">Super Admin Dashboard</Link>
+              </Button>
+            )}
             {role === 'admin' && (
               <Button asChild variant="default" className="mr-4">
                 <Link to="/admin">Admin Dashboard</Link>

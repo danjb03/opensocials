@@ -19,6 +19,7 @@ import BrandOrders from "./pages/brand/Orders";
 import AdminLayout from "./components/layouts/AdminLayout";
 import CreatorDashboard from "./pages/creator/Dashboard";
 import CreatorDeals from "./pages/creator/Deals";
+import SuperAdminDashboard from "./pages/super-admin/Dashboard";
 
 const ProtectedRoute = ({ children, requiredRole }: { 
   children: React.ReactNode, 
@@ -113,6 +114,17 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            
+            {/* Super Admin Routes */}
+            <Route 
+              path="/super-admin" 
+              element={
+                <ProtectedRoute requiredRole="super_admin">
+                  <SuperAdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
