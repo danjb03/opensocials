@@ -19,71 +19,89 @@ const AuthPage = () => {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSignUp) {
-      await handleSignUp(e);
-    } else {
-      await handleSignIn();
-    }
-  };
-
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-            role: role, // saving to metadata
+      if (isSignUp) {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              first_name: firstName,
+              last_name: lastName,
+              role: role,
+            },
           },
-        },
-      });
-
-      if (error) throw error;
-
-      if (data.user) {
-        console.log('User signed up:', data.user.id);
-
-        const { error: roleError } = await supabase.rpc('create_user_role', {
-          user_id: data.user.id,
-          role_type: role,
         });
 
+        if (error) throw error;
+        
+        if (data.user) {
+          console.log("Creating role for user:", data.user.id, "Role:", role);
+          const { error: roleError } = await supabase.rpc('create_user_role', {
+            user_id: data.user.id,
+            role_type: role
+          });
+
+          if (roleError) {
+            console.error("Error creating role:", roleError);
+            throw roleError;
+          }
+        }
+
+        toast.success('Account created! Check your email to confirm your account');
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
+        console.log('Login success! Checking role...');
+        
+        const { data: roleData, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role, status')
+          .eq('user_id', data.user.id)
+          .maybeSingle();
+
+        console.log('Role data:', roleData);
+        
         if (roleError) {
-          console.error('Failed to assign role:', roleError);
-          toast.error('Failed to assign role. Please contact support.');
+          console.error('Error fetching role:', roleError);
+          toast.error('Error fetching user role');
           return;
         }
 
-        toast.success('Account created successfully! Please check your email to confirm.');
+        if (roleData?.status === 'approved') {
+          switch (roleData.role) {
+            case 'admin':
+              navigate('/admin');
+              break;
+            case 'brand':
+              navigate('/brand');
+              break;
+            case 'creator':
+              navigate('/creator');
+              break;
+            default:
+              console.error('Unknown role:', roleData.role);
+              toast.error('Invalid user role');
+          }
+        } else {
+          navigate('/');
+          if (roleData?.status === 'pending') {
+            toast.info('Your account is pending approval');
+          } else {
+            toast.warning('No role assigned. Please contact an administrator.');
+          }
+        }
       }
-    } catch (err: any) {
-      console.error('Signup error:', err.message);
-      toast.error(err.message || 'Signup failed.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSignIn = async () => {
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      toast.success('Logged in successfully!');
-      navigate('/');
-    } catch (err: any) {
-      console.error('Login error:', err.message);
-      toast.error(err.message || 'Login failed.');
+    } catch (error: any) {
+      console.error("Auth error:", error);
+      toast.error(error.message || 'Authentication failed');
     } finally {
       setIsLoading(false);
     }
@@ -98,11 +116,105 @@ const AuthPage = () => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email);
       if (error) throw error;
-      toast.success('Check your email for password reset instructions.');
-    } catch (err: any) {
-      toast.error(err.message || 'Password reset failed.');
+      toast.success('Check your email for password reset instructions');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send reset instructions');
     }
   };
 
   return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            {isSignUp ? 'Create your account' : 'Sign in to your account'}
+          </h2>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleAuth}>
+          {isSignUp && (
+            <>
+              <div>
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="role">Role</Label>
+                <select
+                  id="role"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value as UserRole)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                >
+                  <option value="creator">Creator</option>
+                  <option value="brand">Brand</option>
+                </select>
+              </div>
+            </>
+          )}
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Button
+              type="button"
+              variant="link"
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-sm"
+            >
+              {isSignUp ? 'Already have an account?' : 'Need an account?'}
+            </Button>
+            {!isSignUp && (
+              <Button
+                type="button"
+                variant="link"
+                onClick={handleForgotPassword}
+                className="text-sm"
+              >
+                Forgot password?
+              </Button>
+            )}
+          </div>
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
+          </Button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default AuthPage;
 
