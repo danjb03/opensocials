@@ -16,6 +16,23 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
 
+// Define an interface for the deal with profiles included
+interface Deal {
+  id: string;
+  title: string;
+  description: string | null;
+  value: number;
+  status: string;
+  feedback: string | null;
+  creator_id: string;
+  brand_id: string;
+  created_at: string | null;
+  updated_at: string | null;
+  profiles: {
+    company_name: string;
+  };
+}
+
 const CreatorDeals = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -53,12 +70,12 @@ const CreatorDeals = () => {
               company_name: brandProfile?.company_name || 'Unknown Brand'
             }
           };
-        });
+        }) as Deal[];
         
         return dealsWithCompanyNames;
       }
       
-      return dealsData || [];
+      return (dealsData || []) as Deal[];
     },
     enabled: !!user?.id,
   });
