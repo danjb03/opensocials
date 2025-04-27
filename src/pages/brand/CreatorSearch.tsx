@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,19 +8,18 @@ import { useToast } from '@/hooks/use-toast';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { Grid2x2, List, PlusCircle } from 'lucide-react';
 
-// Mock creator data - in a real application, this would come from the database
 const mockCreators = [
   { id: 1, name: 'Alex Johnson', platform: 'instagram', audience: 'gen-z', contentType: 'photo', followers: '120K', engagement: '3.5%', priceRange: '$500-1000', imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
   { id: 2, name: 'Sam Rivera', platform: 'youtube', audience: 'millennials', contentType: 'video', followers: '250K', engagement: '4.2%', priceRange: '$1000-2000', imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
   { id: 3, name: 'Jamie Chen', platform: 'tiktok', audience: 'gen-z', contentType: 'video', followers: '500K', engagement: '5.8%', priceRange: '$1500-3000', imageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
-  { id: 4, name: 'Taylor Singh', platform: 'instagram', audience: 'millennials', contentType: 'photo', followers: '80K', engagement: '3.2%', priceRange: '$300-800', imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
-  { id: 5, name: 'Morgan Lee', platform: 'twitter', audience: 'gen-x', contentType: 'blog', followers: '45K', engagement: '2.8%', priceRange: '$250-600', imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
+  { id: 4, name: 'Taylor Singh', platform: 'instagram', audience: 'millennials', contentType: 'photo', followers: '80K', engagement: '3.2%', priceRange: '$300-800', imageUrl: 'https://images.unsplash.com/photo-1500648741775-53994a69daeb?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
+  { id: 5, name: 'Morgan Lee', platform: 'twitter', audience: 'gen-x', contentType: 'blog', followers: '45K', engagement: '2.8%', priceRange: '$250-600', imageUrl: 'https://images.unsplash.com/photo-1534528741169-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
   { id: 6, name: 'Casey Wilson', platform: 'youtube', audience: 'boomers', contentType: 'review', followers: '110K', engagement: '3.9%', priceRange: '$600-1200', imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
 ];
 
 const CreatorSearch = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [selectedCreators, setSelectedCreators] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPlatform, setFilterPlatform] = useState(searchParams.get('platform') || 'all');
@@ -30,7 +28,6 @@ const CreatorSearch = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Update URL params when filters change
     const params = new URLSearchParams();
     if (filterPlatform && filterPlatform !== 'all') params.set('platform', filterPlatform);
     if (filterAudience && filterAudience !== 'all') params.set('audience', filterAudience);
@@ -61,14 +58,10 @@ const CreatorSearch = () => {
       description: `${selectedCreators.length} creators added to your project.`
     });
 
-    // In a real app, you'd likely store this in global state or localStorage
     console.log("Selected creators:", selectedCreators);
-    
-    // For demo purposes, clear selection after adding to cart
     setSelectedCreators([]);
   };
 
-  // Filter creators based on search and dropdown selections
   const filteredCreators = mockCreators.filter(creator => {
     const matchesSearch = creator.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPlatform = filterPlatform === 'all' || creator.platform === filterPlatform;
@@ -89,7 +82,7 @@ const CreatorSearch = () => {
           
           <div className="flex items-center mt-4 md:mt-0">
             <Button
-              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              variant={viewMode === 'grid' ? 'outline' : 'default'}
               size="sm"
               className="mr-2"
               onClick={() => setViewMode('grid')}
@@ -106,7 +99,6 @@ const CreatorSearch = () => {
           </div>
         </div>
         
-        {/* Search and Filters */}
         <Card className="mb-6">
           <CardContent className="p-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
@@ -167,7 +159,6 @@ const CreatorSearch = () => {
           </CardContent>
         </Card>
         
-        {/* Selected Creators Cart */}
         {selectedCreators.length > 0 && (
           <div className="bg-white mb-6 p-4 rounded-lg border shadow-sm">
             <div className="flex justify-between items-center">
@@ -181,7 +172,6 @@ const CreatorSearch = () => {
           </div>
         )}
         
-        {/* Creators List/Grid */}
         {filteredCreators.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500">No creators found matching your criteria.</p>
