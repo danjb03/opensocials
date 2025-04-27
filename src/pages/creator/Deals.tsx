@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -174,6 +175,7 @@ const CreatorDeals = () => {
   return (
     <CreatorLayout>
       <div className="container mx-auto p-6 space-y-8">
+        {/* Analytics Overview */}
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
           <Card>
             <CardHeader className="pb-2">
@@ -300,9 +302,13 @@ const CreatorDeals = () => {
           <div className="lg:sticky lg:top-6 h-fit">
             <PendingDeals deals={pendingDeals} />
           </div>
-          <div>
-            <PastDeals deals={otherDeals} />
-          </div>
+          {/* This section was previously at the bottom, now we've added it here */}
+          <div className="hidden lg:block"></div>
+        </div>
+
+        {/* Past Deals now at the bottom */}
+        <div>
+          <PastDeals deals={otherDeals} />
         </div>
       </div>
     </CreatorLayout>
@@ -310,3 +316,4 @@ const CreatorDeals = () => {
 };
 
 export default CreatorDeals;
+
