@@ -1,6 +1,6 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserCheck, Package, CheckCircle } from 'lucide-react';
+import SignOutButton from '@/components/SignOutButton'; // ✅ Import SignOut
 
 const AdminDashboard = () => {
   return (
@@ -18,7 +18,7 @@ const AdminDashboard = () => {
             <p className="text-sm text-muted-foreground">12 pending approval</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-lg font-medium">Active Orders</CardTitle>
@@ -29,7 +29,7 @@ const AdminDashboard = () => {
             <p className="text-sm text-muted-foreground">4 require attention</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-lg font-medium">Deals Accepted</CardTitle>
@@ -40,6 +40,11 @@ const AdminDashboard = () => {
             <p className="text-sm text-muted-foreground">This month</p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Sign Out Button */}
+      <div className="mt-8 flex justify-center">
+        <SignOutButton />
       </div>
     </div>
   );
