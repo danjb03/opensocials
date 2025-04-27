@@ -54,6 +54,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) {
         console.error('Error fetching user role:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to fetch user role',
+          variant: 'destructive',
+        });
         return;
       }
 
