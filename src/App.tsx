@@ -19,7 +19,7 @@ import BrandOrders from "./pages/brand/Orders";
 import AdminLayout from "./components/layouts/AdminLayout";
 import CreatorDashboard from "./pages/creator/Dashboard";
 import CreatorDeals from "./pages/creator/Deals";
-import SuperAdminDashboard from "./pages/super-admin/Dashboard";
+import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 
 const ProtectedRoute = ({ children, requiredRole }: { 
   children: React.ReactNode, 

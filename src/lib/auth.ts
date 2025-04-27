@@ -1,9 +1,8 @@
-
 import { createContext, useContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { type Session, type User } from '@supabase/supabase-js';
 
-export type UserRole = 'creator' | 'brand' | 'admin';
+export type UserRole = 'creator' | 'brand' | 'admin' | 'super_admin';
 
 export interface AuthState {
   session: Session | null;
