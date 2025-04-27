@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,7 +23,7 @@ const AuthPage = () => {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -36,13 +35,15 @@ const AuthPage = () => {
         });
 
         if (error) throw error;
+        
+        if (data.user) {
+          const { error: functionError } = await supabase.rpc('create_user_role', {
+            user_id: data.user.id,
+            role_type: role
+          });
 
-        // Insert role after successful signup
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert([{ user_id: (await supabase.auth.getUser()).data.user?.id, role }]);
-
-        if (roleError) throw roleError;
+          if (functionError) throw functionError;
+        }
 
         toast.success('Check your email to confirm your account');
       } else {
