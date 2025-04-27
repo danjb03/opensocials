@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
@@ -10,41 +9,48 @@ export const useUserRole = (userId: string | undefined) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchRole = async () => {
-      if (!userId) {
-        setRole(null);
-        setStatus(null);
-        setIsLoading(false);
-        return;
-      }
+    if (!userId) {
+      setRole(null);
+      setStatus(null);
+      setIsLoading(false);
+      return;
+    }
 
+    const fetchRole = async () => {
       try {
         const { data, error } = await supabase
           .from('user_roles')
-          .select('role, status')
+          .select('role, status') // ✅ Only fetch needed fields (no "*")
           .eq('user_id', userId)
           .maybeSingle();
 
         if (error) {
-          console.error('Error fetching user role:', error);
-          toast.error('Failed to fetch user role');
+          console.error('Error fetching user role:', error.message);
+          toast.error('Failed to fetch user role.');
           return;
         }
 
-        if (data && data.status === 'approved') {
-          setRole(data.role as UserRole);
-          setStatus(data.status);
-        } else {
-          setRole(null);
-          setStatus(data?.status || null);
-          
-          if (data?.status === 'pending') {
-            toast.info('Your account is pending approval');
+        if (data) {
+          if (data.status === 'approved') {
+            setRole(data.role as UserRole);
+            setStatus('approved');
+          } else {
+            setRole(null);
+            setStatus(data.status || null);
+
+            if (data.status === 'pending') {
+              toast.info('Your account is pending approval.');
+            } else if (data.status === 'declined') {
+              toast.error('Your account has been declined.');
+            }
           }
+        } else {
+          console.error('No role data found for user.');
+          toast.error('No role assigned.');
         }
-      } catch (error) {
-        console.error('Error:', error);
-        toast.error('An error occurred while fetching role');
+      } catch (err) {
+        console.error('Unexpected error fetching role:', err);
+        toast.error('Unexpected error occurred.');
       } finally {
         setIsLoading(false);
       }
@@ -55,3 +61,4 @@ export const useUserRole = (userId: string | undefined) => {
 
   return { role, status, isLoading };
 };
+
