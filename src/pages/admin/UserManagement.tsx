@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useUserRequests } from '@/hooks/useUserRequests';
 import { UserRequestsFilter } from '@/components/admin/UserRequestsFilter';
 import { UserRequestsTable } from '@/components/admin/UserRequestsTable';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const UserManagement = () => {
   const [filter, setFilter] = useState<'pending' | 'approved' | 'declined'>('pending');
@@ -27,6 +27,12 @@ const UserManagement = () => {
       />
 
       <Tabs value={filter} className="mt-6">
+        <TabsList>
+          <TabsTrigger value="pending">Pending</TabsTrigger>
+          <TabsTrigger value="approved">Approved</TabsTrigger>
+          <TabsTrigger value="declined">Declined</TabsTrigger>
+        </TabsList>
+        
         <TabsContent value="pending">
           <UserRequestsTable
             requests={filteredRequests}

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -106,227 +105,226 @@ const BrandOrders = () => {
           </Tabs>
         </div>
 
-        <TabsContent value="kanban" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Potential Orders Column */}
-            <div className="space-y-4">
-              <Card className="bg-gray-50">
-                <CardHeader className="bg-gray-100 rounded-t-lg">
-                  <CardTitle className="text-lg">Potential Orders</CardTitle>
-                </CardHeader>
-                <CardContent className="p-3">
-                  {potentialOrders.length === 0 ? (
-                    <p className="text-gray-500 text-center py-4">No potential orders</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {potentialOrders.map(order => (
-                        <Card key={order.id} className="bg-white">
-                          <CardContent className="p-4">
-                            <h3 className="font-bold mb-2">{order.title}</h3>
-                            <p className="text-sm text-gray-500 mb-3">Created: {order.createdAt}</p>
-                            <div className="flex items-center mb-3">
-                              <div className="flex -space-x-2">
-                                {order.creators.slice(0, 3).map(creator => (
-                                  <img 
-                                    key={creator.id} 
-                                    src={creator.imageUrl} 
-                                    alt={creator.name} 
-                                    className="w-8 h-8 rounded-full border-2 border-white"
-                                    title={creator.name}
-                                  />
-                                ))}
-                                {order.creators.length > 3 && (
-                                  <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs border-2 border-white">
-                                    +{order.creators.length - 3}
-                                  </div>
-                                )}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsContent value="kanban" className="mt-0">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-4">
+                <Card className="bg-gray-50">
+                  <CardHeader className="bg-gray-100 rounded-t-lg">
+                    <CardTitle className="text-lg">Potential Orders</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3">
+                    {potentialOrders.length === 0 ? (
+                      <p className="text-gray-500 text-center py-4">No potential orders</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {potentialOrders.map(order => (
+                          <Card key={order.id} className="bg-white">
+                            <CardContent className="p-4">
+                              <h3 className="font-bold mb-2">{order.title}</h3>
+                              <p className="text-sm text-gray-500 mb-3">Created: {order.createdAt}</p>
+                              <div className="flex items-center mb-3">
+                                <div className="flex -space-x-2">
+                                  {order.creators.slice(0, 3).map(creator => (
+                                    <img 
+                                      key={creator.id} 
+                                      src={creator.imageUrl} 
+                                      alt={creator.name} 
+                                      className="w-8 h-8 rounded-full border-2 border-white"
+                                      title={creator.name}
+                                    />
+                                  ))}
+                                  {order.creators.length > 3 && (
+                                    <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs border-2 border-white">
+                                      +{order.creators.length - 3}
+                                    </div>
+                                  )}
+                                </div>
+                                <span className="ml-2 text-sm text-gray-500">
+                                  {order.creators.length} creator{order.creators.length !== 1 && 's'}
+                                </span>
                               </div>
-                              <span className="ml-2 text-sm text-gray-500">
-                                {order.creators.length} creator{order.creators.length !== 1 && 's'}
-                              </span>
-                            </div>
-                            <Button 
-                              size="sm" 
-                              className="w-full"
-                              onClick={() => moveOrder(order.id, 'rtg')}
-                            >
-                              Move to RTG
-                            </Button>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-            
-            {/* Ready to Go Orders Column */}
-            <div className="space-y-4">
-              <Card className="bg-gray-50">
-                <CardHeader className="bg-gray-100 rounded-t-lg">
-                  <CardTitle className="text-lg">Ready to Go</CardTitle>
-                </CardHeader>
-                <CardContent className="p-3">
-                  {rtgOrders.length === 0 ? (
-                    <p className="text-gray-500 text-center py-4">No RTG orders</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {rtgOrders.map(order => (
-                        <Card key={order.id} className="bg-white">
-                          <CardContent className="p-4">
-                            <h3 className="font-bold mb-2">{order.title}</h3>
-                            <p className="text-sm text-gray-500 mb-3">Created: {order.createdAt}</p>
-                            <div className="flex items-center mb-3">
-                              <div className="flex -space-x-2">
-                                {order.creators.slice(0, 3).map(creator => (
-                                  <img 
-                                    key={creator.id} 
-                                    src={creator.imageUrl} 
-                                    alt={creator.name} 
-                                    className="w-8 h-8 rounded-full border-2 border-white"
-                                    title={creator.name}
-                                  />
-                                ))}
-                                {order.creators.length > 3 && (
-                                  <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs border-2 border-white">
-                                    +{order.creators.length - 3}
-                                  </div>
-                                )}
+                              <Button 
+                                size="sm" 
+                                className="w-full"
+                                onClick={() => moveOrder(order.id, 'rtg')}
+                              >
+                                Move to RTG
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="space-y-4">
+                <Card className="bg-gray-50">
+                  <CardHeader className="bg-gray-100 rounded-t-lg">
+                    <CardTitle className="text-lg">Ready to Go</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3">
+                    {rtgOrders.length === 0 ? (
+                      <p className="text-gray-500 text-center py-4">No RTG orders</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {rtgOrders.map(order => (
+                          <Card key={order.id} className="bg-white">
+                            <CardContent className="p-4">
+                              <h3 className="font-bold mb-2">{order.title}</h3>
+                              <p className="text-sm text-gray-500 mb-3">Created: {order.createdAt}</p>
+                              <div className="flex items-center mb-3">
+                                <div className="flex -space-x-2">
+                                  {order.creators.slice(0, 3).map(creator => (
+                                    <img 
+                                      key={creator.id} 
+                                      src={creator.imageUrl} 
+                                      alt={creator.name} 
+                                      className="w-8 h-8 rounded-full border-2 border-white"
+                                      title={creator.name}
+                                    />
+                                  ))}
+                                  {order.creators.length > 3 && (
+                                    <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs border-2 border-white">
+                                      +{order.creators.length - 3}
+                                    </div>
+                                  )}
+                                </div>
+                                <span className="ml-2 text-sm text-gray-500">
+                                  {order.creators.length} creator{order.creators.length !== 1 && 's'}
+                                </span>
                               </div>
-                              <span className="ml-2 text-sm text-gray-500">
-                                {order.creators.length} creator{order.creators.length !== 1 && 's'}
-                              </span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
+                              <div className="grid grid-cols-2 gap-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => moveOrder(order.id, 'potential')}
+                                >
+                                  Move Back
+                                </Button>
+                                <Button 
+                                  size="sm"
+                                  onClick={() => moveOrder(order.id, 'completed')}
+                                >
+                                  Complete
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="space-y-4">
+                <Card className="bg-gray-50">
+                  <CardHeader className="bg-gray-100 rounded-t-lg">
+                    <CardTitle className="text-lg">Completed Orders</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3">
+                    {completedOrders.length === 0 ? (
+                      <p className="text-gray-500 text-center py-4">No completed orders</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {completedOrders.map(order => (
+                          <Card key={order.id} className="bg-white">
+                            <CardContent className="p-4">
+                              <h3 className="font-bold mb-2">{order.title}</h3>
+                              <p className="text-sm text-gray-500 mb-3">Created: {order.createdAt}</p>
+                              <div className="flex items-center mb-3">
+                                <div className="flex -space-x-2">
+                                  {order.creators.slice(0, 3).map(creator => (
+                                    <img 
+                                      key={creator.id} 
+                                      src={creator.imageUrl} 
+                                      alt={creator.name} 
+                                      className="w-8 h-8 rounded-full border-2 border-white"
+                                      title={creator.name}
+                                    />
+                                  ))}
+                                  {order.creators.length > 3 && (
+                                    <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs border-2 border-white">
+                                      +{order.creators.length - 3}
+                                    </div>
+                                  )}
+                                </div>
+                                <span className="ml-2 text-sm text-gray-500">
+                                  {order.creators.length} creator{order.creators.length !== 1 && 's'}
+                                </span>
+                              </div>
                               <Button 
                                 size="sm" 
                                 variant="outline"
-                                onClick={() => moveOrder(order.id, 'potential')}
+                                onClick={() => moveOrder(order.id, 'rtg')}
+                                className="w-full"
                               >
-                                Move Back
+                                Reactivate
                               </Button>
-                              <Button 
-                                size="sm"
-                                onClick={() => moveOrder(order.id, 'completed')}
-                              >
-                                Complete
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-            
-            {/* Completed Orders Column */}
-            <div className="space-y-4">
-              <Card className="bg-gray-50">
-                <CardHeader className="bg-gray-100 rounded-t-lg">
-                  <CardTitle className="text-lg">Completed Orders</CardTitle>
-                </CardHeader>
-                <CardContent className="p-3">
-                  {completedOrders.length === 0 ? (
-                    <p className="text-gray-500 text-center py-4">No completed orders</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {completedOrders.map(order => (
-                        <Card key={order.id} className="bg-white">
-                          <CardContent className="p-4">
-                            <h3 className="font-bold mb-2">{order.title}</h3>
-                            <p className="text-sm text-gray-500 mb-3">Created: {order.createdAt}</p>
-                            <div className="flex items-center mb-3">
-                              <div className="flex -space-x-2">
-                                {order.creators.slice(0, 3).map(creator => (
-                                  <img 
-                                    key={creator.id} 
-                                    src={creator.imageUrl} 
-                                    alt={creator.name} 
-                                    className="w-8 h-8 rounded-full border-2 border-white"
-                                    title={creator.name}
-                                  />
-                                ))}
-                                {order.creators.length > 3 && (
-                                  <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs border-2 border-white">
-                                    +{order.creators.length - 3}
-                                  </div>
-                                )}
-                              </div>
-                              <span className="ml-2 text-sm text-gray-500">
-                                {order.creators.length} creator{order.creators.length !== 1 && 's'}
-                              </span>
-                            </div>
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => moveOrder(order.id, 'rtg')}
-                              className="w-full"
-                            >
-                              Reactivate
-                            </Button>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="list" className="mt-0">
-          <Card>
-            <CardContent className="p-0">
-              <div className="divide-y">
-                {orders.length === 0 ? (
-                  <p className="text-center py-8 text-gray-500">No orders found</p>
-                ) : (
-                  orders.map(order => (
-                    <div key={order.id} className="p-4 flex items-center">
-                      <div className="flex-1">
-                        <h3 className="font-bold">{order.title}</h3>
-                        <p className="text-sm text-gray-500">Created: {order.createdAt}</p>
+                            </CardContent>
+                          </Card>
+                        ))}
                       </div>
-                      <div className="flex items-center mr-4">
-                        <div className="flex -space-x-2 mr-2">
-                          {order.creators.slice(0, 2).map(creator => (
-                            <img 
-                              key={creator.id} 
-                              src={creator.imageUrl} 
-                              alt={creator.name} 
-                              className="w-6 h-6 rounded-full border-2 border-white"
-                              title={creator.name}
-                            />
-                          ))}
-                          {order.creators.length > 2 && (
-                            <div className="w-6 h-6 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs border-2 border-white">
-                              +{order.creators.length - 2}
-                            </div>
-                          )}
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="list" className="mt-0">
+            <Card>
+              <CardContent className="p-0">
+                <div className="divide-y">
+                  {orders.length === 0 ? (
+                    <p className="text-center py-8 text-gray-500">No orders found</p>
+                  ) : (
+                    orders.map(order => (
+                      <div key={order.id} className="p-4 flex items-center">
+                        <div className="flex-1">
+                          <h3 className="font-bold">{order.title}</h3>
+                          <p className="text-sm text-gray-500">Created: {order.createdAt}</p>
+                        </div>
+                        <div className="flex items-center mr-4">
+                          <div className="flex -space-x-2 mr-2">
+                            {order.creators.slice(0, 2).map(creator => (
+                              <img 
+                                key={creator.id} 
+                                src={creator.imageUrl} 
+                                alt={creator.name} 
+                                className="w-6 h-6 rounded-full border-2 border-white"
+                                title={creator.name}
+                              />
+                            ))}
+                            {order.creators.length > 2 && (
+                              <div className="w-6 h-6 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs border-2 border-white">
+                                +{order.creators.length - 2}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div>
+                          <span className={`inline-block px-2 py-1 text-xs rounded-full ${
+                            order.status === 'potential' ? 'bg-blue-100 text-blue-800' : 
+                            order.status === 'rtg' ? 'bg-yellow-100 text-yellow-800' : 
+                            'bg-green-100 text-green-800'
+                          }`}>
+                            {order.status === 'potential' ? 'Potential' : 
+                             order.status === 'rtg' ? 'Ready to Go' : 
+                             'Completed'}
+                          </span>
                         </div>
                       </div>
-                      <div>
-                        <span className={`inline-block px-2 py-1 text-xs rounded-full ${
-                          order.status === 'potential' ? 'bg-blue-100 text-blue-800' : 
-                          order.status === 'rtg' ? 'bg-yellow-100 text-yellow-800' : 
-                          'bg-green-100 text-green-800'
-                        }`}>
-                          {order.status === 'potential' ? 'Potential' : 
-                           order.status === 'rtg' ? 'Ready to Go' : 
-                           'Completed'}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </BrandLayout>
   );
