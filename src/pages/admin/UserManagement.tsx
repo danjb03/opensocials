@@ -22,9 +22,9 @@ type UserRequest = {
   status: 'pending' | 'approved' | 'declined';
   created_at: string;
   profiles: {
-    first_name: string;
-    last_name: string;
-    email: string;
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
   } | null;
 };
 
@@ -46,7 +46,7 @@ const UserManagement = () => {
 
   const fetchUserRequests = async () => {
     try {
-      // Fixed query - correctly join profiles table using a foreign key relationship
+      // Fixed query to get user profiles data from the profiles table
       const { data, error } = await supabase
         .from('user_roles')
         .select(`
@@ -57,17 +57,26 @@ const UserManagement = () => {
 
       if (error) throw error;
       
-      // Process the data to handle potential missing profiles
-      const processedData: UserRequest[] = (data || []).map(item => ({
-        id: item.id,
-        user_id: item.user_id,
-        role: item.role as 'creator' | 'brand' | 'admin',
-        status: item.status as 'pending' | 'approved' | 'declined',
-        created_at: item.created_at,
-        profiles: item.profiles || null
-      }));
-      
-      setUserRequests(processedData);
+      // Process the data to match the UserRequest type
+      if (data) {
+        const processedData: UserRequest[] = data.map(item => {
+          // Handle the case where profiles could be null or have missing fields
+          return {
+            id: item.id,
+            user_id: item.user_id,
+            role: item.role as 'creator' | 'brand' | 'admin',
+            status: item.status as 'pending' | 'approved' | 'declined',
+            created_at: item.created_at || '',
+            profiles: item.profiles ? {
+              first_name: item.profiles.first_name || null,
+              last_name: item.profiles.last_name || null,
+              email: item.profiles.email || null
+            } : null
+          };
+        });
+        
+        setUserRequests(processedData);
+      }
     } catch (error) {
       toast.error('Error fetching user requests', {
         description: error instanceof Error ? error.message : 'Unknown error'
@@ -142,7 +151,9 @@ const UserManagement = () => {
               {filteredRequests.map(request => (
                 <TableRow key={request.id}>
                   <TableCell>
-                    {request.profiles?.first_name} {request.profiles?.last_name}
+                    {request.profiles ? 
+                      `${request.profiles.first_name || ''} ${request.profiles.last_name || ''}` : 
+                      'Unknown User'}
                   </TableCell>
                   <TableCell>{request.role}</TableCell>
                   <TableCell>
