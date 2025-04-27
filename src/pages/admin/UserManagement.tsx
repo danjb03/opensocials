@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 type UserRequest = {
   id: string;
   user_id: string;
-  role: 'creator' | 'brand';
+  role: 'creator' | 'brand' | 'admin';  // Updated to include 'admin'
   status: 'pending' | 'approved' | 'declined';
   created_at: string;
   profiles: {
@@ -46,9 +46,13 @@ const UserManagement = () => {
 
   const fetchUserRequests = async () => {
     try {
+      // Modified query to properly join with profiles table
       const { data, error } = await supabase
         .from('user_roles')
-        .select('*, profiles(first_name, last_name)')
+        .select(`
+          *,
+          profiles:user_id(first_name, last_name, email)
+        `)
         .eq('status', filter);
 
       if (error) throw error;
