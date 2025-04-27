@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { Graph, DollarSign } from 'lucide-react';
+import { ChartLine, DollarSign } from 'lucide-react';
 
 interface CreatorLayoutProps {
   children: React.ReactNode;
@@ -68,7 +68,7 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
                 variant={location.pathname === '/creator' ? 'default' : 'ghost'}
                 className="flex items-center gap-2"
               >
-                <Graph className="h-4 w-4" />
+                <ChartLine className="h-4 w-4" />
                 <span>Overview</span>
               </Button>
             </Link>

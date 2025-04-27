@@ -24,14 +24,41 @@ const CreatorDeals = () => {
   const { data: deals } = useQuery({
     queryKey: ['creator-deals', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First, retrieve all brand IDs from the deals for this creator
+      const { data: dealsData, error: dealsError } = await supabase
         .from('deals')
-        .select('*, profiles!deals_brand_id_fkey(company_name)')
+        .select('*, brand_id')
         .eq('creator_id', user?.id)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data;
+      if (dealsError) throw dealsError;
+      
+      // If we have deals, get the company names for all brand IDs
+      if (dealsData && dealsData.length > 0) {
+        const brandIds = dealsData.map(deal => deal.brand_id);
+        
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, company_name')
+          .in('id', brandIds);
+        
+        if (profilesError) throw profilesError;
+        
+        // Map the company names to the deals
+        const dealsWithCompanyNames = dealsData.map(deal => {
+          const brandProfile = profilesData?.find(profile => profile.id === deal.brand_id);
+          return {
+            ...deal,
+            profiles: {
+              company_name: brandProfile?.company_name || 'Unknown Brand'
+            }
+          };
+        });
+        
+        return dealsWithCompanyNames;
+      }
+      
+      return dealsData || [];
     },
     enabled: !!user?.id,
   });
