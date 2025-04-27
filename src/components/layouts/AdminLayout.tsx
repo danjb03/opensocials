@@ -1,5 +1,5 @@
-
 import { useAuth } from '@/lib/auth';
+import Logo from "@/components/ui/logo";
 import { useToast } from '@/hooks/use-toast';
 import { Navigate, Outlet } from 'react-router-dom';
 import { UserCircle, Users, PackageOpen, LayoutDashboard } from 'lucide-react';
@@ -35,9 +35,7 @@ const AdminLayout = () => {
         
         <div className="p-4 flex flex-col h-full">
           <div className="mb-6">
-            <h1 className={`text-xl font-bold ${isSidebarCollapsed ? 'hidden' : 'block'}`}>
-              Admin Dashboard
-            </h1>
+            <Logo className={isSidebarCollapsed ? 'hidden' : 'block'} />
           </div>
           
           <nav className="space-y-1 flex-1">

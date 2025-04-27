@@ -1,7 +1,7 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
+import Logo from "@/components/ui/logo";
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -53,9 +53,7 @@ const BrandLayout = ({ children }: BrandLayoutProps) => {
         
         <div className="p-4 flex flex-col h-full">
           <div className="mb-6">
-            <h1 className={`text-xl font-bold ${isSidebarCollapsed ? 'hidden' : 'block'}`}>
-              Brand Portal
-            </h1>
+            <Logo className={isSidebarCollapsed ? 'hidden' : 'block'} />
           </div>
           
           <nav className="space-y-1 flex-1">

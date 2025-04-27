@@ -1,6 +1,6 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import Logo from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
@@ -53,9 +53,7 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
         
         <div className="p-4 flex flex-col h-full">
           <div className="mb-6">
-            <h1 className={`text-xl font-bold ${isSidebarCollapsed ? 'hidden' : 'block'}`}>
-              Creator Dashboard
-            </h1>
+            <Logo className={isSidebarCollapsed ? 'hidden' : 'block'} />
           </div>
           
           <nav className="space-y-1 flex-1">
