@@ -10,14 +10,13 @@ export const useUserRole = (userId: string | undefined) => {
 
   useEffect(() => {
     if (!userId) {
-      console.log('No userId yet. Skipping role fetch.');
-      setRole(null);
-      setStatus(null);
+      console.log('No userId — skipping role fetch until login.');
       setIsLoading(false);
-      return;
+      return;  // ✨ EARLY RETURN if no user
     }
 
     const fetchRole = async () => {
+      setIsLoading(true);
       try {
         const { data, error } = await supabase
           .from('user_roles')
@@ -27,7 +26,7 @@ export const useUserRole = (userId: string | undefined) => {
 
         if (error) {
           console.error('Error fetching user role:', error.message);
-          toast.error('Failed to fetch user role.');
+          toast.error('Failed to fetch user role');
           return;
         }
 
@@ -40,14 +39,16 @@ export const useUserRole = (userId: string | undefined) => {
             setStatus(data.status || null);
 
             if (data.status === 'pending') {
-              toast.info('Your account is pending approval.');
-            } else if (data.status === 'declined') {
-              toast.error('Your account has been declined.');
+              toast.info('Your account is pending approval');
+            }
+            if (data.status === 'declined') {
+              toast.error('Your account has been declined');
             }
           }
         } else {
-          console.error('No role data found for user.');
-          toast.error('No role assigned.');
+          console.log('No role data found.');
+          setRole(null);
+          setStatus(null);
         }
       } catch (err) {
         console.error('Unexpected error fetching role:', err);
@@ -62,5 +63,4 @@ export const useUserRole = (userId: string | undefined) => {
 
   return { role, status, isLoading };
 };
-
 
