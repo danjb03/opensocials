@@ -54,13 +54,55 @@ const AuthPage = () => {
 
         toast.success('Account created! Check your email to confirm your account');
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        // Handle Sign In
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) throw error;
-        navigate('/');
+
+        console.log('Login success! Checking role...');
+        
+        // Fetch user role after successful login
+        const { data: roleData, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role, status')
+          .eq('user_id', data.user.id)
+          .maybeSingle();
+
+        console.log('Role data:', roleData);
+        
+        if (roleError) {
+          console.error('Error fetching role:', roleError);
+          toast.error('Error fetching user role');
+          return;
+        }
+
+        if (roleData?.status === 'approved') {
+          switch (roleData.role) {
+            case 'admin':
+              navigate('/admin');
+              break;
+            case 'brand':
+              navigate('/brand');
+              break;
+            case 'creator':
+              navigate('/creator');
+              break;
+            default:
+              console.error('Unknown role:', roleData.role);
+              toast.error('Invalid user role');
+          }
+        } else {
+          // User doesn't have an approved role
+          navigate('/');
+          if (roleData?.status === 'pending') {
+            toast.info('Your account is pending approval');
+          } else {
+            toast.warning('No role assigned. Please contact an administrator.');
+          }
+        }
       }
     } catch (error) {
       console.error("Auth error:", error);
