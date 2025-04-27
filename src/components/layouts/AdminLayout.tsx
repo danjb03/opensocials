@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { useState } from 'react';
 import SidebarToggle from './SidebarToggle';
+import Footer from './Footer';
 
 const AdminLayout = () => {
   const { user, role } = useAuth();
@@ -79,8 +80,11 @@ const AdminLayout = () => {
         </div>
       </aside>
       
-      <main className="flex-1 bg-background overflow-auto">
-        <Outlet />
+      <main className="flex-1 bg-background overflow-auto flex flex-col">
+        <div className="flex-1">
+          <Outlet />
+        </div>
+        <Footer />
       </main>
     </div>
   );

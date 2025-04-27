@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ChartLine, DollarSign } from 'lucide-react';
 import SidebarToggle from './SidebarToggle';
+import Footer from './Footer';
 
 interface CreatorLayoutProps {
   children: React.ReactNode;
@@ -91,8 +92,11 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
         </div>
       </aside>
       
-      <main className="flex-1 bg-background overflow-auto">
-        {children}
+      <main className="flex-1 bg-background overflow-auto flex flex-col">
+        <div className="flex-1">
+          {children}
+        </div>
+        <Footer />
       </main>
     </div>
   );
