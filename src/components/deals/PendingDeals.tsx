@@ -1,4 +1,3 @@
-
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
@@ -96,7 +95,7 @@ const PendingDeals = ({ deals }: PendingDealsProps) => {
   };
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">New Offers</h2>
         <span className="text-sm text-muted-foreground">
@@ -105,7 +104,7 @@ const PendingDeals = ({ deals }: PendingDealsProps) => {
       </div>
       
       {deals.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-[800px] overflow-y-auto pr-2">
           {deals.map((deal) => {
             const deadline = deal.deadline ? new Date(deal.deadline) : null;
             const today = new Date();

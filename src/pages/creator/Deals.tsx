@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -114,7 +113,6 @@ const SAMPLE_DEALS: Deal[] = [
   }
 ];
 
-// Analytics data for charts
 const dealValueData = [
   { name: 'Accepted', value: 3800, color: '#22c55e' },
   { name: 'Pending', value: 5500, color: '#f59e0b' },
@@ -162,7 +160,6 @@ const CreatorDeals = () => {
   const pendingDeals = deals.filter(deal => deal.status === 'pending');
   const otherDeals = deals.filter(deal => deal.status !== 'pending');
 
-  // Calculate analytics metrics
   const totalDeals = deals.length;
   const acceptedDeals = deals.filter(deal => deal.status === 'accepted').length;
   const pendingDealsCount = pendingDeals.length;
@@ -177,8 +174,7 @@ const CreatorDeals = () => {
   return (
     <CreatorLayout>
       <div className="container mx-auto p-6 space-y-8">
-        {/* Analytics Overview */}
-        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg">Deal Summary</CardTitle>
@@ -300,9 +296,14 @@ const CreatorDeals = () => {
           </Card>
         </div>
 
-        {/* Pending and Past Deals */}
-        <PendingDeals deals={pendingDeals} />
-        <PastDeals deals={otherDeals} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="lg:sticky lg:top-6 h-fit">
+            <PendingDeals deals={pendingDeals} />
+          </div>
+          <div>
+            <PastDeals deals={otherDeals} />
+          </div>
+        </div>
       </div>
     </CreatorLayout>
   );

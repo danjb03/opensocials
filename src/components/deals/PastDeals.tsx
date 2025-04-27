@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -51,7 +50,7 @@ interface PastDealsProps {
 
 const PastDeals = ({ deals }: PastDealsProps) => {
   return (
-    <section className="space-y-6">
+    <section className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Past Deals</h2>
         <span className="text-sm text-muted-foreground">
@@ -60,7 +59,7 @@ const PastDeals = ({ deals }: PastDealsProps) => {
       </div>
 
       {deals.length > 0 ? (
-        <div className="rounded-md border">
+        <div className="rounded-md border max-h-[800px] overflow-y-auto">
           <Table>
             <TableHeader>
               <TableRow>
