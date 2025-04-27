@@ -10,7 +10,7 @@ const AdminLayout = () => {
   const { user, role } = useAuth();
   const { toast } = useToast();
 
-  if (!user || role !== 'admin') {
+  if (!user || (role !== 'admin' && role !== 'super_admin')) {
     toast({
       title: 'Access Denied',
       description: 'Only admins can access this page.',
@@ -59,7 +59,7 @@ const AdminLayout = () => {
         
         <div className="mt-auto pt-4 border-t border-slate-700">
           <div className="text-sm opacity-70">
-            Logged in as Admin
+            Logged in as {role === 'super_admin' ? 'Super Admin' : 'Admin'}
           </div>
         </div>
       </aside>

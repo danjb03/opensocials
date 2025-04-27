@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -36,7 +35,8 @@ const ProtectedRoute = ({ children, requiredRole }: {
     return <Navigate to="/auth" replace />;
   }
 
-  if (requiredRole && role !== requiredRole) {
+  // Super admins can access any protected route regardless of the required role
+  if (requiredRole && role !== requiredRole && role !== 'super_admin') {
     return <Navigate to="/" replace />;
   }
 
