@@ -2,7 +2,7 @@
 export type UserRequest = {
   id: string;
   user_id: string;
-  role: 'creator' | 'brand' | 'admin';
+  role: 'creator' | 'brand' | 'admin' | 'super_admin';
   status: 'pending' | 'approved' | 'declined';
   created_at: string;
   profiles: {
