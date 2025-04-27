@@ -3,8 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
 import {
   LineChart,
@@ -15,15 +13,10 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { ArrowLeft } from 'lucide-react';
+import { DollarSign, TrendingUp, Users } from 'lucide-react';
 
 const CreatorDashboard = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  
-  const handleBackToSuperAdmin = () => {
-    navigate('/super-admin');
-  };
   
   const { data: earnings } = useQuery({
     queryKey: ['creator-earnings', user?.id],
@@ -87,52 +80,48 @@ const CreatorDashboard = () => {
   return (
     <CreatorLayout>
       <div className="container mx-auto p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Creator Dashboard</h1>
-          <Button 
-            variant="outline" 
-            onClick={handleBackToSuperAdmin} 
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Super Admin
-          </Button>
-        </div>
+        <h1 className="text-3xl font-bold mb-6">Creator Dashboard</h1>
         
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
-            <CardHeader>
-              <CardTitle>Total Earnings</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-lg font-medium">Total Earnings</CardTitle>
+              <DollarSign className="h-5 w-5 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">${totalEarnings.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground">Lifetime earnings</p>
             </CardContent>
           </Card>
           
           <Card>
-            <CardHeader>
-              <CardTitle>Pipeline Value</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-lg font-medium">Pipeline Value</CardTitle>
+              <TrendingUp className="h-5 w-5 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">${pipelineValue.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground">In pending deals</p>
             </CardContent>
           </Card>
           
           <Card>
-            <CardHeader>
-              <CardTitle>Brand Connections</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-lg font-medium">Brand Connections</CardTitle>
+              <Users className="h-5 w-5 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                <p>Outreach: {connectionStats.outreach}</p>
-                <p>In Talks: {connectionStats.in_talks}</p>
-                <p>Working With: {connectionStats.working}</p>
-              </div>
+              <div className="text-2xl font-bold">{
+                connectionStats.outreach + connectionStats.in_talks + connectionStats.working
+              }</div>
+              <p className="text-sm text-muted-foreground">
+                {connectionStats.working} active collaborations
+              </p>
             </CardContent>
           </Card>
         </div>
         
-        <Card>
+        <Card className="mt-6">
           <CardHeader>
             <CardTitle>Earnings Over Time</CardTitle>
           </CardHeader>

@@ -4,8 +4,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
-import { ChartLine, DollarSign } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { ChartLine, DollarSign, ArrowLeft } from 'lucide-react';
 
 interface CreatorLayoutProps {
   children: React.ReactNode;
@@ -40,60 +40,46 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="container mx-auto p-4 flex justify-between items-center">
-          <Link to="/creator" className="text-xl font-bold">Creator Dashboard</Link>
-          
-          <div className="flex items-center gap-4">
-            {user && (
-              <>
-                <span className="hidden md:inline text-gray-600">{user.email}</span>
-                <Button 
-                  variant="outline" 
-                  onClick={handleSignOut} 
-                  disabled={isLoggingOut}
-                >
-                  {isLoggingOut ? "Signing out..." : "Sign Out"}
-                </Button>
-              </>
-            )}
-          </div>
+    <div className="min-h-screen flex">
+      <aside className="w-64 bg-slate-800 text-white p-4 flex flex-col">
+        <div className="mb-6">
+          <h1 className="text-xl font-bold">Creator Dashboard</h1>
         </div>
         
-        <div className="container mx-auto px-4 py-2">
-          <nav className="flex space-x-4">
-            <Link to="/creator">
-              <Button 
-                variant={location.pathname === '/creator' ? 'default' : 'ghost'}
-                className="flex items-center gap-2"
-              >
-                <ChartLine className="h-4 w-4" />
-                <span>Overview</span>
-              </Button>
+        <nav className="space-y-1 flex-1">
+          <Button variant="ghost" className="w-full justify-start text-white hover:bg-slate-700" asChild>
+            <Link to="/creator" className="flex items-center gap-2">
+              <ChartLine className="h-5 w-5" />
+              Overview
             </Link>
-            <Link to="/creator/deals">
-              <Button 
-                variant={location.pathname === '/creator/deals' ? 'default' : 'ghost'}
-                className="flex items-center gap-2"
-              >
-                <DollarSign className="h-4 w-4" />
-                <span>Deals</span>
-              </Button>
+          </Button>
+          
+          <Button variant="ghost" className="w-full justify-start text-white hover:bg-slate-700" asChild>
+            <Link to="/creator/deals" className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Deals
             </Link>
-          </nav>
+          </Button>
+        </nav>
+        
+        <div className="mt-auto pt-4 border-t border-slate-700">
+          <div className="text-sm opacity-70 mb-2">
+            Logged in as {user?.email}
+          </div>
+          <Button 
+            variant="destructive" 
+            onClick={handleSignOut} 
+            disabled={isLoggingOut}
+            className="w-full"
+          >
+            {isLoggingOut ? "Signing out..." : "Sign Out"}
+          </Button>
         </div>
-      </header>
-
-      <main className="flex-1">
+      </aside>
+      
+      <main className="flex-1 bg-background overflow-auto">
         {children}
       </main>
-
-      <footer className="bg-white border-t border-gray-200 py-4">
-        <div className="container mx-auto px-4 text-center text-gray-600">
-          <p>© {new Date().getFullYear()} Creator Portal. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   );
 };
