@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,89 +20,71 @@ const AuthPage = () => {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSignUp) {
+      await handleSignUp(e);
+    } else {
+      await handleSignIn();
+    }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsLoading(true);
 
     try {
-      if (isSignUp) {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              first_name: firstName,
-              last_name: lastName,
-              role: role,
-            },
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            role: role, // saving to metadata
           },
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        console.log('User signed up:', data.user.id);
+
+        const { error: roleError } = await supabase.rpc('create_user_role', {
+          user_id: data.user.id,
+          role_type: role,
         });
 
-        if (error) throw error;
-        
-        if (data.user) {
-          console.log("Creating role for user:", data.user.id, "Role:", role);
-          const { error: roleError } = await supabase.rpc('create_user_role', {
-            user_id: data.user.id,
-            role_type: role
-          });
-
-          if (roleError) {
-            console.error("Error creating role:", roleError);
-            throw roleError;
-          }
-        }
-
-        toast.success('Account created! Check your email to confirm your account');
-      } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) throw error;
-
-        console.log('Login success! Checking role...');
-        
-        const { data: roleData, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role, status')
-          .eq('user_id', data.user.id)
-          .maybeSingle();
-
-        console.log('Role data:', roleData);
-        
         if (roleError) {
-          console.error('Error fetching role:', roleError);
-          toast.error('Error fetching user role');
+          console.error('Failed to assign role:', roleError);
+          toast.error('Failed to assign role. Please contact support.');
           return;
         }
 
-        if (roleData?.status === 'approved') {
-          switch (roleData.role) {
-            case 'admin':
-              navigate('/admin');
-              break;
-            case 'brand':
-              navigate('/brand');
-              break;
-            case 'creator':
-              navigate('/creator');
-              break;
-            default:
-              console.error('Unknown role:', roleData.role);
-              toast.error('Invalid user role');
-          }
-        } else {
-          navigate('/');
-          if (roleData?.status === 'pending') {
-            toast.info('Your account is pending approval');
-          } else {
-            toast.warning('No role assigned. Please contact an administrator.');
-          }
-        }
+        toast.success('Account created successfully! Please check your email to confirm.');
       }
-    } catch (error: any) {
-      console.error("Auth error:", error);
-      toast.error(error.message || 'Authentication failed');
+    } catch (err: any) {
+      console.error('Signup error:', err.message);
+      toast.error(err.message || 'Signup failed.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      toast.success('Logged in successfully!');
+      navigate('/');
+    } catch (err: any) {
+      console.error('Login error:', err.message);
+      toast.error(err.message || 'Login failed.');
     } finally {
       setIsLoading(false);
     }
@@ -116,9 +99,9 @@ const AuthPage = () => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email);
       if (error) throw error;
-      toast.success('Check your email for password reset instructions');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to send reset instructions');
+      toast.success('Check your email for password reset instructions.');
+    } catch (err: any) {
+      toast.error(err.message || 'Password reset failed.');
     }
   };
 
@@ -217,4 +200,3 @@ const AuthPage = () => {
 };
 
 export default AuthPage;
-
