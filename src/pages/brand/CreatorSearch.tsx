@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { Grid2x2, List, PlusCircle } from 'lucide-react';
 
@@ -24,17 +24,17 @@ const CreatorSearch = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedCreators, setSelectedCreators] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterPlatform, setFilterPlatform] = useState(searchParams.get('platform') || '');
-  const [filterAudience, setFilterAudience] = useState(searchParams.get('audience') || '');
-  const [filterContentType, setFilterContentType] = useState(searchParams.get('contentType') || '');
+  const [filterPlatform, setFilterPlatform] = useState(searchParams.get('platform') || 'all');
+  const [filterAudience, setFilterAudience] = useState(searchParams.get('audience') || 'all');
+  const [filterContentType, setFilterContentType] = useState(searchParams.get('contentType') || 'all');
   const { toast } = useToast();
 
   useEffect(() => {
     // Update URL params when filters change
     const params = new URLSearchParams();
-    if (filterPlatform) params.set('platform', filterPlatform);
-    if (filterAudience) params.set('audience', filterAudience);
-    if (filterContentType) params.set('contentType', filterContentType);
+    if (filterPlatform && filterPlatform !== 'all') params.set('platform', filterPlatform);
+    if (filterAudience && filterAudience !== 'all') params.set('audience', filterAudience);
+    if (filterContentType && filterContentType !== 'all') params.set('contentType', filterContentType);
     setSearchParams(params);
   }, [filterPlatform, filterAudience, filterContentType, setSearchParams]);
 
@@ -71,9 +71,9 @@ const CreatorSearch = () => {
   // Filter creators based on search and dropdown selections
   const filteredCreators = mockCreators.filter(creator => {
     const matchesSearch = creator.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPlatform = !filterPlatform || creator.platform === filterPlatform;
-    const matchesAudience = !filterAudience || creator.audience === filterAudience;
-    const matchesContentType = !filterContentType || creator.contentType === filterContentType;
+    const matchesPlatform = filterPlatform === 'all' || creator.platform === filterPlatform;
+    const matchesAudience = filterAudience === 'all' || creator.audience === filterAudience;
+    const matchesContentType = filterContentType === 'all' || creator.contentType === filterContentType;
     
     return matchesSearch && matchesPlatform && matchesAudience && matchesContentType;
   });
@@ -125,7 +125,7 @@ const CreatorSearch = () => {
                     <SelectValue placeholder="Platform" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Platforms</SelectItem>
+                    <SelectItem value="all">All Platforms</SelectItem>
                     <SelectItem value="instagram">Instagram</SelectItem>
                     <SelectItem value="youtube">YouTube</SelectItem>
                     <SelectItem value="tiktok">TikTok</SelectItem>
@@ -140,7 +140,7 @@ const CreatorSearch = () => {
                     <SelectValue placeholder="Audience" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Audiences</SelectItem>
+                    <SelectItem value="all">All Audiences</SelectItem>
                     <SelectItem value="gen-z">Gen Z</SelectItem>
                     <SelectItem value="millennials">Millennials</SelectItem>
                     <SelectItem value="gen-x">Gen X</SelectItem>
@@ -155,7 +155,7 @@ const CreatorSearch = () => {
                     <SelectValue placeholder="Content Type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Content</SelectItem>
+                    <SelectItem value="all">All Content</SelectItem>
                     <SelectItem value="video">Video</SelectItem>
                     <SelectItem value="photo">Photo</SelectItem>
                     <SelectItem value="review">Review</SelectItem>

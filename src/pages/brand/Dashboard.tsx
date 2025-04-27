@@ -12,15 +12,15 @@ import { PlusCircle, ArrowLeft } from 'lucide-react';
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [platform, setPlatform] = useState<string>("");
-  const [audience, setAudience] = useState<string>("");
-  const [contentType, setContentType] = useState<string>("");
+  const [platform, setPlatform] = useState<string>("all");
+  const [audience, setAudience] = useState<string>("all");
+  const [contentType, setContentType] = useState<string>("all");
   
   const handleNewProject = () => {
     const queryParams = new URLSearchParams();
-    if (platform) queryParams.append('platform', platform);
-    if (audience) queryParams.append('audience', audience);
-    if (contentType) queryParams.append('contentType', contentType);
+    if (platform && platform !== 'all') queryParams.append('platform', platform);
+    if (audience && audience !== 'all') queryParams.append('audience', audience);
+    if (contentType && contentType !== 'all') queryParams.append('contentType', contentType);
     
     navigate(`/brand/creators?${queryParams.toString()}`);
   };
@@ -80,6 +80,7 @@ const Dashboard = () => {
                           <SelectValue placeholder="Select platform" />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="all">All Platforms</SelectItem>
                           <SelectItem value="instagram">Instagram</SelectItem>
                           <SelectItem value="youtube">YouTube</SelectItem>
                           <SelectItem value="tiktok">TikTok</SelectItem>
@@ -95,6 +96,7 @@ const Dashboard = () => {
                           <SelectValue placeholder="Select audience" />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="all">All Audiences</SelectItem>
                           <SelectItem value="gen-z">Gen Z</SelectItem>
                           <SelectItem value="millennials">Millennials</SelectItem>
                           <SelectItem value="gen-x">Gen X</SelectItem>
@@ -110,6 +112,7 @@ const Dashboard = () => {
                           <SelectValue placeholder="Select content type" />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="all">All Content</SelectItem>
                           <SelectItem value="video">Video</SelectItem>
                           <SelectItem value="photo">Photo</SelectItem>
                           <SelectItem value="review">Review</SelectItem>
