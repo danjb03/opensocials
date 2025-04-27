@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Home, Search, Package } from 'lucide-react';
+import { Home, Search, Package, Calendar } from 'lucide-react';
 import SidebarToggle from './SidebarToggle';
 import Footer from './Footer';
 
@@ -63,6 +63,13 @@ const BrandLayout = ({ children }: BrandLayoutProps) => {
               <Link to="/brand" className="flex items-center gap-2">
                 <Home className="h-5 w-5" />
                 {!isSidebarCollapsed && <span>Dashboard</span>}
+              </Link>
+            </Button>
+            
+            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
+              <Link to="/brand/projects" className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Projects</span>}
               </Link>
             </Button>
             

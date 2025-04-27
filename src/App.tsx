@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +17,7 @@ import { useAuth } from "./lib/auth";
 import BrandDashboard from "./pages/brand/Dashboard";
 import CreatorSearch from "./pages/brand/CreatorSearch";
 import BrandOrders from "./pages/brand/Orders";
+import Projects from "./pages/brand/Projects";
 import AdminLayout from "./components/layouts/AdminLayout";
 import CreatorDashboard from "./pages/creator/Dashboard";
 import CreatorDeals from "./pages/creator/Deals";
@@ -96,6 +98,14 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="brand">
                   <BrandDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/brand/projects" 
+              element={
+                <ProtectedRoute requiredRole="brand">
+                  <Projects />
                 </ProtectedRoute>
               } 
             />
