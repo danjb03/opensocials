@@ -110,6 +110,12 @@ const AuthPage = () => {
             console.error('Unknown role:', roleData.role);
             toast.error('Invalid user role');
         }
+      } else if (roleData?.status === 'pending') {
+        toast.error('Your account is pending approval.');
+      } else if (roleData?.status === 'declined') {
+        toast.error('Your account has been declined.');
+      } else {
+        toast.error('No role assigned or status unknown.');
       }
     } catch (err: any) {
       console.error('Login error:', err.message);
