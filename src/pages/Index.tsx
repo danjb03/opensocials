@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/lib/auth';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,6 +7,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { useState } from 'react';
 import { toast } from '@/components/ui/sonner';
+import Logo from '@/components/ui/logo';
 
 const Index = () => {
   const { user, role, isLoading } = useAuth();
@@ -47,6 +49,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
+      <div className="mb-8">
+        <Logo />
+      </div>
       <div className="text-center max-w-xl">
         <h1 className="text-4xl font-bold mb-4">Welcome to the Platform</h1>
         
@@ -111,3 +116,4 @@ const Index = () => {
 };
 
 export default Index;
+
