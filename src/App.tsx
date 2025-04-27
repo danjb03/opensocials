@@ -11,6 +11,9 @@ import ForgotPassword from "./pages/auth/ForgotPassword";
 import UserManagement from "./pages/admin/UserManagement";
 import NotFound from "./pages/NotFound";
 import { useAuth } from "./lib/auth";
+import BrandDashboard from "./pages/brand/Dashboard";
+import CreatorSearch from "./pages/brand/CreatorSearch";
+import BrandOrders from "./pages/brand/Orders";
 
 const ProtectedRoute = ({ children, requiredRole }: { 
   children: React.ReactNode, 
@@ -51,6 +54,31 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="admin">
                   <UserManagement />
+                </ProtectedRoute>
+              } 
+            />
+            {/* Brand Dashboard Routes */}
+            <Route 
+              path="/brand" 
+              element={
+                <ProtectedRoute requiredRole="brand">
+                  <BrandDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/brand/creators" 
+              element={
+                <ProtectedRoute requiredRole="brand">
+                  <CreatorSearch />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/brand/orders" 
+              element={
+                <ProtectedRoute requiredRole="brand">
+                  <BrandOrders />
                 </ProtectedRoute>
               } 
             />
