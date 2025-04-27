@@ -5,6 +5,7 @@ import { toast } from '@/components/ui/sonner';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { CalendarDays, Clock, Target, ListChecks, Users } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -21,6 +22,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
 
 interface Deal {
   id: string;
@@ -33,6 +41,11 @@ interface Deal {
   brand_id: string;
   created_at: string | null;
   updated_at: string | null;
+  deadline?: string | null;
+  project_brief?: string | null;
+  campaign_goals?: string | null;
+  target_audience?: string | null;
+  deliverables?: string[] | null;
   profiles: {
     company_name: string;
   };
@@ -45,6 +58,7 @@ interface PendingDealsProps {
 const PendingDeals = ({ deals }: PendingDealsProps) => {
   const queryClient = useQueryClient();
   const [feedbackText, setFeedbackText] = useState<{[key: string]: string}>({});
+  const [expandedDealId, setExpandedDealId] = useState<string | null>(null);
 
   const updateDealMutation = useMutation({
     mutationFn: async ({ 
@@ -77,6 +91,10 @@ const PendingDeals = ({ deals }: PendingDealsProps) => {
     setFeedbackText(prev => ({ ...prev, [dealId]: '' }));
   };
 
+  const toggleDealExpand = (dealId: string) => {
+    setExpandedDealId(expandedDealId === dealId ? null : dealId);
+  };
+
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between">
@@ -86,36 +104,131 @@ const PendingDeals = ({ deals }: PendingDealsProps) => {
         </span>
       </div>
       
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Brand</TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead>Value</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {deals.map((deal) => (
-              <TableRow key={deal.id}>
-                <TableCell>{deal.profiles?.company_name || 'Unknown Brand'}</TableCell>
-                <TableCell>
-                  <div>
-                    <p className="font-medium">{deal.title}</p>
-                    <p className="text-sm text-muted-foreground">{deal.description}</p>
+      {deals.length > 0 ? (
+        <div className="space-y-4">
+          {deals.map((deal) => {
+            const deadline = deal.deadline ? new Date(deal.deadline) : null;
+            const today = new Date();
+            const daysLeft = deadline 
+              ? Math.ceil((deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+              : null;
+            
+            return (
+              <Card key={deal.id} className={daysLeft !== null && daysLeft <= 1 ? 'border-red-300' : ''}>
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle>{deal.title}</CardTitle>
+                      <CardDescription className="mt-1">{deal.profiles.company_name}</CardDescription>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-xl">${deal.value.toLocaleString()}</p>
+                      {deadline && (
+                        <div className="flex items-center justify-end mt-1 gap-1">
+                          <Clock className={`h-4 w-4 ${
+                            daysLeft !== null && daysLeft <= 1 ? 'text-red-500' : 
+                            daysLeft !== null && daysLeft <= 3 ? 'text-amber-500' : 'text-green-500'
+                          }`} />
+                          <span className={`text-sm ${
+                            daysLeft !== null && daysLeft <= 1 ? 'text-red-500 font-medium' : 
+                            daysLeft !== null && daysLeft <= 3 ? 'text-amber-500' : 'text-muted-foreground'
+                          }`}>
+                            {daysLeft !== null && daysLeft > 0 
+                              ? `${daysLeft} day${daysLeft !== 1 ? 's' : ''} to decide` 
+                              : daysLeft === 0 
+                              ? 'Due today' 
+                              : 'Expired'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </TableCell>
-                <TableCell className="font-medium">${deal.value.toLocaleString()}</TableCell>
-                <TableCell>{new Date(deal.created_at || '').toLocaleDateString()}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
+                </CardHeader>
+                
+                <CardContent className="pb-1">
+                  <p className="text-muted-foreground">{deal.description}</p>
+                  
+                  <Accordion type="single" collapsible className="mt-4">
+                    <AccordionItem value="project-details">
+                      <AccordionTrigger className="py-2 text-sm">View Project Details</AccordionTrigger>
+                      <AccordionContent className="space-y-4">
+                        {deal.project_brief && (
+                          <div>
+                            <h4 className="text-sm font-medium flex items-center gap-2 mb-1">
+                              <ListChecks className="h-4 w-4" /> Project Brief
+                            </h4>
+                            <p className="text-sm text-muted-foreground">{deal.project_brief}</p>
+                          </div>
+                        )}
+                        
+                        {deal.campaign_goals && (
+                          <div>
+                            <h4 className="text-sm font-medium flex items-center gap-2 mb-1">
+                              <Target className="h-4 w-4" /> Campaign Goals
+                            </h4>
+                            <p className="text-sm text-muted-foreground">{deal.campaign_goals}</p>
+                          </div>
+                        )}
+                        
+                        {deal.target_audience && (
+                          <div>
+                            <h4 className="text-sm font-medium flex items-center gap-2 mb-1">
+                              <Users className="h-4 w-4" /> Target Audience
+                            </h4>
+                            <p className="text-sm text-muted-foreground">{deal.target_audience}</p>
+                          </div>
+                        )}
+                        
+                        {deal.deliverables && deal.deliverables.length > 0 && (
+                          <div>
+                            <h4 className="text-sm font-medium flex items-center gap-2 mb-1">
+                              <ListChecks className="h-4 w-4" /> Deliverables
+                            </h4>
+                            <div className="flex flex-wrap gap-2 mt-1">
+                              {deal.deliverables.map((item, idx) => (
+                                <Badge key={idx} variant="secondary">{item}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {deal.deadline && (
+                          <div>
+                            <h4 className="text-sm font-medium flex items-center gap-2 mb-1">
+                              <CalendarDays className="h-4 w-4" /> Decision Deadline
+                            </h4>
+                            <p className="text-sm text-muted-foreground">
+                              {new Date(deal.deadline).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </p>
+                          </div>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </CardContent>
+                
+                <CardFooter className="flex flex-col pt-4">
+                  <div className="w-full">
+                    <Textarea
+                      className="mb-3"
+                      placeholder="Feedback (required for declining)"
+                      value={feedbackText[deal.id] || ''}
+                      onChange={(e) => setFeedbackText(prev => ({
+                        ...prev,
+                        [deal.id]: e.target.value
+                      }))}
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2 w-full">
                     <Button 
                       size="sm"
                       onClick={() => handleDealAction(deal.id, 'accepted')}
                     >
-                      Accept
+                      Accept Offer
                     </Button>
                     <Button 
                       size="sm"
@@ -126,28 +239,17 @@ const PendingDeals = ({ deals }: PendingDealsProps) => {
                       Decline
                     </Button>
                   </div>
-                  <Textarea
-                    className="mt-2"
-                    placeholder="Feedback required for declining"
-                    value={feedbackText[deal.id] || ''}
-                    onChange={(e) => setFeedbackText(prev => ({
-                      ...prev,
-                      [deal.id]: e.target.value
-                    }))}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-            {deals.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
-                  No new offers at the moment.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                </CardFooter>
+              </Card>
+            )})}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="py-6 text-center text-muted-foreground">
+            No new offers at the moment.
+          </CardContent>
+        </Card>
+      )}
     </section>
   );
 };
