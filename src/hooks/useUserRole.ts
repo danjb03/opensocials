@@ -10,6 +10,7 @@ export const useUserRole = (userId: string | undefined) => {
 
   useEffect(() => {
     if (!userId) {
+      console.log('No userId yet. Skipping role fetch.');
       setRole(null);
       setStatus(null);
       setIsLoading(false);
@@ -20,7 +21,7 @@ export const useUserRole = (userId: string | undefined) => {
       try {
         const { data, error } = await supabase
           .from('user_roles')
-          .select('role, status') // ✅ Only fetch needed fields (no "*")
+          .select('role, status')
           .eq('user_id', userId)
           .maybeSingle();
 
@@ -61,4 +62,5 @@ export const useUserRole = (userId: string | undefined) => {
 
   return { role, status, isLoading };
 };
+
 
