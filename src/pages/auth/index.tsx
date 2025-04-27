@@ -19,13 +19,59 @@ const AuthPage = () => {
   const [role, setRole] = useState<UserRole>('creator');
 
   const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
+  setIsLoading(true);
+
+  try {
     if (isSignUp) {
-      await handleSignUp(e);
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            role: role.toLowerCase(), // store lowercase role
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        console.log("Creating role for user:", data.user.id, "Role:", role);
+
+        const { error: roleError } = await supabase.rpc('create_user_role', {
+          user_id: data.user.id,
+          role_type: role.toLowerCase(),
+        });
+
+        if (roleError) {
+          console.error('Error assigning role:', roleError.message);
+          toast.error('Failed to assign role. Please contact support.');
+          return;
+        }
+
+        toast.success('Account created! Check your email to confirm.');
+      }
     } else {
-      await handleSignIn();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      toast.success('Login successful!');
     }
-  };
+  } catch (error) {
+    console.error('Auth error:', error);
+    toast.error(error.message || 'Authentication failed.');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
