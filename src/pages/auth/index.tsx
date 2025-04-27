@@ -38,7 +38,7 @@ const AuthPage = () => {
           data: {
             first_name: firstName,
             last_name: lastName,
-            role: role.toLowerCase(), // Store lowercase role
+            role: role.toLowerCase(), // save lowercase
           },
         },
       });
@@ -50,7 +50,7 @@ const AuthPage = () => {
 
         const { error: roleError } = await supabase.rpc('create_user_role', {
           user_id: data.user.id,
-          role_type: role.toLowerCase(), // Important
+          role_type: role.toLowerCase(),
         });
 
         if (roleError) {
@@ -92,19 +92,15 @@ const AuthPage = () => {
       }
 
       if (roleData?.status === 'approved') {
-        switch (roleData.role) {
-          case 'admin':
-            navigate('/admin');
-            break;
-          case 'brand':
-            navigate('/brand');
-            break;
-          case 'creator':
-            navigate('/creator');
-            break;
-          default:
-            toast.error('Unknown role.');
-            navigate('/');
+        if (roleData.role === 'super_admin' || roleData.role === 'admin') {
+          navigate('/admin');
+        } else if (roleData.role === 'brand') {
+          navigate('/brand');
+        } else if (roleData.role === 'creator') {
+          navigate('/creator');
+        } else {
+          navigate('/');
+          toast.error('Unknown role.');
         }
       } else {
         toast.info('Account pending approval or no role assigned.');
@@ -174,6 +170,8 @@ const AuthPage = () => {
                 >
                   <option value="creator">Creator</option>
                   <option value="brand">Brand</option>
+                  <option value="admin">Admin</option>
+                  <option value="super_admin">Super Admin</option>
                 </select>
               </div>
             </>
@@ -228,4 +226,3 @@ const AuthPage = () => {
 };
 
 export default AuthPage;
-
