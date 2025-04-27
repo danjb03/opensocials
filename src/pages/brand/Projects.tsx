@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Plus, Filter, Calendar, DollarSign } from 'lucide-react';
 import { ProjectForm } from '@/components/brand/ProjectForm';
+import { useToast } from '@/hooks/use-toast';
 
 // Demo data - in a real app this would come from your database
 const mockProjects = [
@@ -28,6 +29,7 @@ const mockProjects = [
 const Projects = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [projects, setProjects] = useState(mockProjects);
+  const { toast } = useToast();
 
   const calculateDaysRemaining = (date: Date): number => {
     const today = new Date();
@@ -36,9 +38,20 @@ const Projects = () => {
     return Math.ceil(timeDiff / (1000 * 3600 * 24));
   };
   
-  const handleProjectCreated = () => {
+  const handleProjectCreated = (newProject: any) => {
+    // Add the new project to the state with a generated ID
+    const projectWithId = {
+      ...newProject,
+      id: projects.length > 0 ? Math.max(...projects.map(p => typeof p.id === 'number' ? p.id : 0)) + 1 : 1,
+    };
+    
+    setProjects([...projects, projectWithId]);
     setIsDialogOpen(false);
-    // In a real app, you would fetch the updated projects from your API
+    
+    toast({
+      title: "Project created",
+      description: `${newProject.name} has been successfully created.`,
+    });
   };
 
   return (

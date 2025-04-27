@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,7 +41,7 @@ const formSchema = z.object({
 });
 
 type ProjectFormProps = {
-  onSuccess?: () => void;
+  onSuccess?: (project: z.infer<typeof formSchema>) => void;
 };
 
 export function ProjectForm({ onSuccess }: ProjectFormProps) {
@@ -68,14 +67,14 @@ export function ProjectForm({ onSuccess }: ProjectFormProps) {
     
     setTimeout(() => {
       setIsSubmitting(false);
-      toast({
-        title: "Project created",
-        description: `${values.name} has been successfully created.`,
-      });
       
       if (onSuccess) {
-        onSuccess();
+        onSuccess(values);
       } else {
+        toast({
+          title: "Project created",
+          description: `${values.name} has been successfully created.`,
+        });
         navigate('/brand/projects');
       }
     }, 1000);
