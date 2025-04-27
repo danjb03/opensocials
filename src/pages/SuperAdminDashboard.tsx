@@ -27,13 +27,13 @@ const SuperAdminDashboard = () => {
   const handleNavigate = (dashboardId: string) => {
     switch (dashboardId) {
       case 'brands':
-        navigate('/brand');
+        navigate('/super-admin/brands');
         break;
       case 'creators':
-        navigate('/creator');
+        navigate('/super-admin/creators');
         break;
       case 'admins':
-        navigate('/admin');
+        navigate('/super-admin/admins');
         break;
       default:
         console.error('Unknown dashboard:', dashboardId);
