@@ -1,3 +1,4 @@
+
 import { createContext, useContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { type Session, type User } from '@supabase/supabase-js';

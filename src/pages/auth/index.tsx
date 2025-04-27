@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -92,25 +93,31 @@ const AuthPage = () => {
       }
 
       if (roleData?.status === 'approved') {
-  switch (roleData.role) {
-    case 'super_admin':
-      navigate('/super-admin');
-      break;
-    case 'admin':
-      navigate('/admin');
-      break;
-    case 'brand':
-      navigate('/brand');
-      break;
-    case 'creator':
-      navigate('/creator');
-      break;
-    default:
-      console.error('Unknown role:', roleData.role);
-      toast.error('Invalid user role');
-  }
-}
-
+        switch (roleData.role) {
+          case 'super_admin':
+            navigate('/super-admin');
+            break;
+          case 'admin':
+            navigate('/admin');
+            break;
+          case 'brand':
+            navigate('/brand');
+            break;
+          case 'creator':
+            navigate('/creator');
+            break;
+          default:
+            console.error('Unknown role:', roleData.role);
+            toast.error('Invalid user role');
+        }
+      }
+    } catch (err: any) {
+      console.error('Login error:', err.message);
+      toast.error(err.message || 'Login failed.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleForgotPassword = async () => {
     if (!email) {
