@@ -46,10 +46,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchUserRole = async (userId: string) => {
     try {
-      // Use a direct query instead of the has_role function to avoid recursion
+      console.log("Fetching role for user:", userId);
+      
+      // Direct query to the user_roles table to get role information
       const { data, error } = await supabase
         .from('user_roles')
-        .select('role')
+        .select('role, status')
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -57,16 +59,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.error('Error fetching user role:', error);
         toast({
           title: 'Error',
-          description: 'Failed to fetch user role',
+          description: 'Failed to fetch user role: ' + error.message,
           variant: 'destructive',
         });
         return;
       }
 
-      if (data) {
+      console.log("User role data:", data);
+
+      if (data && data.status === 'approved') {
+        console.log("Setting role to:", data.role);
         setRole(data.role as UserRole);
       } else {
+        console.log("No approved role found, setting to null");
         setRole(null);
+        if (data && data.status === 'pending') {
+          toast({
+            title: 'Account Pending',
+            description: 'Your account is pending approval.',
+            duration: 5000,
+          });
+        }
       }
     } catch (error) {
       console.error('Failed to fetch user role:', error);

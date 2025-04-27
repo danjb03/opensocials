@@ -31,6 +31,7 @@ const AuthPage = () => {
             data: {
               first_name: firstName,
               last_name: lastName,
+              role: role, // Store role in user metadata as well
             },
           },
         });
@@ -38,16 +39,20 @@ const AuthPage = () => {
         if (error) throw error;
         
         if (data.user) {
-          // Use proper RPC call instead of directly calling function
+          console.log("Creating role for user:", data.user.id, "Role:", role);
+          // Use proper RPC call to create user role
           const { error: roleError } = await supabase.rpc('create_user_role', {
             user_id: data.user.id,
             role_type: role
           });
 
-          if (roleError) throw roleError;
+          if (roleError) {
+            console.error("Error creating role:", roleError);
+            throw roleError;
+          }
         }
 
-        toast.success('Check your email to confirm your account');
+        toast.success('Account created! Check your email to confirm your account');
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -58,6 +63,7 @@ const AuthPage = () => {
         navigate('/');
       }
     } catch (error) {
+      console.error("Auth error:", error);
       toast.error(error.message);
     } finally {
       setIsLoading(false);
