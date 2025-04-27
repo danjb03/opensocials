@@ -1,7 +1,9 @@
 
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/sonner';
 
 const SuperAdminDashboard = () => {
   const navigate = useNavigate();
@@ -12,23 +14,59 @@ const SuperAdminDashboard = () => {
       navigate('/auth');
     } else {
       console.error('Failed to sign out:', error.message);
+      toast.error('Failed to sign out');
+    }
+  };
+
+  const dashboards = [
+    { id: 'brands', label: 'Brands Dashboard' },
+    { id: 'creators', label: 'Creators Dashboard' },
+    { id: 'admins', label: 'Admins Dashboard' },
+  ];
+
+  const handleNavigate = (dashboardId: string) => {
+    switch (dashboardId) {
+      case 'brands':
+        navigate('/brand');
+        break;
+      case 'creators':
+        navigate('/creator');
+        break;
+      case 'admins':
+        navigate('/admin');
+        break;
+      default:
+        console.error('Unknown dashboard:', dashboardId);
+        toast.error('Invalid dashboard');
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-8">
-      <h1 className="text-4xl font-bold mb-4">Welcome, Super Admin 🚀</h1>
-      <p className="text-gray-600 mb-8">You have full access to the platform.</p>
-      <Button onClick={handleSignOut}>Sign Out</Button>
-
-      <div className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4">Management Tools (Coming Soon)</h2>
-        <ul className="text-gray-500 space-y-2">
-          <li>- Manage Users</li>
-          <li>- View System Reports</li>
-          <li>- Platform Settings</li>
-        </ul>
-      </div>
+      <Card className="max-w-md w-full shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-2xl text-center">Super Admin Dashboard</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col space-y-4">
+          {dashboards.map((dash) => (
+            <Button
+              key={dash.id}
+              variant="default"
+              className="w-full py-4 text-lg"
+              onClick={() => handleNavigate(dash.id)}
+            >
+              {dash.label}
+            </Button>
+          ))}
+          <Button 
+            variant="destructive" 
+            className="mt-8"
+            onClick={handleSignOut}
+          >
+            Sign Out
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 };
