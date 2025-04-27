@@ -9,11 +9,15 @@ import Index from "./pages/Index";
 import AuthPage from "./pages/auth";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import UserManagement from "./pages/admin/UserManagement";
+import AdminDashboard from "./pages/admin/Dashboard";
+import CreatorManagement from "./pages/admin/CreatorManagement";
+import OrderManagement from "./pages/admin/OrderManagement";
 import NotFound from "./pages/NotFound";
 import { useAuth } from "./lib/auth";
 import BrandDashboard from "./pages/brand/Dashboard";
 import CreatorSearch from "./pages/brand/CreatorSearch";
 import BrandOrders from "./pages/brand/Orders";
+import AdminLayout from "./components/layouts/AdminLayout";
 
 const ProtectedRoute = ({ children, requiredRole }: { 
   children: React.ReactNode, 
@@ -49,14 +53,22 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/auth/reset-password" element={<ForgotPassword />} />
+            
+            {/* Admin Routes */}
             <Route 
-              path="/admin/users" 
+              path="/admin" 
               element={
                 <ProtectedRoute requiredRole="admin">
-                  <UserManagement />
+                  <AdminLayout />
                 </ProtectedRoute>
-              } 
-            />
+              }
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<UserManagement />} />
+              <Route path="creators" element={<CreatorManagement />} />
+              <Route path="orders" element={<OrderManagement />} />
+            </Route>
+            
             {/* Brand Dashboard Routes */}
             <Route 
               path="/brand" 

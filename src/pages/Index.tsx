@@ -14,7 +14,7 @@ const Index = () => {
   
   // Redirect admin users to their dashboard
   if (user && role === 'admin') {
-    return <Navigate to="/admin/users" replace />;
+    return <Navigate to="/admin" replace />;
   }
 
   return (
@@ -37,7 +37,7 @@ const Index = () => {
           <div className="mt-8">
             {role === 'admin' && (
               <Button asChild variant="default" className="mr-4">
-                <Link to="/admin/users">Manage Users</Link>
+                <Link to="/admin">Admin Dashboard</Link>
               </Button>
             )}
           </div>
