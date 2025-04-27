@@ -33,7 +33,7 @@ const SuperAdminDashboard = () => {
         navigate('/super-admin/creators');
         break;
       case 'admins':
-        navigate('/super-admin/admins');
+        navigate('/admin');  // Changed from '/super-admin/admins' to '/admin'
         break;
       default:
         console.error('Unknown dashboard:', dashboardId);
