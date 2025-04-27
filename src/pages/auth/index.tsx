@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,59 +18,13 @@ const AuthPage = () => {
   const [role, setRole] = useState<UserRole>('creator');
 
   const handleAuth = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsLoading(true);
-
-  try {
+    e.preventDefault();
     if (isSignUp) {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-            role: role.toLowerCase(), // store lowercase role
-          },
-        },
-      });
-
-      if (error) throw error;
-
-      if (data.user) {
-        console.log("Creating role for user:", data.user.id, "Role:", role);
-
-        const { error: roleError } = await supabase.rpc('create_user_role', {
-          user_id: data.user.id,
-          role_type: role.toLowerCase(),
-        });
-
-        if (roleError) {
-          console.error('Error assigning role:', roleError.message);
-          toast.error('Failed to assign role. Please contact support.');
-          return;
-        }
-
-        toast.success('Account created! Check your email to confirm.');
-      }
+      await handleSignUp(e);
     } else {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      toast.success('Login successful!');
+      await handleSignIn();
     }
-  } catch (error) {
-    console.error('Auth error:', error);
-    toast.error(error.message || 'Authentication failed.');
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +38,7 @@ const AuthPage = () => {
           data: {
             first_name: firstName,
             last_name: lastName,
-            role: role, // saving to metadata
+            role: role.toLowerCase(), // Store lowercase role
           },
         },
       });
@@ -97,7 +50,7 @@ const AuthPage = () => {
 
         const { error: roleError } = await supabase.rpc('create_user_role', {
           user_id: data.user.id,
-          role_type: role,
+          role_type: role.toLowerCase(), // Important
         });
 
         if (roleError) {
@@ -126,8 +79,37 @@ const AuthPage = () => {
 
       if (error) throw error;
 
-      toast.success('Logged in successfully!');
-      navigate('/');
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role, status')
+        .eq('user_id', data.user.id)
+        .maybeSingle();
+
+      if (roleError) {
+        console.error('Error fetching user role:', roleError);
+        toast.error('Failed to fetch user role.');
+        return;
+      }
+
+      if (roleData?.status === 'approved') {
+        switch (roleData.role) {
+          case 'admin':
+            navigate('/admin');
+            break;
+          case 'brand':
+            navigate('/brand');
+            break;
+          case 'creator':
+            navigate('/creator');
+            break;
+          default:
+            toast.error('Unknown role.');
+            navigate('/');
+        }
+      } else {
+        toast.info('Account pending approval or no role assigned.');
+        navigate('/');
+      }
     } catch (err: any) {
       console.error('Login error:', err.message);
       toast.error(err.message || 'Login failed.');
@@ -138,14 +120,14 @@ const AuthPage = () => {
 
   const handleForgotPassword = async () => {
     if (!email) {
-      toast.error('Please enter your email');
+      toast.error('Please enter your email first.');
       return;
     }
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email);
       if (error) throw error;
-      toast.success('Check your email for password reset instructions.');
+      toast.success('Check your email for reset instructions.');
     } catch (err: any) {
       toast.error(err.message || 'Password reset failed.');
     }
@@ -246,3 +228,4 @@ const AuthPage = () => {
 };
 
 export default AuthPage;
+
