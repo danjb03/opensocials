@@ -36,43 +36,44 @@ const AuthPage = () => {
         });
 
         if (error) throw error;
-        
+
         if (data.user) {
           const { error: roleError } = await supabase.rpc('create_user_role', {
             user_id: data.user.id,
-            role_type: role
+            role_type: role,
           });
 
-          if (roleError) {
-            console.error("Error creating role:", roleError);
-            throw roleError;
-          }
+          if (roleError) throw roleError;
         }
 
-        toast.success('Account created! Check your email to confirm your account');
+        toast.success('Account created! Check your email to confirm your account.');
       } else {
-        // Handle Sign In
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
-        if (error) throw error;
+        if (error || !data.user) {
+          console.error('Login error:', error);
+          toast.error('Failed to login.');
+          return;
+        }
 
-        // Fetch user role after successful login
+        console.log('Login success! Fetching role...');
+
         const { data: roleData, error: roleError } = await supabase
           .from('user_roles')
           .select('role, status')
           .eq('user_id', data.user.id)
           .maybeSingle();
 
-        if (roleError) {
+        if (roleError || !roleData) {
           console.error('Error fetching role:', roleError);
-          toast.error('Error fetching user role');
+          toast.error('Failed to fetch user role.');
           return;
         }
 
-        if (roleData?.status === 'approved') {
+        if (roleData.status === 'approved') {
           switch (roleData.role) {
             case 'admin':
               navigate('/admin');
@@ -85,12 +86,12 @@ const AuthPage = () => {
               break;
             default:
               console.error('Unknown role:', roleData.role);
-              toast.error('Invalid user role');
+              toast.error('Invalid user role.');
           }
         } else {
           navigate('/');
-          if (roleData?.status === 'pending') {
-            toast.info('Your account is pending approval');
+          if (roleData.status === 'pending') {
+            toast.info('Your account is pending approval.');
           } else {
             toast.warning('No role assigned. Please contact an administrator.');
           }
@@ -98,7 +99,7 @@ const AuthPage = () => {
       }
     } catch (error) {
       console.error("Auth error:", error);
-      toast.error(error.message);
+      toast.error(error.message || 'Unexpected error occurred.');
     } finally {
       setIsLoading(false);
     }
@@ -115,7 +116,8 @@ const AuthPage = () => {
       if (error) throw error;
       toast.success('Check your email for password reset instructions');
     } catch (error) {
-      toast.error(error.message);
+      console.error('Password reset error:', error);
+      toast.error(error.message || 'Unexpected error occurred.');
     }
   };
 
