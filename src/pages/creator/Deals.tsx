@@ -22,10 +22,73 @@ interface Deal {
   };
 }
 
+const SAMPLE_DEALS: Deal[] = [
+  {
+    id: '1',
+    title: 'Summer Fashion Campaign',
+    description: 'Promote our new summer collection on your social media platforms',
+    value: 2500,
+    status: 'pending',
+    feedback: null,
+    creator_id: '1',
+    brand_id: '1',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    profiles: {
+      company_name: 'Fashion Brand Co.'
+    }
+  },
+  {
+    id: '2',
+    title: 'Tech Product Review',
+    description: 'Detailed review of our latest smartphone',
+    value: 3000,
+    status: 'pending',
+    feedback: null,
+    creator_id: '1',
+    brand_id: '2',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    profiles: {
+      company_name: 'TechGear Inc.'
+    }
+  },
+  {
+    id: '3',
+    title: 'Fitness App Promotion',
+    description: 'Create a workout video using our app',
+    value: 1800,
+    status: 'accepted',
+    feedback: null,
+    creator_id: '1',
+    brand_id: '3',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    profiles: {
+      company_name: 'FitLife App'
+    }
+  },
+  {
+    id: '4',
+    title: 'Beauty Products Campaign',
+    description: 'Skincare routine featuring our products',
+    value: 2000,
+    status: 'declined',
+    feedback: 'Timeline conflicts with other commitments',
+    creator_id: '1',
+    brand_id: '4',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    profiles: {
+      company_name: 'Glow Beauty'
+    }
+  }
+];
+
 const CreatorDeals = () => {
   const { user } = useAuth();
 
-  const { data: deals = [] } = useQuery<Deal[]>({
+  const { data: deals = SAMPLE_DEALS } = useQuery<Deal[]>({
     queryKey: ['creator-deals', user?.id],
     queryFn: async () => {
       const { data: dealsData, error: dealsError } = await supabase
@@ -42,7 +105,6 @@ const CreatorDeals = () => {
         throw dealsError;
       }
 
-      // Transform the data to match the Deal interface
       return (dealsData || []).map((deal: any) => ({
         ...deal,
         profiles: {

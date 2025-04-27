@@ -13,6 +13,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 interface Deal {
   id: string;
@@ -70,54 +78,78 @@ const PendingDeals = ({ deals }: PendingDealsProps) => {
   };
 
   return (
-    <section>
-      <h2 className="text-2xl font-bold mb-4">New Offers</h2>
-      <div className="grid gap-4 md:grid-cols-2">
-        {deals.map((deal) => (
-          <Card key={deal.id}>
-            <CardHeader>
-              <CardTitle>{deal.title}</CardTitle>
-              <CardDescription>
-                From {deal.profiles?.company_name || 'Unknown Brand'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="mb-2">{deal.description}</p>
-              <p className="font-bold">Value: ${deal.value.toLocaleString()}</p>
-              <div className="mt-4">
-                <Textarea
-                  placeholder="Provide feedback (required for decline or revision)"
-                  value={feedbackText[deal.id] || ''}
-                  onChange={(e) => setFeedbackText(prev => ({
-                    ...prev,
-                    [deal.id]: e.target.value
-                  }))}
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="space-x-2">
-              <Button 
-                onClick={() => handleDealAction(deal.id, 'accepted')}
-              >
-                Accept
-              </Button>
-              <Button 
-                variant="destructive"
-                onClick={() => handleDealAction(deal.id, 'declined', feedbackText[deal.id])}
-                disabled={!feedbackText[deal.id]}
-              >
-                Decline
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-        {deals.length === 0 && (
-          <p className="text-gray-500">No new offers at the moment.</p>
-        )}
+    <section className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">New Offers</h2>
+        <span className="text-sm text-muted-foreground">
+          {deals.length} pending {deals.length === 1 ? 'offer' : 'offers'}
+        </span>
+      </div>
+      
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Brand</TableHead>
+              <TableHead>Title</TableHead>
+              <TableHead>Value</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {deals.map((deal) => (
+              <TableRow key={deal.id}>
+                <TableCell>{deal.profiles?.company_name || 'Unknown Brand'}</TableCell>
+                <TableCell>
+                  <div>
+                    <p className="font-medium">{deal.title}</p>
+                    <p className="text-sm text-muted-foreground">{deal.description}</p>
+                  </div>
+                </TableCell>
+                <TableCell className="font-medium">${deal.value.toLocaleString()}</TableCell>
+                <TableCell>{new Date(deal.created_at || '').toLocaleDateString()}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      size="sm"
+                      onClick={() => handleDealAction(deal.id, 'accepted')}
+                    >
+                      Accept
+                    </Button>
+                    <Button 
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDealAction(deal.id, 'declined', feedbackText[deal.id])}
+                      disabled={!feedbackText[deal.id]}
+                    >
+                      Decline
+                    </Button>
+                  </div>
+                  <Textarea
+                    className="mt-2"
+                    placeholder="Feedback required for declining"
+                    value={feedbackText[deal.id] || ''}
+                    onChange={(e) => setFeedbackText(prev => ({
+                      ...prev,
+                      [deal.id]: e.target.value
+                    }))}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+            {deals.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  No new offers at the moment.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
     </section>
   );
 };
 
 export default PendingDeals;
-
