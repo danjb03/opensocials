@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,6 +24,7 @@ const AuthPage = () => {
 
     try {
       if (isSignUp) {
+        // Handle signup
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -38,16 +40,25 @@ const AuthPage = () => {
         if (error) throw error;
 
         if (data.user) {
-          const { error: roleError } = await supabase.rpc('create_user_role', {
-            user_id: data.user.id,
-            role_type: role,
-          });
+          try {
+            const { error: roleError } = await supabase.rpc('create_user_role', {
+              user_id: data.user.id,
+              role_type: role,
+            });
 
-          if (roleError) throw roleError;
+            if (roleError) {
+              console.error("Error creating role:", roleError);
+              toast.error("Failed to assign role. Please contact support.");
+            } else {
+              toast.success('Account created! Check your email to confirm your account.');
+            }
+          } catch (roleCreateError) {
+            console.error("Exception creating role:", roleCreateError);
+            toast.error("Failed to assign role. Please contact support.");
+          }
         }
-
-        toast.success('Account created! Check your email to confirm your account.');
       } else {
+        // Handle sign in
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -55,46 +66,67 @@ const AuthPage = () => {
 
         if (error || !data.user) {
           console.error('Login error:', error);
-          toast.error('Failed to login.');
+          toast.error(error?.message || 'Failed to login.');
+          setIsLoading(false);
           return;
         }
 
         console.log('Login success! Fetching role...');
 
-        const { data: roleData, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role, status')
-          .eq('user_id', data.user.id)
-          .maybeSingle();
+        try {
+          // Fetch role information after successful login
+          const { data: roleData, error: roleError } = await supabase
+            .from('user_roles')
+            .select('role, status')
+            .eq('user_id', data.user.id)
+            .maybeSingle();
 
-        if (roleError || !roleData) {
-          console.error('Error fetching role:', roleError);
-          toast.error('Failed to fetch user role.');
-          return;
-        }
-
-        if (roleData.status === 'approved') {
-          switch (roleData.role) {
-            case 'admin':
-              navigate('/admin');
-              break;
-            case 'brand':
-              navigate('/brand');
-              break;
-            case 'creator':
-              navigate('/creator');
-              break;
-            default:
-              console.error('Unknown role:', roleData.role);
-              toast.error('Invalid user role.');
+          if (roleError) {
+            console.error('Error fetching role:', roleError);
+            toast.error('Failed to fetch user role.');
+            setIsLoading(false);
+            return;
           }
-        } else {
-          navigate('/');
-          if (roleData.status === 'pending') {
-            toast.info('Your account is pending approval.');
-          } else {
+
+          // Check if role data exists
+          if (!roleData) {
             toast.warning('No role assigned. Please contact an administrator.');
+            navigate('/');
+            setIsLoading(false);
+            return;
           }
+
+          // Handle different role statuses
+          if (roleData.status === 'approved') {
+            switch (roleData.role) {
+              case 'admin':
+                navigate('/admin');
+                break;
+              case 'brand':
+                navigate('/brand');
+                break;
+              case 'creator':
+                navigate('/creator');
+                break;
+              default:
+                console.error('Unknown role:', roleData.role);
+                toast.error('Invalid user role.');
+                navigate('/');
+            }
+          } else {
+            navigate('/');
+            if (roleData.status === 'pending') {
+              toast.info('Your account is pending approval.');
+            } else if (roleData.status === 'declined') {
+              toast.error('Your account has been declined.');
+            } else {
+              toast.warning('No role assigned. Please contact an administrator.');
+            }
+          }
+        } catch (roleCheckError) {
+          console.error("Exception checking role:", roleCheckError);
+          toast.error("Failed to check role. Please try again.");
+          navigate('/');
         }
       }
     } catch (error) {

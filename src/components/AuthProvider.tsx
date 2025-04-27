@@ -18,9 +18,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Fetch user role if authenticated
+        // Fetch user role if authenticated, using setTimeout to prevent recursion
         if (session?.user) {
-          // Use setTimeout to prevent recursion issues
           setTimeout(() => {
             fetchUserRole(session.user.id);
           }, 0);
@@ -52,7 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log("Fetching role for user:", userId);
       
-      // Use maybeSingle instead of single to handle case when no role is found
+      // Only fetch the fields we need
       const { data, error } = await supabase
         .from('user_roles')
         .select('role, status')
@@ -83,6 +82,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           toast({
             title: 'Account Pending',
             description: 'Your account is pending approval.',
+            duration: 5000,
+          });
+        } else if (data && data.status === 'declined') {
+          toast({
+            title: 'Account Declined',
+            description: 'Your account has been declined.',
             duration: 5000,
           });
         } else if (!data) {
