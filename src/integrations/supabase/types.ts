@@ -9,6 +9,104 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      brand_creator_connections: {
+        Row: {
+          brand_id: string
+          created_at: string | null
+          creator_id: string
+          id: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          brand_id: string
+          created_at?: string | null
+          creator_id: string
+          id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          brand_id?: string
+          created_at?: string | null
+          creator_id?: string
+          id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      deal_earnings: {
+        Row: {
+          amount: number
+          creator_id: string
+          deal_id: string
+          earned_at: string | null
+          id: string
+        }
+        Insert: {
+          amount: number
+          creator_id: string
+          deal_id: string
+          earned_at?: string | null
+          id?: string
+        }
+        Update: {
+          amount?: number
+          creator_id?: string
+          deal_id?: string
+          earned_at?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_earnings_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deals: {
+        Row: {
+          brand_id: string
+          created_at: string | null
+          creator_id: string
+          description: string | null
+          feedback: string | null
+          id: string
+          status: string
+          title: string
+          updated_at: string | null
+          value: number
+        }
+        Insert: {
+          brand_id: string
+          created_at?: string | null
+          creator_id: string
+          description?: string | null
+          feedback?: string | null
+          id?: string
+          status?: string
+          title: string
+          updated_at?: string | null
+          value: number
+        }
+        Update: {
+          brand_id?: string
+          created_at?: string | null
+          creator_id?: string
+          description?: string | null
+          feedback?: string | null
+          id?: string
+          status?: string
+          title?: string
+          updated_at?: string | null
+          value?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

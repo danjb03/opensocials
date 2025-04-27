@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +17,8 @@ import BrandDashboard from "./pages/brand/Dashboard";
 import CreatorSearch from "./pages/brand/CreatorSearch";
 import BrandOrders from "./pages/brand/Orders";
 import AdminLayout from "./components/layouts/AdminLayout";
+import CreatorDashboard from "./pages/creator/Dashboard";
+import CreatorDeals from "./pages/creator/Deals";
 
 const ProtectedRoute = ({ children, requiredRole }: { 
   children: React.ReactNode, 
@@ -53,6 +54,24 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/auth/reset-password" element={<ForgotPassword />} />
+            
+            {/* Creator Dashboard Routes */}
+            <Route 
+              path="/creator" 
+              element={
+                <ProtectedRoute requiredRole="creator">
+                  <CreatorDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/creator/deals" 
+              element={
+                <ProtectedRoute requiredRole="creator">
+                  <CreatorDeals />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* Admin Routes */}
             <Route 
