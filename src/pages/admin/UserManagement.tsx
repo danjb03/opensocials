@@ -67,7 +67,7 @@ const UserManagement = () => {
         // For each user_role, fetch the corresponding profile separately
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('first_name, last_name, email')
+          .select('first_name, last_name')
           .eq('id', item.user_id)
           .single();
         
@@ -76,12 +76,12 @@ const UserManagement = () => {
           id: item.id,
           user_id: item.user_id,
           role: item.role,
-          status: item.status,
+          status: item.status as 'pending' | 'approved' | 'declined',
           created_at: item.created_at || '',
           profiles: profileError ? null : {
             first_name: profileData?.first_name || null,
             last_name: profileData?.last_name || null,
-            email: profileData?.email || null
+            email: null // Email field is not in the profiles table, set as null
           }
         });
       }
