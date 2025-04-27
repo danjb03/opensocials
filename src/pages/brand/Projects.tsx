@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { Button } from '@/components/ui/button';
@@ -14,14 +13,16 @@ const mockProjects = [
     id: 1,
     name: "Summer Campaign",
     executionDate: new Date('2025-06-01'),
-    budget: "$5,000",
+    budget: "5,000",
+    currency: "USD",
     description: "A summer themed campaign targeting Gen Z audience."
   },
   {
     id: 2,
     name: "Holiday Special",
     executionDate: new Date('2025-12-10'),
-    budget: "$7,500",
+    budget: "7,500",
+    currency: "EUR",
     description: "End of year holiday promotion across all platforms."
   }
 ];
@@ -116,7 +117,9 @@ const Projects = () => {
                   
                   <div className="flex items-center space-x-2">
                     <DollarSign className="h-5 w-5 text-gray-500 flex-shrink-0" />
-                    <p className="font-medium">{project.budget}</p>
+                    <p className="font-medium">
+                      {project.currency} {project.budget}
+                    </p>
                   </div>
                   
                   <p className="text-sm text-gray-600 pt-2">{project.description}</p>

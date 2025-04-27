@@ -19,11 +19,26 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+
+const currencies = [
+  { code: "USD", symbol: "$", name: "US Dollar" },
+  { code: "EUR", symbol: "€", name: "Euro" },
+  { code: "GBP", symbol: "£", name: "British Pound" },
+  { code: "JPY", symbol: "¥", name: "Japanese Yen" },
+  { code: "CHF", symbol: "Fr", name: "Swiss Franc" },
+] as const;
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -34,6 +49,9 @@ const formSchema = z.object({
   }),
   budget: z.string().min(1, {
     message: "Please enter a budget amount.",
+  }),
+  currency: z.enum(['USD', 'EUR', 'GBP', 'JPY', 'CHF'], {
+    required_error: "Please select a currency.",
   }),
   description: z.string().min(10, {
     message: "Description must be at least 10 characters.",
@@ -55,6 +73,7 @@ export function ProjectForm({ onSuccess }: ProjectFormProps) {
       name: "",
       description: "",
       budget: "",
+      currency: "USD",
     },
   });
 
@@ -157,28 +176,55 @@ export function ProjectForm({ onSuccess }: ProjectFormProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="budget"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Budget</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <DollarSign className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-                  <Input 
-                    placeholder="Enter campaign budget" 
-                    className="pl-10" 
-                    {...field} 
-                    type="text"
-                    inputMode="decimal"
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="budget"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Budget</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+                    <Input 
+                      placeholder="Enter campaign budget" 
+                      className="pl-10" 
+                      {...field} 
+                      type="text"
+                      inputMode="decimal"
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="currency"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Currency</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select currency" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {currencies.map((currency) => (
+                      <SelectItem key={currency.code} value={currency.code}>
+                        {currency.symbol} - {currency.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         
         <FormField
           control={form.control}
