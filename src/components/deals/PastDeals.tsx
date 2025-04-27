@@ -1,20 +1,11 @@
+import { useState } from 'react';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { CalendarDays, ChevronDown } from 'lucide-react';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   Card,
   CardContent,
@@ -22,6 +13,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { CalendarDays, ChevronDown, Target, ListChecks, Users } from 'lucide-react';
 
 interface Deal {
   id: string;
@@ -49,9 +42,11 @@ interface PastDealsProps {
 }
 
 const PastDeals = ({ deals }: PastDealsProps) => {
+  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
+
   return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between">
+    <section>
+      <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold">Past Deals</h2>
         <span className="text-sm text-muted-foreground">
           {deals.length} past {deals.length === 1 ? 'deal' : 'deals'}
@@ -59,99 +54,101 @@ const PastDeals = ({ deals }: PastDealsProps) => {
       </div>
 
       {deals.length > 0 ? (
-        <div className="rounded-md border max-h-[800px] overflow-y-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[200px]">Brand</TableHead>
-                <TableHead>Details</TableHead>
-                <TableHead>Value</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {deals.map((deal) => (
-                <TableRow key={deal.id}>
-                  <TableCell className="font-medium">{deal.profiles?.company_name || 'Unknown Brand'}</TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{deal.title}</p>
-                      <p className="text-sm text-muted-foreground line-clamp-1">{deal.description}</p>
+        <div className="space-y-2">
+          {deals.map((deal) => (
+            <div key={deal.id}>
+              <Card 
+                className="cursor-pointer transition-colors hover:bg-accent"
+                onClick={() => setSelectedDeal(deal)}
+              >
+                <CardHeader className="py-3">
+                  <div className="flex justify-between items-center">
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-lg">{deal.title}</CardTitle>
+                          <CardDescription>{deal.profiles.company_name}</CardDescription>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-lg">${deal.value.toLocaleString()}</p>
+                          <Badge className={`${
+                            deal.status === 'accepted' 
+                              ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                              : 'bg-red-100 text-red-800 hover:bg-red-200'
+                          }`}>
+                            {deal.status.charAt(0).toUpperCase() + deal.status.slice(1)}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                    <ChevronDown className="h-4 w-4 ml-2" />
+                  </div>
+                </CardHeader>
+              </Card>
+
+              <Dialog open={selectedDeal?.id === deal.id} onOpenChange={() => setSelectedDeal(null)}>
+                <DialogContent className="max-w-3xl">
+                  <DialogHeader>
+                    <DialogTitle>{deal.title}</DialogTitle>
+                    <DialogDescription>{deal.profiles.company_name}</DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="space-y-6">
+                    <div className="grid gap-6">
+                      {deal.project_brief && (
+                        <div>
+                          <h4 className="text-sm font-medium flex items-center gap-2 mb-2">
+                            <ListChecks className="h-4 w-4" /> Project Brief
+                          </h4>
+                          <p className="text-sm text-muted-foreground">{deal.project_brief}</p>
+                        </div>
+                      )}
+                      
+                      {deal.campaign_goals && (
+                        <div>
+                          <h4 className="text-sm font-medium flex items-center gap-2 mb-2">
+                            <Target className="h-4 w-4" /> Campaign Goals
+                          </h4>
+                          <p className="text-sm text-muted-foreground">{deal.campaign_goals}</p>
+                        </div>
+                      )}
+                      
+                      {deal.target_audience && (
+                        <div>
+                          <h4 className="text-sm font-medium flex items-center gap-2 mb-2">
+                            <Users className="h-4 w-4" /> Target Audience
+                          </h4>
+                          <p className="text-sm text-muted-foreground">{deal.target_audience}</p>
+                        </div>
+                      )}
                       
                       {deal.deliverables && deal.deliverables.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {deal.deliverables.slice(0, 2).map((item, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs">{item}</Badge>
-                          ))}
-                          {deal.deliverables.length > 2 && (
-                            <Badge variant="outline" className="text-xs">+{deal.deliverables.length - 2} more</Badge>
-                          )}
+                        <div>
+                          <h4 className="text-sm font-medium flex items-center gap-2 mb-2">
+                            <ListChecks className="h-4 w-4" /> Deliverables
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {deal.deliverables.map((item, idx) => (
+                              <Badge key={idx} variant="secondary">{item}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {deal.feedback && (
+                        <div>
+                          <h4 className="text-sm font-medium flex items-center gap-2 mb-2">
+                            Feedback
+                          </h4>
+                          <p className="text-sm text-muted-foreground">{deal.feedback}</p>
                         </div>
                       )}
                     </div>
-                  </TableCell>
-                  <TableCell className="font-medium">${deal.value.toLocaleString()}</TableCell>
-                  <TableCell>
-                    <Badge className={`${
-                      deal.status === 'accepted' 
-                        ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                        : 'bg-red-100 text-red-800 hover:bg-red-200'
-                    }`}>
-                      {deal.status.charAt(0).toUpperCase() + deal.status.slice(1)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span>{new Date(deal.created_at || '').toLocaleDateString()}</span>
-                      {deal.deadline && (
-                        <span className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                          <CalendarDays className="h-3 w-3" /> 
-                          Deadline: {new Date(deal.deadline).toLocaleDateString()}
-                        </span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Accordion type="single" collapsible className="w-full">
-                      <AccordionItem value="details" className="border-none">
-                        <AccordionTrigger className="py-0">
-                          <Button variant="ghost" size="sm" className="h-8 text-xs">
-                            View Details
-                          </Button>
-                        </AccordionTrigger>
-                        <AccordionContent className="pb-0 pt-2">
-                          <div className="text-sm space-y-2">
-                            {deal.project_brief && (
-                              <div>
-                                <p className="font-medium">Project Brief:</p>
-                                <p className="text-muted-foreground">{deal.project_brief}</p>
-                              </div>
-                            )}
-                            
-                            {deal.campaign_goals && (
-                              <div>
-                                <p className="font-medium">Campaign Goals:</p>
-                                <p className="text-muted-foreground">{deal.campaign_goals}</p>
-                              </div>
-                            )}
-                            
-                            {deal.feedback && (
-                              <div>
-                                <p className="font-medium">Feedback:</p>
-                                <p className="text-muted-foreground">{deal.feedback}</p>
-                              </div>
-                            )}
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          ))}
         </div>
       ) : (
         <Card>

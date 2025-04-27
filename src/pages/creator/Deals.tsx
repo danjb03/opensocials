@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -298,17 +297,14 @@ const CreatorDeals = () => {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="lg:sticky lg:top-6 h-fit">
+        <div className="space-y-8">
+          <div>
             <PendingDeals deals={pendingDeals} />
           </div>
-          {/* This section was previously at the bottom, now we've added it here */}
-          <div className="hidden lg:block"></div>
-        </div>
 
-        {/* Past Deals now at the bottom */}
-        <div>
-          <PastDeals deals={otherDeals} />
+          <div>
+            <PastDeals deals={otherDeals} />
+          </div>
         </div>
       </div>
     </CreatorLayout>
@@ -316,4 +312,3 @@ const CreatorDeals = () => {
 };
 
 export default CreatorDeals;
-
