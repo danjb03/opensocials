@@ -20,11 +20,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         // Fetch user role if authenticated
         if (session?.user) {
+          // Use setTimeout to prevent recursion issues
           setTimeout(() => {
             fetchUserRole(session.user.id);
           }, 0);
         } else {
           setRole(null);
+          setIsLoading(false);
         }
       }
     );
@@ -33,10 +35,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
       if (session?.user) {
         fetchUserRole(session.user.id);
+      } else {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     });
 
     return () => {
@@ -48,7 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log("Fetching role for user:", userId);
       
-      // Direct query to the user_roles table to get role information
+      // Use maybeSingle instead of single to handle case when no role is found
       const { data, error } = await supabase
         .from('user_roles')
         .select('role, status')
@@ -62,6 +66,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           description: 'Failed to fetch user role: ' + error.message,
           variant: 'destructive',
         });
+        setIsLoading(false);
         return;
       }
 
@@ -73,14 +78,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } else {
         console.log("No approved role found, setting to null");
         setRole(null);
+        
         if (data && data.status === 'pending') {
           toast({
             title: 'Account Pending',
             description: 'Your account is pending approval.',
             duration: 5000,
           });
+        } else if (!data) {
+          toast({
+            title: 'No Role Assigned',
+            description: 'Your account does not have a role assigned. Please contact an administrator.',
+            duration: 5000,
+          });
         }
       }
+      
+      setIsLoading(false);
     } catch (error) {
       console.error('Failed to fetch user role:', error);
       toast({
@@ -88,6 +102,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: 'Failed to fetch user role',
         variant: 'destructive',
       });
+      setIsLoading(false);
     }
   };
 
