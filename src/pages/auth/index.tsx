@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,7 +30,7 @@ const AuthPage = () => {
             data: {
               first_name: firstName,
               last_name: lastName,
-              role: role, // Store role in user metadata as well
+              role: role,
             },
           },
         });
@@ -39,8 +38,6 @@ const AuthPage = () => {
         if (error) throw error;
         
         if (data.user) {
-          console.log("Creating role for user:", data.user.id, "Role:", role);
-          // Use proper RPC call to create user role
           const { error: roleError } = await supabase.rpc('create_user_role', {
             user_id: data.user.id,
             role_type: role
@@ -62,8 +59,6 @@ const AuthPage = () => {
 
         if (error) throw error;
 
-        console.log('Login success! Checking role...');
-        
         // Fetch user role after successful login
         const { data: roleData, error: roleError } = await supabase
           .from('user_roles')
@@ -71,8 +66,6 @@ const AuthPage = () => {
           .eq('user_id', data.user.id)
           .maybeSingle();
 
-        console.log('Role data:', roleData);
-        
         if (roleError) {
           console.error('Error fetching role:', roleError);
           toast.error('Error fetching user role');
@@ -95,7 +88,6 @@ const AuthPage = () => {
               toast.error('Invalid user role');
           }
         } else {
-          // User doesn't have an approved role
           navigate('/');
           if (roleData?.status === 'pending') {
             toast.info('Your account is pending approval');

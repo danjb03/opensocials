@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
@@ -10,9 +11,8 @@ export const useUserRole = (userId: string | undefined) => {
 
   useEffect(() => {
     if (!userId) {
-      console.log('No userId — skipping role fetch until login.');
       setIsLoading(false);
-      return;  // ✨ EARLY RETURN if no user
+      return;
     }
 
     const fetchRole = async () => {
@@ -46,13 +46,12 @@ export const useUserRole = (userId: string | undefined) => {
             }
           }
         } else {
-          console.log('No role data found.');
           setRole(null);
           setStatus(null);
         }
       } catch (err) {
         console.error('Unexpected error fetching role:', err);
-        toast.error('Unexpected error occurred.');
+        toast.error('Unexpected error occurred');
       } finally {
         setIsLoading(false);
       }
@@ -63,4 +62,3 @@ export const useUserRole = (userId: string | undefined) => {
 
   return { role, status, isLoading };
 };
-
