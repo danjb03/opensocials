@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/lib/auth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Button } from '@/components/ui/button';
@@ -29,14 +30,7 @@ const AdminDashboard = () => {
         </Button>
       </div>
 
-      {/* Super Admin Switch Buttons */}
-      {role === 'super_admin' && (
-        <div className="flex flex-wrap gap-4 mb-8">
-          <Button onClick={() => navigate('/admin')}>Admin Dashboard</Button>
-          <Button onClick={() => navigate('/brand')}>Brand Dashboard</Button>
-          <Button onClick={() => navigate('/creator')}>Creator Dashboard</Button>
-        </div>
-      )}
+      {/* Removed dashboard switch buttons */}
 
       {/* Normal Admin Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
