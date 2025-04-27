@@ -46,11 +46,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchUserRole = async (userId: string) => {
     try {
+      // Use a direct query instead of the has_role function to avoid recursion
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching user role:', error);
@@ -63,7 +64,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       if (data) {
-        setRole(data.role);
+        setRole(data.role as UserRole);
+      } else {
+        setRole(null);
       }
     } catch (error) {
       console.error('Failed to fetch user role:', error);
