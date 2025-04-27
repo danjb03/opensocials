@@ -11,7 +11,7 @@ const Logo = ({ className = '' }: LogoProps) => {
       <img 
         src="/lovable-uploads/7780980e-8910-4ad1-a0df-28190a7f66bb.png" 
         alt="OS Logo" 
-        className="h-8 w-auto"
+        className="h-32 w-auto"  // Changed from h-8 to h-32 (4x larger)
       />
     </Link>
   );
