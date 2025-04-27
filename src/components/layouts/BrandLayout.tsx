@@ -4,8 +4,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
-import { Home, Search, ShoppingCart } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Home, Search, Package, ArrowLeft } from 'lucide-react';
 
 interface BrandLayoutProps {
   children: React.ReactNode;
@@ -40,73 +40,53 @@ const BrandLayout = ({ children }: BrandLayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="container mx-auto p-4 flex justify-between items-center">
-          <Link to="/brand" className="text-xl font-bold">Brand Dashboard</Link>
-          
-          <div className="flex items-center gap-4">
-            {user && (
-              <>
-                <span className="hidden md:inline text-gray-600">{user.email}</span>
-                <Button 
-                  variant="outline" 
-                  onClick={handleSignOut} 
-                  disabled={isLoggingOut}
-                >
-                  {isLoggingOut ? "Signing out..." : "Sign Out"}
-                </Button>
-              </>
-            )}
-          </div>
+    <div className="min-h-screen flex">
+      <aside className="w-64 bg-slate-800 text-white p-4 flex flex-col">
+        <div className="mb-6">
+          <h1 className="text-xl font-bold">Brand Portal</h1>
         </div>
         
-        {/* Navigation */}
-        <div className="container mx-auto px-4 py-2">
-          <nav className="flex space-x-4">
-            <Link to="/brand">
-              <Button 
-                variant={location.pathname === '/brand' ? 'default' : 'ghost'}
-                className="flex items-center gap-2"
-              >
-                <Home className="h-4 w-4" />
-                <span>Dashboard</span>
-              </Button>
+        <nav className="space-y-1 flex-1">
+          <Button variant="ghost" className="w-full justify-start text-white hover:bg-slate-700" asChild>
+            <Link to="/brand" className="flex items-center gap-2">
+              <Home className="h-5 w-5" />
+              Dashboard
             </Link>
-            <Link to="/brand/creators">
-              <Button 
-                variant={location.pathname === '/brand/creators' ? 'default' : 'ghost'}
-                className="flex items-center gap-2"
-              >
-                <Search className="h-4 w-4" />
-                <span>Find Creators</span>
-              </Button>
+          </Button>
+          
+          <Button variant="ghost" className="w-full justify-start text-white hover:bg-slate-700" asChild>
+            <Link to="/brand/creators" className="flex items-center gap-2">
+              <Search className="h-5 w-5" />
+              Find Creators
             </Link>
-            <Link to="/brand/orders">
-              <Button 
-                variant={location.pathname === '/brand/orders' ? 'default' : 'ghost'}
-                className="flex items-center gap-2"
-              >
-                <ShoppingCart className="h-4 w-4" />
-                <span>Orders</span>
-              </Button>
+          </Button>
+          
+          <Button variant="ghost" className="w-full justify-start text-white hover:bg-slate-700" asChild>
+            <Link to="/brand/orders" className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Orders
             </Link>
-          </nav>
+          </Button>
+        </nav>
+        
+        <div className="mt-auto pt-4 border-t border-slate-700">
+          <div className="text-sm opacity-70 mb-2">
+            Logged in as {user?.email}
+          </div>
+          <Button 
+            variant="destructive" 
+            onClick={handleSignOut} 
+            disabled={isLoggingOut}
+            className="w-full"
+          >
+            {isLoggingOut ? "Signing out..." : "Sign Out"}
+          </Button>
         </div>
-      </header>
-
-      {/* Main content */}
-      <main className="flex-1">
+      </aside>
+      
+      <main className="flex-1 bg-background overflow-auto">
         {children}
       </main>
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 py-4">
-        <div className="container mx-auto px-4 text-center text-gray-600">
-          <p>© {new Date().getFullYear()} Brand Portal. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   );
 };
