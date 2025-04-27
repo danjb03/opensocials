@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/lib/auth';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -48,7 +47,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white p-4">
       <div className="mb-8">
         <Logo />
       </div>
@@ -116,4 +115,3 @@ const Index = () => {
 };
 
 export default Index;
-
