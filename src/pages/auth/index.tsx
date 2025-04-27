@@ -41,6 +41,7 @@ const AuthPage = () => {
 
         if (data.user) {
           try {
+            // Assign role using RPC
             const { error: roleError } = await supabase.rpc('create_user_role', {
               user_id: data.user.id,
               role_type: role,
@@ -50,7 +51,7 @@ const AuthPage = () => {
               console.error("Error creating role:", roleError);
               toast.error("Failed to assign role. Please contact support.");
             } else {
-              toast.success('Account created! Check your email to confirm your account.');
+              toast.success('Account created successfully! Check your email to confirm your account.');
             }
           } catch (roleCreateError) {
             console.error("Exception creating role:", roleCreateError);
