@@ -46,37 +46,47 @@ const UserManagement = () => {
 
   const fetchUserRequests = async () => {
     try {
-      // Fixed query to get user profiles data from the profiles table
-      const { data, error } = await supabase
+      // First fetch user_roles with the desired filter
+      const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
-        .select(`
-          *,
-          profiles:user_id(first_name, last_name, email)
-        `)
+        .select('*')
         .eq('status', filter);
 
-      if (error) throw error;
+      if (roleError) throw roleError;
       
-      // Process the data to match the UserRequest type
-      if (data) {
-        const processedData: UserRequest[] = data.map(item => {
-          // Handle the case where profiles could be null or have missing fields
-          return {
-            id: item.id,
-            user_id: item.user_id,
-            role: item.role as 'creator' | 'brand' | 'admin',
-            status: item.status as 'pending' | 'approved' | 'declined',
-            created_at: item.created_at || '',
-            profiles: item.profiles ? {
-              first_name: item.profiles.first_name || null,
-              last_name: item.profiles.last_name || null,
-              email: item.profiles.email || null
-            } : null
-          };
-        });
-        
-        setUserRequests(processedData);
+      if (!roleData) {
+        setUserRequests([]);
+        return;
       }
+      
+      // Create an array to store the processed user requests
+      const processedRequests: UserRequest[] = [];
+      
+      // Process each role data item
+      for (const item of roleData) {
+        // For each user_role, fetch the corresponding profile separately
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, email')
+          .eq('id', item.user_id)
+          .single();
+        
+        // Add to our processed requests array
+        processedRequests.push({
+          id: item.id,
+          user_id: item.user_id,
+          role: item.role,
+          status: item.status,
+          created_at: item.created_at || '',
+          profiles: profileError ? null : {
+            first_name: profileData?.first_name || null,
+            last_name: profileData?.last_name || null,
+            email: profileData?.email || null
+          }
+        });
+      }
+      
+      setUserRequests(processedRequests);
     } catch (error) {
       toast.error('Error fetching user requests', {
         description: error instanceof Error ? error.message : 'Unknown error'
