@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -16,7 +15,6 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
 
-// Define an interface for the deal with profiles included
 interface Deal {
   id: string;
   title: string;
@@ -41,40 +39,18 @@ const CreatorDeals = () => {
   const { data: deals } = useQuery({
     queryKey: ['creator-deals', user?.id],
     queryFn: async () => {
-      // First, retrieve all brand IDs from the deals for this creator
       const { data: dealsData, error: dealsError } = await supabase
         .from('deals')
-        .select('*, brand_id')
+        .select(`
+          *,
+          profiles:brand_id (
+            company_name
+          )
+        `)
         .eq('creator_id', user?.id)
         .order('created_at', { ascending: false });
       
       if (dealsError) throw dealsError;
-      
-      // If we have deals, get the company names for all brand IDs
-      if (dealsData && dealsData.length > 0) {
-        const brandIds = dealsData.map(deal => deal.brand_id);
-        
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, company_name')
-          .in('id', brandIds);
-        
-        if (profilesError) throw profilesError;
-        
-        // Map the company names to the deals
-        const dealsWithCompanyNames = dealsData.map(deal => {
-          const brandProfile = profilesData?.find(profile => profile.id === deal.brand_id);
-          return {
-            ...deal,
-            profiles: {
-              company_name: brandProfile?.company_name || 'Unknown Brand'
-            }
-          };
-        }) as Deal[];
-        
-        return dealsWithCompanyNames;
-      }
-      
       return (dealsData || []) as Deal[];
     },
     enabled: !!user?.id,
