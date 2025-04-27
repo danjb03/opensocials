@@ -1,11 +1,12 @@
 
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Home, Search, Package, ArrowLeft } from 'lucide-react';
+import { Home, Search, Package } from 'lucide-react';
+import SidebarToggle from './SidebarToggle';
 
 interface BrandLayoutProps {
   children: React.ReactNode;
@@ -14,9 +15,9 @@ interface BrandLayoutProps {
 const BrandLayout = ({ children }: BrandLayoutProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -41,46 +42,59 @@ const BrandLayout = ({ children }: BrandLayoutProps) => {
 
   return (
     <div className="min-h-screen flex">
-      <aside className="w-64 bg-slate-800 text-white p-4 flex flex-col">
-        <div className="mb-6">
-          <h1 className="text-xl font-bold">Brand Portal</h1>
-        </div>
+      <aside className={`relative bg-slate-800 text-white transition-all duration-300 ${
+        isSidebarCollapsed ? 'w-16' : 'w-64'
+      }`}>
+        <SidebarToggle 
+          isCollapsed={isSidebarCollapsed} 
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
         
-        <nav className="space-y-1 flex-1">
-          <Button variant="ghost" className="w-full justify-start text-white hover:bg-slate-700" asChild>
-            <Link to="/brand" className="flex items-center gap-2">
-              <Home className="h-5 w-5" />
-              Dashboard
-            </Link>
-          </Button>
-          
-          <Button variant="ghost" className="w-full justify-start text-white hover:bg-slate-700" asChild>
-            <Link to="/brand/creators" className="flex items-center gap-2">
-              <Search className="h-5 w-5" />
-              Find Creators
-            </Link>
-          </Button>
-          
-          <Button variant="ghost" className="w-full justify-start text-white hover:bg-slate-700" asChild>
-            <Link to="/brand/orders" className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
-              Orders
-            </Link>
-          </Button>
-        </nav>
-        
-        <div className="mt-auto pt-4 border-t border-slate-700">
-          <div className="text-sm opacity-70 mb-2">
-            Logged in as {user?.email}
+        <div className="p-4 flex flex-col h-full">
+          <div className="mb-6">
+            <h1 className={`text-xl font-bold ${isSidebarCollapsed ? 'hidden' : 'block'}`}>
+              Brand Portal
+            </h1>
           </div>
-          <Button 
-            variant="destructive" 
-            onClick={handleSignOut} 
-            disabled={isLoggingOut}
-            className="w-full"
-          >
-            {isLoggingOut ? "Signing out..." : "Sign Out"}
-          </Button>
+          
+          <nav className="space-y-1 flex-1">
+            <Button variant="ghost" className="w-full justify-start text-white hover:bg-slate-700" asChild>
+              <Link to="/brand" className="flex items-center gap-2">
+                <Home className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Dashboard</span>}
+              </Link>
+            </Button>
+            
+            <Button variant="ghost" className="w-full justify-start text-white hover:bg-slate-700" asChild>
+              <Link to="/brand/creators" className="flex items-center gap-2">
+                <Search className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Find Creators</span>}
+              </Link>
+            </Button>
+            
+            <Button variant="ghost" className="w-full justify-start text-white hover:bg-slate-700" asChild>
+              <Link to="/brand/orders" className="flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Orders</span>}
+              </Link>
+            </Button>
+          </nav>
+          
+          <div className="mt-auto pt-4 border-t border-slate-700">
+            {!isSidebarCollapsed && (
+              <div className="text-sm opacity-70 mb-2">
+                Logged in as {user?.email}
+              </div>
+            )}
+            <Button 
+              variant="destructive" 
+              onClick={handleSignOut} 
+              disabled={isLoggingOut}
+              className="w-full"
+            >
+              {isLoggingOut ? "..." : isSidebarCollapsed ? "Out" : "Sign Out"}
+            </Button>
+          </div>
         </div>
       </aside>
       
