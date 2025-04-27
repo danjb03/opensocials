@@ -25,28 +25,36 @@ interface Deal {
 const CreatorDeals = () => {
   const { user } = useAuth();
 
-  const { data: deals } = useQuery<Deal[]>({
+  const { data: deals = [] } = useQuery<Deal[]>({
     queryKey: ['creator-deals', user?.id],
     queryFn: async () => {
       const { data: dealsData, error: dealsError } = await supabase
         .from('deals')
         .select(`
           *,
-          profiles:brand_id (
-            company_name
-          )
+          profiles:brand_id(company_name)
         `)
         .eq('creator_id', user?.id)
         .order('created_at', { ascending: false });
       
-      if (dealsError) throw dealsError;
-      return dealsData || [];
+      if (dealsError) {
+        console.error('Error fetching deals:', dealsError);
+        throw dealsError;
+      }
+
+      // Transform the data to match the Deal interface
+      return (dealsData || []).map((deal: any) => ({
+        ...deal,
+        profiles: {
+          company_name: deal.profiles?.company_name || 'Unknown Brand'
+        }
+      }));
     },
     enabled: !!user?.id,
   });
 
-  const pendingDeals = deals?.filter(deal => deal.status === 'pending') || [];
-  const otherDeals = deals?.filter(deal => deal.status !== 'pending') || [];
+  const pendingDeals = deals.filter(deal => deal.status === 'pending');
+  const otherDeals = deals.filter(deal => deal.status !== 'pending');
 
   return (
     <CreatorLayout>
@@ -59,4 +67,3 @@ const CreatorDeals = () => {
 };
 
 export default CreatorDeals;
-
