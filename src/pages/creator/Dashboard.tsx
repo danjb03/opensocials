@@ -1,9 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
 import {
   LineChart,
@@ -14,9 +15,15 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { ArrowLeft } from 'lucide-react';
 
 const CreatorDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleBackToSuperAdmin = () => {
+    navigate('/super-admin');
+  };
   
   const { data: earnings } = useQuery({
     queryKey: ['creator-earnings', user?.id],
@@ -79,7 +86,19 @@ const CreatorDashboard = () => {
 
   return (
     <CreatorLayout>
-      <div className="container mx-auto p-6 space-y-6">
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold">Creator Dashboard</h1>
+          <Button 
+            variant="outline" 
+            onClick={handleBackToSuperAdmin} 
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Super Admin
+          </Button>
+        </div>
+        
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader>

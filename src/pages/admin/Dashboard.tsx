@@ -3,17 +3,31 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserCheck, Package, CheckCircle } from 'lucide-react';
-import SignOutButton from '@/components/SignOutButton'; // Optional: if you already added Sign Out
+import { UserCheck, Package, CheckCircle, ArrowLeft } from 'lucide-react';
+import SignOutButton from '@/components/SignOutButton';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
   const { role } = useUserRole(user?.id);
   const navigate = useNavigate();
 
+  const handleBackToSuperAdmin = () => {
+    navigate('/super-admin');
+  };
+
   return (
     <div className="container mx-auto py-8 px-4">
-      <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+        <Button 
+          variant="outline" 
+          onClick={handleBackToSuperAdmin} 
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Super Admin
+        </Button>
+      </div>
 
       {/* Super Admin Switch Buttons */}
       {role === 'super_admin' && (
@@ -60,7 +74,7 @@ const AdminDashboard = () => {
         </Card>
       </div>
 
-      {/* Optional Sign Out button at the bottom */}
+      {/* Optional Sign Out button */}
       <div className="mt-8 flex justify-center">
         <SignOutButton />
       </div>

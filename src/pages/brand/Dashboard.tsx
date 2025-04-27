@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/auth';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, ArrowLeft } from 'lucide-react';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -17,7 +17,6 @@ const Dashboard = () => {
   const [contentType, setContentType] = useState<string>("");
   
   const handleNewProject = () => {
-    // Navigate with filters as query params
     const queryParams = new URLSearchParams();
     if (platform) queryParams.append('platform', platform);
     if (audience) queryParams.append('audience', audience);
@@ -26,10 +25,24 @@ const Dashboard = () => {
     navigate(`/brand/creators?${queryParams.toString()}`);
   };
 
+  const handleBackToSuperAdmin = () => {
+    navigate('/super-admin');
+  };
+
   return (
     <BrandLayout>
       <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">Brand Dashboard</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold">Brand Dashboard</h1>
+          <Button 
+            variant="outline" 
+            onClick={handleBackToSuperAdmin} 
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Super Admin
+          </Button>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Welcome Card */}
