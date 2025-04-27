@@ -43,7 +43,7 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
 
   return (
     <div className="min-h-screen flex">
-      <aside className={`relative bg-slate-800 text-white transition-all duration-300 ${
+      <aside className={`relative bg-sidebar text-sidebar-foreground transition-all duration-300 ${
         isSidebarCollapsed ? 'w-16' : 'w-64'
       }`}>
         <SidebarToggle 
@@ -59,14 +59,14 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
           </div>
           
           <nav className="space-y-1 flex-1">
-            <Button variant="ghost" className="w-full justify-start text-white hover:bg-slate-700" asChild>
+            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
               <Link to="/creator" className="flex items-center gap-2">
                 <ChartLine className="h-5 w-5" />
                 {!isSidebarCollapsed && <span>Overview</span>}
               </Link>
             </Button>
             
-            <Button variant="ghost" className="w-full justify-start text-white hover:bg-slate-700" asChild>
+            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
               <Link to="/creator/deals" className="flex items-center gap-2">
                 <DollarSign className="h-5 w-5" />
                 {!isSidebarCollapsed && <span>Deals</span>}
@@ -74,14 +74,14 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
             </Button>
           </nav>
           
-          <div className="mt-auto pt-4 border-t border-slate-700">
+          <div className="mt-auto pt-4 border-t border-sidebar-border">
             {!isSidebarCollapsed && (
               <div className="text-sm opacity-70 mb-2">
                 Logged in as {user?.email}
               </div>
             )}
             <Button 
-              variant="destructive" 
+              variant="default" 
               onClick={handleSignOut} 
               disabled={isLoggingOut}
               className="w-full"

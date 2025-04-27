@@ -25,7 +25,7 @@ const AdminLayout = () => {
 
   return (
     <div className="min-h-screen flex">
-      <aside className={`relative bg-slate-800 text-white transition-all duration-300 ${
+      <aside className={`relative bg-sidebar text-sidebar-foreground transition-all duration-300 ${
         isSidebarCollapsed ? 'w-16' : 'w-64'
       }`}>
         <SidebarToggle 
@@ -41,28 +41,28 @@ const AdminLayout = () => {
           </div>
           
           <nav className="space-y-1 flex-1">
-            <Button variant="ghost" className="w-full justify-start text-white hover:bg-slate-700" asChild>
+            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
               <Link to="/admin" className="flex items-center gap-2">
                 <LayoutDashboard className="h-5 w-5" />
                 {!isSidebarCollapsed && <span>Dashboard</span>}
               </Link>
             </Button>
             
-            <Button variant="ghost" className="w-full justify-start text-white hover:bg-slate-700" asChild>
+            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
               <Link to="/admin/users" className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
                 {!isSidebarCollapsed && <span>User Management</span>}
               </Link>
             </Button>
             
-            <Button variant="ghost" className="w-full justify-start text-white hover:bg-slate-700" asChild>
+            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
               <Link to="/admin/creators" className="flex items-center gap-2">
                 <UserCircle className="h-5 w-5" />
                 {!isSidebarCollapsed && <span>Creator Management</span>}
               </Link>
             </Button>
             
-            <Button variant="ghost" className="w-full justify-start text-white hover:bg-slate-700" asChild>
+            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
               <Link to="/admin/orders" className="flex items-center gap-2">
                 <PackageOpen className="h-5 w-5" />
                 {!isSidebarCollapsed && <span>Order Management</span>}
@@ -70,7 +70,7 @@ const AdminLayout = () => {
             </Button>
           </nav>
           
-          <div className="mt-auto pt-4 border-t border-slate-700">
+          <div className="mt-auto pt-4 border-t border-sidebar-border">
             {!isSidebarCollapsed && (
               <div className="text-sm opacity-70">
                 Logged in as {role === 'super_admin' ? 'Super Admin' : 'Admin'}

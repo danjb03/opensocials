@@ -25,7 +25,7 @@ const SignOutButton = () => {
   };
 
   return (
-    <Button onClick={handleSignOut} variant="destructive">
+    <Button onClick={handleSignOut} variant="default">
       <LogOut className="mr-2 h-4 w-4" />
       Sign Out
     </Button>
