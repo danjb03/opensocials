@@ -166,6 +166,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_user_role: {
+        Args: { user_id: string; role_type: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           user_id: string

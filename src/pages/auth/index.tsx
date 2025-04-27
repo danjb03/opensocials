@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,9 +38,11 @@ const AuthPage = () => {
         if (error) throw error;
         
         if (data.user) {
-          const { error: functionError } = await supabase.rpc('create_user_role', {
-            user_id: data.user.id,
-            role_type: role
+          const { error: functionError } = await supabase.functions.invoke('create_user_role', {
+            body: {
+              user_id: data.user.id,
+              role_type: role
+            }
           });
 
           if (functionError) throw functionError;
