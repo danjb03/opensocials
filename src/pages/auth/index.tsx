@@ -92,27 +92,25 @@ const AuthPage = () => {
       }
 
       if (roleData?.status === 'approved') {
-        if (roleData.role === 'super_admin' || roleData.role === 'admin') {
-          navigate('/admin');
-        } else if (roleData.role === 'brand') {
-          navigate('/brand');
-        } else if (roleData.role === 'creator') {
-          navigate('/creator');
-        } else {
-          navigate('/');
-          toast.error('Unknown role.');
-        }
-      } else {
-        toast.info('Account pending approval or no role assigned.');
-        navigate('/');
-      }
-    } catch (err: any) {
-      console.error('Login error:', err.message);
-      toast.error(err.message || 'Login failed.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  switch (roleData.role) {
+    case 'super_admin':
+      navigate('/super-admin');
+      break;
+    case 'admin':
+      navigate('/admin');
+      break;
+    case 'brand':
+      navigate('/brand');
+      break;
+    case 'creator':
+      navigate('/creator');
+      break;
+    default:
+      console.error('Unknown role:', roleData.role);
+      toast.error('Invalid user role');
+  }
+}
+
 
   const handleForgotPassword = async () => {
     if (!email) {
