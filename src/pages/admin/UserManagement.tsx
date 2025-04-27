@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 type UserRequest = {
   id: string;
   user_id: string;
-  role: 'creator' | 'brand' | 'admin';  // Updated to include 'admin'
+  role: 'creator' | 'brand' | 'admin';
   status: 'pending' | 'approved' | 'declined';
   created_at: string;
   profiles: {
@@ -46,6 +46,7 @@ const UserManagement = () => {
 
   const fetchUserRequests = async () => {
     try {
+      // Fixed query - correctly join profiles table using a foreign key relationship
       const { data, error } = await supabase
         .from('user_roles')
         .select(`
@@ -56,13 +57,17 @@ const UserManagement = () => {
 
       if (error) throw error;
       
-      // Cast the data to ensure it matches the UserRequest type
-      const typedData = (data || []).map(item => ({
-        ...item,
-        status: item.status as 'pending' | 'approved' | 'declined'
-      })) as UserRequest[];
+      // Process the data to handle potential missing profiles
+      const processedData: UserRequest[] = (data || []).map(item => ({
+        id: item.id,
+        user_id: item.user_id,
+        role: item.role as 'creator' | 'brand' | 'admin',
+        status: item.status as 'pending' | 'approved' | 'declined',
+        created_at: item.created_at,
+        profiles: item.profiles || null
+      }));
       
-      setUserRequests(typedData);
+      setUserRequests(processedData);
     } catch (error) {
       toast.error('Error fetching user requests', {
         description: error instanceof Error ? error.message : 'Unknown error'
@@ -95,8 +100,8 @@ const UserManagement = () => {
 
   const filteredRequests = userRequests.filter(request => 
     (!searchTerm || 
-      request.profiles?.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.profiles?.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.profiles?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.profiles?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       request.role.toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
