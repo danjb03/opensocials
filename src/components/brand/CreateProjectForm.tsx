@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '../../lib/supabaseClient';  // Corrected import path
+import { supabase } from '@/integrations/supabase/client';  // Updated import path
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 type ProjectFormProps = {
@@ -154,4 +155,3 @@ const CreateProjectForm: React.FC<ProjectFormProps> = ({ onSuccess, userId }) =>
 };
 
 export default CreateProjectForm;
-
