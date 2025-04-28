@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '../../lib/supabaseClient';  // Corrected import path
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 type ProjectFormProps = {
@@ -18,7 +18,7 @@ const CreateProjectForm: React.FC<ProjectFormProps> = ({ onSuccess, userId }) =>
 
   const [formData, setFormData] = useState({
     name: '',
-    campaign_type: ['Monthly'],  // Default value
+    campaign_type: ['Monthly'],
     start_date: '',
     end_date: '',
     budget: 0,
@@ -77,7 +77,6 @@ const CreateProjectForm: React.FC<ProjectFormProps> = ({ onSuccess, userId }) =>
     <form onSubmit={handleSubmit} className="space-y-6">
       <Input name="name" placeholder="Project Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
 
-      {/* Multi-select campaign type */}
       <div>
         <label className="block mb-2 font-medium">Campaign Type</label>
         <div className="flex flex-wrap gap-2">
@@ -108,7 +107,6 @@ const CreateProjectForm: React.FC<ProjectFormProps> = ({ onSuccess, userId }) =>
 
       <Input type="number" placeholder="Budget" value={formData.budget} onChange={(e) => setFormData({ ...formData, budget: parseInt(e.target.value) })} required />
 
-      {/* Dynamic Content Requirements */}
       <div>
         <label className="block mb-2 font-medium">Content Requirements</label>
         {formData.content_requirements.map((item, index) => (
@@ -125,7 +123,6 @@ const CreateProjectForm: React.FC<ProjectFormProps> = ({ onSuccess, userId }) =>
         <Button type="button" variant="secondary" onClick={handleAddContentType}>+ Add Content Type</Button>
       </div>
 
-      {/* Toggles */}
       <div className="flex gap-4">
         <div>
           <label className="block mb-2 font-medium">Whitelisting</label>
@@ -139,7 +136,6 @@ const CreateProjectForm: React.FC<ProjectFormProps> = ({ onSuccess, userId }) =>
         </div>
       </div>
 
-      {/* Additional Details */}
       <div>
         <Button type="button" variant="ghost" onClick={() => setFormData({ ...formData, showAdvanced: !formData.showAdvanced })}>
           {formData.showAdvanced ? <ChevronUp className="mr-2" /> : <ChevronDown className="mr-2" />}
