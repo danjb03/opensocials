@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type Project = {
   id: string;
@@ -53,7 +53,7 @@ const formatCurrency = (amount: number, currency: string = 'USD') => {
 const ProjectManagement = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     fetchProjects();
@@ -159,7 +159,6 @@ const ProjectManagement = () => {
       <h1 className="text-3xl font-bold mb-8">Admin Projects Dashboard</h1>
       
       {isMobile ? (
-        // Mobile view - cards
         <div className="grid grid-cols-1 gap-6">
           {projects.map(project => (
             <Card key={project.id} className="w-full">
@@ -221,7 +220,6 @@ const ProjectManagement = () => {
           ))}
         </div>
       ) : (
-        // Desktop view - table
         <div className="rounded-md border">
           <Table>
             <TableHeader>
