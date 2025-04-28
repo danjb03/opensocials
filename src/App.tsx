@@ -12,6 +12,7 @@ import UserManagement from "./pages/admin/UserManagement";
 import AdminDashboard from "./pages/admin/Dashboard";
 import CreatorManagement from "./pages/admin/CreatorManagement";
 import OrderManagement from "./pages/admin/OrderManagement";
+import ProjectManagement from "./pages/admin/ProjectManagement";
 import NotFound from "./pages/NotFound";
 import { useAuth } from "./lib/auth";
 import BrandDashboard from "./pages/brand/Dashboard";
@@ -90,6 +91,7 @@ const App = () => (
               <Route path="users" element={<UserManagement />} />
               <Route path="creators" element={<CreatorManagement />} />
               <Route path="orders" element={<OrderManagement />} />
+              <Route path="projects" element={<ProjectManagement />} />
             </Route>
             
             {/* Brand Dashboard Routes */}

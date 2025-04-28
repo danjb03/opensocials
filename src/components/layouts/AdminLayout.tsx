@@ -1,8 +1,9 @@
+
 import { useAuth } from '@/lib/auth';
 import Logo from "@/components/ui/logo";
 import { useToast } from '@/hooks/use-toast';
 import { Navigate, Outlet } from 'react-router-dom';
-import { UserCircle, Users, PackageOpen, LayoutDashboard } from 'lucide-react';
+import { UserCircle, Users, PackageOpen, LayoutDashboard, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { useState } from 'react';
@@ -57,6 +58,13 @@ const AdminLayout = () => {
               <Link to="/admin/creators" className="flex items-center gap-2">
                 <UserCircle className="h-5 w-5" />
                 {!isSidebarCollapsed && <span>Creator Management</span>}
+              </Link>
+            </Button>
+            
+            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
+              <Link to="/admin/projects" className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Project Management</span>}
               </Link>
             </Button>
             

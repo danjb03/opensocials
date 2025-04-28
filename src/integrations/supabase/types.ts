@@ -152,6 +152,7 @@ export type Database = {
           end_date: string
           exclusivity: string | null
           id: string
+          is_priority: boolean | null
           name: string
           payment_structure: string | null
           platforms: string[] | null
@@ -175,6 +176,7 @@ export type Database = {
           end_date: string
           exclusivity?: string | null
           id?: string
+          is_priority?: boolean | null
           name: string
           payment_structure?: string | null
           platforms?: string[] | null
@@ -198,6 +200,7 @@ export type Database = {
           end_date?: string
           exclusivity?: string | null
           id?: string
+          is_priority?: boolean | null
           name?: string
           payment_structure?: string | null
           platforms?: string[] | null
