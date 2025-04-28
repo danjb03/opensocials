@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Plus, Filter, Calendar, DollarSign } from 'lucide-react';
-import { ProjectForm } from '@/components/brand/ProjectForm';
+import { CreateProjectForm } from '@/components/brand/CreateProjectForm';
 import { useToast } from '@/hooks/use-toast';
 
 // Demo data - in a real app this would come from your database
@@ -44,6 +45,7 @@ const Projects = () => {
     const projectWithId = {
       ...newProject,
       id: projects.length > 0 ? Math.max(...projects.map(p => typeof p.id === 'number' ? p.id : 0)) + 1 : 1,
+      executionDate: newProject.start_date,  // Map to our display model
     };
     
     setProjects([...projects, projectWithId]);
@@ -77,11 +79,11 @@ const Projects = () => {
                   New Project
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Create New Project</DialogTitle>
                 </DialogHeader>
-                <ProjectForm onSuccess={handleProjectCreated} />
+                <CreateProjectForm onSuccess={handleProjectCreated} />
               </DialogContent>
             </Dialog>
           </div>

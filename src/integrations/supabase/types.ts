@@ -137,6 +137,78 @@ export type Database = {
         }
         Relationships: []
       }
+      projects: {
+        Row: {
+          audience_focus: string | null
+          brand_id: string | null
+          budget: number | null
+          campaign_objective: string | null
+          campaign_type: string
+          content_requirements: Json | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          draft_approval: boolean | null
+          end_date: string
+          exclusivity: string | null
+          id: string
+          name: string
+          payment_structure: string | null
+          platforms: string[] | null
+          start_date: string
+          status: string | null
+          submission_deadline: string | null
+          usage_duration: string | null
+          whitelisting: boolean | null
+        }
+        Insert: {
+          audience_focus?: string | null
+          brand_id?: string | null
+          budget?: number | null
+          campaign_objective?: string | null
+          campaign_type: string
+          content_requirements?: Json | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          draft_approval?: boolean | null
+          end_date: string
+          exclusivity?: string | null
+          id?: string
+          name: string
+          payment_structure?: string | null
+          platforms?: string[] | null
+          start_date: string
+          status?: string | null
+          submission_deadline?: string | null
+          usage_duration?: string | null
+          whitelisting?: boolean | null
+        }
+        Update: {
+          audience_focus?: string | null
+          brand_id?: string | null
+          budget?: number | null
+          campaign_objective?: string | null
+          campaign_type?: string
+          content_requirements?: Json | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          draft_approval?: boolean | null
+          end_date?: string
+          exclusivity?: string | null
+          id?: string
+          name?: string
+          payment_structure?: string | null
+          platforms?: string[] | null
+          start_date?: string
+          status?: string | null
+          submission_deadline?: string | null
+          usage_duration?: string | null
+          whitelisting?: boolean | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
