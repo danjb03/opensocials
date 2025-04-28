@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Plus, Filter, Calendar, DollarSign } from 'lucide-react';
-import { CreateProjectForm } from '@/components/brand/CreateProjectForm';
+import CreateProjectForm from '@/components/brand/CreateProjectForm';
 import { useToast } from '@/hooks/use-toast';
 
 // Demo data - in a real app this would come from your database
@@ -45,7 +44,7 @@ const Projects = () => {
     const projectWithId = {
       ...newProject,
       id: projects.length > 0 ? Math.max(...projects.map(p => typeof p.id === 'number' ? p.id : 0)) + 1 : 1,
-      executionDate: newProject.start_date,  // Map to our display model
+      executionDate: newProject.start_date ? new Date(newProject.start_date) : new Date(),  // Map to our display model
     };
     
     setProjects([...projects, projectWithId]);
@@ -56,6 +55,9 @@ const Projects = () => {
       description: `${newProject.name} has been successfully created.`,
     });
   };
+
+  // For demo purposes, we'll use a mock user ID
+  const mockUserId = "user123";
 
   return (
     <BrandLayout>
@@ -83,7 +85,7 @@ const Projects = () => {
                 <DialogHeader>
                   <DialogTitle>Create New Project</DialogTitle>
                 </DialogHeader>
-                <CreateProjectForm onSuccess={handleProjectCreated} />
+                <CreateProjectForm onSuccess={handleProjectCreated} userId={mockUserId} />
               </DialogContent>
             </Dialog>
           </div>
