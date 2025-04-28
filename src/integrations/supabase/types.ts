@@ -242,6 +242,14 @@ export type Database = {
         Args: { user_id: string; role_type: string }
         Returns: undefined
       }
+      duplicate_project: {
+        Args: {
+          original_project_id: string
+          new_start_date: string
+          new_end_date: string
+        }
+        Returns: string
+      }
       has_role: {
         Args: {
           user_id: string
