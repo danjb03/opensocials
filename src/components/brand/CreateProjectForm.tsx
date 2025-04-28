@@ -1,5 +1,3 @@
-// src/components/brand/CreateProjectForm.tsx
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,8 +8,6 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const contentOptions = ['TikTok Video', 'Instagram Reel', 'YouTube Short', 'Carousel Post', 'Instagram Story', 'Live Stream', 'Blog Post'];
 const platformOptions = ['TikTok', 'Instagram', 'YouTube', 'Twitter', 'Facebook'];
-const campaignObjectives = ['awareness', 'engagement', 'conversions'];
-const paymentStructures = ['upfront', '50_50', 'on_delivery'];
 
 const CreateProjectForm = ({ onSuccess, userId }) => {
   const { toast } = useToast();
@@ -50,7 +46,7 @@ const CreateProjectForm = ({ onSuccess, userId }) => {
     setFormData({ ...formData, content_requirements: updated });
   };
 
-  const togglePlatform = (platform) => {
+  const handlePlatformSelect = (platform) => {
     setFormData(prev => ({
       ...prev,
       platforms: prev.platforms.includes(platform)
@@ -61,7 +57,15 @@ const CreateProjectForm = ({ onSuccess, userId }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = { ...formData, brand_id: userId, status: 'draft', is_template: formData.save_as_template };
+
+    const payload = {
+      ...formData,
+      campaign_type: formData.campaign_type.join(', '),
+      brand_id: userId,
+      status: 'draft',
+      is_template: formData.save_as_template
+    };
+
     const { error } = await supabase.from('projects').insert([payload]);
 
     if (error) {
@@ -132,43 +136,12 @@ const CreateProjectForm = ({ onSuccess, userId }) => {
               type="button"
               key={platform}
               variant={formData.platforms.includes(platform) ? 'default' : 'outline'}
-              onClick={() => togglePlatform(platform)}
+              onClick={() => handlePlatformSelect(platform)}
             >
               {platform}
             </Button>
           ))}
         </div>
-      </div>
-
-      <Input placeholder="Usage Duration (e.g. 3 months, perpetual)" value={formData.usage_duration} onChange={(e) => setFormData({ ...formData, usage_duration: e.target.value })} />
-
-      <Input placeholder="Audience Focus (e.g. Gen Z, US-based)" value={formData.audience_focus} onChange={(e) => setFormData({ ...formData, audience_focus: e.target.value })} />
-
-      <div>
-        <p className="font-medium mb-2">Campaign Objective</p>
-        <select value={formData.campaign_objective} onChange={(e) => setFormData({ ...formData, campaign_objective: e.target.value })} className="w-full border p-2 rounded">
-          {campaignObjectives.map(obj => (
-            <option key={obj} value={obj}>{obj.charAt(0).toUpperCase() + obj.slice(1)}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="flex gap-4 items-center">
-        <p className="font-medium">Draft Approval Required?</p>
-        <Button type="button" variant={formData.draft_approval ? 'default' : 'outline'} onClick={() => setFormData({ ...formData, draft_approval: !formData.draft_approval })}>
-          {formData.draft_approval ? 'Yes' : 'No'}
-        </Button>
-      </div>
-
-      <Input type="date" placeholder="Submission Deadline" value={formData.submission_deadline} onChange={(e) => setFormData({ ...formData, submission_deadline: e.target.value })} />
-
-      <div>
-        <p className="font-medium mb-2">Payment Structure</p>
-        <select value={formData.payment_structure} onChange={(e) => setFormData({ ...formData, payment_structure: e.target.value })} className="w-full border p-2 rounded">
-          {paymentStructures.map(struct => (
-            <option key={struct} value={struct}>{struct.replace('_', ' ').toUpperCase()}</option>
-          ))}
-        </select>
       </div>
 
       <div className="flex gap-4">
