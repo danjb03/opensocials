@@ -58,13 +58,16 @@ const CreateProjectForm = ({ onSuccess, userId }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const payload = {
-      ...formData,
-      campaign_type: formData.campaign_type.join(', '),
-      brand_id: userId,
-      status: 'draft',
-      is_template: formData.save_as_template
-    };
+    const { save_as_template, ...cleanFormData } = formData;
+
+const payload = {
+  ...cleanFormData,
+  campaign_type: formData.campaign_type.join(', '),
+  brand_id: userId,
+  status: 'draft',
+  is_template: save_as_template
+};
+
 
     const { error } = await supabase.from('projects').insert([payload]);
 
