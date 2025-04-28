@@ -33,6 +33,7 @@ const ProjectWizard = ({ onSuccess, userId }) => {
     const fetchTemplates = async () => {
       const { data } = await supabase.from('projects').select('*').eq('is_template', true).eq('brand_id', userId);
       setTemplates(data || []);
+      if (!data || data.length === 0) setUseTemplate(true);  // Auto-start if no templates
     };
     fetchTemplates();
   }, [userId]);
@@ -41,6 +42,7 @@ const ProjectWizard = ({ onSuccess, userId }) => {
     const { id, is_template, created_at, ...rest } = template;
     setFormData({ ...rest, save_as_template: false });
     toast({ title: 'Template Loaded', description: `${template.name} applied.` });
+    setUseTemplate(true);
     setCurrentStep(0);
   };
 
@@ -64,15 +66,21 @@ const ProjectWizard = ({ onSuccess, userId }) => {
       <h2 className="text-xl font-bold">Create New Project</h2>
 
       {/* Template Selection */}
-      {templates.length > 0 && !useTemplate && (
+      {!useTemplate && (
         <div className="space-y-2">
-          <p className="font-medium">Use a Saved Template?</p>
-          {templates.map(t => (
-            <Button key={t.id} variant="secondary" onClick={() => { setUseTemplate(true); applyTemplate(t); }}>
-              {t.name}
-            </Button>
-          ))}
-          <Button variant="ghost" onClick={() => setUseTemplate(true)}>Start from Scratch</Button>
+          {templates.length > 0 ? (
+            <>
+              <p className="font-medium">Use a Saved Template?</p>
+              {templates.map(t => (
+                <Button key={t.id} variant="secondary" onClick={() => applyTemplate(t)}>
+                  {t.name}
+                </Button>
+              ))}
+              <Button variant="ghost" onClick={() => setUseTemplate(true)}>Start from Scratch</Button>
+            </>
+          ) : (
+            <Button onClick={() => setUseTemplate(true)}>Start Project</Button>
+          )}
         </div>
       )}
 
