@@ -1,19 +1,18 @@
 // src/components/brand/CreateProjectForm.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
-const steps = ['Basics', 'Content', 'Legal & Launch'];
+const contentOptions = ['TikTok Video', 'Instagram Reel', 'YouTube Short', 'Carousel Post', 'Instagram Story', 'Live Stream', 'Blog Post'];
 
-const ProjectWizard = ({ onSuccess, userId }) => {
+const CreateProjectForm = ({ onSuccess, userId }) => {
   const { toast } = useToast();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [templates, setTemplates] = useState([]);
-  const [useTemplate, setUseTemplate] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     campaign_type: ['Monthly'],
@@ -22,105 +21,128 @@ const ProjectWizard = ({ onSuccess, userId }) => {
     budget: 0,
     currency: 'USD',
     content_requirements: [],
+    platforms: [],
     usage_duration: '',
     whitelisting: false,
     exclusivity: '',
+    audience_focus: '',
+    campaign_objective: 'awareness',
+    draft_approval: true,
+    submission_deadline: '',
+    payment_structure: 'on_delivery',
     description: '',
     save_as_template: false
   });
 
-  useEffect(() => {
-    const fetchTemplates = async () => {
-      const { data } = await supabase.from('projects').select('*').eq('is_template', true).eq('brand_id', userId);
-      setTemplates(data || []);
-      if (!data || data.length === 0) setUseTemplate(true);  // Auto-start if no templates
-    };
-    fetchTemplates();
-  }, [userId]);
-
-  const applyTemplate = (template) => {
-    const { id, is_template, created_at, ...rest } = template;
-    setFormData({ ...rest, save_as_template: false });
-    toast({ title: 'Template Loaded', description: `${template.name} applied.` });
-    setUseTemplate(true);
-    setCurrentStep(0);
+  const handleAddContentType = () => {
+    setFormData(prev => ({
+      ...prev,
+      content_requirements: [...prev.content_requirements, { type: '', quantity: 1 }]
+    }));
   };
 
-  const handleNext = () => setCurrentStep((prev) => prev + 1);
-  const handleBack = () => setCurrentStep((prev) => prev - 1);
+  const handleContentChange = (index, field, value) => {
+    const updated = [...formData.content_requirements];
+    updated[index][field] = value;
+    setFormData({ ...formData, content_requirements: updated });
+  };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     const payload = { ...formData, brand_id: userId, status: 'draft', is_template: formData.save_as_template };
     const { error } = await supabase.from('projects').insert([payload]);
 
     if (error) {
-      toast({ title: 'Failed to Launch', description: error.message, variant: 'destructive' });
+      toast({ title: 'Project Creation Failed', description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: '🚀 Campaign Launched', description: `${formData.name} is live.` });
+      toast({ title: '🚀 Campaign Created', description: `${formData.name} is now saved.` });
       onSuccess(payload);
     }
   };
 
   return (
-    <div className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <h2 className="text-xl font-bold">Create New Project</h2>
 
-      {/* Template Selection */}
-      {!useTemplate && (
-        <div className="space-y-2">
-          {templates.length > 0 ? (
-            <>
-              <p className="font-medium">Use a Saved Template?</p>
-              {templates.map(t => (
-                <Button key={t.id} variant="secondary" onClick={() => applyTemplate(t)}>
-                  {t.name}
-                </Button>
-              ))}
-              <Button variant="ghost" onClick={() => setUseTemplate(true)}>Start from Scratch</Button>
-            </>
-          ) : (
-            <Button onClick={() => setUseTemplate(true)}>Start Project</Button>
-          )}
-        </div>
-      )}
+      <Input placeholder="Project Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
 
-      {/* Multi-Step Form */}
-      {useTemplate && (
-        <div>
-          <div className="mb-4">Step {currentStep + 1} of {steps.length}: <strong>{steps[currentStep]}</strong></div>
-
-          {currentStep === 0 && (
-            <Input placeholder="Project Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-          )}
-
-          {currentStep === 1 && (
-            <Button onClick={() => setFormData({ ...formData, content_requirements: [...formData.content_requirements, { type: '', quantity: 1 }] })}>
-              + Add Content Requirement
+      <div>
+        <p className="font-medium mb-2">Campaign Type</p>
+        <div className="flex flex-wrap gap-2">
+          {['Single', 'Weekly', 'Monthly', '12-Month Retainer', 'Evergreen'].map(option => (
+            <Button
+              type="button"
+              key={option}
+              variant={formData.campaign_type.includes(option) ? 'default' : 'outline'}
+              onClick={() => {
+                setFormData(prev => ({
+                  ...prev,
+                  campaign_type: prev.campaign_type.includes(option)
+                    ? prev.campaign_type.filter(t => t !== option)
+                    : [...prev.campaign_type, option]
+                }));
+              }}
+            >
+              {option}
             </Button>
-          )}
-
-          {currentStep === 2 && (
-            <div className="space-y-4">
-              <Textarea placeholder="Additional Details" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
-              <div className="flex items-center gap-2">
-                <input type="checkbox" checked={formData.save_as_template} onChange={(e) => setFormData({ ...formData, save_as_template: e.target.checked })} />
-                <span>Save as Template</span>
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-between mt-6">
-            {currentStep > 0 && <Button onClick={handleBack}>Back</Button>}
-            {currentStep < steps.length - 1 ? (
-              <Button onClick={handleNext}>Next</Button>
-            ) : (
-              <Button className="bg-gradient-to-r from-blue-500 to-purple-500 text-white" onClick={handleSubmit}>🚀 Launch Campaign</Button>
-            )}
-          </div>
+          ))}
         </div>
+      </div>
+
+      <div className="flex gap-4">
+        <Input type="date" value={formData.start_date} onChange={(e) => setFormData({ ...formData, start_date: e.target.value })} required />
+        <Input type="date" value={formData.end_date} onChange={(e) => setFormData({ ...formData, end_date: e.target.value })} required />
+      </div>
+
+      <Input type="number" placeholder="Budget" value={formData.budget} onChange={(e) => setFormData({ ...formData, budget: parseInt(e.target.value) })} required />
+
+      <div>
+        <p className="font-medium mb-2">Content Requirements</p>
+        {formData.content_requirements.map((item, index) => (
+          <div key={index} className="flex gap-2 mb-2">
+            <select value={item.type} onChange={(e) => handleContentChange(index, 'type', e.target.value)} className="flex-1 border p-2 rounded">
+              <option value="">Select Content Type</option>
+              {contentOptions.map(option => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
+            <Input type="number" value={item.quantity} min={1} onChange={(e) => handleContentChange(index, 'quantity', parseInt(e.target.value))} className="w-24" />
+          </div>
+        ))}
+        <Button type="button" variant="secondary" onClick={handleAddContentType}>+ Add Content Type</Button>
+      </div>
+
+      <div className="flex gap-4">
+        <div>
+          <p className="font-medium mb-2">Whitelisting</p>
+          <Button type="button" variant={formData.whitelisting ? 'default' : 'outline'} onClick={() => setFormData({ ...formData, whitelisting: !formData.whitelisting })}>
+            {formData.whitelisting ? 'Yes' : 'No'}
+          </Button>
+        </div>
+        <div>
+          <p className="font-medium mb-2">Exclusivity</p>
+          <Input placeholder="e.g. 3 months" value={formData.exclusivity} onChange={(e) => setFormData({ ...formData, exclusivity: e.target.value })} />
+        </div>
+      </div>
+
+      <Button type="button" variant="ghost" onClick={() => setShowAdvanced(!showAdvanced)}>
+        {showAdvanced ? <ChevronUp className="mr-2" /> : <ChevronDown className="mr-2" />} Additional Details
+      </Button>
+
+      {showAdvanced && (
+        <Textarea placeholder="Add posting times, hashtag guidelines, tone of voice..." value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
       )}
-    </div>
+
+      <div className="flex items-center gap-2">
+        <input type="checkbox" checked={formData.save_as_template} onChange={(e) => setFormData({ ...formData, save_as_template: e.target.checked })} />
+        <span>Save as Template</span>
+      </div>
+
+      <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-lg">
+        🚀 Launch Campaign
+      </Button>
+    </form>
   );
 };
 
-export default ProjectWizard;
+export default CreateProjectForm;
