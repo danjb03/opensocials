@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Filter } from 'lucide-react';
+import { Filter, Globe } from 'lucide-react';
 import { SkillsFilter } from '@/components/brand/filters';
 
 type CreatorFiltersProps = {
@@ -16,6 +16,8 @@ type CreatorFiltersProps = {
   onAudienceChange: (value: string) => void;
   filterContentType: string;
   onContentTypeChange: (value: string) => void;
+  filterLocation?: string;
+  onLocationChange?: (value: string) => void;
   filterSkills: string[];
   onSkillsChange: (skills: string[]) => void;
   isFilterSheetOpen: boolean;
@@ -33,6 +35,8 @@ export const CreatorFilters = ({
   onAudienceChange,
   filterContentType,
   onContentTypeChange,
+  filterLocation = 'all',
+  onLocationChange = () => {},
   filterSkills,
   onSkillsChange,
   isFilterSheetOpen,
@@ -112,6 +116,24 @@ export const CreatorFilters = ({
                     <SelectItem value="photo">Photo</SelectItem>
                     <SelectItem value="review">Review</SelectItem>
                     <SelectItem value="blog">Blog</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Select value={filterLocation} onValueChange={onLocationChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Audience Location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Locations</SelectItem>
+                    <SelectItem value="us">United States</SelectItem>
+                    <SelectItem value="uk">United Kingdom</SelectItem>
+                    <SelectItem value="eu">Europe</SelectItem>
+                    <SelectItem value="asia">Asia</SelectItem>
+                    <SelectItem value="latin-america">Latin America</SelectItem>
+                    <SelectItem value="middle-east">Middle East</SelectItem>
+                    <SelectItem value="africa">Africa</SelectItem>
+                    <SelectItem value="oceania">Australia & Oceania</SelectItem>
+                    <SelectItem value="global">Global Audience</SelectItem>
                   </SelectContent>
                 </Select>
                 

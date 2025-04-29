@@ -28,4 +28,13 @@ export type Creator = {
     avgLikes: string;
     growthTrend?: string;
   };
+  // New audience location information
+  audienceLocation?: {
+    primary: string;
+    secondary?: string[];
+    countries?: {
+      name: string;
+      percentage: number;
+    }[];
+  };
 };

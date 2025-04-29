@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -22,6 +23,7 @@ const CreatorSearch = () => {
   const [filterPlatform, setFilterPlatform] = useState(searchParams.get('platform') || 'all');
   const [filterAudience, setFilterAudience] = useState(searchParams.get('audience') || 'all');
   const [filterContentType, setFilterContentType] = useState(searchParams.get('contentType') || 'all');
+  const [filterLocation, setFilterLocation] = useState(searchParams.get('location') || 'all');
   const [filterSkills, setFilterSkills] = useState<string[]>([]);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   
@@ -46,12 +48,23 @@ const CreatorSearch = () => {
     // Content type filter
     const matchesContentType = filterContentType === 'all' || creator.contentType === filterContentType;
     
+    // Location filter - new
+    const matchesLocation = filterLocation === 'all' || 
+      (creator.audienceLocation && 
+        (creator.audienceLocation.primary.toLowerCase().includes(filterLocation.toLowerCase()) ||
+         (creator.audienceLocation.secondary && 
+          creator.audienceLocation.secondary.some(loc => 
+            loc.toLowerCase().includes(filterLocation.toLowerCase())
+          ))
+        )
+      );
+    
     // Skills filter
     const matchesSkills = filterSkills.length === 0 || creator.skills.some(skill => 
       filterSkills.includes(skill)
     );
     
-    return matchesSearch && matchesPlatform && matchesAudience && matchesContentType && matchesSkills;
+    return matchesSearch && matchesPlatform && matchesAudience && matchesContentType && matchesLocation && matchesSkills;
   });
 
   useEffect(() => {
@@ -59,9 +72,10 @@ const CreatorSearch = () => {
     if (filterPlatform && filterPlatform !== 'all') params.set('platform', filterPlatform);
     if (filterAudience && filterAudience !== 'all') params.set('audience', filterAudience);
     if (filterContentType && filterContentType !== 'all') params.set('contentType', filterContentType);
+    if (filterLocation && filterLocation !== 'all') params.set('location', filterLocation);
     if (filterSkills.length > 0) params.set('skills', filterSkills.join(','));
     setSearchParams(params);
-  }, [filterPlatform, filterAudience, filterContentType, filterSkills, setSearchParams]);
+  }, [filterPlatform, filterAudience, filterContentType, filterLocation, filterSkills, setSearchParams]);
 
   const handleToggleCreator = (creatorId: number) => {
     setSelectedCreators(prev => 
@@ -95,6 +109,17 @@ const CreatorSearch = () => {
             engagementRate: creator.engagement,
             avgViews: `${Math.floor(parseInt(creator.followers.replace(/[^0-9]/g, '')) * 0.3).toLocaleString()} views`,
             avgLikes: `${Math.floor(parseInt(creator.followers.replace(/[^0-9]/g, '')) * 0.08).toLocaleString()} likes`,
+          },
+          audienceLocation: {
+            primary: creator.id % 3 === 0 ? 'United States' : creator.id % 3 === 1 ? 'United Kingdom' : 'Global',
+            secondary: creator.id % 2 === 0 ? ['Canada', 'Australia', 'Germany'] : ['Mexico', 'Brazil', 'India'],
+            countries: [
+              { name: 'United States', percentage: creator.id % 3 === 0 ? 65 : 30 },
+              { name: 'United Kingdom', percentage: creator.id % 3 === 1 ? 58 : 15 },
+              { name: 'Canada', percentage: 10 },
+              { name: 'Australia', percentage: 8 },
+              { name: 'Others', percentage: creator.id % 3 === 2 ? 40 : 7 }
+            ]
           }
         };
         setSelectedCreator(enhancedCreator);
@@ -133,6 +158,7 @@ const CreatorSearch = () => {
     setFilterPlatform('all');
     setFilterAudience('all');
     setFilterContentType('all');
+    setFilterLocation('all');
     setFilterSkills([]);
     setSearchTerm('');
   };
@@ -142,6 +168,7 @@ const CreatorSearch = () => {
     if (filterPlatform !== 'all') count++;
     if (filterAudience !== 'all') count++;
     if (filterContentType !== 'all') count++;
+    if (filterLocation !== 'all') count++;
     if (filterSkills.length > 0) count++;
     return count;
   };
@@ -169,6 +196,8 @@ const CreatorSearch = () => {
               onAudienceChange={setFilterAudience}
               filterContentType={filterContentType}
               onContentTypeChange={setFilterContentType}
+              filterLocation={filterLocation}
+              onLocationChange={setFilterLocation}
               filterSkills={filterSkills}
               onSkillsChange={setFilterSkills}
               isFilterSheetOpen={isFilterSheetOpen}

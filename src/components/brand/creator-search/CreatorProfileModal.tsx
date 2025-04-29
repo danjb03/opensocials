@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Creator } from '@/types/creator';
-import { Instagram, Youtube, Twitter, Facebook, ExternalLink, BookmarkPlus, MessageSquare, BarChart2 } from 'lucide-react';
+import { Instagram, Youtube, Twitter, Facebook, ExternalLink, BookmarkPlus, MessageSquare, BarChart2, Globe } from 'lucide-react';
 
 type CreatorProfileModalProps = {
   creator: Creator | null;
@@ -57,6 +56,51 @@ export const CreatorProfileModal = ({ creator, isOpen, onClose, isLoading = fals
             </a>
           );
         })}
+      </div>
+    );
+  };
+
+  const renderAudienceLocation = () => {
+    if (!creator?.audienceLocation) return null;
+    
+    return (
+      <div className="space-y-3">
+        <h3 className="font-medium text-lg flex items-center gap-2">
+          <Globe className="h-5 w-5" />
+          Audience Location
+        </h3>
+        <div className="bg-muted/30 p-4 rounded-lg">
+          <div className="mb-3">
+            <h4 className="text-sm text-muted-foreground">Primary Location</h4>
+            <p className="font-semibold">{creator.audienceLocation.primary}</p>
+          </div>
+          
+          {creator.audienceLocation.secondary && creator.audienceLocation.secondary.length > 0 && (
+            <div className="mb-3">
+              <h4 className="text-sm text-muted-foreground">Secondary Locations</h4>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {creator.audienceLocation.secondary.map(location => (
+                  <Badge key={location} variant="outline">{location}</Badge>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {creator.audienceLocation.countries && creator.audienceLocation.countries.length > 0 && (
+            <div>
+              <h4 className="text-sm text-muted-foreground mb-2">Audience Breakdown</h4>
+              {creator.audienceLocation.countries.map(country => (
+                <div key={country.name} className="mb-2">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>{country.name}</span>
+                    <span className="font-medium">{country.percentage}%</span>
+                  </div>
+                  <Progress value={country.percentage} className="h-2" />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     );
   };
@@ -128,6 +172,12 @@ export const CreatorProfileModal = ({ creator, isOpen, onClose, isLoading = fals
               <Badge variant="outline" className="text-sm py-1">
                 {creator.contentType}
               </Badge>
+              {creator.audienceLocation && (
+                <Badge variant="secondary" className="text-sm py-1 flex items-center gap-1">
+                  <Globe className="h-3 w-3" />
+                  {creator.audienceLocation.primary}
+                </Badge>
+              )}
             </div>
           </div>
           
@@ -145,6 +195,10 @@ export const CreatorProfileModal = ({ creator, isOpen, onClose, isLoading = fals
                   {creator.about || "No information provided."}
                 </p>
               </div>
+              
+              <Separator className="my-4" />
+              
+              {renderAudienceLocation()}
               
               <Separator className="my-4" />
               
