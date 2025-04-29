@@ -1,64 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useIsMobile } from '@/hooks/use-mobile';
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-
-type Project = {
-  id: string;
-  name: string;
-  campaign_type: string;
-  start_date: string;
-  end_date: string;
-  budget: number;
-  currency: string;
-  platforms: string[];
-  status: string;
-  is_priority: boolean;
-};
-
-type ProjectStatus = 'new' | 'under_review' | 'awaiting_approval' | 'creators_assigned' | 'in_progress' | 'completed';
-
-const statusOptions: { value: ProjectStatus; label: string }[] = [
-  { value: 'new', label: 'New' },
-  { value: 'under_review', label: 'Under Review' },
-  { value: 'awaiting_approval', label: 'Awaiting Approval' },
-  { value: 'creators_assigned', label: 'Creators Assigned' },
-  { value: 'in_progress', label: 'In Progress' },
-  { value: 'completed', label: 'Completed' }
-];
-
-const statusColors: Record<ProjectStatus, string> = {
-  new: 'bg-blue-100 text-blue-800',
-  under_review: 'bg-purple-100 text-purple-800',
-  awaiting_approval: 'bg-yellow-100 text-yellow-800',
-  creators_assigned: 'bg-green-100 text-green-800',
-  in_progress: 'bg-cyan-100 text-cyan-800',
-  completed: 'bg-gray-100 text-gray-800'
-};
-
-const formatCurrency = (amount: number, currency: string = 'USD') => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
-
-const campaignTypeOptions = [
-  'Single',
-  'Weekly',
-  'Monthly',
-  '12-Month Retainer',
-  'Evergreen'
-];
+import { CampaignTypeFilter } from '@/components/admin/CampaignTypeFilter';
+import { ProjectList } from '@/components/admin/ProjectList';
+import { Project, ProjectStatus } from '@/types/projects';
 
 const ProjectManagement = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -156,184 +103,24 @@ const ProjectManagement = () => {
     setSelectedCampaignTypes(value);
   };
 
-  if (loading) {
-    return (
-      <div className="container mx-auto py-8">
-        <h1 className="text-3xl font-bold mb-8">Admin Projects Dashboard</h1>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg text-gray-500">Loading projects...</div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-4">Admin Projects Dashboard</h1>
       
-      <div className="mb-6">
-        <h2 className="text-lg font-medium mb-2">Filter by Campaign Type:</h2>
-        <ToggleGroup 
-          type="multiple"
-          className="flex flex-wrap gap-2"
-          value={selectedCampaignTypes}
-          onValueChange={handleCampaignTypeFilterChange}
-        >
-          {campaignTypeOptions.map((type) => (
-            <ToggleGroupItem 
-              key={type} 
-              value={type}
-              variant="outline"
-              className="px-4 py-2 text-sm bg-white data-[state=on]:bg-black data-[state=on]:text-white"
-            >
-              {type}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </div>
+      <CampaignTypeFilter 
+        selectedCampaignTypes={selectedCampaignTypes}
+        onFilterChange={handleCampaignTypeFilterChange}
+      />
       
-      {projects.length === 0 ? (
-        <Card className="w-full h-64 flex items-center justify-center">
-          <CardContent className="text-center p-6">
-            <h3 className="text-xl font-medium mb-2">No Projects Found</h3>
-            <p className="text-muted-foreground mb-4">
-              {selectedCampaignTypes.length > 0 
-                ? `No projects match the selected campaign type filters.` 
-                : `There are no projects in the system yet. Once brands create projects, they will appear here.`}
-            </p>
-            <Button variant="outline" onClick={fetchProjects}>
-              Refresh
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        isMobile ? (
-          <div className="grid grid-cols-1 gap-6">
-            {projects.map(project => (
-              <Card key={project.id} className="w-full">
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-xl">{project.name}</CardTitle>
-                    {project.is_priority && (
-                      <Badge variant="destructive" className="ml-2">
-                        Priority
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="text-sm text-muted-foreground">{project.campaign_type}</div>
-                </CardHeader>
-                <CardContent className="pb-2">
-                  <div className="grid gap-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium">Budget</span>
-                      <span>{formatCurrency(project.budget, project.currency)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium">Dates</span>
-                      <span>{new Date(project.start_date).toLocaleDateString()} - {new Date(project.end_date).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium">Platforms</span>
-                      <span>{project.platforms?.join(', ') || 'None'}</span>
-                    </div>
-                    <div className="flex justify-between items-center mt-2">
-                      <span className="text-sm font-medium">Status</span>
-                      <Select
-                        defaultValue={project.status || 'new'}
-                        onValueChange={(value) => handleStatusChange(project.id, value as ProjectStatus)}
-                      >
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {statusOptions.map(option => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    variant="secondary" 
-                    className="w-full"
-                    onClick={() => handleSuggestCreators(project.id)}
-                  >
-                    Suggest Creators
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Project Name</TableHead>
-                  <TableHead>Campaign Type</TableHead>
-                  <TableHead>Date Range</TableHead>
-                  <TableHead>Budget</TableHead>
-                  <TableHead>Platforms</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {projects.map(project => (
-                  <TableRow key={project.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        {project.name}
-                        {project.is_priority && (
-                          <Badge variant="destructive" className="ml-2">
-                            Priority
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{project.campaign_type}</TableCell>
-                    <TableCell>
-                      {new Date(project.start_date).toLocaleDateString()} - {new Date(project.end_date).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>{formatCurrency(project.budget, project.currency)}</TableCell>
-                    <TableCell>{project.platforms?.join(', ') || 'None'}</TableCell>
-                    <TableCell>
-                      <Select
-                        defaultValue={project.status || 'new'}
-                        onValueChange={(value) => handleStatusChange(project.id, value as ProjectStatus)}
-                      >
-                        <SelectTrigger className="w-[160px]">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {statusOptions.map(option => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button 
-                        variant="secondary" 
-                        size="sm"
-                        onClick={() => handleSuggestCreators(project.id)}
-                      >
-                        Suggest Creators
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )
-      )}
+      <ProjectList 
+        projects={projects}
+        isMobile={isMobile}
+        loading={loading}
+        onStatusChange={handleStatusChange}
+        onSuggestCreators={handleSuggestCreators}
+        onRefresh={fetchProjects}
+        selectedCampaignTypes={selectedCampaignTypes}
+      />
     </div>
   );
 };
