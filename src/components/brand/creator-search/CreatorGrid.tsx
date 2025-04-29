@@ -1,28 +1,16 @@
 
 import React from 'react';
 import { CreatorCard } from './CreatorCard';
-
-type Creator = {
-  id: number;
-  name: string;
-  platform: string;
-  audience: string;
-  contentType: string;
-  followers: string;
-  engagement: string;
-  priceRange: string;
-  skills: string[];
-  imageUrl: string;
-  matchScore?: number;
-};
+import { Creator } from '@/types/creator';
 
 type CreatorGridProps = {
   creators: Creator[];
   selectedCreators: number[];
   onToggleCreator: (creatorId: number) => void;
+  onViewProfile: (creatorId: number) => void;
 };
 
-export const CreatorGrid = ({ creators, selectedCreators, onToggleCreator }: CreatorGridProps) => {
+export const CreatorGrid = ({ creators, selectedCreators, onToggleCreator, onViewProfile }: CreatorGridProps) => {
   if (creators.length === 0) {
     return (
       <div className="text-center py-12">
@@ -39,6 +27,7 @@ export const CreatorGrid = ({ creators, selectedCreators, onToggleCreator }: Cre
           creator={creator}
           isSelected={selectedCreators.includes(creator.id)}
           onToggleSelect={onToggleCreator}
+          onViewProfile={onViewProfile}
         />
       ))}
     </div>

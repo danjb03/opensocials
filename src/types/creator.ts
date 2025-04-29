@@ -11,4 +11,21 @@ export type Creator = {
   skills: string[];
   imageUrl: string;
   matchScore?: number;
+  // New fields for enhanced creator profile
+  about?: string;
+  bannerImageUrl?: string;
+  socialLinks?: {
+    tiktok?: string;
+    instagram?: string;
+    youtube?: string;
+    twitter?: string;
+    facebook?: string;
+  };
+  metrics?: {
+    followerCount: string;
+    engagementRate: string;
+    avgViews: string;
+    avgLikes: string;
+    growthTrend?: string;
+  };
 };
