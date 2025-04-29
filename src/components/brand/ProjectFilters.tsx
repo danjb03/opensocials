@@ -33,8 +33,9 @@ export type ProjectFilters = {
 
 const platformOptions = ['TikTok', 'Instagram', 'YouTube', 'Twitter', 'Facebook'];
 
+// Fixed monthOptions to include proper value for "All Months"
 const monthOptions = [
-  { value: '', label: 'All Months' },
+  { value: 'all', label: 'All Months' },
   { value: '01', label: 'January' },
   { value: '02', label: 'February' },
   { value: '03', label: 'March' },
@@ -66,7 +67,8 @@ type ProjectFiltersProps = {
 export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [localFilters, setLocalFilters] = useState<ProjectFilters>(filters);
-  const [month, setMonth] = useState('');
+  // Default to 'all' instead of empty string
+  const [month, setMonth] = useState('all');
   const [year, setYear] = useState(new Date().getFullYear().toString());
   
   // Set month/year from startMonth when dialog opens
@@ -76,7 +78,8 @@ export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps
       setYear(yearPart);
       setMonth(monthPart);
     } else {
-      setMonth('');
+      // Use 'all' instead of empty string
+      setMonth('all');
       setYear(new Date().getFullYear().toString());
     }
     
@@ -93,7 +96,8 @@ export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps
   };
 
   const handleApplyFilters = () => {
-    const startMonth = month ? `${year}-${month}` : null;
+    // Only set startMonth if a specific month is selected (not "All Months")
+    const startMonth = month !== 'all' ? `${year}-${month}` : null;
     onFiltersChange({ ...localFilters, startMonth });
     setIsOpen(false);
   };
