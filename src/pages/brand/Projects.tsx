@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,69 +8,114 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Calendar, DollarSign } from 'lucide-react';
 import CreateProjectForm from '@/components/brand/CreateProjectForm';
 import { useToast } from '@/hooks/use-toast';
-import { CampaignTypeFilter } from '@/components/admin/CampaignTypeFilter';
 import { formatCurrency } from '@/utils/project';
-import { campaignTypeOptions } from '@/types/projects';
+import { ProjectFilters } from '@/components/brand/ProjectFilters';
+import { useAuth } from '@/lib/auth';
 
-// Demo data - in a real app this would come from your database
-const mockProjects = [
-  {
-    id: 1,
-    name: "Summer Campaign",
-    executionDate: new Date('2025-06-01'),
-    budget: 5000,
-    currency: "USD",
-    description: "A summer themed campaign targeting Gen Z audience.",
-    campaign_type: "Single"
-  },
-  {
-    id: 2,
-    name: "Holiday Special",
-    executionDate: new Date('2025-12-10'),
-    budget: 7500,
-    currency: "EUR",
-    description: "End of year holiday promotion across all platforms.",
-    campaign_type: "Monthly"
-  }
-];
+type Project = {
+  id: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  budget: number;
+  currency: string;
+  description: string;
+  campaign_type: string;
+  platforms: string[];
+};
 
 const Projects = () => {
+  const { user } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [projects, setProjects] = useState(mockProjects);
-  const [selectedCampaignTypes, setSelectedCampaignTypes] = useState<string[]>([]);
-  const [filteredProjects, setFilteredProjects] = useState(mockProjects);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  
+  // Define filters state
+  const [filters, setFilters] = useState({
+    campaignTypes: [] as string[],
+    platforms: [] as string[],
+    campaignName: '',
+    startMonth: null as string | null
+  });
 
-  const calculateDaysRemaining = (date: Date): number => {
+  // Calculate days remaining from today until a given date
+  const calculateDaysRemaining = (dateStr: string): number => {
+    const date = new Date(dateStr);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const timeDiff = date.getTime() - today.getTime();
     return Math.ceil(timeDiff / (1000 * 3600 * 24));
   };
   
-  // Apply filters whenever the selectedCampaignTypes or projects change
-  useEffect(() => {
-    if (selectedCampaignTypes.length === 0) {
-      setFilteredProjects(projects);
-    } else {
-      setFilteredProjects(
-        projects.filter((project) => 
-          selectedCampaignTypes.includes(project.campaign_type)
-        )
-      );
+  // Fetch projects with filters
+  const fetchProjects = async () => {
+    if (!user) return;
+    
+    setIsLoading(true);
+    
+    try {
+      let query = supabase
+        .from('projects')
+        .select('*')
+        .eq('brand_id', user.id);
+      
+      // Apply campaign type filter
+      if (filters.campaignTypes.length > 0) {
+        query = query.in('campaign_type', filters.campaignTypes);
+      }
+      
+      // Apply platforms filter
+      if (filters.platforms.length > 0) {
+        // For each platform in the filter, check if it exists in the platforms array
+        filters.platforms.forEach(platform => {
+          query = query.contains('platforms', [platform]);
+        });
+      }
+      
+      // Apply campaign name filter
+      if (filters.campaignName) {
+        query = query.ilike('name', `%${filters.campaignName}%`);
+      }
+      
+      // Apply start month filter
+      if (filters.startMonth) {
+        const [year, month] = filters.startMonth.split('-');
+        // Match start_date where year and month match
+        query = query.gte('start_date', `${year}-${month}-01`)
+                    .lt('start_date', month === '12' 
+                      ? `${parseInt(year) + 1}-01-01` 
+                      : `${year}-${String(parseInt(month) + 1).padStart(2, '0')}-01`);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        throw error;
+      }
+      
+      setProjects(data as Project[]);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load projects. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-  }, [selectedCampaignTypes, projects]);
+  };
+
+  // Fetch projects when filters change or on component mount
+  useEffect(() => {
+    fetchProjects();
+  }, [filters, user]);
   
+  // Handle project creation
   const handleProjectCreated = (newProject: any) => {
     // Add the new project to the state with a generated ID
-    const projectWithId = {
-      ...newProject,
-      id: projects.length > 0 ? Math.max(...projects.map(p => (typeof p.id === 'number' ? p.id : 0))) + 1 : 1,
-      executionDate: newProject.start_date ? new Date(newProject.start_date) : new Date(),
-      campaign_type: newProject.campaign_type || "Single"
-    };  
-    
-    setProjects([...projects, projectWithId]);
+    fetchProjects(); // Refresh projects from the database
     setIsDialogOpen(false);
     
     toast({
@@ -78,12 +124,10 @@ const Projects = () => {
     });
   };
 
-  const handleCampaignTypeFilterChange = (value: string[]) => {
-    setSelectedCampaignTypes(value);
+  // Handle filter changes
+  const handleFiltersChange = (newFilters: any) => {
+    setFilters(newFilters);
   };
-
-  // For demo purposes, we'll use a mock user ID
-  const mockUserId = "user123";
 
   return (
     <BrandLayout>
@@ -95,6 +139,13 @@ const Projects = () => {
           </div>
           
           <div className="flex items-center mt-4 md:mt-0 space-x-2">
+            {/* Project Filters */}
+            <ProjectFilters 
+              filters={filters} 
+              onFiltersChange={handleFiltersChange} 
+            />
+            
+            {/* Create New Project Dialog */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
@@ -106,42 +157,34 @@ const Projects = () => {
                 <DialogHeader>
                   <DialogTitle>Create New Project</DialogTitle>
                 </DialogHeader>
-                <CreateProjectForm onSuccess={handleProjectCreated} userId={mockUserId} />
+                <CreateProjectForm onSuccess={handleProjectCreated} userId={user?.id} />
               </DialogContent>
             </Dialog>
           </div>
         </div>
         
-        {/* Add Campaign Type Filter */}
-        <div className="mb-6">
-          <CampaignTypeFilter 
-            selectedCampaignTypes={selectedCampaignTypes} 
-            onFilterChange={handleCampaignTypeFilterChange}
-          />
-        </div>
-        
-        {filteredProjects.length === 0 ? (
+        {/* Loading State */}
+        {isLoading && (
           <div className="text-center py-12">
-            {selectedCampaignTypes.length > 0 ? (
-              <div>
-                <p className="text-gray-500">No projects match the selected filter.</p>
-                <Button className="mt-4" variant="outline" onClick={() => setSelectedCampaignTypes([])}>
-                  Clear Filters
-                </Button>
-              </div>
-            ) : (
-              <div>
-                <p className="text-gray-500">No projects found. Create your first project!</p>
-                <Button className="mt-4" onClick={() => setIsDialogOpen(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  New Project
-                </Button>
-              </div>
-            )}
+            <p className="text-gray-500">Loading projects...</p>
           </div>
-        ) : (
+        )}
+        
+        {/* Empty State */}
+        {!isLoading && projects.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No projects found. Create your first project!</p>
+            <Button className="mt-4" onClick={() => setIsDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              New Project
+            </Button>
+          </div>
+        )}
+        
+        {/* Projects Grid */}
+        {!isLoading && projects.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.map((project) => (
+            {projects.map((project) => (
               <Card key={project.id} className="overflow-hidden">
                 <CardHeader>
                   <CardTitle>{project.name}</CardTitle>
@@ -151,10 +194,10 @@ const Projects = () => {
                     <Calendar className="h-5 w-5 text-gray-500 mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="font-medium">
-                        {project.executionDate.toLocaleDateString()}
+                        {new Date(project.start_date).toLocaleDateString()}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {calculateDaysRemaining(project.executionDate)} days remaining
+                        {calculateDaysRemaining(project.start_date)} days remaining
                       </p>
                     </div>
                   </div>
@@ -165,6 +208,17 @@ const Projects = () => {
                       {formatCurrency(project.budget, project.currency)}
                     </p>
                   </div>
+                  
+                  {/* Display platforms */}
+                  {project.platforms && project.platforms.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {project.platforms.map((platform) => (
+                        <span key={platform} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                          {platform}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   
                   <p className="text-sm text-gray-600 pt-2">{project.description}</p>
                 </CardContent>
