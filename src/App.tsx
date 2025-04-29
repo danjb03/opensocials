@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./components/AuthProvider";
+import { useState } from "react";
 import Index from "./pages/Index";
 import AuthPage from "./pages/auth";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -46,128 +47,131 @@ const ProtectedRoute = ({ children, requiredRole }: {
   return <>{children}</>;
 };
 
-const queryClient = new QueryClient();
+const App = () => {
+  // Create a new QueryClient instance within the component
+  const [queryClient] = useState(() => new QueryClient());
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/auth/reset-password" element={<ForgotPassword />} />
-            
-            {/* Creator Dashboard Routes */}
-            <Route 
-              path="/creator" 
-              element={
-                <ProtectedRoute requiredRole="creator">
-                  <CreatorDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/creator/deals" 
-              element={
-                <ProtectedRoute requiredRole="creator">
-                  <CreatorDeals />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Admin Routes */}
-            <Route 
-              path="/admin" 
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<AdminDashboard />} />
-              <Route path="users" element={<UserManagement />} />
-              <Route path="creators" element={<CreatorManagement />} />
-              <Route path="orders" element={<OrderManagement />} />
-              <Route path="projects" element={<ProjectManagement />} />
-            </Route>
-            
-            {/* Brand Dashboard Routes */}
-            <Route 
-              path="/brand" 
-              element={
-                <ProtectedRoute requiredRole="brand">
-                  <BrandDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/brand/projects" 
-              element={
-                <ProtectedRoute requiredRole="brand">
-                  <Projects />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/brand/creators" 
-              element={
-                <ProtectedRoute requiredRole="brand">
-                  <CreatorSearch />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/brand/orders" 
-              element={
-                <ProtectedRoute requiredRole="brand">
-                  <BrandOrders />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Super Admin Routes */}
-            <Route 
-              path="/super-admin" 
-              element={
-                <ProtectedRoute requiredRole="super_admin">
-                  <SuperAdminDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/super-admin/brands" 
-              element={
-                <ProtectedRoute requiredRole="super_admin">
-                  <BrandDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/super-admin/creators" 
-              element={
-                <ProtectedRoute requiredRole="super_admin">
-                  <CreatorDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/super-admin/admins" 
-              element={
-                <ProtectedRoute requiredRole="super_admin">
-                  <AdminDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/auth/reset-password" element={<ForgotPassword />} />
+              
+              {/* Creator Dashboard Routes */}
+              <Route 
+                path="/creator" 
+                element={
+                  <ProtectedRoute requiredRole="creator">
+                    <CreatorDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/creator/deals" 
+                element={
+                  <ProtectedRoute requiredRole="creator">
+                    <CreatorDeals />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Admin Routes */}
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<AdminDashboard />} />
+                <Route path="users" element={<UserManagement />} />
+                <Route path="creators" element={<CreatorManagement />} />
+                <Route path="orders" element={<OrderManagement />} />
+                <Route path="projects" element={<ProjectManagement />} />
+              </Route>
+              
+              {/* Brand Dashboard Routes */}
+              <Route 
+                path="/brand" 
+                element={
+                  <ProtectedRoute requiredRole="brand">
+                    <BrandDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/brand/projects" 
+                element={
+                  <ProtectedRoute requiredRole="brand">
+                    <Projects />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/brand/creators" 
+                element={
+                  <ProtectedRoute requiredRole="brand">
+                    <CreatorSearch />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/brand/orders" 
+                element={
+                  <ProtectedRoute requiredRole="brand">
+                    <BrandOrders />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Super Admin Routes */}
+              <Route 
+                path="/super-admin" 
+                element={
+                  <ProtectedRoute requiredRole="super_admin">
+                    <SuperAdminDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/super-admin/brands" 
+                element={
+                  <ProtectedRoute requiredRole="super_admin">
+                    <BrandDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/super-admin/creators" 
+                element={
+                  <ProtectedRoute requiredRole="super_admin">
+                    <CreatorDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/super-admin/admins" 
+                element={
+                  <ProtectedRoute requiredRole="super_admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
