@@ -1,9 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import BrandLayout from '@/components/layouts/BrandLayout';
-import { useCreatorMatching } from '@/hooks/useCreatorMatching';
 import { mockCreatorsBase } from '@/data/mockCreators';
 import { Creator } from '@/types/creator';
 
@@ -23,20 +23,30 @@ const CreatorSearch = () => {
   const [filterAudience, setFilterAudience] = useState(searchParams.get('audience') || 'all');
   const [filterContentType, setFilterContentType] = useState(searchParams.get('contentType') || 'all');
   const [filterSkills, setFilterSkills] = useState<string[]>([]);
-  const [minimumRelevance, setMinimumRelevance] = useState(60);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const { toast } = useToast();
 
-  // Define the requirements object based on filters
-  const projectRequirements = {
-    platforms: filterPlatform !== 'all' ? [filterPlatform] : undefined,
-    audience: filterAudience !== 'all' ? filterAudience : undefined,
-    contentTypes: filterContentType !== 'all' ? [filterContentType] : undefined,
-    skills: filterSkills.length > 0 ? filterSkills : undefined,
-  };
-
-  // Use our hook to calculate match scores (currently returning mock scores)
-  const creatorsWithScores = useCreatorMatching(mockCreatorsBase, projectRequirements);
+  // Apply any filtering directly to the mock creators
+  const filteredCreators: Creator[] = mockCreatorsBase.filter(creator => {
+    // Text search filter
+    const matchesSearch = creator.name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Platform filter
+    const matchesPlatform = filterPlatform === 'all' || creator.platform === filterPlatform;
+    
+    // Audience filter
+    const matchesAudience = filterAudience === 'all' || creator.audience === filterAudience;
+    
+    // Content type filter
+    const matchesContentType = filterContentType === 'all' || creator.contentType === filterContentType;
+    
+    // Skills filter
+    const matchesSkills = filterSkills.length === 0 || creator.skills.some(skill => 
+      filterSkills.includes(skill)
+    );
+    
+    return matchesSearch && matchesPlatform && matchesAudience && matchesContentType && matchesSkills;
+  });
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -79,7 +89,6 @@ const CreatorSearch = () => {
     setFilterAudience('all');
     setFilterContentType('all');
     setFilterSkills([]);
-    setMinimumRelevance(60);
     setSearchTerm('');
   };
 
@@ -91,11 +100,6 @@ const CreatorSearch = () => {
     if (filterSkills.length > 0) count++;
     return count;
   };
-
-  const filteredCreators = creatorsWithScores.filter(creator => {
-    return creator.name.toLowerCase().includes(searchTerm.toLowerCase());
-    // Removed relevance filtering
-  });
 
   return (
     <BrandLayout>
@@ -122,8 +126,6 @@ const CreatorSearch = () => {
               onContentTypeChange={setFilterContentType}
               filterSkills={filterSkills}
               onSkillsChange={setFilterSkills}
-              minimumRelevance={minimumRelevance}
-              onRelevanceChange={setMinimumRelevance}
               isFilterSheetOpen={isFilterSheetOpen}
               setIsFilterSheetOpen={setIsFilterSheetOpen}
               resetFilters={resetFilters}

@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Filter } from 'lucide-react';
-import { SkillsFilter, RelevanceFilter } from '@/components/brand/filters';
+import { SkillsFilter } from '@/components/brand/filters';
 
 type CreatorFiltersProps = {
   searchTerm: string;
@@ -18,8 +18,6 @@ type CreatorFiltersProps = {
   onContentTypeChange: (value: string) => void;
   filterSkills: string[];
   onSkillsChange: (skills: string[]) => void;
-  minimumRelevance: number;
-  onRelevanceChange: (value: number) => void;
   isFilterSheetOpen: boolean;
   setIsFilterSheetOpen: (isOpen: boolean) => void;
   resetFilters: () => void;
@@ -37,8 +35,6 @@ export const CreatorFilters = ({
   onContentTypeChange,
   filterSkills,
   onSkillsChange,
-  minimumRelevance,
-  onRelevanceChange,
   isFilterSheetOpen,
   setIsFilterSheetOpen,
   resetFilters,
@@ -122,11 +118,6 @@ export const CreatorFilters = ({
                 <SkillsFilter 
                   skills={filterSkills}
                   onSkillsChange={onSkillsChange}
-                />
-                
-                <RelevanceFilter
-                  value={minimumRelevance}
-                  onChange={onRelevanceChange}
                 />
                 
                 <div className="flex gap-2 pt-4">

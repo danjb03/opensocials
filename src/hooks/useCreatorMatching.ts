@@ -1,6 +1,5 @@
 
-import { useMemo } from 'react';
-import { calculateMatchScore } from '@/utils/creatorMatching';
+// This file is currently not in use as the creator matching functionality has been temporarily disabled
 import { Creator } from '@/types/creator';
 
 type ProjectRequirements = {
@@ -12,18 +11,12 @@ type ProjectRequirements = {
 
 /**
  * Hook to calculate match scores for creators based on project requirements
- * Note: Currently disabled and returns random scores
+ * NOTE: This hook is currently disabled and not in use
  */
 export function useCreatorMatching(
   creators: Creator[],
   requirements: ProjectRequirements
 ) {
-  const creatorsWithScores = useMemo(() => {
-    return creators.map(creator => ({
-      ...creator,
-      matchScore: calculateMatchScore(creator, requirements)
-    }));
-  }, [creators]);
-
-  return creatorsWithScores;
+  // Placeholder implementation that doesn't do anything
+  return creators;
 }
