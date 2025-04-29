@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 type Project = {
   id: string;
@@ -50,9 +52,18 @@ const formatCurrency = (amount: number, currency: string = 'USD') => {
   }).format(amount);
 };
 
+const campaignTypeOptions = [
+  'Single',
+  'Weekly',
+  'Monthly',
+  '12-Month Retainer',
+  'Evergreen'
+];
+
 const ProjectManagement = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCampaignTypes, setSelectedCampaignTypes] = useState<string[]>([]);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -72,13 +83,30 @@ const ProjectManagement = () => {
     };
   }, []);
 
+  useEffect(() => {
+    // Refetch projects when filters change
+    fetchProjects();
+  }, [selectedCampaignTypes]);
+
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
+      
+      let query = supabase.from('projects').select('*');
+      
+      // Apply campaign type filters if any selected
+      if (selectedCampaignTypes.length > 0) {
+        const filterConditions = selectedCampaignTypes.map(type => 
+          `campaign_type.ilike.%${type}%`
+        );
+        
+        // Combine with OR conditions
+        query = query.or(filterConditions.join(','));
+      }
+      
+      query = query.order('created_at', { ascending: false });
+      
+      const { data, error } = await query;
 
       if (error) {
         throw error;
@@ -124,6 +152,10 @@ const ProjectManagement = () => {
     toast.info('Creator suggestion functionality coming soon!');
   };
 
+  const handleCampaignTypeFilterChange = (value: string[]) => {
+    setSelectedCampaignTypes(value);
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto py-8">
@@ -135,154 +167,172 @@ const ProjectManagement = () => {
     );
   }
 
-  if (projects.length === 0) {
-    return (
-      <div className="container mx-auto py-8">
-        <h1 className="text-3xl font-bold mb-8">Admin Projects Dashboard</h1>
+  return (
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-4">Admin Projects Dashboard</h1>
+      
+      <div className="mb-6">
+        <h2 className="text-lg font-medium mb-2">Filter by Campaign Type:</h2>
+        <ToggleGroup 
+          type="multiple"
+          className="flex flex-wrap gap-2"
+          value={selectedCampaignTypes}
+          onValueChange={handleCampaignTypeFilterChange}
+        >
+          {campaignTypeOptions.map((type) => (
+            <ToggleGroupItem 
+              key={type} 
+              value={type}
+              variant="outline"
+              className="px-4 py-2 text-sm bg-white data-[state=on]:bg-black data-[state=on]:text-white"
+            >
+              {type}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      </div>
+      
+      {projects.length === 0 ? (
         <Card className="w-full h-64 flex items-center justify-center">
           <CardContent className="text-center p-6">
             <h3 className="text-xl font-medium mb-2">No Projects Found</h3>
             <p className="text-muted-foreground mb-4">
-              There are no projects in the system yet. Once brands create projects, they will appear here.
+              {selectedCampaignTypes.length > 0 
+                ? `No projects match the selected campaign type filters.` 
+                : `There are no projects in the system yet. Once brands create projects, they will appear here.`}
             </p>
             <Button variant="outline" onClick={fetchProjects}>
               Refresh
             </Button>
           </CardContent>
         </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-8">Admin Projects Dashboard</h1>
-      
-      {isMobile ? (
-        <div className="grid grid-cols-1 gap-6">
-          {projects.map(project => (
-            <Card key={project.id} className="w-full">
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-xl">{project.name}</CardTitle>
-                  {project.is_priority && (
-                    <Badge variant="destructive" className="ml-2">
-                      Priority
-                    </Badge>
-                  )}
-                </div>
-                <div className="text-sm text-muted-foreground">{project.campaign_type}</div>
-              </CardHeader>
-              <CardContent className="pb-2">
-                <div className="grid gap-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium">Budget</span>
-                    <span>{formatCurrency(project.budget, project.currency)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium">Dates</span>
-                    <span>{new Date(project.start_date).toLocaleDateString()} - {new Date(project.end_date).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium">Platforms</span>
-                    <span>{project.platforms?.join(', ') || 'None'}</span>
-                  </div>
-                  <div className="flex justify-between items-center mt-2">
-                    <span className="text-sm font-medium">Status</span>
-                    <Select
-                      defaultValue={project.status || 'new'}
-                      onValueChange={(value) => handleStatusChange(project.id, value as ProjectStatus)}
-                    >
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {statusOptions.map(option => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button 
-                  variant="secondary" 
-                  className="w-full"
-                  onClick={() => handleSuggestCreators(project.id)}
-                >
-                  Suggest Creators
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
       ) : (
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Project Name</TableHead>
-                <TableHead>Campaign Type</TableHead>
-                <TableHead>Date Range</TableHead>
-                <TableHead>Budget</TableHead>
-                <TableHead>Platforms</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {projects.map(project => (
-                <TableRow key={project.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      {project.name}
-                      {project.is_priority && (
-                        <Badge variant="destructive" className="ml-2">
-                          Priority
-                        </Badge>
-                      )}
+        isMobile ? (
+          <div className="grid grid-cols-1 gap-6">
+            {projects.map(project => (
+              <Card key={project.id} className="w-full">
+                <CardHeader className="pb-2">
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-xl">{project.name}</CardTitle>
+                    {project.is_priority && (
+                      <Badge variant="destructive" className="ml-2">
+                        Priority
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="text-sm text-muted-foreground">{project.campaign_type}</div>
+                </CardHeader>
+                <CardContent className="pb-2">
+                  <div className="grid gap-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">Budget</span>
+                      <span>{formatCurrency(project.budget, project.currency)}</span>
                     </div>
-                  </TableCell>
-                  <TableCell>{project.campaign_type}</TableCell>
-                  <TableCell>
-                    {new Date(project.start_date).toLocaleDateString()} - {new Date(project.end_date).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>{formatCurrency(project.budget, project.currency)}</TableCell>
-                  <TableCell>{project.platforms?.join(', ') || 'None'}</TableCell>
-                  <TableCell>
-                    <Select
-                      defaultValue={project.status || 'new'}
-                      onValueChange={(value) => handleStatusChange(project.id, value as ProjectStatus)}
-                    >
-                      <SelectTrigger className="w-[160px]">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {statusOptions.map(option => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button 
-                      variant="secondary" 
-                      size="sm"
-                      onClick={() => handleSuggestCreators(project.id)}
-                    >
-                      Suggest Creators
-                    </Button>
-                  </TableCell>
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">Dates</span>
+                      <span>{new Date(project.start_date).toLocaleDateString()} - {new Date(project.end_date).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">Platforms</span>
+                      <span>{project.platforms?.join(', ') || 'None'}</span>
+                    </div>
+                    <div className="flex justify-between items-center mt-2">
+                      <span className="text-sm font-medium">Status</span>
+                      <Select
+                        defaultValue={project.status || 'new'}
+                        onValueChange={(value) => handleStatusChange(project.id, value as ProjectStatus)}
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {statusOptions.map(option => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button 
+                    variant="secondary" 
+                    className="w-full"
+                    onClick={() => handleSuggestCreators(project.id)}
+                  >
+                    Suggest Creators
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Project Name</TableHead>
+                  <TableHead>Campaign Type</TableHead>
+                  <TableHead>Date Range</TableHead>
+                  <TableHead>Budget</TableHead>
+                  <TableHead>Platforms</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {projects.map(project => (
+                  <TableRow key={project.id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        {project.name}
+                        {project.is_priority && (
+                          <Badge variant="destructive" className="ml-2">
+                            Priority
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>{project.campaign_type}</TableCell>
+                    <TableCell>
+                      {new Date(project.start_date).toLocaleDateString()} - {new Date(project.end_date).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>{formatCurrency(project.budget, project.currency)}</TableCell>
+                    <TableCell>{project.platforms?.join(', ') || 'None'}</TableCell>
+                    <TableCell>
+                      <Select
+                        defaultValue={project.status || 'new'}
+                        onValueChange={(value) => handleStatusChange(project.id, value as ProjectStatus)}
+                      >
+                        <SelectTrigger className="w-[160px]">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {statusOptions.map(option => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button 
+                        variant="secondary" 
+                        size="sm"
+                        onClick={() => handleSuggestCreators(project.id)}
+                      >
+                        Suggest Creators
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )
       )}
     </div>
   );
