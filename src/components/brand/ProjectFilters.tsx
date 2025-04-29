@@ -126,7 +126,7 @@ export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps
       <DialogTrigger asChild>
         <Button variant="outline" className="flex items-center gap-1.5">
           <Filter className="h-4 w-4" />
-          <span>Filter</span>
+          <span className="text-sm">Filter</span>
           {activeFilterCount > 0 && (
             <Badge variant="secondary" className="ml-1 rounded-full px-2 py-0.5 text-xs">
               {activeFilterCount}
@@ -137,13 +137,13 @@ export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps
       
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Filter Projects</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">Filter Projects</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6 py-4">
           {/* Campaign Type Filter */}
           <div className="space-y-2">
-            <h3 className="font-medium">Campaign Duration</h3>
+            <h3 className="text-sm font-medium">Campaign Duration</h3>
             <ToggleGroup 
               type="multiple" 
               className="flex flex-wrap gap-2 justify-start"
@@ -154,7 +154,7 @@ export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps
                 <ToggleGroupItem 
                   key={type} 
                   value={type} 
-                  className="rounded-md text-sm px-3 py-1"
+                  className="rounded-md text-xs px-3 py-1"
                 >
                   {type}
                 </ToggleGroupItem>
@@ -164,7 +164,7 @@ export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps
 
           {/* Platforms Filter */}
           <div className="space-y-3">
-            <h3 className="font-medium">Platforms</h3>
+            <h3 className="text-sm font-medium">Platforms</h3>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
               {platformOptions.map((platform) => (
                 <div key={platform} className="flex items-center space-x-2">
@@ -173,7 +173,7 @@ export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps
                     checked={localFilters.platforms.includes(platform)}
                     onCheckedChange={() => handleTogglePlatform(platform)}
                   />
-                  <Label htmlFor={`platform-${platform}`}>{platform}</Label>
+                  <Label htmlFor={`platform-${platform}`} className="text-sm">{platform}</Label>
                 </div>
               ))}
             </div>
@@ -181,27 +181,28 @@ export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps
 
           {/* Campaign Name Filter */}
           <div className="space-y-2">
-            <Label htmlFor="campaign-name">Campaign Name</Label>
+            <Label htmlFor="campaign-name" className="text-sm">Campaign Name</Label>
             <Input
               id="campaign-name"
               value={localFilters.campaignName}
               onChange={(e) => setLocalFilters(prev => ({ ...prev, campaignName: e.target.value }))}
               placeholder="Search by name..."
+              className="text-sm"
             />
           </div>
 
           {/* Month Started Filter */}
           <div className="space-y-2">
-            <h3 className="font-medium">Month Started</h3>
+            <h3 className="text-sm font-medium">Month Started</h3>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Select value={month} onValueChange={setMonth}>
-                  <SelectTrigger>
+                  <SelectTrigger className="text-sm">
                     <SelectValue placeholder="Month" />
                   </SelectTrigger>
                   <SelectContent>
                     {monthOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
+                      <SelectItem key={option.value} value={option.value} className="text-sm">
                         {option.label}
                       </SelectItem>
                     ))}
@@ -210,12 +211,12 @@ export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps
               </div>
               <div>
                 <Select value={year} onValueChange={setYear}>
-                  <SelectTrigger>
+                  <SelectTrigger className="text-sm">
                     <SelectValue placeholder="Year" />
                   </SelectTrigger>
                   <SelectContent>
                     {yearOptions().map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
+                      <SelectItem key={option.value} value={option.value} className="text-sm">
                         {option.label}
                       </SelectItem>
                     ))}
@@ -227,10 +228,10 @@ export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps
         </div>
 
         <div className="flex justify-between mt-6">
-          <Button variant="outline" onClick={handleClearFilters}>
+          <Button variant="outline" onClick={handleClearFilters} className="text-sm">
             Clear Filters
           </Button>
-          <Button onClick={handleApplyFilters}>
+          <Button onClick={handleApplyFilters} className="text-sm">
             Apply Filters
           </Button>
         </div>
