@@ -87,7 +87,7 @@ export const CreatorListItem = ({ creator, isSelected, onToggleSelect, onViewPro
               variant={isSelected ? "default" : "outline"}
               onClick={() => onToggleSelect(creator.id)}
             >
-              {isSelected ? "Selected" : "Work with"}
+              {isSelected ? "Selected" : "Add to Project"}
             </Button>
           </div>
           <div className="md:hidden flex justify-between items-center mt-3">
@@ -105,7 +105,7 @@ export const CreatorListItem = ({ creator, isSelected, onToggleSelect, onViewPro
               onClick={() => onToggleSelect(creator.id)}
               size="sm"
             >
-              {isSelected ? "Selected" : "Work with"}
+              {isSelected ? "Selected" : "Add to Project"}
             </Button>
           </div>
         </div>

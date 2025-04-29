@@ -6,8 +6,9 @@ import { useToast } from '@/hooks/use-toast';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { mockCreatorsBase } from '@/data/mockCreators';
 import { Creator } from '@/types/creator';
+import { calculateMatchScore } from '@/utils/creatorMatching';
 
-// Import our new components
+// Import our components
 import { CreatorFilters } from '@/components/brand/creator-search/CreatorFilters';
 import { CreatorList } from '@/components/brand/creator-search/CreatorList';
 import { CreatorGrid } from '@/components/brand/creator-search/CreatorGrid';
@@ -27,7 +28,7 @@ const CreatorSearch = () => {
   const [filterSkills, setFilterSkills] = useState<string[]>([]);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   
-  // New state for the profile modal
+  // State for the profile modal
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isLoadingCreator, setIsLoadingCreator] = useState(false);
@@ -48,7 +49,7 @@ const CreatorSearch = () => {
     // Content type filter
     const matchesContentType = filterContentType === 'all' || creator.contentType === filterContentType;
     
-    // Location filter - new
+    // Location filter
     const matchesLocation = filterLocation === 'all' || 
       (creator.audienceLocation && 
         (creator.audienceLocation.primary.toLowerCase().includes(filterLocation.toLowerCase()) ||
@@ -65,6 +66,23 @@ const CreatorSearch = () => {
     );
     
     return matchesSearch && matchesPlatform && matchesAudience && matchesContentType && matchesLocation && matchesSkills;
+  }).map(creator => {
+    // Calculate match score if we have filters applied
+    if (filterPlatform !== 'all' || filterAudience !== 'all' || filterContentType !== 'all' || 
+        filterLocation !== 'all' || filterSkills.length > 0) {
+      const requirements = {
+        platforms: filterPlatform !== 'all' ? [filterPlatform] : undefined,
+        audience: filterAudience !== 'all' ? filterAudience : undefined,
+        contentTypes: filterContentType !== 'all' ? [filterContentType] : undefined,
+        location: filterLocation !== 'all' ? filterLocation : undefined,
+        skills: filterSkills.length > 0 ? filterSkills : undefined
+      };
+      return {
+        ...creator,
+        matchScore: calculateMatchScore(creator, requirements)
+      };
+    }
+    return creator;
   });
 
   useEffect(() => {
@@ -135,18 +153,18 @@ const CreatorSearch = () => {
     }, 300); // Wait for the dialog close animation
   };
 
-  const addAllToCart = () => {
+  const addCreatorsToProject = () => {
     if (selectedCreators.length === 0) {
       toast({
         title: "No creators selected",
-        description: "Please select at least one creator to add to your cart.",
+        description: "Please select at least one creator to add to your project.",
         variant: "destructive"
       });
       return;
     }
 
     toast({
-      title: "Creators added to cart",
+      title: "Creators added to project",
       description: `${selectedCreators.length} creators added to your project.`
     });
 
@@ -210,7 +228,7 @@ const CreatorSearch = () => {
         
         <SelectedCreatorsBar 
           selectedCreators={selectedCreators}
-          onAddToCart={addAllToCart}
+          onAddToCart={addCreatorsToProject}
         />
         
         {viewMode === 'grid' ? (
