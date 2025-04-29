@@ -26,6 +26,11 @@ type ProjectRequirements = {
  * @returns A score between 0 and 100
  */
 export const calculateMatchScore = (creator: Creator, requirements: ProjectRequirements): number => {
+  // Temporarily disabled - return a random score between 70-100
+  return 70 + Math.floor(Math.random() * 30);
+  
+  // Original implementation is commented out
+  /*
   let totalScore = 0;
   let totalWeight = 0;
   
@@ -87,4 +92,5 @@ export const calculateMatchScore = (creator: Creator, requirements: ProjectRequi
   const finalScore = Math.round((totalScore / totalWeight) * 100);
   
   return finalScore;
+  */
 };

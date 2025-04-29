@@ -1,20 +1,7 @@
 
 import { useMemo } from 'react';
 import { calculateMatchScore } from '@/utils/creatorMatching';
-
-type Creator = {
-  id: number;
-  name: string;
-  platform: string;
-  audience: string;
-  contentType: string;
-  followers: string;
-  engagement: string;
-  priceRange: string;
-  skills: string[];
-  imageUrl: string;
-  matchScore?: number;
-};
+import { Creator } from '@/types/creator';
 
 type ProjectRequirements = {
   platforms?: string[];
@@ -25,6 +12,7 @@ type ProjectRequirements = {
 
 /**
  * Hook to calculate match scores for creators based on project requirements
+ * Note: Currently disabled and returns random scores
  */
 export function useCreatorMatching(
   creators: Creator[],
@@ -35,7 +23,7 @@ export function useCreatorMatching(
       ...creator,
       matchScore: calculateMatchScore(creator, requirements)
     }));
-  }, [creators, requirements]);
+  }, [creators]);
 
   return creatorsWithScores;
 }

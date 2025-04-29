@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -36,7 +35,7 @@ const CreatorSearch = () => {
     skills: filterSkills.length > 0 ? filterSkills : undefined,
   };
 
-  // Use our hook to calculate match scores
+  // Use our hook to calculate match scores (currently returning mock scores)
   const creatorsWithScores = useCreatorMatching(mockCreatorsBase, projectRequirements);
 
   useEffect(() => {
@@ -45,9 +44,8 @@ const CreatorSearch = () => {
     if (filterAudience && filterAudience !== 'all') params.set('audience', filterAudience);
     if (filterContentType && filterContentType !== 'all') params.set('contentType', filterContentType);
     if (filterSkills.length > 0) params.set('skills', filterSkills.join(','));
-    if (minimumRelevance !== 60) params.set('relevance', minimumRelevance.toString());
     setSearchParams(params);
-  }, [filterPlatform, filterAudience, filterContentType, filterSkills, minimumRelevance, setSearchParams]);
+  }, [filterPlatform, filterAudience, filterContentType, filterSkills, setSearchParams]);
 
   const handleToggleCreator = (creatorId: number) => {
     setSelectedCreators(prev => 
@@ -91,15 +89,12 @@ const CreatorSearch = () => {
     if (filterAudience !== 'all') count++;
     if (filterContentType !== 'all') count++;
     if (filterSkills.length > 0) count++;
-    if (minimumRelevance !== 60) count++;
     return count;
   };
 
   const filteredCreators = creatorsWithScores.filter(creator => {
-    const matchesSearch = creator.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRelevance = creator.matchScore ? creator.matchScore >= minimumRelevance : false;
-    
-    return matchesSearch && matchesRelevance;
+    return creator.name.toLowerCase().includes(searchTerm.toLowerCase());
+    // Removed relevance filtering
   });
 
   return (
