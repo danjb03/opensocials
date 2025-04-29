@@ -6,3 +6,6 @@ export * from './MonthYearFilter';
 export * from './FilterButton';
 export * from './SkillsFilter';
 export * from './RelevanceFilter';
+
+// Re-export the creator matching utilities
+export { calculateMatchScore } from '@/utils/creatorMatching';
