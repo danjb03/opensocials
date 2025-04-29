@@ -10,17 +10,19 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import { Skeleton } from '@/components/ui/skeleton';
 import { Creator } from '@/types/creator';
 import { Instagram, Youtube, Twitter, Facebook, ExternalLink, BookmarkPlus, MessageSquare, BarChart2, Globe } from 'lucide-react';
-
 type CreatorProfileModalProps = {
   creator: Creator | null;
   isOpen: boolean;
   onClose: () => void;
   isLoading?: boolean;
 };
-
-export const CreatorProfileModal = ({ creator, isOpen, onClose, isLoading = false }: CreatorProfileModalProps) => {
+export const CreatorProfileModal = ({
+  creator,
+  isOpen,
+  onClose,
+  isLoading = false
+}: CreatorProfileModalProps) => {
   if (!creator && !isLoading) return null;
-
   const getSocialIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
       case 'instagram':
@@ -35,36 +37,20 @@ export const CreatorProfileModal = ({ creator, isOpen, onClose, isLoading = fals
         return <ExternalLink className="h-5 w-5" />;
     }
   };
-
   const renderSocialLinks = () => {
     if (!creator?.socialLinks) return null;
-    
-    return (
-      <div className="flex gap-3 mt-4">
+    return <div className="flex gap-3 mt-4">
         {Object.entries(creator.socialLinks).map(([platform, url]) => {
-          if (!url) return null;
-          return (
-            <a 
-              key={platform}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 bg-secondary rounded-full hover:bg-secondary/80 transition-colors"
-              aria-label={`Visit ${creator?.name}'s ${platform}`}
-            >
+        if (!url) return null;
+        return <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="p-2 bg-secondary rounded-full hover:bg-secondary/80 transition-colors" aria-label={`Visit ${creator?.name}'s ${platform}`}>
               {getSocialIcon(platform)}
-            </a>
-          );
-        })}
-      </div>
-    );
+            </a>;
+      })}
+      </div>;
   };
-
   const renderAudienceLocation = () => {
     if (!creator?.audienceLocation) return null;
-    
-    return (
-      <div className="space-y-3">
+    return <div className="space-y-3">
         <h3 className="font-medium text-lg flex items-center gap-2">
           <Globe className="h-5 w-5" />
           Audience Location
@@ -75,38 +61,27 @@ export const CreatorProfileModal = ({ creator, isOpen, onClose, isLoading = fals
             <p className="font-semibold">{creator.audienceLocation.primary}</p>
           </div>
           
-          {creator.audienceLocation.secondary && creator.audienceLocation.secondary.length > 0 && (
-            <div className="mb-3">
+          {creator.audienceLocation.secondary && creator.audienceLocation.secondary.length > 0 && <div className="mb-3">
               <h4 className="text-sm text-muted-foreground">Secondary Locations</h4>
               <div className="flex flex-wrap gap-2 mt-1">
-                {creator.audienceLocation.secondary.map(location => (
-                  <Badge key={location} variant="outline">{location}</Badge>
-                ))}
+                {creator.audienceLocation.secondary.map(location => <Badge key={location} variant="outline">{location}</Badge>)}
               </div>
-            </div>
-          )}
+            </div>}
           
-          {creator.audienceLocation.countries && creator.audienceLocation.countries.length > 0 && (
-            <div>
+          {creator.audienceLocation.countries && creator.audienceLocation.countries.length > 0 && <div>
               <h4 className="text-sm text-muted-foreground mb-2">Audience Breakdown</h4>
-              {creator.audienceLocation.countries.map(country => (
-                <div key={country.name} className="mb-2">
+              {creator.audienceLocation.countries.map(country => <div key={country.name} className="mb-2">
                   <div className="flex justify-between text-sm mb-1">
                     <span>{country.name}</span>
                     <span className="font-medium">{country.percentage}%</span>
                   </div>
                   <Progress value={country.percentage} className="h-2" />
-                </div>
-              ))}
-            </div>
-          )}
+                </div>)}
+            </div>}
         </div>
-      </div>
-    );
+      </div>;
   };
-
-  const renderLoadingState = () => (
-    <>
+  const renderLoadingState = () => <>
       <div className="relative w-full h-32 bg-muted/30">
         <Skeleton className="absolute w-24 h-24 rounded-full -bottom-12 left-6 border-4 border-background" />
       </div>
@@ -129,25 +104,15 @@ export const CreatorProfileModal = ({ creator, isOpen, onClose, isLoading = fals
           <Skeleton className="h-10 w-28" />
         </div>
       </div>
-    </>
-  );
-
+    </>;
   const renderContent = () => {
     if (isLoading) return renderLoadingState();
     if (!creator) return null;
-
-    return (
-      <>
+    return <>
         <div className="relative">
           {/* Banner image */}
           <div className="h-32 w-full overflow-hidden bg-gradient-to-r from-primary/20 via-primary/10 to-secondary/20">
-            {creator.bannerImageUrl && (
-              <img 
-                src={creator.bannerImageUrl} 
-                alt="" 
-                className="w-full h-full object-cover opacity-90"
-              />
-            )}
+            {creator.bannerImageUrl && <img src={creator.bannerImageUrl} alt="" className="w-full h-full object-cover opacity-90" />}
           </div>
           
           {/* Avatar */}
@@ -172,12 +137,10 @@ export const CreatorProfileModal = ({ creator, isOpen, onClose, isLoading = fals
               <Badge variant="outline" className="text-sm py-1">
                 {creator.contentType}
               </Badge>
-              {creator.audienceLocation && (
-                <Badge variant="secondary" className="text-sm py-1 flex items-center gap-1">
+              {creator.audienceLocation && <Badge variant="secondary" className="text-sm py-1 flex items-center gap-1">
                   <Globe className="h-3 w-3" />
                   {creator.audienceLocation.primary}
-                </Badge>
-              )}
+                </Badge>}
             </div>
           </div>
           
@@ -205,11 +168,9 @@ export const CreatorProfileModal = ({ creator, isOpen, onClose, isLoading = fals
               <div className="space-y-3">
                 <h3 className="font-medium text-lg">Skills</h3>
                 <div className="flex flex-wrap gap-2">
-                  {creator.skills.map(skill => (
-                    <Badge key={skill} variant="secondary">
+                  {creator.skills.map(skill => <Badge key={skill} variant="secondary">
                       {skill}
-                    </Badge>
-                  ))}
+                    </Badge>)}
                 </div>
               </div>
             </TabsContent>
@@ -271,25 +232,18 @@ export const CreatorProfileModal = ({ creator, isOpen, onClose, isLoading = fals
               <BookmarkPlus className="h-4 w-4" />
               Save
             </Button>
-            <Button variant="outline" className="gap-2">
-              <MessageSquare className="h-4 w-4" />
-              Message
-            </Button>
+            
             <Button className="gap-2">
               <BarChart2 className="h-4 w-4" />
               View Analytics
             </Button>
           </div>
         </div>
-      </>
-    );
+      </>;
   };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+  return <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[800px] p-0 overflow-hidden max-h-[90vh] overflow-y-auto">
         {renderContent()}
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };
