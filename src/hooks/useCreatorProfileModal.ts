@@ -6,6 +6,27 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 
+// Define an extended profile type for the Supabase data
+interface ExtendedProfile {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  bio?: string | null;
+  avatar_url: string | null;
+  banner_image_url?: string | null;
+  primary_platform?: string | null;
+  audience_type?: string | null;
+  content_type?: string | null;
+  follower_count?: string | null;
+  engagement_rate?: string | null;
+  price_range?: string | null;
+  skills?: string[] | null;
+  social_links?: any | null;
+  average_views?: string | null;
+  average_likes?: string | null;
+  audience_location?: any | null;
+}
+
 export const useCreatorProfileModal = () => {
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -22,32 +43,35 @@ export const useCreatorProfileModal = () => {
       const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', creatorId)
+        .eq('id', creatorId.toString())
         .single();
 
       if (profileData) {
+        // Cast data to our extended profile type
+        const profile = profileData as unknown as ExtendedProfile;
+        
         // Use real data from database
-        const enhancedCreator = {
-          id: profileData.id,
-          name: `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim(),
-          platform: profileData.primary_platform || 'Instagram',
-          audience: profileData.audience_type || 'General',
-          contentType: profileData.content_type || 'Lifestyle',
-          followers: profileData.follower_count || '0',
-          engagement: profileData.engagement_rate || '0%',
-          priceRange: profileData.price_range || '$500-$1000',
-          skills: profileData.skills || [],
-          imageUrl: profileData.avatar_url || 'https://via.placeholder.com/150',
-          bannerImageUrl: profileData.banner_image_url,
-          about: profileData.bio || 'No bio available',
-          socialLinks: profileData.social_links || {},
+        const enhancedCreator: Creator = {
+          id: Number(profile.id),
+          name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
+          platform: profile.primary_platform || 'Instagram',
+          audience: profile.audience_type || 'General',
+          contentType: profile.content_type || 'Lifestyle',
+          followers: profile.follower_count || '0',
+          engagement: profile.engagement_rate || '0%',
+          priceRange: profile.price_range || '$500-$1000',
+          skills: profile.skills || [],
+          imageUrl: profile.avatar_url || 'https://via.placeholder.com/150',
+          bannerImageUrl: profile.banner_image_url,
+          about: profile.bio || 'No bio available',
+          socialLinks: profile.social_links || {},
           metrics: {
-            followerCount: profileData.follower_count || '0',
-            engagementRate: profileData.engagement_rate || '0%',
-            avgViews: profileData.average_views || '0 views',
-            avgLikes: profileData.average_likes || '0 likes',
+            followerCount: profile.follower_count || '0',
+            engagementRate: profile.engagement_rate || '0%',
+            avgViews: profile.average_views || '0 views',
+            avgLikes: profile.average_likes || '0 likes',
           },
-          audienceLocation: profileData.audience_location || {
+          audienceLocation: profile.audience_location || {
             primary: 'United States',
             secondary: ['Canada', 'United Kingdom'],
             countries: [
@@ -63,7 +87,7 @@ export const useCreatorProfileModal = () => {
         // Fall back to mock data
         const creator = mockCreatorsBase.find(c => c.id === creatorId);
         if (creator) {
-          const enhancedCreator = {
+          const enhancedCreator: Creator = {
             ...creator,
             about: `Hi, I'm ${creator.name}! I'm a content creator specializing in ${creator.contentType} content for ${creator.audience} audiences.`,
             socialLinks: {

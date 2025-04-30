@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { TikTok, Instagram, Youtube, Linkedin } from 'lucide-react';
+import { TikTokIcon, Instagram, Youtube, Linkedin } from '@/components/icons/SocialIcons';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface SocialPlatformProps {
@@ -29,7 +29,7 @@ const SocialPlatformConnect: React.FC<SocialPlatformProps> = ({ platforms, onCon
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-center justify-between p-3 border rounded-md">
             <div className="flex items-center gap-3">
-              <TikTok className="w-8 h-8" />
+              <TikTokIcon className="w-8 h-8" />
               <div>
                 <h3 className="font-medium">TikTok</h3>
                 {platforms.tiktok && (

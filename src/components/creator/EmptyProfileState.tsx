@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { TikTok, Instagram, Youtube } from 'lucide-react';
+import { TikTokIcon, Instagram, Youtube } from '@/components/icons/SocialIcons';
 
 interface EmptyProfileStateProps {
   onStartProfileSetup: () => void;
@@ -20,7 +20,7 @@ const EmptyProfileState: React.FC<EmptyProfileStateProps> = ({ onStartProfileSet
       <CardContent className="space-y-6">
         <div className="flex flex-col items-center justify-center py-6">
           <div className="flex gap-4">
-            <TikTok size={32} className="text-gray-400" />
+            <TikTokIcon size={32} className="text-gray-400" />
             <Instagram size={32} className="text-gray-400" />
             <Youtube size={32} className="text-gray-400" />
           </div>

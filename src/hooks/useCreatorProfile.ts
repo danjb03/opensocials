@@ -38,6 +38,36 @@ export interface CreatorProfile {
   };
 }
 
+// Define an extended profile type that includes the custom fields we'll be using
+interface ExtendedProfile {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  bio?: string | null;
+  avatar_url: string | null;
+  banner_url?: string | null;
+  primary_platform?: string | null;
+  content_type?: string | null;
+  audience_type?: string | null;
+  follower_count?: string | null;
+  engagement_rate?: string | null;
+  is_profile_complete?: boolean | null;
+  instagram_connected?: boolean | null;
+  tiktok_connected?: boolean | null;
+  youtube_connected?: boolean | null;
+  linkedin_connected?: boolean | null;
+  show_instagram?: boolean | null;
+  show_tiktok?: boolean | null;
+  show_youtube?: boolean | null;
+  show_linkedin?: boolean | null;
+  show_location?: boolean | null;
+  show_analytics?: boolean | null;
+  audience_location?: any | null;
+  created_at: string | null;
+  updated_at: string | null;
+  company_name: string | null;
+}
+
 export const useCreatorProfile = () => {
   const [profile, setProfile] = useState<CreatorProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -67,35 +97,38 @@ export const useCreatorProfile = () => {
         if (error) throw error;
 
         if (data) {
+          // Cast the data to our extended profile type
+          const profileData = data as unknown as ExtendedProfile;
+          
           // Transform data to match our interface
           const transformedProfile: CreatorProfile = {
-            id: data.id,
-            firstName: data.first_name || '',
-            lastName: data.last_name || '',
-            bio: data.bio || '',
-            avatarUrl: data.avatar_url,
-            bannerUrl: data.banner_url,
-            primaryPlatform: data.primary_platform || '',
-            contentType: data.content_type || '',
-            audienceType: data.audience_type || '',
-            followerCount: data.follower_count || '0',
-            engagementRate: data.engagement_rate || '0%',
-            isProfileComplete: Boolean(data.is_profile_complete),
+            id: profileData.id,
+            firstName: profileData.first_name || '',
+            lastName: profileData.last_name || '',
+            bio: profileData.bio || '',
+            avatarUrl: profileData.avatar_url,
+            bannerUrl: profileData.banner_url || null,
+            primaryPlatform: profileData.primary_platform || '',
+            contentType: profileData.content_type || '',
+            audienceType: profileData.audience_type || '',
+            followerCount: profileData.follower_count || '0',
+            engagementRate: profileData.engagement_rate || '0%',
+            isProfileComplete: Boolean(profileData.is_profile_complete),
             socialConnections: {
-              instagram: Boolean(data.instagram_connected),
-              tiktok: Boolean(data.tiktok_connected),
-              youtube: Boolean(data.youtube_connected),
-              linkedin: Boolean(data.linkedin_connected)
+              instagram: Boolean(profileData.instagram_connected),
+              tiktok: Boolean(profileData.tiktok_connected),
+              youtube: Boolean(profileData.youtube_connected),
+              linkedin: Boolean(profileData.linkedin_connected)
             },
             visibilitySettings: {
-              showInstagram: data.show_instagram !== false,
-              showTiktok: data.show_tiktok !== false,
-              showYoutube: data.show_youtube !== false,
-              showLinkedin: data.show_linkedin !== false,
-              showLocation: data.show_location !== false,
-              showAnalytics: data.show_analytics !== false
+              showInstagram: profileData.show_instagram !== false,
+              showTiktok: profileData.show_tiktok !== false,
+              showYoutube: profileData.show_youtube !== false,
+              showLinkedin: profileData.show_linkedin !== false,
+              showLocation: profileData.show_location !== false,
+              showAnalytics: profileData.show_analytics !== false
             },
-            audienceLocation: data.audience_location || {
+            audienceLocation: profileData.audience_location || {
               primary: 'Global',
               secondary: [],
               countries: [
@@ -137,14 +170,14 @@ export const useCreatorProfile = () => {
           console.log('Profile updated:', payload);
           // Update the profile in the state
           if (payload.new) {
-            const data = payload.new;
+            const data = payload.new as unknown as ExtendedProfile;
             const updatedProfile: CreatorProfile = {
               id: data.id,
               firstName: data.first_name || '',
               lastName: data.last_name || '',
               bio: data.bio || '',
               avatarUrl: data.avatar_url,
-              bannerUrl: data.banner_url,
+              bannerUrl: data.banner_url || null,
               primaryPlatform: data.primary_platform || '',
               contentType: data.content_type || '',
               audienceType: data.audience_type || '',
