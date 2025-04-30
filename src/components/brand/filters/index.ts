@@ -8,5 +8,4 @@ export * from './SkillsFilter';
 // export * from './RelevanceFilter'; -- Removed temporarily
 
 // Re-export the creator matching utilities
-// export { calculateMatchScore } from '@/utils/creatorMatching'; -- Removed temporarily
-
+export { calculateMatchScore } from '@/utils/creatorMatching';
