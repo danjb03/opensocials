@@ -1,9 +1,18 @@
-import { useState, useEffect } from 'react';
+
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
+import CreatorProfileHeader from '@/components/creator/CreatorProfileHeader';
+import SocialPlatformConnect from '@/components/creator/SocialPlatformConnect';
+import AnalyticsModule from '@/components/creator/AnalyticsModule';
+import AudienceLocation from '@/components/creator/AudienceLocation';
+import EmptyProfileState from '@/components/creator/EmptyProfileState';
+import ProfileEditForm from '@/components/creator/ProfileEditForm';
+import VisibilityControls from '@/components/creator/VisibilityControls';
+import { useCreatorProfile } from '@/hooks/useCreatorProfile';
 import {
   LineChart,
   Line,
@@ -17,6 +26,18 @@ import { DollarSign, TrendingUp, Users } from 'lucide-react';
 
 const CreatorDashboard = () => {
   const { user } = useAuth();
+  const { 
+    profile, 
+    isLoading, 
+    isEditing, 
+    setIsEditing,
+    isPreviewMode,
+    setIsPreviewMode,
+    updateProfile,
+    uploadAvatar,
+    toggleVisibilitySetting,
+    connectSocialPlatform
+  } = useCreatorProfile();
   
   const { data: earnings } = useQuery({
     queryKey: ['creator-earnings', user?.id],
@@ -77,11 +98,69 @@ const CreatorDashboard = () => {
     amount: earning.amount,
   })) || [];
 
-  return (
-    <CreatorLayout>
-      <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">Creator Dashboard</h1>
-        
+  const handleProfileSubmit = (values: any) => {
+    updateProfile({
+      firstName: values.firstName,
+      lastName: values.lastName,
+      bio: values.bio,
+      primaryPlatform: values.primaryPlatform,
+      contentType: values.contentType,
+      audienceType: values.audience,
+      audienceLocation: {
+        ...profile?.audienceLocation,
+        primary: values.location
+      }
+    });
+    setIsEditing(false);
+  };
+
+  const handleStartProfileSetup = () => {
+    setIsEditing(true);
+  };
+
+  const renderContent = () => {
+    // Show loading state
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="w-8 h-8 border-t-2 border-b-2 border-primary rounded-full animate-spin mx-auto mb-4"></div>
+            <p>Loading your profile...</p>
+          </div>
+        </div>
+      );
+    }
+
+    // Show edit form
+    if (isEditing) {
+      return (
+        <ProfileEditForm 
+          initialValues={{
+            firstName: profile?.firstName || '',
+            lastName: profile?.lastName || '',
+            bio: profile?.bio || '',
+            primaryPlatform: profile?.primaryPlatform || '',
+            contentType: profile?.contentType || '',
+            audience: profile?.audienceType || '',
+            location: profile?.audienceLocation?.primary || ''
+          }}
+          avatarUrl={profile?.avatarUrl || undefined}
+          onSubmit={handleProfileSubmit}
+          onCancel={() => setIsEditing(false)}
+          onAvatarChange={uploadAvatar}
+        />
+      );
+    }
+
+    // Show empty state if profile is not set up
+    if (!profile?.isProfileComplete && !isPreviewMode) {
+      return <EmptyProfileState onStartProfileSetup={handleStartProfileSetup} />;
+    }
+
+    // Show regular profile view
+    return (
+      <div className="space-y-6">
+        {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -120,23 +199,127 @@ const CreatorDashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            {/* Social Platform Connect */}
+            <SocialPlatformConnect 
+              platforms={profile?.socialConnections || {
+                instagram: false,
+                tiktok: false,
+                youtube: false,
+                linkedin: false
+              }} 
+              onConnect={connectSocialPlatform}
+              isEditable={true}
+            />
+            
+            {/* Analytics Modules - one for each connected platform */}
+            {profile?.socialConnections.instagram && (
+              <AnalyticsModule 
+                platform="Instagram" 
+                metrics={{
+                  followers: '15.2K',
+                  engagement: '3.2%',
+                  views: '5,600 avg',
+                  likes: '1,200 avg',
+                  verified: true
+                }}
+                isVisible={profile?.visibilitySettings.showInstagram}
+              />
+            )}
+            
+            {profile?.socialConnections.tiktok && (
+              <AnalyticsModule 
+                platform="TikTok" 
+                metrics={{
+                  followers: '22.4K',
+                  engagement: '5.7%',
+                  views: '8,900 avg',
+                  likes: '2,100 avg',
+                  verified: false
+                }}
+                isVisible={profile?.visibilitySettings.showTiktok}
+              />
+            )}
+            
+            {profile?.socialConnections.youtube && (
+              <AnalyticsModule 
+                platform="YouTube" 
+                metrics={{
+                  followers: '8.7K',
+                  engagement: '2.8%',
+                  views: '3,200 avg',
+                  likes: '780 avg',
+                  verified: true
+                }}
+                isVisible={profile?.visibilitySettings.showYoutube}
+              />
+            )}
+
+            {/* Audience Location */}
+            {profile?.audienceLocation && (
+              <AudienceLocation 
+                audienceLocation={profile.audienceLocation}
+                isVisible={profile.visibilitySettings.showLocation}
+              />
+            )}
+            
+            {/* Earnings Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Earnings Over Time</CardTitle>
+              </CardHeader>
+              <CardContent className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={earningsData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="amount" stroke="#2563eb" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Right sidebar with visibility controls */}
+          <div className="space-y-6">
+            <VisibilityControls 
+              visibilitySettings={profile?.visibilitySettings || {
+                showInstagram: true,
+                showTiktok: true,
+                showYoutube: true,
+                showLinkedin: true,
+                showLocation: true,
+                showAnalytics: true
+              }}
+              onToggleVisibility={toggleVisibilitySetting}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <CreatorLayout>
+      <div className="container mx-auto p-6 space-y-6">
+        <CreatorProfileHeader 
+          name={profile ? `${profile.firstName} ${profile.lastName}` : 'Creator Profile'}
+          imageUrl={profile?.avatarUrl || undefined}
+          bannerUrl={profile?.bannerUrl || undefined}
+          bio={profile?.bio || 'No bio yet. Add one to complete your profile.'}
+          platform={profile?.primaryPlatform}
+          followers={profile?.followerCount}
+          isEditable={true}
+          onEditProfile={() => setIsEditing(true)}
+          onTogglePreview={() => setIsPreviewMode(!isPreviewMode)}
+          isPreviewMode={isPreviewMode}
+        />
         
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Earnings Over Time</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={earningsData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="amount" stroke="#2563eb" />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {renderContent()}
       </div>
     </CreatorLayout>
   );
