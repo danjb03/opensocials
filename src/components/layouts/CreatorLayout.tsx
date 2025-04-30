@@ -1,11 +1,12 @@
+
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Logo from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ChartLine, DollarSign } from 'lucide-react';
+import { ChartLine, DollarSign, User } from 'lucide-react';
 import SidebarToggle from './SidebarToggle';
 import Footer from './Footer';
 
@@ -16,6 +17,7 @@ interface CreatorLayoutProps {
 const CreatorLayout = ({ children }: CreatorLayoutProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -57,14 +59,39 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
           </div>
           
           <nav className="space-y-1 flex-1">
-            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent ${
+                location.pathname === '/creator' ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
+              }`}
+              asChild
+            >
               <Link to="/creator" className="flex items-center gap-2">
-                <ChartLine className="h-5 w-5" />
-                {!isSidebarCollapsed && <span>Overview</span>}
+                <User className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Profile</span>}
               </Link>
             </Button>
             
-            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent ${
+                location.pathname === '/creator/analytics' ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
+              }`}
+              asChild
+            >
+              <Link to="/creator/analytics" className="flex items-center gap-2">
+                <ChartLine className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Analytics</span>}
+              </Link>
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent ${
+                location.pathname === '/creator/deals' ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
+              }`}
+              asChild
+            >
               <Link to="/creator/deals" className="flex items-center gap-2">
                 <DollarSign className="h-5 w-5" />
                 {!isSidebarCollapsed && <span>Deals</span>}

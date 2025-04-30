@@ -73,6 +73,14 @@ const App = () => {
                 } 
               />
               <Route 
+                path="/creator/analytics" 
+                element={
+                  <ProtectedRoute requiredRole="creator">
+                    <CreatorDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
                 path="/creator/deals" 
                 element={
                   <ProtectedRoute requiredRole="creator">
