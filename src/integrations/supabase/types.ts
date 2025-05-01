@@ -215,6 +215,76 @@ export type Database = {
         }
         Relationships: []
       }
+      social_accounts: {
+        Row: {
+          access_token: string | null
+          account_id: string
+          connected_at: string | null
+          id: string
+          platform: string | null
+          profile_id: string | null
+          refresh_token: string | null
+          token_expires_at: string | null
+        }
+        Insert: {
+          access_token?: string | null
+          account_id: string
+          connected_at?: string | null
+          id?: string
+          platform?: string | null
+          profile_id?: string | null
+          refresh_token?: string | null
+          token_expires_at?: string | null
+        }
+        Update: {
+          access_token?: string | null
+          account_id?: string
+          connected_at?: string | null
+          id?: string
+          platform?: string | null
+          profile_id?: string | null
+          refresh_token?: string | null
+          token_expires_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_accounts_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_metrics: {
+        Row: {
+          data: Json
+          fetched_at: string | null
+          id: string
+          social_account_id: string | null
+        }
+        Insert: {
+          data: Json
+          fetched_at?: string | null
+          id?: string
+          social_account_id?: string | null
+        }
+        Update: {
+          data?: Json
+          fetched_at?: string | null
+          id?: string
+          social_account_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_metrics_social_account_id_fkey"
+            columns: ["social_account_id"]
+            isOneToOne: false
+            referencedRelation: "social_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -249,11 +319,13 @@ export type Database = {
         Returns: undefined
       }
       duplicate_project: {
-        Args: {
-          original_project_id: string
-          new_start_date: string
-          new_end_date: string
-        }
+        Args:
+          | Record<PropertyKey, never>
+          | {
+              original_project_id: string
+              new_start_date: string
+              new_end_date: string
+            }
         Returns: string
       }
       has_role: {
