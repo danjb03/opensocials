@@ -166,18 +166,41 @@ serve(async (req) => {
         );
       }
       
-      // Get user profile information
+      // Get user profile information - CRITICAL: This request should return account_id in the response
       const userRes = await fetch(`https://graph.instagram.com/me?fields=id,username,account_type,media_count&access_token=${tokenData.access_token}`);
       const userData = await userRes.json();
       
       console.log("Instagram User Data:", JSON.stringify(userData));
       
       if (!userData.id) {
-        console.error('Failed to get Instagram user data:', userData);
+        console.error('Failed to get Instagram user data or missing id:', userData);
         return new Response(
           JSON.stringify({ 
             error: 'user_data_failed', 
-            message: 'Failed to retrieve Instagram user data',
+            message: 'Failed to retrieve Instagram user id',
+            details: userData
+          }),
+          {
+            status: 400,
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json',
+            }
+          }
+        );
+      }
+
+      // Explicitly extract account_id from userData to ensure it's not null
+      const account_id = userData.id;
+      const username = userData.username;
+      
+      // Validate account_id before database insert
+      if (!account_id) {
+        console.error('Instagram account_id is missing from API response');
+        return new Response(
+          JSON.stringify({ 
+            error: 'missing_account_id', 
+            message: 'Instagram account ID is missing from API response',
             details: userData
           }),
           {
@@ -190,25 +213,25 @@ serve(async (req) => {
         );
       }
       
-      // Store the connection in our database
+      // Store the connection in our database - CRITICAL: account_id must be provided
       console.log("Inserting social account with data:", {
         profile_id: userId,
         platform: 'instagram',
-        account_id: userData.id,
-        username: userData.username,
+        account_id: account_id, // Explicit assignment
+        username: username,
         metadata: userData
       });
 
-      const { error: insertError } = await supabase
+      const { error: insertError, data: insertData } = await supabase
         .from('social_accounts')
         .insert({
           profile_id: userId,
           platform: 'instagram',
           access_token: tokenData.access_token,
-          account_id: userData.id,
-          username: userData.username,
+          account_id: account_id, // Explicit assignment of account_id
+          username: username,
           metadata: {
-            username: userData.username,
+            username: username,
             account_type: userData.account_type,
             media_count: userData.media_count,
           }
@@ -219,7 +242,8 @@ serve(async (req) => {
         throw insertError;
       }
 
-      console.log("Successfully inserted Instagram account, updating profile");
+      console.log("Successfully inserted Instagram account:", insertData);
+      console.log("Now updating profile to mark Instagram as connected");
 
       // Also update the profile to mark Instagram as connected
       const { error: updateError } = await supabase
@@ -244,7 +268,7 @@ serve(async (req) => {
           profile_id: userId,
           platform,
           access_token: 'platform-token',
-          account_id: 'platform-account-id',
+          account_id: 'platform-account-id', // Always provide a value for account_id
         });
 
       if (insertError) {
