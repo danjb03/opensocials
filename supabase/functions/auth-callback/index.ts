@@ -166,19 +166,20 @@ serve(async (req) => {
         );
       }
       
-      // Get user profile information - CRITICAL: This request should return account_id in the response
-      const userRes = await fetch(`https://graph.instagram.com/me?fields=id,username,account_type,media_count&access_token=${tokenData.access_token}`);
-      const userData = await userRes.json();
+      // STEP 1: Get user pages - this is the first step per instructions
+      console.log("Fetching user's Facebook pages");
+      const pagesRes = await fetch(`https://graph.facebook.com/v19.0/me/accounts?access_token=${tokenData.access_token}`);
+      const pagesData = await pagesRes.json();
       
-      console.log("Instagram User Data:", JSON.stringify(userData));
+      console.log("Facebook Pages Response:", JSON.stringify(pagesData));
       
-      if (!userData.id) {
-        console.error('Failed to get Instagram user data or missing id:', userData);
+      if (!pagesData.data || pagesData.data.length === 0) {
+        console.error('No Facebook pages found or error fetching pages:', pagesData);
         return new Response(
           JSON.stringify({ 
-            error: 'user_data_failed', 
-            message: 'Failed to retrieve Instagram user id',
-            details: userData
+            error: 'no_facebook_pages', 
+            message: 'No Facebook pages found. User must have at least one Facebook page connected to Instagram',
+            details: pagesData
           }),
           {
             status: 400,
@@ -189,19 +190,63 @@ serve(async (req) => {
           }
         );
       }
-
-      // Explicitly extract account_id from userData to ensure it's not null
-      const account_id = userData.id;
-      const username = userData.username;
       
-      // Validate account_id before database insert
-      if (!account_id) {
-        console.error('Instagram account_id is missing from API response');
+      // Use the first page (in a real app, you might let users choose which page)
+      const pageId = pagesData.data[0].id;
+      const pageName = pagesData.data[0].name;
+      
+      // STEP 2: Get Instagram Business Account ID from page
+      console.log(`Getting Instagram business account for page: ${pageId}`);
+      const igBusinessRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}?fields=instagram_business_account&access_token=${tokenData.access_token}`);
+      const igBusinessData = await igBusinessRes.json();
+      
+      console.log("Instagram Business Account Response:", JSON.stringify(igBusinessData));
+      
+      if (!igBusinessData.instagram_business_account || !igBusinessData.instagram_business_account.id) {
+        console.error('No Instagram business account connected to this page:', igBusinessData);
         return new Response(
           JSON.stringify({ 
-            error: 'missing_account_id', 
-            message: 'Instagram account ID is missing from API response',
-            details: userData
+            error: 'no_instagram_business_account', 
+            message: 'No Instagram business account connected to Facebook page',
+            details: igBusinessData
+          }),
+          {
+            status: 400,
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json',
+            }
+          }
+        );
+      }
+      
+      // Extract the Instagram business account ID - this is what we need
+      const instagramBusinessAccountId = igBusinessData.instagram_business_account.id;
+      
+      // Now get additional Instagram account details like username
+      console.log(`Fetching Instagram account details for ID: ${instagramBusinessAccountId}`);
+      const igAccountRes = await fetch(`https://graph.facebook.com/v19.0/${instagramBusinessAccountId}?fields=name,username,profile_picture_url&access_token=${tokenData.access_token}`);
+      const igAccountData = await igAccountRes.json();
+      
+      console.log("Instagram Account Details:", JSON.stringify(igAccountData));
+      
+      if (!igAccountData.username) {
+        console.error('Failed to get Instagram username:', igAccountData);
+        // We still have the ID which is critical, so we can proceed
+      }
+      
+      // CRITICAL: Use the instagram_business_account.id as account_id for database storage
+      const account_id = instagramBusinessAccountId;
+      const username = igAccountData.username || `instagram_${instagramBusinessAccountId}`;
+      
+      // Double validation to ensure we have the business account ID
+      if (!account_id) {
+        console.error('Instagram business account ID is missing');
+        return new Response(
+          JSON.stringify({ 
+            error: 'missing_business_account_id', 
+            message: 'Instagram business account ID was not found',
+            details: { igBusinessData, igAccountData }
           }),
           {
             status: 400,
@@ -217,9 +262,13 @@ serve(async (req) => {
       console.log("Inserting social account with data:", {
         profile_id: userId,
         platform: 'instagram',
-        account_id: account_id, // Explicit assignment
+        account_id: account_id, // This is the instagram_business_account.id
         username: username,
-        metadata: userData
+        metadata: {
+          page_id: pageId,
+          page_name: pageName,
+          instagram_details: igAccountData
+        }
       });
 
       const { error: insertError, data: insertData } = await supabase
@@ -228,12 +277,14 @@ serve(async (req) => {
           profile_id: userId,
           platform: 'instagram',
           access_token: tokenData.access_token,
-          account_id: account_id, // Explicit assignment of account_id
+          account_id: account_id, // Instagram business account ID
           username: username,
           metadata: {
+            page_id: pageId,
+            page_name: pageName,
             username: username,
-            account_type: userData.account_type,
-            media_count: userData.media_count,
+            profile_picture_url: igAccountData.profile_picture_url,
+            business_account_id: instagramBusinessAccountId
           }
         });
 
