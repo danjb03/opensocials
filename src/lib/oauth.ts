@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 // Base URL for our edge functions
@@ -17,10 +18,11 @@ export interface OAuthConfig {
 // OAuth configurations for each supported platform
 const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
   instagram: {
-    url: "https://www.facebook.com/v18.0/dialog/oauth",
+    url: "https://www.facebook.com/v19.0/dialog/oauth",
     clientId: "254187407622116", // Meta App ID
-    scope: ["instagram_basic", "instagram_content_publish", "pages_show_list"],
+    scope: ["instagram_basic", "pages_show_list", "pages_read_engagement"],
     additionalParams: {
+      response_type: "code",
       auth_type: "rerequest"
     }
   },
