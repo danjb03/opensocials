@@ -278,6 +278,7 @@ export type Database = {
           account_id: string
           connected_at: string | null
           id: string
+          metadata: Json | null
           platform: string | null
           profile_id: string | null
           refresh_token: string | null
@@ -288,6 +289,7 @@ export type Database = {
           account_id: string
           connected_at?: string | null
           id?: string
+          metadata?: Json | null
           platform?: string | null
           profile_id?: string | null
           refresh_token?: string | null
@@ -298,6 +300,7 @@ export type Database = {
           account_id?: string
           connected_at?: string | null
           id?: string
+          metadata?: Json | null
           platform?: string | null
           profile_id?: string | null
           refresh_token?: string | null
