@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
@@ -156,8 +157,7 @@ export const useCreatorProfile = () => {
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
-        toast({
-          title: 'Error',
+        uiToast({
           description: 'Failed to load creator profile',
           variant: 'destructive'
         });
@@ -283,8 +283,7 @@ export const useCreatorProfile = () => {
 
       if (error) throw error;
 
-      toast({
-        title: 'Profile updated',
+      uiToast({
         description: 'Your profile has been successfully updated',
       });
 
@@ -292,8 +291,7 @@ export const useCreatorProfile = () => {
       setProfile((prev) => prev ? { ...prev, ...updatedData } : null);
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast({
-        title: 'Error',
+      uiToast({
         description: 'Failed to update profile',
         variant: 'destructive'
       });
@@ -334,14 +332,12 @@ export const useCreatorProfile = () => {
       // Update local state
       setProfile((prev) => prev ? { ...prev, avatarUrl: data.publicUrl } : null);
 
-      toast({
-        title: 'Avatar uploaded',
+      uiToast({
         description: 'Your profile picture has been updated',
       });
     } catch (error) {
       console.error('Error uploading avatar:', error);
-      toast({
-        title: 'Error',
+      uiToast({
         description: 'Failed to upload profile picture',
         variant: 'destructive'
       });
@@ -382,14 +378,12 @@ export const useCreatorProfile = () => {
         };
       });
 
-      toast({
-        title: 'Visibility updated',
+      uiToast({
         description: `${setting.replace('show', '')} visibility has been ${newValue ? 'enabled' : 'disabled'}`,
       });
     } catch (error) {
       console.error('Error toggling visibility:', error);
-      toast({
-        title: 'Error',
+      uiToast({
         description: 'Failed to update visibility settings',
         variant: 'destructive'
       });
@@ -425,14 +419,12 @@ export const useCreatorProfile = () => {
         };
       });
 
-      toast({
-        title: isCurrentlyConnected ? 'Disconnected' : 'Connected',
+      uiToast({
         description: `${platform.charAt(0).toUpperCase() + platform.slice(1)} successfully ${isCurrentlyConnected ? 'disconnected' : 'connected'}`,
       });
     } catch (error) {
       console.error(`Error toggling ${platform} connection:`, error);
-      toast({
-        title: 'Error',
+      uiToast({
         description: `Failed to ${profile.socialConnections[platform as keyof typeof profile.socialConnections] ? 'disconnect' : 'connect'} ${platform}`,
         variant: 'destructive'
       });
