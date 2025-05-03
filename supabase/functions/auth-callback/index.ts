@@ -103,7 +103,7 @@ serve(async (req) => {
       }
     }
 
-    // Initialize Supabase client
+    // Initialize Supabase client with service role key for admin access
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
@@ -111,6 +111,7 @@ serve(async (req) => {
       throw new Error('Missing Supabase environment variables');
     }
 
+    // Create client with service role key for admin-level access
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Different OAuth flows based on platform
