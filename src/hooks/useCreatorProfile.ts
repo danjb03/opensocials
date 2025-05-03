@@ -267,18 +267,27 @@ export const useCreatorProfile = () => {
     if (!user?.id || !profile) return;
 
     try {
+      // Convert from our frontend model to database model
+      const dbUpdateData: Record<string, any> = {
+        first_name: updatedData.firstName ?? profile.firstName,
+        last_name: updatedData.lastName ?? profile.lastName,
+        bio: updatedData.bio ?? profile.bio,
+        primary_platform: updatedData.primaryPlatform ?? profile.primaryPlatform,
+        content_type: updatedData.contentType ?? profile.contentType,
+        audience_type: updatedData.audienceType ?? profile.audienceType,
+        is_profile_complete: true
+      };
+
+      // Handle audience location specifically to ensure proper JSON storage
+      if (updatedData.audienceLocation) {
+        dbUpdateData.audience_location = updatedData.audienceLocation;
+      }
+
+      console.log('Updating profile with data:', dbUpdateData);
+
       const { error } = await supabase
         .from('profiles')
-        .update({
-          first_name: updatedData.firstName ?? profile.firstName,
-          last_name: updatedData.lastName ?? profile.lastName,
-          bio: updatedData.bio ?? profile.bio,
-          primary_platform: updatedData.primaryPlatform ?? profile.primaryPlatform,
-          content_type: updatedData.contentType ?? profile.contentType,
-          audience_type: updatedData.audienceType ?? profile.audienceType,
-          is_profile_complete: true,
-          audience_location: updatedData.audienceLocation ?? profile.audienceLocation
-        })
+        .update(dbUpdateData)
         .eq('id', user.id);
 
       if (error) throw error;

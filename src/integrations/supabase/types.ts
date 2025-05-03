@@ -109,6 +109,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          audience_location: Json | null
           avatar_url: string | null
           company_name: string | null
           created_at: string | null
@@ -118,6 +119,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          audience_location?: Json | null
           avatar_url?: string | null
           company_name?: string | null
           created_at?: string | null
@@ -127,6 +129,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          audience_location?: Json | null
           avatar_url?: string | null
           company_name?: string | null
           created_at?: string | null
