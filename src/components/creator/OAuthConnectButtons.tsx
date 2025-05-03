@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { toast } from "sonner";
 import { Button } from '@/components/ui/button';
@@ -31,9 +30,14 @@ const OAuthConnectButtons: React.FC<OAuthConnectButtonsProps> = ({
       
       // Specific flow for Instagram using the exact URL format provided with state parameter
       if (platform === 'instagram') {
-        const PROFILE_ID = "01f8abb9-0c22-4adf-affd-d797bb2dd488"; // Replace with dynamic user ID
+        const profileId = user?.id || '';
+        if (!profileId) {
+          toast.error('You must be logged in to connect Instagram');
+          setConnectingPlatform(null);
+          return;
+        }
         
-        window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?client_id=1022001640046804&redirect_uri=https://functions.opensocials.net/functions/v1/auth-callback&response_type=code&scope=instagram_basic,pages_show_list,pages_read_engagement&state=${PROFILE_ID}`;
+        window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?client_id=1022001640046804&redirect_uri=https://functions.opensocials.net/functions/v1/auth-callback&response_type=code&scope=instagram_basic,pages_show_list,pages_read_engagement&state=${profileId}`;
       } else {
         await initiateOAuth(platform);
       }
