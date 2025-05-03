@@ -46,27 +46,6 @@ const OAuthConnectButtons: React.FC<OAuthConnectButtonsProps> = ({
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Original Instagram button - keeping for backward compatibility */}
-          <Button
-            variant={platforms.instagram ? "outline" : "secondary"}
-            className="flex justify-between items-center w-full p-6 h-auto"
-            onClick={() => handleConnect("instagram")}
-            disabled={isLoading || connectingPlatform === "instagram"}
-          >
-            <div className="flex items-center gap-3">
-              <Instagram size={24} />
-              <div className="text-left">
-                <p className="font-medium">Instagram</p>
-                <p className="text-sm text-muted-foreground">
-                  {platforms.instagram ? "Connected" : "Connect with Facebook Login"}
-                </p>
-              </div>
-            </div>
-            {connectingPlatform === "instagram" && (
-              <Loader2 className="animate-spin" size={20} />
-            )}
-          </Button>
-          
           {/* Instagram button styled according to the provided example */}
           <Button
             variant="custom"
@@ -83,7 +62,6 @@ const OAuthConnectButtons: React.FC<OAuthConnectButtonsProps> = ({
             )}
           </Button>
           
-          {/* Keep existing code for TikTok, YouTube, and LinkedIn buttons */}
           <Button
             variant={platforms.tiktok ? "outline" : "secondary"}
             className="flex justify-between items-center w-full p-6 h-auto"

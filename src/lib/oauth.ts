@@ -19,11 +19,10 @@ export interface OAuthConfig {
 const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
   instagram: {
     url: "https://www.facebook.com/v19.0/dialog/oauth",
-    clientId: "254187407622116", // Meta App ID
+    clientId: "1339436383983335", // Updated to the exact client ID provided
     scope: ["instagram_basic", "pages_show_list", "pages_read_engagement"],
     additionalParams: {
-      response_type: "code",
-      auth_type: "rerequest"
+      response_type: "code"
     }
   },
   tiktok: {
@@ -69,6 +68,15 @@ export const initiateOAuth = async (platform: string): Promise<void> => {
       timestamp: Date.now()
     }));
 
+    // For Instagram, use the exact URL format provided
+    if (platform === 'instagram') {
+      const exactUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${config.clientId}&redirect_uri=${encodeURIComponent(CALLBACK_URL)}&response_type=code&scope=${config.scope.join(',')}&state=${encodeURIComponent(state)}`;
+      console.log("Redirecting to Instagram OAuth URL:", exactUrl);
+      window.location.href = exactUrl;
+      return;
+    }
+
+    // For other platforms, continue with the existing implementation
     // Build the OAuth URL with proper encoding
     const redirectUri = encodeURIComponent(CALLBACK_URL);
     const scopeString = encodeURIComponent(config.scope.join(","));
