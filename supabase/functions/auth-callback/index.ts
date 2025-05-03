@@ -113,11 +113,11 @@ serve(async (req) => {
     }
 
     // Initialize Supabase client with service role key for admin access
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") || "https://pcnrnciwgdrukzciwexi.supabase.co";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
-    if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Missing Supabase environment variables');
+    if (!supabaseServiceKey) {
+      throw new Error('Missing Supabase service role key');
     }
 
     // Create client with service role key for admin-level access
@@ -125,15 +125,12 @@ serve(async (req) => {
 
     // Different OAuth flows based on platform
     if (platform === 'instagram') {
-      const IG_CLIENT_ID = Deno.env.get("INSTAGRAM_CLIENT_ID");
+      const IG_CLIENT_ID = Deno.env.get("INSTAGRAM_CLIENT_ID") || "1022001640046804";
       const IG_CLIENT_SECRET = Deno.env.get("INSTAGRAM_CLIENT_SECRET");
       const REDIRECT_URI = "https://functions.opensocials.net/functions/v1/auth-callback";
       
-      if (!IG_CLIENT_ID || !IG_CLIENT_SECRET) {
-        console.error("Missing Instagram credentials:", { 
-          IG_CLIENT_ID: IG_CLIENT_ID ? "present" : "missing", 
-          IG_CLIENT_SECRET: IG_CLIENT_SECRET ? "present" : "missing" 
-        });
+      if (!IG_CLIENT_SECRET) {
+        console.error("Missing Instagram client secret");
         throw new Error('Missing Instagram API credentials');
       }
 
@@ -235,6 +232,19 @@ serve(async (req) => {
         // We still have the ID which is critical, so we can proceed
       }
       
+      // Get additional Instagram analytics data as requested
+      console.log(`Fetching Instagram analytics for ID: ${instagramBusinessAccountId}`);
+      const analyticsRes = await fetch(`https://graph.instagram.com/me?fields=id,username,account_type,media_count&access_token=${tokenData.access_token}`);
+      const analyticsData = await analyticsRes.json();
+      
+      console.log("Instagram Analytics Data:", JSON.stringify(analyticsData));
+      
+      // Get media insights for more complete analytics
+      const mediaRes = await fetch(`https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,timestamp,like_count,comments_count&access_token=${tokenData.access_token}`);
+      const mediaData = await mediaRes.json();
+      
+      console.log("Instagram Media Data:", JSON.stringify(mediaData));
+      
       // CRITICAL: Use the instagram_business_account.id as account_id for database storage
       const account_id = instagramBusinessAccountId;
       const username = igAccountData.username || `instagram_${instagramBusinessAccountId}`;
@@ -263,12 +273,7 @@ serve(async (req) => {
         profile_id: userId,
         platform: 'instagram',
         account_id: account_id, // This is the instagram_business_account.id
-        username: username,
-        metadata: {
-          page_id: pageId,
-          page_name: pageName,
-          instagram_details: igAccountData
-        }
+        username: username
       });
 
       const { error: insertError, data: insertData } = await supabase
@@ -284,7 +289,10 @@ serve(async (req) => {
             page_name: pageName,
             username: username,
             profile_picture_url: igAccountData.profile_picture_url,
-            business_account_id: instagramBusinessAccountId
+            business_account_id: instagramBusinessAccountId,
+            account_type: analyticsData.account_type,
+            media_count: analyticsData.media_count,
+            media_insights: mediaData.data || []
           }
         });
 

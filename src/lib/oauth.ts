@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 // Base URL for our edge functions
@@ -53,6 +54,11 @@ const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
  */
 export const initiateOAuth = async (platform: string): Promise<void> => {
   try {
+    // Instagram is handled directly in OAuthConnectButtons.tsx
+    if (platform === 'instagram') {
+      throw new Error('Instagram OAuth is handled separately');
+    }
+    
     // Get current user ID to use as state parameter
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("User not authenticated");
