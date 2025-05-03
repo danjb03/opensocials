@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { toast } from "sonner";
 import { Button } from '@/components/ui/button';
@@ -26,7 +25,16 @@ const OAuthConnectButtons: React.FC<OAuthConnectButtonsProps> = ({
   const handleConnect = async (platform: string) => {
     try {
       setConnectingPlatform(platform);
-      await initiateOAuth(platform);
+      
+      if (platform === 'instagram') {
+        // Use the exact implementation for Instagram
+        const connectInstagram = () => {
+          window.location.href = "https://www.facebook.com/v19.0/dialog/oauth?client_id=1022001640046804&redirect_uri=https://functions.opensocials.net/functions/v1/auth-callback&response_type=code&scope=instagram_basic,pages_show_list,pages_read_engagement";
+        };
+        connectInstagram();
+      } else {
+        await initiateOAuth(platform);
+      }
       // The page will redirect to the OAuth provider, so we don't need to handle success here
     } catch (error) {
       console.error(`Error connecting to ${platform}:`, error);

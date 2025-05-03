@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 // Base URL for our edge functions
@@ -6,10 +5,6 @@ const FUNCTIONS_BASE_URL = "https://functions.opensocials.net/functions/v1";
 
 // Common callback URL for all platforms
 const CALLBACK_URL = `${FUNCTIONS_BASE_URL}/auth-callback`;
-
-// Instagram App ID
-const IG_CLIENT_ID = '1022001640046804';
-const REDIRECT_URI = 'https://functions.opensocials.net/functions/v1/auth-callback';
 
 // Platform-specific OAuth configuration
 export interface OAuthConfig {
@@ -23,7 +18,7 @@ export interface OAuthConfig {
 const OAUTH_CONFIGS: Record<string, OAuthConfig> = {
   instagram: {
     url: "https://www.facebook.com/v19.0/dialog/oauth",
-    clientId: IG_CLIENT_ID, // Updated to the exact client ID provided
+    clientId: "1022001640046804", // Updated client ID
     scope: ["instagram_basic", "pages_show_list", "pages_read_engagement"],
     additionalParams: {
       response_type: "code"
@@ -72,15 +67,6 @@ export const initiateOAuth = async (platform: string): Promise<void> => {
       timestamp: Date.now()
     }));
 
-    // For Instagram, use the exact URL format provided
-    if (platform === 'instagram') {
-      const instagramOAuthUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${IG_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=instagram_basic,pages_show_list,pages_read_engagement&state=${encodeURIComponent(state)}`;
-      console.log("Redirecting to Instagram OAuth URL:", instagramOAuthUrl);
-      window.open(instagramOAuthUrl, '_blank');
-      return;
-    }
-
-    // For other platforms, continue with the existing implementation
     // Build the OAuth URL with proper encoding
     const redirectUri = encodeURIComponent(CALLBACK_URL);
     const scopeString = encodeURIComponent(config.scope.join(","));
