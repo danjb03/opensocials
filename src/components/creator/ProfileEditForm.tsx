@@ -72,6 +72,11 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
     }
   };
 
+  const handleFormSubmit = (values: ProfileFormValues) => {
+    console.log('Form submitted with values:', values);
+    onSubmit(values);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -79,7 +84,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
             <div className="flex flex-col items-center mb-6">
               <input
                 type="file"

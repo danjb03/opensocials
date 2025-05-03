@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -101,6 +100,7 @@ const CreatorDashboard = () => {
   })) || [];
 
   const handleProfileSubmit = (values: any) => {
+    console.log("Profile submission values:", values);
     updateProfile({
       firstName: values.firstName,
       lastName: values.lastName,
@@ -109,12 +109,19 @@ const CreatorDashboard = () => {
       contentType: values.contentType,
       audienceType: values.audience,
       audienceLocation: {
-        ...profile?.audienceLocation,
-        primary: values.location
+        primary: values.location,
+        secondary: profile?.audienceLocation?.secondary || [],
+        countries: profile?.audienceLocation?.countries || [
+          { name: 'United States', percentage: 30 },
+          { name: 'United Kingdom', percentage: 20 },
+          { name: 'Canada', percentage: 15 },
+          { name: 'Australia', percentage: 10 },
+          { name: 'Others', percentage: 25 }
+        ]
       },
       isProfileComplete: true // Automatically mark profile as complete on submit
     });
-    // Auto-transition to live state happens in the hook after setting isProfileComplete
+    setIsEditing(false); // Close the edit form after submission
   };
 
   const handleStartProfileSetup = () => {

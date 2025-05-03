@@ -110,33 +110,87 @@ export type Database = {
       profiles: {
         Row: {
           audience_location: Json | null
+          audience_type: string | null
           avatar_url: string | null
+          banner_url: string | null
+          bio: string | null
           company_name: string | null
+          content_type: string | null
           created_at: string | null
+          engagement_rate: string | null
           first_name: string | null
+          follower_count: string | null
           id: string
+          instagram_connected: boolean | null
+          is_profile_complete: boolean | null
           last_name: string | null
+          linkedin_connected: boolean | null
+          primary_platform: string | null
+          show_analytics: boolean | null
+          show_instagram: boolean | null
+          show_linkedin: boolean | null
+          show_location: boolean | null
+          show_tiktok: boolean | null
+          show_youtube: boolean | null
+          tiktok_connected: boolean | null
           updated_at: string | null
+          youtube_connected: boolean | null
         }
         Insert: {
           audience_location?: Json | null
+          audience_type?: string | null
           avatar_url?: string | null
+          banner_url?: string | null
+          bio?: string | null
           company_name?: string | null
+          content_type?: string | null
           created_at?: string | null
+          engagement_rate?: string | null
           first_name?: string | null
+          follower_count?: string | null
           id: string
+          instagram_connected?: boolean | null
+          is_profile_complete?: boolean | null
           last_name?: string | null
+          linkedin_connected?: boolean | null
+          primary_platform?: string | null
+          show_analytics?: boolean | null
+          show_instagram?: boolean | null
+          show_linkedin?: boolean | null
+          show_location?: boolean | null
+          show_tiktok?: boolean | null
+          show_youtube?: boolean | null
+          tiktok_connected?: boolean | null
           updated_at?: string | null
+          youtube_connected?: boolean | null
         }
         Update: {
           audience_location?: Json | null
+          audience_type?: string | null
           avatar_url?: string | null
+          banner_url?: string | null
+          bio?: string | null
           company_name?: string | null
+          content_type?: string | null
           created_at?: string | null
+          engagement_rate?: string | null
           first_name?: string | null
+          follower_count?: string | null
           id?: string
+          instagram_connected?: boolean | null
+          is_profile_complete?: boolean | null
           last_name?: string | null
+          linkedin_connected?: boolean | null
+          primary_platform?: string | null
+          show_analytics?: boolean | null
+          show_instagram?: boolean | null
+          show_linkedin?: boolean | null
+          show_location?: boolean | null
+          show_tiktok?: boolean | null
+          show_youtube?: boolean | null
+          tiktok_connected?: boolean | null
           updated_at?: string | null
+          youtube_connected?: boolean | null
         }
         Relationships: []
       }

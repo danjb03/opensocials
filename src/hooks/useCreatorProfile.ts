@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
@@ -267,6 +266,8 @@ export const useCreatorProfile = () => {
     if (!user?.id || !profile) return;
 
     try {
+      console.log('Profile update requested with data:', updatedData);
+      
       // Convert from our frontend model to database model
       const dbUpdateData: Record<string, any> = {
         first_name: updatedData.firstName ?? profile.firstName,
@@ -275,7 +276,7 @@ export const useCreatorProfile = () => {
         primary_platform: updatedData.primaryPlatform ?? profile.primaryPlatform,
         content_type: updatedData.contentType ?? profile.contentType,
         audience_type: updatedData.audienceType ?? profile.audienceType,
-        is_profile_complete: true
+        is_profile_complete: updatedData.isProfileComplete ?? profile.isProfileComplete
       };
 
       // Handle audience location specifically to ensure proper JSON storage
@@ -290,19 +291,27 @@ export const useCreatorProfile = () => {
         .update(dbUpdateData)
         .eq('id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error updating profile:', error);
+        throw error;
+      }
 
-      uiToast({
-        description: 'Your profile has been successfully updated',
+      // Show success message
+      toast.success('Profile updated successfully', {
+        description: 'Your profile has been updated.'
       });
 
       // Update local state
-      setProfile((prev) => prev ? { ...prev, ...updatedData } : null);
+      setProfile(prev => prev ? { ...prev, ...updatedData } : null);
+      
+      // Close edit mode if profile is now complete
+      if (updatedData.isProfileComplete) {
+        setIsEditing(false);
+      }
     } catch (error) {
       console.error('Error updating profile:', error);
-      uiToast({
-        description: 'Failed to update profile',
-        variant: 'destructive'
+      toast.error('Failed to update profile', {
+        description: 'Please try again later.'
       });
     }
   };

@@ -30,4 +30,4 @@ project_id = "pcnrnciwgdrukzciwexi"
 
 [functions]
 [functions.auth-callback]
-verify_jwt = false
+verify_jwt = true
