@@ -142,7 +142,7 @@ serve(async (req) => {
         REDIRECT_URI 
       });
 
-      // Exchange code for access token
+      // STEP 1: Exchange code for access token
       const tokenRes = await fetch(`https://graph.facebook.com/v19.0/oauth/access_token?client_id=${IG_CLIENT_ID}&client_secret=${IG_CLIENT_SECRET}&redirect_uri=${REDIRECT_URI}&code=${code}`);
       const tokenData = await tokenRes.json();
       
@@ -166,7 +166,7 @@ serve(async (req) => {
         );
       }
       
-      // STEP 1: Get user pages - this is the first step per instructions
+      // STEP 2: Get user pages - this is the first step per instructions
       console.log("Fetching user's Facebook pages");
       const pagesRes = await fetch(`https://graph.facebook.com/v19.0/me/accounts?access_token=${tokenData.access_token}`);
       const pagesData = await pagesRes.json();
@@ -195,7 +195,7 @@ serve(async (req) => {
       const pageId = pagesData.data[0].id;
       const pageName = pagesData.data[0].name;
       
-      // STEP 2: Get Instagram Business Account ID from page
+      // STEP 3: Get Instagram Business Account ID from page
       console.log(`Getting Instagram business account for page: ${pageId}`);
       const igBusinessRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}?fields=instagram_business_account&access_token=${tokenData.access_token}`);
       const igBusinessData = await igBusinessRes.json();

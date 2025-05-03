@@ -26,12 +26,9 @@ const OAuthConnectButtons: React.FC<OAuthConnectButtonsProps> = ({
     try {
       setConnectingPlatform(platform);
       
+      // Specific flow for Instagram using the exact URL format provided
       if (platform === 'instagram') {
-        // Use the exact implementation for Instagram
-        const connectInstagram = () => {
-          window.location.href = "https://www.facebook.com/v19.0/dialog/oauth?client_id=1022001640046804&redirect_uri=https://functions.opensocials.net/functions/v1/auth-callback&response_type=code&scope=instagram_basic,pages_show_list,pages_read_engagement";
-        };
-        connectInstagram();
+        window.location.href = "https://www.facebook.com/v19.0/dialog/oauth?client_id=1022001640046804&redirect_uri=https://functions.opensocials.net/functions/v1/auth-callback&response_type=code&scope=instagram_basic,pages_show_list,pages_read_engagement";
       } else {
         await initiateOAuth(platform);
       }
