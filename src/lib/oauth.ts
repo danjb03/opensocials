@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 // Base URL for our edge functions
@@ -68,17 +69,24 @@ export const initiateOAuth = async (platform: string): Promise<void> => {
       timestamp: Date.now()
     }));
 
-    // Build the OAuth URL
-    const params = new URLSearchParams({
-      client_id: config.clientId,
-      redirect_uri: CALLBACK_URL,
-      scope: config.scope.join(","),
-      state,
-      ...config.additionalParams
-    });
+    // Build the OAuth URL with proper encoding
+    const redirectUri = encodeURIComponent(CALLBACK_URL);
+    const scopeString = encodeURIComponent(config.scope.join(","));
+    
+    // Construct the URL manually to ensure proper encoding
+    let url = `${config.url}?client_id=${config.clientId}&redirect_uri=${redirectUri}&scope=${scopeString}&state=${encodeURIComponent(state)}`;
+    
+    // Add additional params if any
+    if (config.additionalParams) {
+      Object.entries(config.additionalParams).forEach(([key, value]) => {
+        url += `&${key}=${encodeURIComponent(value)}`;
+      });
+    }
 
+    console.log("Redirecting to OAuth URL:", url);
+    
     // Redirect to the OAuth provider
-    window.location.href = `${config.url}?${params.toString()}`;
+    window.location.href = url;
   } catch (error) {
     console.error(`Error initiating ${platform} OAuth:`, error);
     throw error;

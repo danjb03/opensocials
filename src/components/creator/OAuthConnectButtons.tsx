@@ -46,6 +46,7 @@ const OAuthConnectButtons: React.FC<OAuthConnectButtonsProps> = ({
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Original Instagram button - keeping for backward compatibility */}
           <Button
             variant={platforms.instagram ? "outline" : "secondary"}
             className="flex justify-between items-center w-full p-6 h-auto"
@@ -82,6 +83,7 @@ const OAuthConnectButtons: React.FC<OAuthConnectButtonsProps> = ({
             )}
           </Button>
           
+          {/* Keep existing code for TikTok, YouTube, and LinkedIn buttons */}
           <Button
             variant={platforms.tiktok ? "outline" : "secondary"}
             className="flex justify-between items-center w-full p-6 h-auto"
