@@ -1,8 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
+import { checkOAuthRedirect, fetchPlatformAnalytics } from '@/lib/oauth';
 
 export interface CreatorProfile {
   id: string;
@@ -74,8 +75,19 @@ export const useCreatorProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [platformAnalytics, setPlatformAnalytics] = useState<Record<string, any>>({});
   const { user } = useAuth();
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
+
+  // Check if we've returned from an OAuth flow
+  useEffect(() => {
+    const { connected } = checkOAuthRedirect();
+    if (connected) {
+      toast.success(`Successfully connected ${connected}!`, {
+        description: "Your profile has been updated with your social account."
+      });
+    }
+  }, []);
 
   // Fetch the creator profile on mount and when user changes
   useEffect(() => {
@@ -212,7 +224,44 @@ export const useCreatorProfile = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id, toast]);
+  }, [user?.id, uiToast]);
+
+  // Fetch platform analytics when social connections change
+  useEffect(() => {
+    if (!profile) return;
+
+    const fetchAnalyticsData = async () => {
+      const analytics: Record<string, any> = {};
+      
+      if (profile.socialConnections.instagram) {
+        try {
+          analytics.instagram = await fetchPlatformAnalytics('instagram');
+        } catch (error) {
+          console.error('Error fetching Instagram analytics:', error);
+        }
+      }
+      
+      if (profile.socialConnections.tiktok) {
+        try {
+          analytics.tiktok = await fetchPlatformAnalytics('tiktok');
+        } catch (error) {
+          console.error('Error fetching TikTok analytics:', error);
+        }
+      }
+      
+      if (profile.socialConnections.youtube) {
+        try {
+          analytics.youtube = await fetchPlatformAnalytics('youtube');
+        } catch (error) {
+          console.error('Error fetching YouTube analytics:', error);
+        }
+      }
+
+      setPlatformAnalytics(analytics);
+    };
+
+    fetchAnalyticsData();
+  }, [profile?.socialConnections]);
 
   const updateProfile = async (updatedData: Partial<CreatorProfile>) => {
     if (!user?.id || !profile) return;
@@ -401,6 +450,7 @@ export const useCreatorProfile = () => {
     updateProfile,
     uploadAvatar,
     toggleVisibilitySetting,
-    connectSocialPlatform
+    connectSocialPlatform,
+    platformAnalytics
   };
 };

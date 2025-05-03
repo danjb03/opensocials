@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -12,6 +12,7 @@ import AudienceLocation from '@/components/creator/AudienceLocation';
 import EmptyProfileState from '@/components/creator/EmptyProfileState';
 import ProfileEditForm from '@/components/creator/ProfileEditForm';
 import VisibilityControls from '@/components/creator/VisibilityControls';
+import OAuthConnectButtons from '@/components/creator/OAuthConnectButtons';
 import { useCreatorProfile } from '@/hooks/useCreatorProfile';
 import {
   LineChart,
@@ -36,7 +37,8 @@ const CreatorDashboard = () => {
     updateProfile,
     uploadAvatar,
     toggleVisibilitySetting,
-    connectSocialPlatform
+    connectSocialPlatform,
+    platformAnalytics
   } = useCreatorProfile();
   
   const { data: earnings } = useQuery({
@@ -109,13 +111,22 @@ const CreatorDashboard = () => {
       audienceLocation: {
         ...profile?.audienceLocation,
         primary: values.location
-      }
+      },
+      isProfileComplete: true // Automatically mark profile as complete on submit
     });
-    setIsEditing(false);
+    // Auto-transition to live state happens in the hook after setting isProfileComplete
   };
 
   const handleStartProfileSetup = () => {
     setIsEditing(true);
+  };
+
+  const handleOAuthConnect = async (platform: string) => {
+    try {
+      await connectSocialPlatform(platform);
+    } catch (error) {
+      console.error(`Failed to connect ${platform}:`, error);
+    }
   };
 
   const renderContent = () => {
@@ -202,7 +213,18 @@ const CreatorDashboard = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            {/* Social Platform Connect */}
+            {/* OAuth Connect Buttons - Show prominently after initial profile creation */}
+            <OAuthConnectButtons 
+              platforms={profile?.socialConnections || {
+                instagram: false,
+                tiktok: false,
+                youtube: false,
+                linkedin: false
+              }} 
+              isLoading={isLoading}
+            />
+            
+            {/* Show legacy SocialPlatformConnect for any connected platforms */}
             <SocialPlatformConnect 
               platforms={profile?.socialConnections || {
                 instagram: false,
@@ -210,7 +232,7 @@ const CreatorDashboard = () => {
                 youtube: false,
                 linkedin: false
               }} 
-              onConnect={connectSocialPlatform}
+              onConnect={handleOAuthConnect}
               isEditable={true}
             />
             
@@ -219,11 +241,12 @@ const CreatorDashboard = () => {
               <AnalyticsModule 
                 platform="Instagram" 
                 metrics={{
-                  followers: '15.2K',
-                  engagement: '3.2%',
+                  followers: platformAnalytics.instagram?.followers || '15.2K',
+                  engagement: platformAnalytics.instagram?.engagement || '3.2%',
                   views: '5,600 avg',
                   likes: '1,200 avg',
-                  verified: true
+                  verified: true,
+                  growthRate: platformAnalytics.instagram?.growth || '+2.5%'
                 }}
                 isVisible={profile?.visibilitySettings.showInstagram}
               />
@@ -233,11 +256,12 @@ const CreatorDashboard = () => {
               <AnalyticsModule 
                 platform="TikTok" 
                 metrics={{
-                  followers: '22.4K',
-                  engagement: '5.7%',
+                  followers: platformAnalytics.tiktok?.followers || '22.4K',
+                  engagement: platformAnalytics.tiktok?.engagement || '5.7%',
                   views: '8,900 avg',
                   likes: '2,100 avg',
-                  verified: false
+                  verified: false,
+                  growthRate: platformAnalytics.tiktok?.growth || '+4.1%'
                 }}
                 isVisible={profile?.visibilitySettings.showTiktok}
               />
@@ -247,11 +271,12 @@ const CreatorDashboard = () => {
               <AnalyticsModule 
                 platform="YouTube" 
                 metrics={{
-                  followers: '8.7K',
-                  engagement: '2.8%',
+                  followers: platformAnalytics.youtube?.followers || '8.7K',
+                  engagement: platformAnalytics.youtube?.engagement || '2.8%',
                   views: '3,200 avg',
                   likes: '780 avg',
-                  verified: true
+                  verified: true,
+                  growthRate: platformAnalytics.youtube?.growth || '+1.2%'
                 }}
                 isVisible={profile?.visibilitySettings.showYoutube}
               />
