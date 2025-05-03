@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 // Base URL for our edge functions
@@ -73,7 +72,7 @@ export const initiateOAuth = async (platform: string): Promise<void> => {
     const params = new URLSearchParams({
       client_id: config.clientId,
       redirect_uri: CALLBACK_URL,
-      scope: config.scope.join(" "),
+      scope: config.scope.join(","),
       state,
       ...config.additionalParams
     });

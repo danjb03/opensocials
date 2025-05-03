@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { toast } from "sonner";
 import { Button } from '@/components/ui/button';
@@ -64,6 +63,22 @@ const OAuthConnectButtons: React.FC<OAuthConnectButtonsProps> = ({
             </div>
             {connectingPlatform === "instagram" && (
               <Loader2 className="animate-spin" size={20} />
+            )}
+          </Button>
+          
+          {/* Instagram button styled according to the provided example */}
+          <Button
+            variant="custom"
+            className="flex items-center gap-2 px-6 py-4 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-all h-auto"
+            onClick={() => handleConnect("instagram")}
+            disabled={isLoading || connectingPlatform === "instagram"}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M7.75 2A5.75 5.75 0 002 7.75v8.5A5.75 5.75 0 007.75 22h8.5A5.75 5.75 0 0022 16.25v-8.5A5.75 5.75 0 0016.25 2h-8.5zm0 1.5h8.5A4.25 4.25 0 0120.5 7.75v8.5a4.25 4.25 0 01-4.25 4.25h-8.5A4.25 4.25 0 013.5 16.25v-8.5A4.25 4.25 0 017.75 3.5zm8.25 2a1.25 1.25 0 100 2.5 1.25 1.25 0 000-2.5zM12 7a5 5 0 100 10 5 5 0 000-10zm0 1.5a3.5 3.5 0 110 7 3.5 3.5 0 010-7z" />
+            </svg>
+            Connect Instagram
+            {connectingPlatform === "instagram" && (
+              <Loader2 className="animate-spin ml-2" size={20} />
             )}
           </Button>
           
