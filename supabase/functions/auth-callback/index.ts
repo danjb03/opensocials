@@ -32,6 +32,13 @@ serve(async (req) => {
     const error = url.searchParams.get('error');
     const errorDescription = url.searchParams.get('error_description');
 
+    console.log("OAuth callback received with:", { 
+      code: code ? "present" : "missing", 
+      state: state ? "present" : "missing", 
+      error: error || "none",
+      errorDescription: errorDescription || "none"
+    });
+
     // Handle OAuth errors
     if (error) {
       console.error(`OAuth error: ${error} - ${errorDescription}`);
@@ -77,6 +84,7 @@ serve(async (req) => {
         const stateObj = JSON.parse(atob(state));
         userId = stateObj.userId;
         platform = stateObj.platform || platform;
+        console.log("Parsed state:", { userId, platform });
       } catch (e) {
         console.warn('Invalid state parameter, falling back to defaults:', e);
       }
@@ -85,6 +93,7 @@ serve(async (req) => {
     // If no userId is provided via state, attempt to get from env
     if (!userId) {
       userId = Deno.env.get("PROFILE_ID");
+      console.log("Using PROFILE_ID from environment:", userId);
       
       if (!userId) {
         return new Response(
@@ -121,19 +130,31 @@ serve(async (req) => {
       const REDIRECT_URI = "https://functions.opensocials.net/functions/v1/auth-callback";
       
       if (!IG_CLIENT_ID || !IG_CLIENT_SECRET) {
+        console.error("Missing Instagram credentials:", { 
+          IG_CLIENT_ID: IG_CLIENT_ID ? "present" : "missing", 
+          IG_CLIENT_SECRET: IG_CLIENT_SECRET ? "present" : "missing" 
+        });
         throw new Error('Missing Instagram API credentials');
       }
+
+      console.log("Exchanging code for access token with params:", { 
+        IG_CLIENT_ID: IG_CLIENT_ID.substring(0, 5) + "...", 
+        REDIRECT_URI 
+      });
 
       // Exchange code for access token
       const tokenRes = await fetch(`https://graph.facebook.com/v19.0/oauth/access_token?client_id=${IG_CLIENT_ID}&client_secret=${IG_CLIENT_SECRET}&redirect_uri=${REDIRECT_URI}&code=${code}`);
       const tokenData = await tokenRes.json();
+      
+      console.log("Access Token Response:", JSON.stringify(tokenData));
       
       if (!tokenData.access_token) {
         console.error('Failed to get Instagram access token:', tokenData);
         return new Response(
           JSON.stringify({ 
             error: 'token_exchange_failed', 
-            message: 'Failed to exchange code for access token'
+            message: 'Failed to exchange code for access token',
+            details: tokenData
           }),
           {
             status: 400,
@@ -149,12 +170,15 @@ serve(async (req) => {
       const userRes = await fetch(`https://graph.instagram.com/me?fields=id,username,account_type,media_count&access_token=${tokenData.access_token}`);
       const userData = await userRes.json();
       
+      console.log("Instagram User Data:", JSON.stringify(userData));
+      
       if (!userData.id) {
         console.error('Failed to get Instagram user data:', userData);
         return new Response(
           JSON.stringify({ 
             error: 'user_data_failed', 
-            message: 'Failed to retrieve Instagram user data'
+            message: 'Failed to retrieve Instagram user data',
+            details: userData
           }),
           {
             status: 400,
@@ -167,6 +191,14 @@ serve(async (req) => {
       }
       
       // Store the connection in our database
+      console.log("Inserting social account with data:", {
+        profile_id: userId,
+        platform: 'instagram',
+        account_id: userData.id,
+        username: userData.username,
+        metadata: userData
+      });
+
       const { error: insertError } = await supabase
         .from('social_accounts')
         .insert({
@@ -174,6 +206,7 @@ serve(async (req) => {
           platform: 'instagram',
           access_token: tokenData.access_token,
           account_id: userData.id,
+          username: userData.username,
           metadata: {
             username: userData.username,
             account_type: userData.account_type,
@@ -186,11 +219,19 @@ serve(async (req) => {
         throw insertError;
       }
 
+      console.log("Successfully inserted Instagram account, updating profile");
+
       // Also update the profile to mark Instagram as connected
-      await supabase
+      const { error: updateError } = await supabase
         .from('profiles')
         .update({ instagram_connected: true })
         .eq('id', userId);
+        
+      if (updateError) {
+        console.error('Error updating profile:', updateError);
+      } else {
+        console.log("Successfully updated profile, Instagram connection marked as true");
+      }
 
     } else {
       // For other platforms - can add similar implementation for other social platforms
@@ -225,6 +266,8 @@ serve(async (req) => {
     const redirectUrl = new URL(`${url.protocol}//${url.host.replace('functions.opensocials.net', 'opensocials.net')}/creator`);
     redirectUrl.searchParams.append('connected', platform);
     
+    console.log("Redirecting to:", redirectUrl.toString());
+    
     return new Response(null, {
       status: 302,
       headers: {
@@ -237,7 +280,7 @@ serve(async (req) => {
     console.error('OAuth callback error:', error);
     
     return new Response(
-      JSON.stringify({ error: 'server_error', message: 'Internal server error' }),
+      JSON.stringify({ error: 'server_error', message: 'Internal server error', details: error.message }),
       {
         status: 500,
         headers: {

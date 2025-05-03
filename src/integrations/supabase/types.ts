@@ -277,34 +277,40 @@ export type Database = {
           access_token: string | null
           account_id: string
           connected_at: string | null
+          expires_in: number | null
           id: string
           metadata: Json | null
           platform: string | null
           profile_id: string | null
           refresh_token: string | null
           token_expires_at: string | null
+          username: string | null
         }
         Insert: {
           access_token?: string | null
           account_id: string
           connected_at?: string | null
+          expires_in?: number | null
           id?: string
           metadata?: Json | null
           platform?: string | null
           profile_id?: string | null
           refresh_token?: string | null
           token_expires_at?: string | null
+          username?: string | null
         }
         Update: {
           access_token?: string | null
           account_id?: string
           connected_at?: string | null
+          expires_in?: number | null
           id?: string
           metadata?: Json | null
           platform?: string | null
           profile_id?: string | null
           refresh_token?: string | null
           token_expires_at?: string | null
+          username?: string | null
         }
         Relationships: [
           {
