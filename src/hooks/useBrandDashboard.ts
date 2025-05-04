@@ -36,7 +36,7 @@ export const useBrandDashboard = () => {
         ) || [];
         
         const todos = pendingProjects.map(project => ({
-          id: project.id,
+          id: `todo-${project.id}`,
           projectId: project.id,
           title: project.status === 'draft' 
             ? 'Complete project setup' 

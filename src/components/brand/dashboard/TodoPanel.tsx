@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Bell, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface TodoItem {
   id: string;
@@ -17,6 +18,12 @@ interface TodoPanelProps {
 }
 
 const TodoPanel: React.FC<TodoPanelProps> = ({ items }) => {
+  const navigate = useNavigate();
+
+  const handleActionClick = (projectId: string) => {
+    navigate(`/brand/projects/${projectId}`);
+  };
+
   if (items.length === 0) {
     return (
       <Card>
@@ -53,7 +60,13 @@ const TodoPanel: React.FC<TodoPanelProps> = ({ items }) => {
                 <Clock className="h-3 w-3" />
                 Due soon
               </span>
-              <Button size="sm">Action</Button>
+              <Button 
+                size="sm"
+                onClick={() => handleActionClick(item.projectId)}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+              >
+                Action
+              </Button>
             </div>
           </div>
         ))}
