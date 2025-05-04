@@ -79,7 +79,7 @@ const CreateProjectForm = ({ onSuccess, userId }: { onSuccess: (newProject: any)
           <div>
             <label className="block text-sm font-medium mb-1">Campaign Type</label>
             <CampaignTypeSelector
-              selectedTypes={Array.isArray(formData.campaign_type) ? formData.campaign_type : [formData.campaign_type]}
+              selectedTypes={formData.campaign_type ? [formData.campaign_type] : []}
               onChange={(types) =>
                 setFormData({ ...formData, campaign_type: types.length > 0 ? types[0] : 'single' })
               }

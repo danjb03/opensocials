@@ -11,13 +11,13 @@ export const CampaignTypeSelector: React.FC<CampaignTypeSelectorProps> = ({
   selectedTypes, 
   onChange 
 }) => {
-  const campaignOptions = ['Single', 'Weekly', 'Monthly', '12-Month Retainer', 'Evergreen'];
+  const campaignOptions = ['single', 'weekly', 'monthly', '12-Month Retainer', 'evergreen'];
   
   const handleToggleType = (option: string) => {
     onChange(
       selectedTypes.includes(option)
         ? selectedTypes.filter(t => t !== option)
-        : [...selectedTypes, option]
+        : [option]
     );
   };
   
@@ -32,7 +32,7 @@ export const CampaignTypeSelector: React.FC<CampaignTypeSelectorProps> = ({
             variant={selectedTypes.includes(option) ? 'default' : 'outline'}
             onClick={() => handleToggleType(option)}
           >
-            {option}
+            {option.charAt(0).toUpperCase() + option.slice(1)}
           </Button>
         ))}
       </div>
