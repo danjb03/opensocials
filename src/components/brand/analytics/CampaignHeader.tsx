@@ -11,12 +11,17 @@ interface CampaignHeaderProps {
 export const CampaignHeader = ({ projectName, projectId }: CampaignHeaderProps) => {
   const navigate = useNavigate();
   
+  const handleBackClick = () => {
+    // Navigate back to analytics list page instead of project page
+    navigate('/brand/analytics');
+  };
+  
   return (
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center space-x-4">
-        <Button variant="outline" onClick={() => navigate(`/brand/projects/${projectId}`)}>
+        <Button variant="outline" onClick={handleBackClick}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Campaign
+          Back to Analytics
         </Button>
         <h1 className="text-3xl font-bold">{projectName} Analytics</h1>
       </div>
