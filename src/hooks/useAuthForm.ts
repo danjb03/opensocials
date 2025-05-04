@@ -25,7 +25,7 @@ export function useAuthForm() {
     setIsLoading(true);
 
     try {
-      // Use disableAutoConfirmation to prevent Supabase from sending its own email
+      // Sign up with Supabase but explicitly disable email confirmation
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -35,6 +35,8 @@ export function useAuthForm() {
             last_name: lastName,
           },
           emailRedirectTo: `${window.location.origin}/auth?confirmation=true`,
+          // This is critical - disable Supabase from sending its own emails
+          emailConfirm: false
         },
       });
 

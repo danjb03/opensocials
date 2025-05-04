@@ -15,6 +15,7 @@ interface SendEmailProps {
 export const sendEmail = async ({ to, subject, html, from = 'OpenSocials <noreply@opensocials.net>' }: SendEmailProps) => {
   try {
     console.log('Sending email to:', to);
+    console.log('Using from address:', from);
     
     const { data, error } = await supabase.functions.invoke('send-email', {
       body: { to, subject, html, from },
