@@ -45,10 +45,28 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.start_date || !formData.end_date) {
+    // Validate required fields
+    if (!formData.name) {
       toast({
         title: 'Missing Fields',
-        description: 'Please fill in all required fields.',
+        description: 'Please enter a project name.',
+      });
+      return;
+    }
+    
+    // Validate dates
+    if (!formData.start_date) {
+      toast({
+        title: 'Missing Fields',
+        description: 'Please select a start date.',
+      });
+      return;
+    }
+    
+    if (!formData.end_date) {
+      toast({
+        title: 'Missing Fields',
+        description: 'Please select an end date.',
       });
       return;
     }
@@ -67,8 +85,8 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
         brand_id: userId,
         name: formData.name,
         campaign_type: formData.campaign_type,
-        start_date: formData.start_date,
-        end_date: formData.end_date,
+        start_date: formData.start_date || null,
+        end_date: formData.end_date || null,
         budget: parseFloat(formData.budget) || 0,
         currency: formData.currency,
         content_requirements: contentRequirements,
@@ -85,12 +103,15 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
         status: 'draft'
       };
 
+      console.log('Submitting project with payload:', payload);
       const { error } = await supabase.from('projects').insert(payload);
 
       if (error) {
+        console.error('Error creating project:', error);
         toast({
           title: 'Project Creation Failed',
           description: error.message,
+          variant: 'destructive',
         });
       } else {
         toast({
@@ -101,9 +122,11 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
       }
 
     } catch (err) {
+      console.error('Unexpected error during project creation:', err);
       toast({
         title: 'Unexpected Error',
         description: 'Something went wrong.',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);

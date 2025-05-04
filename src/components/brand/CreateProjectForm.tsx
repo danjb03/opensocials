@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,26 +56,69 @@ const CreateProjectForm = ({ onSuccess, userId }) => {
     }));
   };
 
+  const validateDates = () => {
+    if (!formData.start_date) {
+      toast({
+        title: 'Missing Fields',
+        description: 'Please select a start date.',
+        variant: 'destructive'
+      });
+      return false;
+    }
+    
+    if (!formData.end_date) {
+      toast({
+        title: 'Missing Fields',
+        description: 'Please select an end date.',
+        variant: 'destructive'
+      });
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!formData.name) {
+      toast({ 
+        title: 'Missing Fields', 
+        description: 'Please enter a project name.', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
+    if (!validateDates()) {
+      return;
+    }
+
     const { save_as_template, ...cleanFormData } = formData;
 
-const payload = {
-  ...cleanFormData,
-  campaign_type: formData.campaign_type.join(', '),
-  brand_id: userId,
-  status: 'draft',
-  is_template: save_as_template
-};
+    const payload = {
+      ...cleanFormData,
+      campaign_type: formData.campaign_type.join(', '),
+      brand_id: userId,
+      status: 'draft',
+      is_template: save_as_template
+    };
 
+    console.log('Submitting project with payload:', payload);
 
     const { error } = await supabase.from('projects').insert([payload]);
 
     if (error) {
-      toast({ title: 'Project Creation Failed', description: error.message, variant: 'destructive' });
+      console.error('Error creating project:', error);
+      toast({ 
+        title: 'Project Creation Failed', 
+        description: error.message, 
+        variant: 'destructive' 
+      });
     } else {
-      toast({ title: '🚀 Campaign Created', description: `${formData.name} is now saved.` });
+      toast({ 
+        title: '🚀 Campaign Created', 
+        description: `${formData.name} is now saved.` 
+      });
       onSuccess(payload);
     }
   };
@@ -83,7 +127,12 @@ const payload = {
     <form onSubmit={handleSubmit} className="space-y-6">
       <h2 className="text-xl font-bold">Create New Project</h2>
 
-      <Input placeholder="Project Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+      <Input 
+        placeholder="Project Name" 
+        value={formData.name} 
+        onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
+        required 
+      />
 
       <div>
         <p className="font-medium mb-2">Campaign Type</p>
@@ -109,11 +158,35 @@ const payload = {
       </div>
 
       <div className="flex gap-4">
-        <Input type="date" value={formData.start_date} onChange={(e) => setFormData({ ...formData, start_date: e.target.value })} required />
-        <Input type="date" value={formData.end_date} onChange={(e) => setFormData({ ...formData, end_date: e.target.value })} required />
+        <div className="w-1/2">
+          <label className="block text-sm font-medium mb-1">Start Date</label>
+          <Input 
+            type="date" 
+            value={formData.start_date} 
+            onChange={(e) => setFormData({ ...formData, start_date: e.target.value })} 
+            required 
+            className="w-full"
+          />
+        </div>
+        <div className="w-1/2">
+          <label className="block text-sm font-medium mb-1">End Date</label>
+          <Input 
+            type="date" 
+            value={formData.end_date} 
+            onChange={(e) => setFormData({ ...formData, end_date: e.target.value })} 
+            required 
+            className="w-full"
+          />
+        </div>
       </div>
 
-      <Input type="number" placeholder="Budget" value={formData.budget} onChange={(e) => setFormData({ ...formData, budget: parseInt(e.target.value) })} required />
+      <Input 
+        type="number" 
+        placeholder="Budget" 
+        value={formData.budget} 
+        onChange={(e) => setFormData({ ...formData, budget: parseInt(e.target.value) })} 
+        required 
+      />
 
       <div>
         <p className="font-medium mb-2">Content Requirements</p>
@@ -181,4 +254,3 @@ const payload = {
 };
 
 export default CreateProjectForm;
-
