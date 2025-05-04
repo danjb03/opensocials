@@ -51,7 +51,23 @@ export function useAuthForm() {
         if (profileError) {
           console.error('Failed to assign role:', profileError);
           toast.error('Failed to assign role. Please contact support.');
-          return;
+          return false;
+        }
+
+        // Create user role entry and set to approved for creators automatically
+        // Brands will need to complete profile setup
+        const roleStatus = role === 'brand' ? 'pending' : 'approved';
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: data.user.id,
+            role: role.toLowerCase(),
+            status: roleStatus
+          });
+
+        if (roleError) {
+          console.error('Failed to create user role:', roleError);
+          // Non-blocking error - continue with signup
         }
 
         // Send welcome email based on role
@@ -151,6 +167,24 @@ export function useAuthForm() {
         return;
       }
 
+      // Also check the user role status to ensure it's approved
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('status')
+        .eq('user_id', data.user.id)
+        .maybeSingle();
+        
+      if (roleError) {
+        console.error('Error fetching role status:', roleError);
+      }
+
+      // If brand user and status is not approved, redirect to setup page
+      if (profileData?.role === 'brand' && roleData?.status !== 'approved') {
+        window.location.href = '/brand/setup-profile';
+        return;
+      }
+
+      // Route based on role
       if (profileData?.role) {
         switch (profileData.role) {
           case 'super_admin':

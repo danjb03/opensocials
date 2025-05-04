@@ -1,10 +1,10 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -84,11 +84,36 @@ const SetupProfile = () => {
     }
   };
 
+  // Update user role status to approved
+  const updateUserRoleStatus = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .update({ status: 'approved' })
+        .eq('user_id', userId);
+      
+      if (error) {
+        console.error('Failed to update user role status:', error);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error('Error updating user role status:', error);
+      return false;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!companyName.trim()) {
       toast.error('Company name is required');
+      return;
+    }
+
+    if (!user) {
+      toast.error('You must be logged in to complete profile setup');
+      navigate('/auth');
       return;
     }
 
@@ -105,7 +130,7 @@ const SetupProfile = () => {
       const { error: insertError } = await supabase
         .from('brand_profiles')
         .insert({
-          user_id: user?.id,
+          user_id: user.id,
           company_name: companyName,
           website: website || null,
           industry: industry || null,
@@ -115,7 +140,12 @@ const SetupProfile = () => {
 
       if (insertError) throw insertError;
       
+      // Update user role status to approved
+      await updateUserRoleStatus(user.id);
+      
       toast.success('Profile setup complete!');
+      
+      // Redirect to brand dashboard instead of setup-brand
       navigate('/brand');
     } catch (error) {
       console.error('Error setting up profile:', error);
