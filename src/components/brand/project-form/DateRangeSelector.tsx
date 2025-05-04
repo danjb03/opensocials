@@ -16,18 +16,24 @@ interface DateRangeSelectorProps {
   endDate: Date | undefined;
   onStartDateChange: (date: Date | undefined) => void;
   onEndDateChange: (date: Date | undefined) => void;
+  startLabel?: string;
+  endLabel?: string;
+  className?: string;
 }
 
 export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
   startDate,
   endDate,
   onStartDateChange,
-  onEndDateChange
+  onEndDateChange,
+  startLabel = "Start Date",
+  endLabel = "End Date",
+  className
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row gap-4">
+    <div className={cn("flex flex-col sm:flex-row gap-4", className)}>
       <div className="w-full sm:w-1/2">
-        <label className="block text-sm font-medium mb-1">Start Date</label>
+        <label className="block text-sm font-medium mb-1">{startLabel}</label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -40,7 +46,7 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
               {startDate ? (
                 format(startDate, "PPP")
               ) : (
-                <span>Select start date</span>
+                <span>Select {startLabel.toLowerCase()}</span>
               )}
               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
             </Button>
@@ -49,8 +55,14 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
             <Calendar
               mode="single"
               selected={startDate}
-              onSelect={onStartDateChange}
-              disabled={(date) => date < new Date()}
+              onSelect={(date) => {
+                onStartDateChange(date);
+                // If end date is before start date, reset end date
+                if (endDate && date && endDate < date) {
+                  onEndDateChange(undefined);
+                }
+              }}
+              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
               initialFocus
               className={cn("p-3 pointer-events-auto")}
             />
@@ -58,7 +70,7 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
         </Popover>
       </div>
       <div className="w-full sm:w-1/2">
-        <label className="block text-sm font-medium mb-1">End Date</label>
+        <label className="block text-sm font-medium mb-1">{endLabel}</label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -71,7 +83,7 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
               {endDate ? (
                 format(endDate, "PPP")
               ) : (
-                <span>Select end date</span>
+                <span>Select {endLabel.toLowerCase()}</span>
               )}
               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
             </Button>
@@ -81,7 +93,10 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
               mode="single"
               selected={endDate}
               onSelect={onEndDateChange}
-              disabled={(date) => (startDate ? date < startDate : date < new Date())}
+              disabled={(date) => {
+                const today = new Date(new Date().setHours(0, 0, 0, 0));
+                return date < today || (startDate ? date < startDate : false);
+              }}
               initialFocus
               className={cn("p-3 pointer-events-auto")}
             />

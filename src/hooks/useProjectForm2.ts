@@ -44,11 +44,13 @@ export function useProjectForm2(onSuccess?: (project: ProjectFormValues) => void
       description: "",
       budget: "",
       currency: "USD",
-      executionDate: undefined, // Changed from "" to undefined to fix date validation issues
+      executionDate: undefined, // Using undefined instead of empty string
     },
   });
 
   function calculateDaysRemaining(date: Date): number {
+    if (!date) return 0;
+    
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const timeDiff = date.getTime() - today.getTime();
@@ -56,11 +58,19 @@ export function useProjectForm2(onSuccess?: (project: ProjectFormValues) => void
   }
 
   function onSubmit(values: ProjectFormValues) {
-    setIsSubmitting(true);
+    console.log("Form values before submission:", values);
     
-    // Log form data to verify dates are properly formatted
-    console.log("Form values:", values);
-    console.log("Execution date:", values.executionDate instanceof Date ? values.executionDate.toISOString() : values.executionDate);
+    // Verify that executionDate is a valid Date object
+    if (!(values.executionDate instanceof Date) || isNaN(values.executionDate.getTime())) {
+      toast({
+        title: "Invalid Date",
+        description: "Please select a valid execution date.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
     
     // Simulate an API call
     setTimeout(() => {

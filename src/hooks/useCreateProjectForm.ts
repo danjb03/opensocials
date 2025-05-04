@@ -42,6 +42,12 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
     }));
   };
 
+  const validateDate = (dateString: string): boolean => {
+    if (!dateString) return true; // Empty dates will be converted to null
+    // Basic date format validation
+    return !isNaN(Date.parse(dateString));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -54,19 +60,27 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
       return;
     }
     
-    // Validate dates
-    if (!formData.start_date) {
+    // Validate dates if provided
+    if (formData.start_date && !validateDate(formData.start_date)) {
       toast({
-        title: 'Missing Fields',
-        description: 'Please select a start date.',
+        title: 'Invalid Date',
+        description: 'Please enter a valid start date.',
       });
       return;
     }
     
-    if (!formData.end_date) {
+    if (formData.end_date && !validateDate(formData.end_date)) {
       toast({
-        title: 'Missing Fields',
-        description: 'Please select an end date.',
+        title: 'Invalid Date',
+        description: 'Please enter a valid end date.',
+      });
+      return;
+    }
+
+    if (formData.submission_deadline && !validateDate(formData.submission_deadline)) {
+      toast({
+        title: 'Invalid Date',
+        description: 'Please enter a valid submission deadline.',
       });
       return;
     }
@@ -103,10 +117,10 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
         status: 'draft'
       };
 
-      // Convert empty strings to null for date fields
-      if (payload.start_date === '') payload.start_date = null;
-      if (payload.end_date === '') payload.end_date = null;
-      if (payload.submission_deadline === '') payload.submission_deadline = null;
+      // Make absolutely sure that empty strings are converted to null for date fields
+      if (!payload.start_date || payload.start_date === '') payload.start_date = null;
+      if (!payload.end_date || payload.end_date === '') payload.end_date = null;
+      if (!payload.submission_deadline || payload.submission_deadline === '') payload.submission_deadline = null;
 
       console.log('Submitting project with payload:', payload);
       const { error } = await supabase.from('projects').insert(payload);
