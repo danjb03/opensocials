@@ -1,13 +1,15 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import BrandLayout from '@/components/layouts/BrandLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Calendar, 
   DollarSign, 
@@ -21,7 +23,8 @@ import {
   Clock,
   Upload,
   FilePlus,
-  FileCheck
+  FileCheck,
+  AlertCircle
 } from 'lucide-react';
 import { statusColors, type ProjectStatus } from '@/types/projects';
 import { formatCurrency } from '@/utils/project';
@@ -52,7 +55,9 @@ const ProjectView = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [briefFiles, setBriefFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [briefUploaded, setBriefUploaded] = useState(false); // Track brief upload status separately
+  const [briefUploaded, setBriefUploaded] = useState(false);
+  const [nextStepBlocked, setNextStepBlocked] = useState(false);
+  const [showBlockedAlert, setShowBlockedAlert] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -86,7 +91,12 @@ const ProjectView = () => {
         // Check for metadata containing brief upload info using type checking
         const contentReqs = data.content_requirements as ContentRequirements | null;
         setBriefUploaded(contentReqs?.brief_uploaded || false);
-        setCurrentStep(statusStepMap[data.status] || 1);
+        
+        const step = statusStepMap[data.status] || 1;
+        setCurrentStep(step);
+        
+        // Check if next step should be blocked
+        checkStepBlocked(step, contentReqs);
       } catch (error) {
         console.error('Error fetching project:', error);
         toast({
@@ -102,31 +112,31 @@ const ProjectView = () => {
     fetchProject();
   }, [id, toast]);
 
+  // Function to check if the current step should block progression
+  const checkStepBlocked = (step: number, contentReqs: ContentRequirements | null) => {
+    // Block "Next Step" when on Creative Planning without brief upload
+    if (step === 3 && !(contentReqs?.brief_uploaded)) {
+      setNextStepBlocked(true);
+    } else {
+      setNextStepBlocked(false);
+    }
+  };
+
   const handleProgressCampaign = async () => {
+    if (nextStepBlocked) {
+      setShowBlockedAlert(true);
+      toast({
+        title: 'Action Required',
+        description: 'You must upload a brief before proceeding to the next step.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     try {
       if (!project) return;
       
       // Check if we're on the Creative Planning step and need to upload brief files
-      if (currentStep === 3 && !briefUploaded && briefFiles.length === 0) {
-        toast({
-          title: 'Upload Required',
-          description: 'Please upload a brief and contract before proceeding',
-          variant: 'destructive',
-        });
-        return;
-      }
-      
-      let newStatus: ProjectStatus = 'new';
-      let newStep = currentStep + 1;
-      
-      // Map step to status
-      if (newStep === 2) newStatus = 'under_review';
-      else if (newStep === 3) newStatus = 'awaiting_approval';
-      else if (newStep === 4) newStatus = 'creators_assigned';
-      else if (newStep === 5) newStatus = 'in_progress';
-      else if (newStep === 6) newStatus = 'completed';
-      
-      // Handle file upload first if we're progressing from the Creative Planning step
       if (currentStep === 3 && !briefUploaded && briefFiles.length > 0) {
         setIsUploading(true);
         try {
@@ -134,7 +144,7 @@ const ProjectView = () => {
           // For now we'll just simulate it
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Store brief upload info in content_requirements object instead of a separate field
+          // Store brief upload info in content_requirements object
           const updatedContentRequirements: ContentRequirements = {
             ...(project.content_requirements as ContentRequirements || {}),
             brief_uploaded: true,
@@ -142,11 +152,13 @@ const ProjectView = () => {
           };
           
           // Update project record with brief_uploaded flag in content_requirements
-          await supabase
+          const { error: updateError } = await supabase
             .from('projects')
             .update({ content_requirements: updatedContentRequirements })
             .eq('id', id);
             
+          if (updateError) throw updateError;
+          
           // Update local state
           setBriefUploaded(true);
           setProject({
@@ -158,6 +170,9 @@ const ProjectView = () => {
             title: 'Brief Uploaded',
             description: 'Campaign brief and materials have been uploaded successfully',
           });
+          
+          // Now that brief is uploaded, allow next step
+          setNextStepBlocked(false);
         } catch (error) {
           console.error('Error uploading files:', error);
           toast({
@@ -171,6 +186,16 @@ const ProjectView = () => {
         setIsUploading(false);
       }
       
+      let newStatus: ProjectStatus = 'new';
+      let newStep = currentStep + 1;
+      
+      // Map step to status
+      if (newStep === 2) newStatus = 'under_review';
+      else if (newStep === 3) newStatus = 'awaiting_approval';
+      else if (newStep === 4) newStatus = 'creators_assigned';
+      else if (newStep === 5) newStatus = 'in_progress';
+      else if (newStep === 6) newStatus = 'completed';
+      
       const { error } = await supabase
         .from('projects')
         .update({ status: newStatus })
@@ -180,6 +205,9 @@ const ProjectView = () => {
       
       setCurrentStep(newStep);
       setProject({...project, status: newStatus});
+      
+      // Check if the new step should block progression
+      checkStepBlocked(newStep, project.content_requirements as ContentRequirements | null);
       
       toast({
         title: 'Campaign Updated',
@@ -198,6 +226,7 @@ const ProjectView = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setBriefFiles(Array.from(e.target.files));
+      setShowBlockedAlert(false);
     }
   };
 
@@ -279,8 +308,8 @@ const ProjectView = () => {
       <div className="container mx-auto p-6 max-w-7xl">
         <div className="flex flex-col md:flex-row justify-between items-start mb-6">
           <div>
-            <h1 className="text-3xl font-bold">{project.name}</h1>
-            <div className="flex items-center mt-2 gap-2">
+            <h1 className="text-3xl font-bold mb-2">{project.name}</h1>
+            <div className="flex items-center gap-2">
               {renderStatus(project.status as ProjectStatus)}
               <span className="text-gray-500 text-sm">Created on {new Date(project.created_at).toLocaleDateString()}</span>
             </div>
@@ -296,8 +325,8 @@ const ProjectView = () => {
             {currentStep < CAMPAIGN_STEPS.length && (
               <Button 
                 onClick={handleProgressCampaign}
-                disabled={isUploading || (currentStep === 3 && !briefUploaded && briefFiles.length === 0)}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-sm"
+                disabled={isUploading || nextStepBlocked}
+                className={`${nextStepBlocked ? 'bg-gray-400 hover:bg-gray-500' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'} shadow-sm`}
               >
                 {isUploading ? 'Uploading...' : 'Next Step'}
                 <ArrowRight className="ml-1 h-4 w-4" />
@@ -305,6 +334,16 @@ const ProjectView = () => {
             )}
           </div>
         </div>
+
+        {/* Show blocked alert */}
+        {showBlockedAlert && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              You must upload a brief and contract before proceeding to the next step.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Campaign Progress */}
         <Card className="mb-8 overflow-hidden shadow-sm">
@@ -352,34 +391,35 @@ const ProjectView = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Campaign Details */}
           <Card className="md:col-span-2 shadow-sm">
-            <CardHeader className="bg-gray-50 border-b">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
               <CardTitle className="text-xl">Campaign Details</CardTitle>
+              <CardDescription>Complete information about this campaign</CardDescription>
             </CardHeader>
             <CardContent className="divide-y">
               <div className="py-4 grid grid-cols-2">
-                <div className="font-medium">Campaign Type</div>
-                <div className="capitalize">{project.campaign_type.replace('_', ' ')}</div>
+                <div className="font-medium text-gray-700">Campaign Type</div>
+                <div className="capitalize font-medium">{project.campaign_type.replace('_', ' ')}</div>
               </div>
               
               <div className="py-4 grid grid-cols-2">
-                <div className="font-medium">Timeline</div>
+                <div className="font-medium text-gray-700">Timeline</div>
                 <div>
-                  <div>{formattedStartDate} - {formattedEndDate}</div>
-                  {campaignDuration && <div className="text-sm text-gray-500">{campaignDuration} days</div>}
+                  <div className="font-medium">{formattedStartDate} - {formattedEndDate}</div>
+                  {campaignDuration && <div className="text-sm text-blue-600 mt-1">{campaignDuration} days duration</div>}
                 </div>
               </div>
               
               <div className="py-4 grid grid-cols-2">
-                <div className="font-medium">Budget</div>
-                <div>{formatCurrency(project.budget, project.currency)}</div>
+                <div className="font-medium text-gray-700">Budget</div>
+                <div className="font-medium">{formatCurrency(project.budget, project.currency)}</div>
               </div>
               
               <div className="py-4 grid grid-cols-2">
-                <div className="font-medium">Platforms</div>
+                <div className="font-medium text-gray-700">Platforms</div>
                 <div>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-2">
                     {project.platforms?.map((platform: string) => (
-                      <Badge key={platform} variant="outline" className="capitalize shadow-sm">{platform}</Badge>
+                      <Badge key={platform} variant="outline" className="capitalize shadow-sm bg-blue-50">{platform}</Badge>
                     )) || "None specified"}
                   </div>
                 </div>
@@ -387,13 +427,16 @@ const ProjectView = () => {
               
               {contentRequirements && (
                 <div className="py-4 grid grid-cols-2">
-                  <div className="font-medium">Content Requirements</div>
-                  <div>
+                  <div className="font-medium text-gray-700">Content Requirements</div>
+                  <div className="space-y-2">
                     {Object.entries(contentRequirements).map(([type, data]: [string, any]) => {
                       if (type === 'brief_uploaded' || type === 'brief_files') return null;
                       return (
-                        <div key={type} className="capitalize">
-                          {type}: {data.quantity} {data.quantity === 1 ? 'item' : 'items'}
+                        <div key={type} className="flex items-center gap-2">
+                          <Badge className="bg-indigo-100 text-indigo-800 hover:bg-indigo-200">
+                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                          </Badge>
+                          <span>{data.quantity} {data.quantity === 1 ? 'item' : 'items'}</span>
                         </div>
                       );
                     })}
@@ -403,28 +446,35 @@ const ProjectView = () => {
               
               {project.whitelisting !== undefined && (
                 <div className="py-4 grid grid-cols-2">
-                  <div className="font-medium">Whitelisting</div>
-                  <div>{project.whitelisting ? 'Required' : 'Not required'}</div>
+                  <div className="font-medium text-gray-700">Whitelisting</div>
+                  <div>{project.whitelisting ? 
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Required</Badge> : 
+                    <Badge variant="outline" className="bg-gray-50">Not required</Badge>}
+                  </div>
                 </div>
               )}
               
               {project.description && (
                 <div className="py-4">
-                  <div className="font-medium mb-2">Description</div>
-                  <div className="text-gray-700">{project.description}</div>
+                  <div className="font-medium text-gray-700 mb-2">Description</div>
+                  <div className="text-gray-700 bg-gray-50 p-4 rounded-md border">
+                    {project.description}
+                  </div>
                 </div>
               )}
 
               {/* Brief & Contract Upload Section */}
               {currentStep === 3 && !isBriefUploaded && (
                 <div className="py-4">
-                  <div className="font-medium mb-2">Campaign Brief & Contract</div>
-                  <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-6 mt-2 flex flex-col items-center">
+                  <div className="font-medium text-gray-700 mb-2">Campaign Brief & Contract</div>
+                  <div className={`${nextStepBlocked ? 'bg-red-50 border-red-200' : 'bg-gray-50'} border-2 border-dashed rounded-lg p-6 mt-2 flex flex-col items-center transition-colors duration-200`}>
                     <div className="mb-4 flex flex-col items-center">
-                      <Upload className="h-12 w-12 text-gray-400 mb-3" />
+                      <Upload className={`h-12 w-12 ${nextStepBlocked ? 'text-red-400' : 'text-gray-400'} mb-3`} />
                       <p className="font-medium text-gray-700">Upload Campaign Brief & Contract</p>
                       <p className="text-sm text-gray-500 mt-1 text-center">
-                        Upload your campaign brief, contract, and any other relevant documents for approval
+                        {nextStepBlocked ? 
+                          'You must upload your campaign brief before proceeding to the next step' : 
+                          'Upload your campaign brief, contract, and any other relevant documents for approval'}
                       </p>
                     </div>
                     
@@ -457,6 +507,14 @@ const ProjectView = () => {
                             </div>
                           ))}
                         </div>
+                        
+                        <Button 
+                          onClick={handleProgressCampaign} 
+                          className="mt-4 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                          disabled={isUploading}
+                        >
+                          {isUploading ? 'Uploading...' : 'Upload Files & Continue'}
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -466,7 +524,7 @@ const ProjectView = () => {
               {/* Show uploaded brief files if already uploaded */}
               {isBriefUploaded && briefFilesList.length > 0 && (
                 <div className="py-4">
-                  <div className="font-medium mb-2">Uploaded Campaign Materials</div>
+                  <div className="font-medium text-gray-700 mb-2">Uploaded Campaign Materials</div>
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                     <div className="flex items-center mb-2">
                       <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
@@ -475,7 +533,7 @@ const ProjectView = () => {
                     
                     <div className="mt-2">
                       <p className="text-sm font-medium text-gray-700 mb-1">Files:</p>
-                      <div className="space-y-1">
+                      <div className="space-y-1 bg-white p-3 rounded-md border">
                         {briefFilesList.map((fileName: string, index: number) => (
                           <div key={index} className="flex items-center">
                             <FileText className="h-4 w-4 text-gray-500 mr-2" />
@@ -493,7 +551,7 @@ const ProjectView = () => {
           {/* Creator Assignment & Actions */}
           <div className="space-y-8">
             <Card className="shadow-sm">
-              <CardHeader className="bg-gray-50 border-b">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
                 <CardTitle className="text-xl">Assigned Creators</CardTitle>
               </CardHeader>
               <CardContent className="py-6">
@@ -531,25 +589,46 @@ const ProjectView = () => {
             </Card>
 
             <Card className="shadow-sm">
-              <CardHeader className="bg-gray-50 border-b">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
                 <CardTitle className="text-xl">Campaign Actions</CardTitle>
               </CardHeader>
               <CardContent className="py-6">
                 <div className="space-y-3">
-                  <Button variant="outline" className="w-full justify-start shadow-sm">
-                    <FileText className="mr-2 h-4 w-4" />
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start shadow-sm transition-colors hover:bg-blue-50"
+                    onClick={() => navigate(`/brand/projects/edit/${id}`)}
+                  >
+                    <FileText className="mr-2 h-4 w-4 text-blue-600" />
                     Edit Campaign
                   </Button>
-                  <Button variant="outline" className="w-full justify-start shadow-sm">
-                    <DollarSign className="mr-2 h-4 w-4" />
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start shadow-sm transition-colors hover:bg-blue-50"
+                    onClick={() => navigate(`/brand/projects/budget/${id}`)}
+                  >
+                    <DollarSign className="mr-2 h-4 w-4 text-indigo-600" />
                     Manage Budget
                   </Button>
-                  <Button variant="outline" className="w-full justify-start shadow-sm">
-                    <BarChart2 className="mr-2 h-4 w-4" />
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start shadow-sm transition-colors hover:bg-blue-50"
+                    onClick={() => navigate(`/brand/projects/analytics/${id}`)}
+                    disabled={currentStep < 6} // Only active in Performance Reporting stage
+                  >
+                    <BarChart2 className="mr-2 h-4 w-4 text-green-600" />
                     View Analytics
+                    {currentStep < 6 && (
+                      <Badge className="ml-2 bg-gray-100 text-gray-500">Available in final stage</Badge>
+                    )}
                   </Button>
                 </div>
               </CardContent>
+              <CardFooter className="bg-gray-50 px-6 py-3 border-t">
+                <p className="text-xs text-gray-500 w-full text-center">
+                  Additional actions will be available as the campaign progresses
+                </p>
+              </CardFooter>
             </Card>
           </div>
         </div>
