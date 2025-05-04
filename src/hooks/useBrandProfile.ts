@@ -32,20 +32,11 @@ export const useBrandProfile = () => {
       setError(null);
 
       try {
-        // First get the profile id
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', user.id)
-          .single();
-
-        if (profileError) throw profileError;
-
-        // Then get the brand profile
+        // Get the brand profile directly using user id
         const { data, error } = await supabase
           .from('brand_profiles')
           .select('*')
-          .eq('user_id', profileData.id)
+          .eq('user_id', user.id)
           .maybeSingle();
 
         if (error) throw error;

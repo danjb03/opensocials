@@ -51,11 +51,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log("Fetching role for user:", userId);
       
-      // Only fetch the fields we need
+      // Fetch the role directly from profiles table
       const { data, error } = await supabase
-        .from('user_roles')
-        .select('role, status')
-        .eq('user_id', userId)
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
         .maybeSingle();
 
       if (error) {
@@ -71,32 +71,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       console.log("User role data:", data);
 
-      if (data && data.status === 'approved') {
+      if (data && data.role) {
         console.log("Setting role to:", data.role);
         setRole(data.role as UserRole);
       } else {
-        console.log("No approved role found, setting to null");
+        console.log("No role found, setting to null");
         setRole(null);
         
-        if (data && data.status === 'pending') {
-          toast({
-            title: 'Account Pending',
-            description: 'Your account is pending approval.',
-            duration: 5000,
-          });
-        } else if (data && data.status === 'declined') {
-          toast({
-            title: 'Account Declined',
-            description: 'Your account has been declined.',
-            duration: 5000,
-          });
-        } else if (!data) {
-          toast({
-            title: 'No Role Assigned',
-            description: 'Your account does not have a role assigned. Please contact an administrator.',
-            duration: 5000,
-          });
-        }
+        toast({
+          title: 'No Role Assigned',
+          description: 'Your account does not have a role assigned. Please contact an administrator.',
+          duration: 5000,
+        });
       }
       
       setIsLoading(false);

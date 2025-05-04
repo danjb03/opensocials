@@ -39,7 +39,6 @@ const AuthPage = () => {
           data: {
             first_name: firstName,
             last_name: lastName,
-            role: role.toLowerCase(), // save lowercase
           },
         },
       });
@@ -49,13 +48,14 @@ const AuthPage = () => {
       if (data.user) {
         console.log('User signed up:', data.user.id);
 
-        const { error: roleError } = await supabase.rpc('create_user_role', {
-          user_id: data.user.id,
-          role_type: role.toLowerCase(),
-        });
+        // Update the profile with role directly
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ role: role.toLowerCase() })
+          .eq('id', data.user.id);
 
-        if (roleError) {
-          console.error('Failed to assign role:', roleError);
+        if (profileError) {
+          console.error('Failed to assign role:', profileError);
           toast.error('Failed to assign role. Please contact support.');
           return;
         }
@@ -80,20 +80,20 @@ const AuthPage = () => {
 
       if (error) throw error;
 
-      const { data: roleData, error: roleError } = await supabase
-        .from('user_roles')
-        .select('role, status')
-        .eq('user_id', data.user.id)
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
         .maybeSingle();
 
-      if (roleError) {
-        console.error('Error fetching user role:', roleError);
+      if (profileError) {
+        console.error('Error fetching user role:', profileError);
         toast.error('Failed to fetch user role.');
         return;
       }
 
-      if (roleData?.status === 'approved') {
-        switch (roleData.role) {
+      if (profileData?.role) {
+        switch (profileData.role) {
           case 'super_admin':
             navigate('/super-admin');
             break;
@@ -107,15 +107,11 @@ const AuthPage = () => {
             navigate('/creator');
             break;
           default:
-            console.error('Unknown role:', roleData.role);
+            console.error('Unknown role:', profileData.role);
             toast.error('Invalid user role');
         }
-      } else if (roleData?.status === 'pending') {
-        toast.error('Your account is pending approval.');
-      } else if (roleData?.status === 'declined') {
-        toast.error('Your account has been declined.');
       } else {
-        toast.error('No role assigned or status unknown.');
+        toast.error('No role assigned.');
       }
     } catch (err: any) {
       console.error('Login error:', err.message);

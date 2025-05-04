@@ -194,6 +194,7 @@ export type Database = {
           last_name: string | null
           linkedin_connected: boolean | null
           primary_platform: string | null
+          role: string | null
           show_analytics: boolean | null
           show_instagram: boolean | null
           show_linkedin: boolean | null
@@ -222,6 +223,7 @@ export type Database = {
           last_name?: string | null
           linkedin_connected?: boolean | null
           primary_platform?: string | null
+          role?: string | null
           show_analytics?: boolean | null
           show_instagram?: boolean | null
           show_linkedin?: boolean | null
@@ -250,6 +252,7 @@ export type Database = {
           last_name?: string | null
           linkedin_connected?: boolean | null
           primary_platform?: string | null
+          role?: string | null
           show_analytics?: boolean | null
           show_instagram?: boolean | null
           show_linkedin?: boolean | null

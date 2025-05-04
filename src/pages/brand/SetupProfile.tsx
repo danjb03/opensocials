@@ -1,5 +1,4 @@
-
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -101,21 +100,12 @@ const SetupProfile = () => {
       if (logoFile) {
         uploadedLogoUrl = await uploadLogo();
       }
-
-      // Get current user profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', user?.id)
-        .single();
-
-      if (profileError) throw profileError;
       
-      // Create brand profile
+      // Create brand profile directly with user ID
       const { error: insertError } = await supabase
         .from('brand_profiles')
         .insert({
-          user_id: profileData.id,
+          user_id: user?.id,
           company_name: companyName,
           website: website || null,
           industry: industry || null,

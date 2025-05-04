@@ -30,20 +30,11 @@ const BrandOnboardingGuard = ({
       }
 
       try {
-        // First get the profile id
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', user.id)
-          .single();
-
-        if (profileError) throw profileError;
-
         // Check if brand profile exists and is complete
         const { data: brandProfile } = await supabase
           .from('brand_profiles')
           .select('is_complete')
-          .eq('user_id', profileData.id)
+          .eq('user_id', user.id)
           .maybeSingle();
 
         setIsProfileComplete(!!brandProfile?.is_complete);
