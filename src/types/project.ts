@@ -23,3 +23,12 @@ export type ProjectFormValues = {
   payment_structure: "upfront" | "50_50" | "on_delivery";
   description?: string;
 };
+
+export interface ContentRequirements {
+  videos?: { quantity: number };
+  stories?: { quantity: number };
+  posts?: { quantity: number };
+  brief_uploaded?: boolean;
+  brief_files?: string[];
+  [key: string]: any; // Add index signature to make it compatible with Json type
+}
