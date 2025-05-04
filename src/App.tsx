@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,6 +28,7 @@ import DataDeletion from "./pages/DataDeletion";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import BrandOnboardingGuard from "./components/BrandOnboardingGuard";
+import ProjectView from './pages/brand/ProjectView';
 
 const ProtectedRoute = ({ children, requiredRole }: { 
   children: React.ReactNode, 
@@ -152,6 +152,14 @@ const App = () => {
                   <BrandOnboardingGuard>
                     <BrandOrders />
                   </BrandOnboardingGuard>
+                } 
+              />
+              <Route 
+                path="/brand/projects/:id" 
+                element={
+                  <BrandGuard>
+                    <ProjectView />
+                  </BrandGuard>
                 } 
               />
               
