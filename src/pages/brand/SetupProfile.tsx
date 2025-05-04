@@ -45,20 +45,35 @@ const SetupProfile = () => {
       if (!user) return;
       
       try {
+        console.log('👁️‍🗨️ SetupProfile page loaded for user:', user.id);
+        
+        // Check bypass flag - remove it if we're on the setup page to avoid issues
+        const bypassCheck = localStorage.getItem('bypass_brand_check');
+        if (bypassCheck) {
+          console.log('🔄 Found bypass_brand_check flag on setup page, removing it');
+          localStorage.removeItem('bypass_brand_check');
+        }
+        
         const { data, error } = await supabase
           .from('profiles')
-          .select('is_complete, role, status')
+          .select('*')
           .eq('id', user.id)
           .maybeSingle();
           
         if (error) {
-          console.error('Error checking profile status:', error);
+          console.error('❌ Error checking profile status:', error);
           return;
         }
         
-        console.log('Current profile status on setup page:', data);
+        console.log('📦 Current profile data on setup page:', data);
+        
+        // Check specific fields that might cause redirect loops
+        const requiredFields = ['company_name', 'website', 'logo_url', 'industry'];
+        const missing = requiredFields.filter((f) => !data?.[f]);
+        console.log('❓ Missing required fields:', missing);
+        console.log('✅ is_complete flag:', data?.is_complete);
       } catch (error) {
-        console.error('Error in profile status check:', error);
+        console.error('❌ Error in profile status check:', error);
       }
     };
     

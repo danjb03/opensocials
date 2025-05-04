@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,6 +28,7 @@ import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import DataDeletion from "./pages/DataDeletion";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import BrandOnboardingGuard from "./components/BrandOnboardingGuard";
 
 const ProtectedRoute = ({ children, requiredRole }: { 
   children: React.ReactNode, 
@@ -125,33 +125,33 @@ const App = () => {
               <Route 
                 path="/brand" 
                 element={
-                  <BrandGuard>
+                  <BrandOnboardingGuard>
                     <BrandDashboard />
-                  </BrandGuard>
+                  </BrandOnboardingGuard>
                 } 
               />
               <Route 
                 path="/brand/projects" 
                 element={
-                  <BrandGuard>
+                  <BrandOnboardingGuard>
                     <Projects />
-                  </BrandGuard>
+                  </BrandOnboardingGuard>
                 } 
               />
               <Route 
                 path="/brand/creators" 
                 element={
-                  <BrandGuard>
+                  <BrandOnboardingGuard>
                     <CreatorSearch />
-                  </BrandGuard>
+                  </BrandOnboardingGuard>
                 } 
               />
               <Route 
                 path="/brand/orders" 
                 element={
-                  <BrandGuard>
+                  <BrandOnboardingGuard>
                     <BrandOrders />
-                  </BrandGuard>
+                  </BrandOnboardingGuard>
                 } 
               />
               

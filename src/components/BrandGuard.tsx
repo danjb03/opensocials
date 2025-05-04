@@ -22,35 +22,42 @@ const BrandGuard = ({
 
   useEffect(() => {
     const checkBrandAccess = async () => {
+      console.log('👁️‍🗨️ BrandGuard running');
+      console.log('🧾 Auth state:', { user: user?.id, role, authLoading });
+      console.log('📍 Path:', window.location.pathname);
+
       // Check for bypass flag (temporary, for one navigation)
       const bypassCheck = localStorage.getItem('bypass_brand_check');
       if (bypassCheck) {
-        console.log('Bypassing brand guard check due to bypass flag');
+        console.log('✅ Bypassing brand guard check due to bypass flag');
         localStorage.removeItem('bypass_brand_check');
         setIsChecking(false);
         return;
       }
 
       // Wait for auth to complete
-      if (authLoading) return;
+      if (authLoading) {
+        console.log('🌀 Auth still loading, waiting...');
+        return;
+      }
       
       // If not logged in, redirect to auth
       if (!user) {
-        console.log('BrandGuard: User not logged in, redirecting to auth');
+        console.log('🚫 User not logged in, redirecting to auth');
         navigate('/auth');
         return;
       }
       
       // If not a brand or super_admin, redirect
       if (role !== 'brand' && role !== 'super_admin') {
-        console.log('BrandGuard: User is not a brand or super_admin, redirecting');
+        console.log('🚫 User is not a brand or super_admin, redirecting');
         navigate(redirectTo);
         return;
       }
 
       // Super admins can access all brand routes
       if (role === 'super_admin') {
-        console.log('BrandGuard: User is super_admin, allowing access');
+        console.log('✅ User is super_admin, allowing access');
         setIsChecking(false);
         return;
       }
@@ -64,7 +71,7 @@ const BrandGuard = ({
           .maybeSingle();
           
         if (roleError) {
-          console.error('Error checking role status:', roleError);
+          console.error('❌ Error checking role status:', roleError);
           navigate('/auth');
           return;
         }
@@ -73,10 +80,10 @@ const BrandGuard = ({
         const isApproved = roleData?.status === 'approved';
         const isSetupPage = window.location.pathname === '/brand/setup-profile';
         
-        console.log('BrandGuard: Role status check - isApproved:', isApproved, 'isSetupPage:', isSetupPage);
+        console.log('🔑 Role status check - isApproved:', isApproved, 'isSetupPage:', isSetupPage);
         
         if (!isApproved && !isSetupPage) {
-          console.log('BrandGuard: User role not approved, redirecting to setup');
+          console.log('🚨 User role not approved, redirecting to setup');
           navigate('/brand/setup-profile');
           return;
         }
@@ -90,33 +97,34 @@ const BrandGuard = ({
           .maybeSingle();
         
         if (profileError) {
-          console.error('Error fetching brand profile:', profileError);
+          console.error('❌ Error fetching brand profile:', profileError);
           navigate('/auth');
           return;
         }
         
-        console.log('BrandGuard: Profile check - profile data:', brandProfile);
+        console.log('📦 Raw profile fetch response:', brandProfile);
         
         // Only check profile completion for actual brands with approved status
         if (isApproved) {
           // Check for required fields
-          const missingRequiredFields = REQUIRED_BRAND_FIELDS.some(field => !brandProfile?.[field]);
+          const missingRequiredFields = REQUIRED_BRAND_FIELDS.filter(field => !brandProfile?.[field]);
           const profileComplete = brandProfile?.is_complete === true;
           const profileAccepted = brandProfile?.status === 'accepted';
           
-          console.log('BrandGuard: Profile status - missingRequiredFields:', missingRequiredFields, 
-                     'complete:', profileComplete, 'accepted:', profileAccepted);
+          console.log('❓ Missing required fields:', missingRequiredFields);
+          console.log('✅ Profile status - complete:', profileComplete, 'accepted:', profileAccepted);
           
-          if ((missingRequiredFields || !profileComplete || !profileAccepted) && !isSetupPage) {
-            console.log('BrandGuard: Brand profile missing required fields or not complete/accepted, redirecting to setup');
+          if ((missingRequiredFields.length > 0 || !profileComplete || !profileAccepted) && !isSetupPage) {
+            console.log('🚨 Brand profile missing required fields or not complete/accepted, redirecting to setup');
             navigate('/brand/setup-profile');
             return;
           }
         }
 
+        console.log('✅ All guard checks passed, showing brand dashboard');
         setIsChecking(false);
       } catch (err) {
-        console.error('Error checking brand access:', err);
+        console.error('❌ Error checking brand access:', err);
         navigate('/auth');
         return;
       }

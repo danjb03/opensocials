@@ -77,7 +77,7 @@ export const useProfileSetup = () => {
         status: 'accepted' // Explicitly set status to accepted
       };
       
-      console.log("Updating minimal profile data:", profileData);
+      console.log("💾 Updating minimal profile data:", profileData);
       
       const { error } = await supabase
         .from('profiles')
@@ -85,20 +85,27 @@ export const useProfileSetup = () => {
         .eq('id', user.id);
           
       if (error) {
-        console.error("Profile update error:", error);
+        console.error("❌ Profile update error:", error);
         throw error;
       }
       
       // Update user role status to approved
       await updateUserRoleStatus(user.id);
-      console.log("User role status updated to approved");
+      console.log("✅ User role status updated to approved");
       
       toast.success('Welcome to your brand dashboard!');
       
-      // Navigate to dashboard
-      redirectToDashboard();
+      // Strong bypass flag to ensure we don't get redirected back
+      localStorage.setItem('bypass_brand_check', 'true');
+      console.log("🔄 Set bypass_brand_check flag in localStorage");
+      
+      // Navigate to dashboard with a slight delay to ensure state updates are processed
+      setTimeout(() => {
+        console.log("🚀 Redirecting to dashboard with forced page reload");
+        window.location.href = '/brand';
+      }, 300);
     } catch (error: any) {
-      console.error('Error skipping profile setup:', error);
+      console.error('❌ Error skipping profile setup:', error);
       toast.error('Failed to continue: ' + (error.message || 'Unknown error'));
     } finally {
       setIsLoading(false);
@@ -120,14 +127,14 @@ export const useProfileSetup = () => {
     }
 
     setIsLoading(true);
-    console.log("Starting profile setup submission");
+    console.log("🚀 Starting profile setup submission");
 
     try {
       // Upload logo if one was selected
       let uploadedLogoUrl = null;
       if (logoFile) {
         uploadedLogoUrl = await uploadLogo();
-        console.log("Logo uploaded:", uploadedLogoUrl);
+        console.log("🖼️ Logo uploaded:", uploadedLogoUrl);
       }
       
       const profileData = {
@@ -140,7 +147,7 @@ export const useProfileSetup = () => {
         status: 'accepted' // Explicitly set status to accepted
       };
       
-      console.log("Updating profile with data:", profileData);
+      console.log("💾 Updating profile with data:", profileData);
       
       // Update profile
       const { error } = await supabase
@@ -149,22 +156,29 @@ export const useProfileSetup = () => {
         .eq('id', user.id);
           
       if (error) {
-        console.error("Profile update error:", error);
+        console.error("❌ Profile update error:", error);
         throw error;
       }
       
-      console.log("Profile updated successfully");
+      console.log("✅ Profile updated successfully");
       
       // Update user role status to approved
       await updateUserRoleStatus(user.id);
-      console.log("User role status updated to approved");
+      console.log("✅ User role status updated to approved");
       
       toast.success('Profile setup complete!');
       
-      // Navigate to dashboard using direct location change to avoid routing issues
-      redirectToDashboard();
+      // Strong bypass flag to ensure we don't get redirected back
+      localStorage.setItem('bypass_brand_check', 'true');
+      console.log("🔄 Set bypass_brand_check flag in localStorage");
+      
+      // Navigate to dashboard with a slight delay to ensure state updates are processed
+      setTimeout(() => {
+        console.log("🚀 Redirecting to dashboard with forced page reload");
+        window.location.href = '/brand';
+      }, 300);
     } catch (error: any) {
-      console.error('Error setting up profile:', error);
+      console.error('❌ Error setting up profile:', error);
       toast.error('Failed to set up profile: ' + (error.message || 'Unknown error'));
     } finally {
       setIsLoading(false);
