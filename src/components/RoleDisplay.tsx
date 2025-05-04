@@ -12,6 +12,10 @@ export const RoleDisplay = ({ userId }: RoleDisplayProps) => {
     return <div>Loading role...</div>;
   }
 
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   if (!role) {
     return <div>No role assigned</div>;
   }
