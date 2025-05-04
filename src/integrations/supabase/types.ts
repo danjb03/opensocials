@@ -107,6 +107,33 @@ export type Database = {
         }
         Relationships: []
       }
+      deauth_logs: {
+        Row: {
+          account_id: string
+          created_at: string
+          error_message: string | null
+          id: string
+          platform: string
+          status: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          platform: string
+          status: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          platform?: string
+          status?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           audience_location: Json | null
