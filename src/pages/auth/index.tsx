@@ -3,9 +3,23 @@ import { useEmailConfirmation } from '@/hooks/useEmailConfirmation';
 import { useAuthPage } from '@/hooks/useAuthPage';
 import Logo from '@/components/ui/logo';
 import { AuthForms } from '@/components/auth/AuthForms';
+import { useEffect } from 'react';
+import { toast } from '@/components/ui/sonner';
 
 const AuthPage = () => {
   const { isSignUp, toggleAuthMode } = useAuthPage();
+  
+  // Check if the URL contains a confirmation parameter and switch to login view
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const isConfirmation = url.searchParams.get('confirmation') === 'true' || url.hash.includes('#access_token=');
+    
+    if (isConfirmation && isSignUp) {
+      // If we're in signup mode but this is a confirmation link, switch to login mode
+      toggleAuthMode();
+      toast.info('Please log in with your credentials.');
+    }
+  }, [isSignUp, toggleAuthMode]);
   
   // Check for confirmation token in URL
   useEmailConfirmation();

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
@@ -33,7 +34,7 @@ export function useAuthForm() {
             last_name: lastName,
             role: role.toLowerCase(), // Store role in user metadata
           },
-          emailRedirectTo: `${window.location.origin}/auth`,
+          emailRedirectTo: `${window.location.origin}/auth?confirmation=true`,
         },
       });
 
@@ -53,15 +54,13 @@ export function useAuthForm() {
           toast.error('Failed to assign role to profile. Please contact support.');
         }
 
-        // Create user role entry and set to approved for creators automatically
-        // Brands will need to complete profile setup
-        const roleStatus = role === 'brand' ? 'pending' : 'approved';
+        // Create user role entry and set to pending until email confirmation
         const { error: roleError } = await supabase
           .from('user_roles')
           .insert({
             user_id: data.user.id,
             role: role.toLowerCase() as "creator" | "brand" | "admin" | "super_admin",
-            status: roleStatus
+            status: 'pending'
           });
 
         if (roleError) {
