@@ -3,12 +3,14 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+export type CampaignType = 'single' | 'weekly' | 'monthly' | '12-Month Retainer' | 'evergreen';
+
 export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userId: string) => {
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     name: '',
-    campaign_type: 'single' as const,
+    campaign_type: 'single' as CampaignType,
     start_date: '',
     end_date: '',
     budget: '',

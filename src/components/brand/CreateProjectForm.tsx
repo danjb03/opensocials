@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { useCreateProjectForm } from '@/hooks/useCreateProjectForm'
+import { useCreateProjectForm, CampaignType } from '@/hooks/useCreateProjectForm'
 import { CampaignTypeSelector } from './project-form/CampaignTypeSelector'
 import { ContentRequirements } from './project-form/ContentRequirements'
 import { PlatformSelector } from './project-form/PlatformSelector'
@@ -81,7 +81,7 @@ const CreateProjectForm = ({ onSuccess, userId }: { onSuccess: (newProject: any)
             <CampaignTypeSelector
               selectedTypes={formData.campaign_type ? [formData.campaign_type] : []}
               onChange={(types) =>
-                setFormData({ ...formData, campaign_type: types.length > 0 ? types[0] : 'single' })
+                setFormData({ ...formData, campaign_type: types.length > 0 ? types[0] as CampaignType : 'single' })
               }
             />
           </div>

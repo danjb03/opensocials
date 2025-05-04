@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { CampaignType } from '@/hooks/useCreateProjectForm';
 
 interface CampaignTypeSelectorProps {
   selectedTypes: string[];
@@ -11,7 +12,7 @@ export const CampaignTypeSelector: React.FC<CampaignTypeSelectorProps> = ({
   selectedTypes, 
   onChange 
 }) => {
-  const campaignOptions = ['single', 'weekly', 'monthly', '12-Month Retainer', 'evergreen'];
+  const campaignOptions: CampaignType[] = ['single', 'weekly', 'monthly', '12-Month Retainer', 'evergreen'];
   
   const handleToggleType = (option: string) => {
     onChange(
