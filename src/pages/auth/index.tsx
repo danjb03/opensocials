@@ -1,43 +1,14 @@
 
-import { useState } from 'react';
-import Logo from '@/components/ui/logo';
-import { useAuthForm } from '@/hooks/useAuthForm';
 import { useEmailConfirmation } from '@/hooks/useEmailConfirmation';
-import { SignUpForm } from '@/components/auth/SignUpForm';
-import { LoginForm } from '@/components/auth/LoginForm';
+import { useAuthPage } from '@/hooks/useAuthPage';
+import Logo from '@/components/ui/logo';
+import { AuthForms } from '@/components/auth/AuthForms';
 
 const AuthPage = () => {
-  const {
-    isLoading,
-    isSignUp,
-    email,
-    setEmail,
-    password,
-    setPassword,
-    firstName,
-    setFirstName,
-    lastName,
-    setLastName,
-    role,
-    setRole,
-    handleSignUp,
-    handleSignIn,
-    toggleAuthMode,
-    handleForgotPassword,
-  } = useAuthForm();
-
+  const { isSignUp, toggleAuthMode } = useAuthPage();
+  
   // Check for confirmation token in URL
   useEmailConfirmation();
-
-  // Combined auth handler
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isSignUp) {
-      await handleSignUp(e);
-    } else {
-      await handleSignIn();
-    }
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8">
@@ -51,34 +22,7 @@ const AuthPage = () => {
           </h2>
         </div>
         
-        {isSignUp ? (
-          <SignUpForm 
-            firstName={firstName}
-            setFirstName={setFirstName}
-            lastName={lastName}
-            setLastName={setLastName}
-            email={email}
-            setEmail={setEmail}
-            password={password}
-            setPassword={setPassword}
-            role={role}
-            setRole={setRole}
-            isLoading={isLoading}
-            onSubmit={handleSignUp}
-            onToggleMode={toggleAuthMode}
-          />
-        ) : (
-          <LoginForm
-            email={email}
-            setEmail={setEmail}
-            password={password}
-            setPassword={setPassword}
-            isLoading={isLoading}
-            onSubmit={handleAuth}
-            onToggleMode={toggleAuthMode}
-            onForgotPassword={handleForgotPassword}
-          />
-        )}
+        <AuthForms isSignUp={isSignUp} onToggleMode={toggleAuthMode} />
       </div>
     </div>
   );

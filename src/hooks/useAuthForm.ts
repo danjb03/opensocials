@@ -7,7 +7,6 @@ import type { UserRole } from '@/lib/auth';
 
 export function useAuthForm() {
   const [isLoading, setIsLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -19,10 +18,6 @@ export function useAuthForm() {
     setLastName('');
     setEmail('');
     setPassword('');
-  };
-
-  const toggleAuthMode = () => {
-    setIsSignUp(!isSignUp);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -111,11 +106,11 @@ export function useAuthForm() {
           // Don't block signup process if email fails
         }
 
-        toast.success('Account created successfully! Please check your email to confirm your account before logging in.');
+        toast.success('Account created successfully! Please check your email to confirm.');
         
         // Reset form fields and switch to login view
         resetForm();
-        setIsSignUp(false);
+        return true; // Return true to indicate success so the parent component can update UI state
       }
     } catch (err: any) {
       console.error('Signup error:', err.message);
@@ -123,6 +118,8 @@ export function useAuthForm() {
     } finally {
       setIsLoading(false);
     }
+    
+    return false; // Return false if signup was not successful
   };
 
   const handleSignIn = async () => {
@@ -200,7 +197,6 @@ export function useAuthForm() {
 
   return {
     isLoading,
-    isSignUp,
     email,
     setEmail,
     password,
@@ -212,7 +208,6 @@ export function useAuthForm() {
     role,
     setRole,
     resetForm,
-    toggleAuthMode,
     handleSignUp,
     handleSignIn,
     handleForgotPassword,
