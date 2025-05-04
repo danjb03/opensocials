@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Plus, FileText, Wallet } from 'lucide-react';
+import { Plus, FileText } from 'lucide-react';
 
 const QuickActions: React.FC = () => {
   const navigate = useNavigate();
@@ -20,19 +20,10 @@ const QuickActions: React.FC = () => {
       <Button 
         variant="outline" 
         className="flex items-center gap-2"
-        onClick={() => navigate('/brand/proposals')}
+        onClick={() => navigate('/brand/orders')}
       >
         <FileText className="h-4 w-4" />
         View Proposals
-      </Button>
-      
-      <Button 
-        variant="outline" 
-        className="flex items-center gap-2"
-        onClick={() => navigate('/brand/billing')}
-      >
-        <Wallet className="h-4 w-4" />
-        Add Budget
       </Button>
     </div>
   );

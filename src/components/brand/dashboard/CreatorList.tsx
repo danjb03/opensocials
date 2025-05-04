@@ -2,8 +2,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Search, ExternalLink } from 'lucide-react';
+import { Users, Search, ExternalLink, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from '@/components/ui/sonner';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface Creator {
   id: string;
@@ -22,6 +24,12 @@ const CreatorList: React.FC<CreatorListProps> = ({ creators }) => {
   
   const goToCreatorSearch = () => {
     navigate('/brand/creators');
+  };
+
+  const handleLikeCreator = (creatorId: string) => {
+    // This will be implemented in the future to store liked creators
+    toast.success("Creator added to your favorites");
+    // Future implementation: Store this in Supabase
   };
 
   return (
@@ -49,24 +57,31 @@ const CreatorList: React.FC<CreatorListProps> = ({ creators }) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {creators.map((creator) => (
               <div key={creator.id} className="flex items-center p-3 border rounded-md bg-background">
-                <div className="h-10 w-10 rounded-full overflow-hidden mr-3 bg-muted">
-                  {creator.imageUrl ? (
-                    <img src={creator.imageUrl} alt={creator.name} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center bg-primary/10 text-primary">
-                      {creator.name.charAt(0)}
-                    </div>
-                  )}
-                </div>
+                <Avatar className="h-10 w-10 mr-3">
+                  <AvatarImage src={creator.imageUrl} alt={creator.name} />
+                  <AvatarFallback className="bg-primary/10 text-primary">
+                    {creator.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{creator.name}</p>
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
                     {creator.platform} • {creator.followers}
                   </p>
                 </div>
-                <Button variant="ghost" size="icon">
-                  <ExternalLink className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => handleLikeCreator(creator.id)}
+                    title="Add to favorites"
+                  >
+                    <Star className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" title="View profile">
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>

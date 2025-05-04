@@ -91,40 +91,11 @@ export const useBrandDashboard = () => {
   ).length;
   const completedProjects = projects.filter(p => p.status === 'completed').length;
 
-  // Mock top campaigns data for MVP
-  const topCampaigns = [
-    {
-      id: '1',
-      title: 'Spring Collection Launch',
-      reach: '240K+',
-      engagement: '12.5%',
-      platform: 'Instagram',
-      imageUrl: null
-    },
-    {
-      id: '2',
-      title: 'Product Showcase Series',
-      reach: '120K+',
-      engagement: '8.2%',
-      platform: 'TikTok',
-      imageUrl: null
-    },
-    {
-      id: '3',
-      title: 'Holiday Special',
-      reach: '85K+',
-      engagement: '10.1%',
-      platform: 'YouTube',
-      imageUrl: null
-    }
-  ];
-
   return {
     isLoading,
     projects,
     todoItems,
     creators,
-    topCampaigns,
     projectStats: {
       totalProjects,
       activeProjects,

@@ -4,7 +4,6 @@ import BrandLayout from '@/components/layouts/BrandLayout';
 import BrandDashboardStats from '@/components/brand/dashboard/BrandDashboardStats';
 import TodoPanel from '@/components/brand/dashboard/TodoPanel';
 import CreatorList from '@/components/brand/dashboard/CreatorList';
-import TopCampaigns from '@/components/brand/dashboard/TopCampaigns';
 import QuickActions from '@/components/brand/dashboard/QuickActions';
 import { useBrandDashboard } from '@/hooks/useBrandDashboard';
 import { useNavigate } from 'react-router-dom';
@@ -19,8 +18,7 @@ const Dashboard = () => {
     isLoading,
     projectStats,
     todoItems,
-    creators,
-    topCampaigns
+    creators
   } = useBrandDashboard();
 
   const handleBackToSuperAdmin = () => {
@@ -61,8 +59,6 @@ const Dashboard = () => {
             </div>
             
             <CreatorList creators={creators} />
-            
-            <TopCampaigns campaigns={topCampaigns} />
           </>
         )}
       </div>
