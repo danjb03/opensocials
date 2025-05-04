@@ -114,23 +114,24 @@ export const OverviewTab = () => {
                 <BarChart 
                   data={platformData}
                   margin={{ top: 20, right: 30, left: 20, bottom: 70 }}
+                  layout="vertical"
+                  barSize={40}
+                  barGap={8}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
+                  <XAxis type="number" />
+                  <YAxis 
+                    type="category"
                     dataKey="name" 
-                    angle={0} 
-                    textAnchor="middle"
-                    height={60}
+                    width={100}
                   />
-                  <YAxis yAxisId="left" />
-                  <YAxis yAxisId="right" orientation="right" />
                   <Tooltip content={<ChartTooltipContent />} />
                   <Legend 
                     verticalAlign="top"
                     height={36}
                   />
-                  <Bar yAxisId="left" dataKey="posts" fill="var(--color-posts)" barSize={30} />
-                  <Bar yAxisId="right" dataKey="engagement" fill="var(--color-engagement)" barSize={30} />
+                  <Bar dataKey="posts" fill="var(--color-posts)" />
+                  <Bar dataKey="engagement" fill="var(--color-engagement)" />
                 </BarChart>
               </ChartContainer>
             </div>
@@ -143,35 +144,37 @@ export const OverviewTab = () => {
             <CardDescription>Age breakdown of engaged users</CardDescription>
           </CardHeader>
           <CardContent className="pt-6 pb-8">
-            <div className="h-[450px] w-full flex items-center justify-center">
-              <div className="w-[280px] h-[280px]">
-                <PieChart width={280} height={280}>
+            <div className="h-[450px] w-full flex flex-col items-center justify-center">
+              <div className="w-[250px] h-[250px] mb-4">
+                <PieChart width={250} height={250}>
                   <Pie
                     data={formattedAudienceData}
-                    cx={140}
-                    cy={140}
-                    labelLine={true}
+                    cx={125}
+                    cy={125}
+                    labelLine={false}
                     outerRadius={100}
-                    innerRadius={0}
+                    innerRadius={30}
                     paddingAngle={2}
                     dataKey="value"
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
                   >
                     {formattedAudienceData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value: number) => `${value}`} />
-                  <Legend
-                    verticalAlign="bottom"
-                    height={36}
-                    payload={formattedAudienceData.map(entry => ({
-                      value: `${entry.name}`,
-                      color: entry.color,
-                      type: 'square'
-                    }))}
-                  />
                 </PieChart>
+              </div>
+              <div className="w-full flex flex-wrap justify-center gap-4">
+                {formattedAudienceData.map((entry, index) => (
+                  <div key={`legend-${index}`} className="flex items-center gap-2">
+                    <div 
+                      className="w-4 h-4 rounded-sm" 
+                      style={{ backgroundColor: entry.color }}
+                    />
+                    <span className="text-sm">{entry.name}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </CardContent>
