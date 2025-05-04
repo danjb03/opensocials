@@ -78,30 +78,41 @@ const BrandGuard = ({
           return;
         }
         
+        // Fetch the brand profile
+        const { data: brandProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_complete, status')
+          .eq('id', user.id)
+          .eq('role', 'brand')
+          .maybeSingle();
+        
+        if (profileError) {
+          console.error('Error fetching brand profile:', profileError);
+          navigate('/auth');
+          return;
+        }
+        
+        console.log('BrandGuard: Profile check - profile data:', brandProfile);
+        
         // Only check profile completion for actual brands with approved status
         if (isApproved) {
-          // Check if brand profile exists and is complete
-          const { data: brandProfile } = await supabase
-            .from('profiles')
-            .select('is_complete')
-            .eq('id', user.id)
-            .eq('role', 'brand')
-            .maybeSingle();
+          const profileComplete = brandProfile?.is_complete === true;
+          const profileAccepted = brandProfile?.status === 'accepted';
           
-          console.log('BrandGuard: Profile completion check - is_complete:', brandProfile?.is_complete);
+          console.log('BrandGuard: Profile status - complete:', profileComplete, 'accepted:', profileAccepted);
           
-          if (!brandProfile?.is_complete && !isSetupPage) {
-            console.log('BrandGuard: Brand profile not complete, redirecting to setup');
+          if ((!profileComplete || !profileAccepted) && !isSetupPage) {
+            console.log('BrandGuard: Brand profile not complete or not accepted, redirecting to setup');
             navigate('/brand/setup-profile');
             return;
           }
         }
+
+        setIsChecking(false);
       } catch (err) {
         console.error('Error checking brand access:', err);
         navigate('/auth');
         return;
-      } finally {
-        setIsChecking(false);
       }
     };
 

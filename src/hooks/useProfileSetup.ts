@@ -123,22 +123,8 @@ export const useProfileSetup = () => {
     console.log("Attempting to navigate to /brand");
     window.localStorage.setItem('bypass_brand_check', 'true');
     
-    // Try different navigation methods as fallbacks
-    setTimeout(() => {
-      try {
-        navigate('/brand', { replace: true });
-        console.log("First navigation attempt complete");
-        
-        // Fallback: direct location change
-        setTimeout(() => {
-          console.log("Using fallback navigation");
-          window.location.href = '/brand';
-        }, 300);
-      } catch (navError) {
-        console.error("Navigation error:", navError);
-        window.location.href = '/brand';
-      }
-    }, 100);
+    // Force a full page reload to ensure fresh data
+    window.location.href = '/brand';
   };
 
   const handleSkipForNow = async () => {
@@ -154,8 +140,9 @@ export const useProfileSetup = () => {
       // Just update the minimal required fields
       const profileData = {
         company_name: companyName || 'My Brand',
-        is_complete: true,
-        role: 'brand'
+        is_complete: true, // Ensure this flag is set correctly
+        role: 'brand',
+        status: 'accepted' // Explicitly set status to accepted
       };
       
       console.log("Updating minimal profile data:", profileData);
@@ -216,8 +203,9 @@ export const useProfileSetup = () => {
         website: website || null,
         industry: industry || null,
         logo_url: uploadedLogoUrl || logoUrl,
-        is_complete: true,
-        role: 'brand'
+        is_complete: true, // Ensure this flag is set correctly
+        role: 'brand',
+        status: 'accepted' // Explicitly set status to accepted
       };
       
       console.log("Updating profile with data:", profileData);
@@ -241,7 +229,7 @@ export const useProfileSetup = () => {
       
       toast.success('Profile setup complete!');
       
-      // Navigate to dashboard
+      // Navigate to dashboard using direct location change to avoid routing issues
       redirectToDashboard();
     } catch (error: any) {
       console.error('Error setting up profile:', error);

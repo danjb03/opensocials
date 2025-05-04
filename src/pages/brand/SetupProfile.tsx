@@ -3,6 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Logo from '@/components/ui/logo';
 import ProfileForm from '@/components/brand/setup/ProfileForm';
 import { useProfileSetup } from '@/hooks/useProfileSetup';
+import { useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/lib/auth';
 
 const industries = [
   'Technology', 
@@ -19,6 +22,7 @@ const industries = [
 ];
 
 const SetupProfile = () => {
+  const { user } = useAuth();
   const {
     companyName,
     setCompanyName,
@@ -34,6 +38,32 @@ const SetupProfile = () => {
     handleSkipForNow,
     handleSubmit
   } = useProfileSetup();
+
+  // Debug check on initial load to verify profile status
+  useEffect(() => {
+    const checkProfileStatus = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('is_complete, role, status')
+          .eq('id', user.id)
+          .maybeSingle();
+          
+        if (error) {
+          console.error('Error checking profile status:', error);
+          return;
+        }
+        
+        console.log('Current profile status on setup page:', data);
+      } catch (error) {
+        console.error('Error in profile status check:', error);
+      }
+    };
+    
+    checkProfileStatus();
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
