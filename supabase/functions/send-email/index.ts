@@ -23,11 +23,14 @@ serve(async (req) => {
   }
 
   try {
+    console.log("Received email request");
     const { to, subject, html, from = "OpenSocials <onboarding@resend.dev>" }: EmailRequest = await req.json();
 
     if (!to || !subject || !html) {
       throw new Error("Missing required fields: to, subject, or html");
     }
+
+    console.log(`Sending email to: ${to}, subject: ${subject}`);
 
     const { data, error } = await resend.emails.send({
       from,

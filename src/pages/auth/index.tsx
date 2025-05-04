@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/sonner';
 import type { UserRole } from '@/lib/auth';
 import Logo from '@/components/ui/logo';
+import { sendEmail } from '@/utils/email';
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -58,6 +60,30 @@ const AuthPage = () => {
           console.error('Failed to assign role:', profileError);
           toast.error('Failed to assign role. Please contact support.');
           return;
+        }
+
+        // Send welcome email for brand users
+        if (role === 'brand') {
+          try {
+            await sendEmail({
+              to: email,
+              subject: 'Welcome to OpenSocials Brand Platform!',
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                  <h1 style="color: #333; text-align: center;">Welcome to OpenSocials!</h1>
+                  <p>Hello ${firstName},</p>
+                  <p>Thank you for creating a brand account on our platform. We're excited to have you onboard!</p>
+                  <p>To complete your profile setup, please login and visit the brand setup page.</p>
+                  <p>If you have any questions, please don't hesitate to reach out to our support team.</p>
+                  <p>Best regards,<br>The OpenSocials Team</p>
+                </div>
+              `,
+            });
+            console.log('Welcome email sent to brand user:', email);
+          } catch (emailError) {
+            console.error('Failed to send welcome email:', emailError);
+            // Don't block signup process if email fails
+          }
         }
 
         toast.success('Account created successfully! Please check your email to confirm.');
