@@ -42,33 +42,6 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
     }));
   };
 
-  const handlePlatformSelect = (platforms: string[]) => {
-    setFormData(prev => ({
-      ...prev,
-      platforms
-    }));
-  };
-
-  const handleAddContentType = (type: 'videos' | 'stories' | 'posts') => {
-    setFormData(prevState => ({
-      ...prevState,
-      content_requirements: {
-        ...prevState.content_requirements,
-        [type]: { quantity: 1 }
-      }
-    }));
-  };
-
-  const handleContentChange = (type: 'videos' | 'stories' | 'posts', quantity: number) => {
-    setFormData(prevState => ({
-      ...prevState,
-      content_requirements: {
-        ...prevState.content_requirements,
-        [type]: { quantity }
-      }
-    }));
-  };
-
   const validateDate = (dateString: string): boolean => {
     if (!dateString || dateString.trim() === '') return true;
     return !isNaN(Date.parse(dateString));
@@ -117,7 +90,7 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
         campaign_type: formData.campaign_type,
         start_date: formData.start_date?.trim() ? formData.start_date : null,
         end_date: formData.end_date?.trim() ? formData.end_date : null,
-        budget: parseFloat(formData.budget) || 0,
+        budget: parseFloat(formData.budget as string) || 0,
         currency: formData.currency,
         content_requirements: Object.keys(contentRequirements).length ? contentRequirements : null,
         platforms: formData.platforms,
@@ -169,9 +142,6 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
     setShowAdvanced,
     handleChange,
     handleSubmit,
-    handleAddContentType,
-    handleContentChange,
-    handlePlatformSelect,
     loading
   };
 };

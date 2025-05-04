@@ -1,3 +1,4 @@
+
 'use client'
 
 import React from 'react'
@@ -18,17 +19,40 @@ import {
   CardDescription,
 } from '@/components/ui/card'
 
-const CreateProjectForm = ({ onSuccess, userId }) => {
+const CreateProjectForm = ({ onSuccess, userId }: { onSuccess: (newProject: any) => void, userId: string }) => {
   const {
     formData,
     setFormData,
     showAdvanced,
     setShowAdvanced,
-    handleAddContentType,
-    handleContentChange,
-    handlePlatformSelect,
+    handleChange,
     handleSubmit,
+    loading
   } = useCreateProjectForm(onSuccess, userId)
+
+  const handleAddContentType = (type: 'videos' | 'stories' | 'posts') => {
+    setFormData(prevState => ({
+      ...prevState,
+      content_requirements: {
+        ...prevState.content_requirements,
+        [type]: { quantity: 1 }
+      }
+    }));
+  };
+
+  const handleContentChange = (type: 'videos' | 'stories' | 'posts', quantity: number) => {
+    setFormData(prevState => ({
+      ...prevState,
+      content_requirements: {
+        ...prevState.content_requirements,
+        [type]: { quantity }
+      }
+    }));
+  };
+
+  const handlePlatformSelect = (platforms: string[]) => {
+    setFormData({ ...formData, platforms });
+  };
 
   return (
     <Card className="w-full shadow-md">
@@ -44,10 +68,9 @@ const CreateProjectForm = ({ onSuccess, userId }) => {
             <label className="block text-sm font-medium mb-1">Project Name</label>
             <Input
               placeholder="Project Name"
+              name="name"
               value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
+              onChange={handleChange}
               required
               className="border-slate-300 focus-visible:ring-blue-500"
             />
@@ -56,9 +79,9 @@ const CreateProjectForm = ({ onSuccess, userId }) => {
           <div>
             <label className="block text-sm font-medium mb-1">Campaign Type</label>
             <CampaignTypeSelector
-              selectedTypes={formData.campaign_type}
+              selectedTypes={Array.isArray(formData.campaign_type) ? formData.campaign_type : [formData.campaign_type]}
               onChange={(types) =>
-                setFormData({ ...formData, campaign_type: types })
+                setFormData({ ...formData, campaign_type: types.length > 0 ? types[0] : 'single' })
               }
             />
           </div>
@@ -89,10 +112,9 @@ const CreateProjectForm = ({ onSuccess, userId }) => {
             <Input
               type="number"
               placeholder="Budget"
+              name="budget"
               value={formData.budget}
-              onChange={(e) =>
-                setFormData({ ...formData, budget: e.target.value })
-              }
+              onChange={handleChange}
               required
               className="border-slate-300 focus-visible:ring-blue-500"
             />
@@ -135,10 +157,9 @@ const CreateProjectForm = ({ onSuccess, userId }) => {
               <p className="font-medium mb-2">Exclusivity</p>
               <Input
                 placeholder="e.g. 3 months"
+                name="exclusivity"
                 value={formData.exclusivity}
-                onChange={(e) =>
-                  setFormData({ ...formData, exclusivity: e.target.value })
-                }
+                onChange={handleChange}
                 className="border-slate-300 focus-visible:ring-blue-500"
               />
             </div>
@@ -157,10 +178,9 @@ const CreateProjectForm = ({ onSuccess, userId }) => {
           {showAdvanced && (
             <Textarea
               placeholder="Add posting times, hashtag guidelines, tone of voice..."
+              name="description"
               value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
+              onChange={handleChange}
               className="min-h-[120px] border-slate-300 focus-visible:ring-blue-500"
             />
           )}
@@ -183,8 +203,9 @@ const CreateProjectForm = ({ onSuccess, userId }) => {
           <Button
             type="submit"
             className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-lg font-medium py-3"
+            disabled={loading}
           >
-            🚀 Launch Campaign
+            {loading ? 'Creating...' : '🚀 Launch Campaign'}
           </Button>
         </form>
       </CardContent>
@@ -193,4 +214,3 @@ const CreateProjectForm = ({ onSuccess, userId }) => {
 }
 
 export default CreateProjectForm
-
