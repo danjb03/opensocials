@@ -32,6 +32,13 @@ export function AuthForms({ isSignUp, onToggleMode }: AuthFormsProps) {
     await handleSignIn();
   };
 
+  // Wrapper for handleSignUp to convert Promise<boolean> to Promise<void>
+  const handleSignUpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await handleSignUp(e);
+    // Return void, not boolean
+  };
+
   return (
     <>
       {isSignUp ? (
@@ -47,7 +54,7 @@ export function AuthForms({ isSignUp, onToggleMode }: AuthFormsProps) {
           role={role}
           setRole={setRole}
           isLoading={isLoading}
-          onSubmit={handleSignUp}
+          onSubmit={handleSignUpSubmit}
           onToggleMode={onToggleMode}
         />
       ) : (
