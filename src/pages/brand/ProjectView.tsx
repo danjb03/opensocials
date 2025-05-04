@@ -44,6 +44,7 @@ const ProjectView = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [briefFiles, setBriefFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [briefUploaded, setBriefUploaded] = useState(false); // Track brief upload status separately
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -66,6 +67,7 @@ const ProjectView = () => {
         // Determine current step based on status
         const statusStepMap: Record<string, number> = {
           'draft': 1,
+          'new': 1,
           'under_review': 2,
           'awaiting_approval': 3,
           'creators_assigned': 3,
@@ -73,6 +75,8 @@ const ProjectView = () => {
           'completed': 6
         };
         
+        // Check for metadata containing brief upload info
+        setBriefUploaded(data.content_requirements?.brief_uploaded || false);
         setCurrentStep(statusStepMap[data.status] || 1);
       } catch (error) {
         console.error('Error fetching project:', error);
@@ -94,7 +98,7 @@ const ProjectView = () => {
       if (!project) return;
       
       // Check if we're on the Creative Planning step and need to upload brief files
-      if (currentStep === 3 && briefFiles.length === 0) {
+      if (currentStep === 3 && !briefUploaded && briefFiles.length === 0) {
         toast({
           title: 'Upload Required',
           description: 'Please upload a brief and contract before proceeding',
@@ -114,19 +118,33 @@ const ProjectView = () => {
       else if (newStep === 6) newStatus = 'completed';
       
       // Handle file upload first if we're progressing from the Creative Planning step
-      if (currentStep === 3 && briefFiles.length > 0) {
+      if (currentStep === 3 && !briefUploaded && briefFiles.length > 0) {
         setIsUploading(true);
         try {
           // This would be an actual file upload to Supabase storage
           // For now we'll just simulate it
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Update project record with brief_uploaded flag
+          // Store brief upload info in content_requirements object instead of a separate field
+          const updatedContentRequirements = {
+            ...(project.content_requirements || {}),
+            brief_uploaded: true,
+            brief_files: briefFiles.map(file => file.name)
+          };
+          
+          // Update project record with brief_uploaded flag in content_requirements
           await supabase
             .from('projects')
-            .update({ brief_uploaded: true })
+            .update({ content_requirements: updatedContentRequirements })
             .eq('id', id);
             
+          // Update local state
+          setBriefUploaded(true);
+          setProject({
+            ...project, 
+            content_requirements: updatedContentRequirements
+          });
+          
           toast({
             title: 'Brief Uploaded',
             description: 'Campaign brief and materials have been uploaded successfully',
@@ -264,7 +282,7 @@ const ProjectView = () => {
             {currentStep < CAMPAIGN_STEPS.length && (
               <Button 
                 onClick={handleProgressCampaign}
-                disabled={isUploading}
+                disabled={isUploading || (currentStep === 3 && !briefUploaded && briefFiles.length === 0)}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-sm"
               >
                 {isUploading ? 'Uploading...' : 'Next Step'}
@@ -357,11 +375,14 @@ const ProjectView = () => {
                 <div className="py-4 grid grid-cols-2">
                   <div className="font-medium">Content Requirements</div>
                   <div>
-                    {Object.entries(project.content_requirements).map(([type, data]: [string, any]) => (
-                      <div key={type} className="capitalize">
-                        {type}: {data.quantity} {data.quantity === 1 ? 'item' : 'items'}
-                      </div>
-                    ))}
+                    {Object.entries(project.content_requirements).map(([type, data]: [string, any]) => {
+                      if (type === 'brief_uploaded' || type === 'brief_files') return null;
+                      return (
+                        <div key={type} className="capitalize">
+                          {type}: {data.quantity} {data.quantity === 1 ? 'item' : 'items'}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -381,7 +402,7 @@ const ProjectView = () => {
               )}
 
               {/* Brief & Contract Upload Section */}
-              {currentStep === 3 && (
+              {currentStep === 3 && !briefUploaded && (
                 <div className="py-4">
                   <div className="font-medium mb-2">Campaign Brief & Contract</div>
                   <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-6 mt-2 flex flex-col items-center">
@@ -419,6 +440,33 @@ const ProjectView = () => {
                               <span className="text-xs text-gray-500 ml-2">
                                 ({Math.round(file.size / 1024)} KB)
                               </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {/* Show uploaded brief files if already uploaded */}
+              {briefUploaded && project.content_requirements?.brief_files && (
+                <div className="py-4">
+                  <div className="font-medium mb-2">Uploaded Campaign Materials</div>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center mb-2">
+                      <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                      <span className="font-medium text-green-700">Brief and contract uploaded</span>
+                    </div>
+                    
+                    {Array.isArray(project.content_requirements.brief_files) && (
+                      <div className="mt-2">
+                        <p className="text-sm font-medium text-gray-700 mb-1">Files:</p>
+                        <div className="space-y-1">
+                          {project.content_requirements.brief_files.map((fileName: string, index: number) => (
+                            <div key={index} className="flex items-center">
+                              <FileText className="h-4 w-4 text-gray-500 mr-2" />
+                              <span className="text-sm text-gray-600">{fileName}</span>
                             </div>
                           ))}
                         </div>
