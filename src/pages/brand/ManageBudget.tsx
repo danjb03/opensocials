@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,13 +13,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, DollarSign, Save, PlusCircle, Trash, Check } from 'lucide-react';
 import { formatCurrency } from '@/utils/project';
 
+// Define the currency type for TypeScript type checking
+type CurrencyType = 'USD' | 'GBP' | 'EUR';
+
 const ManageBudget = () => {
   const { id } = useParams<{ id: string }>();
   const [project, setProject] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [budget, setBudget] = useState<string>('');
-  const [currency, setCurrency] = useState<'USD' | 'GBP' | 'EUR'>('USD');
+  const [currency, setCurrency] = useState<CurrencyType>('USD');
   const [lineItems, setLineItems] = useState<Array<{id: string, description: string, amount: string}>>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -39,7 +43,7 @@ const ManageBudget = () => {
         
         setProject(data);
         setBudget(data.budget ? data.budget.toString() : '');
-        setCurrency(data.currency || 'USD');
+        setCurrency((data.currency || 'USD') as CurrencyType);
         
         // Initialize with two empty line items if none exist
         setLineItems([
@@ -65,7 +69,7 @@ const ManageBudget = () => {
     setBudget(e.target.value);
   };
 
-  const handleCurrencyChange = (value: 'USD' | 'GBP' | 'EUR') => {
+  const handleCurrencyChange = (value: CurrencyType) => {
     setCurrency(value);
   };
 
