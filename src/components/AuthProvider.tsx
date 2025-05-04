@@ -76,10 +76,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.error('Error fetching user role status:', roleError);
       } else if (roleData) {
         console.log("Role status from user_roles:", roleData.status);
+        setRole(roleData.role as UserRole);
       }
       
-      // Finally, fetch the role from profiles table if not found in metadata
-      if (!user?.user_metadata?.role) {
+      // Finally, fetch the role from profiles table if not found already
+      if (!user?.user_metadata?.role && !roleData?.role) {
         const { data, error } = await supabase
           .from('profiles')
           .select('role')
@@ -106,7 +107,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       
       // If still no role found, show error
-      if (!role && !user?.user_metadata?.role) {
+      if (!role && !user?.user_metadata?.role && !roleData?.role && !roleData?.role) {
         console.log("No role found, setting to null");
         
         toast({
