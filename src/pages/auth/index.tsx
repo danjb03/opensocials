@@ -62,28 +62,47 @@ const AuthPage = () => {
           return;
         }
 
-        // Send welcome email for brand users
-        if (role === 'brand') {
-          try {
+        // Send welcome email based on role
+        try {
+          let emailSubject, emailHtml;
+          
+          if (role === 'brand') {
+            emailSubject = 'Welcome to OpenSocials Brand Platform!';
+            emailHtml = `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h1 style="color: #333; text-align: center;">Welcome to OpenSocials!</h1>
+                <p>Hello ${firstName},</p>
+                <p>Thank you for creating a brand account on our platform. We're excited to have you onboard!</p>
+                <p>To complete your profile setup, please login and visit the brand setup page.</p>
+                <p>If you have any questions, please don't hesitate to reach out to our support team.</p>
+                <p>Best regards,<br>The OpenSocials Team</p>
+              </div>
+            `;
+          } else if (role === 'creator') {
+            emailSubject = 'Welcome to OpenSocials Creator Community!';
+            emailHtml = `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h1 style="color: #333; text-align: center;">Welcome to OpenSocials!</h1>
+                <p>Hello ${firstName},</p>
+                <p>Thank you for joining our creator community. We're thrilled to have you with us!</p>
+                <p>To complete your profile setup and start connecting with brands, please login and visit your creator dashboard.</p>
+                <p>If you have any questions, our support team is always here to help.</p>
+                <p>Best regards,<br>The OpenSocials Team</p>
+              </div>
+            `;
+          }
+          
+          if (emailSubject && emailHtml) {
             await sendEmail({
               to: email,
-              subject: 'Welcome to OpenSocials Brand Platform!',
-              html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                  <h1 style="color: #333; text-align: center;">Welcome to OpenSocials!</h1>
-                  <p>Hello ${firstName},</p>
-                  <p>Thank you for creating a brand account on our platform. We're excited to have you onboard!</p>
-                  <p>To complete your profile setup, please login and visit the brand setup page.</p>
-                  <p>If you have any questions, please don't hesitate to reach out to our support team.</p>
-                  <p>Best regards,<br>The OpenSocials Team</p>
-                </div>
-              `,
+              subject: emailSubject,
+              html: emailHtml,
             });
-            console.log('Welcome email sent to brand user:', email);
-          } catch (emailError) {
-            console.error('Failed to send welcome email:', emailError);
-            // Don't block signup process if email fails
+            console.log(`Welcome email sent to ${role} user:`, email);
           }
+        } catch (emailError) {
+          console.error('Failed to send welcome email:', emailError);
+          // Don't block signup process if email fails
         }
 
         toast.success('Account created successfully! Please check your email to confirm.');
