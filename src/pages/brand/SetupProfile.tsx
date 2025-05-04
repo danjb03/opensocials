@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -30,6 +29,7 @@ const SetupProfile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [existingProfile, setExistingProfile] = useState<any>(null);
   
   // Form state
   const [companyName, setCompanyName] = useState('');
@@ -38,6 +38,39 @@ const SetupProfile = () => {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  // Check for existing profile data
+  useEffect(() => {
+    const checkExistingProfile = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('brand_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+          
+        if (error) {
+          console.error('Error fetching brand profile:', error);
+          return;
+        }
+        
+        if (data) {
+          console.log('Found existing brand profile:', data);
+          setExistingProfile(data);
+          setCompanyName(data.company_name || '');
+          setWebsite(data.website || '');
+          setIndustry(data.industry || '');
+          setLogoUrl(data.logo_url || null);
+        }
+      } catch (error) {
+        console.error('Error checking brand profile:', error);
+      }
+    };
+    
+    checkExistingProfile();
+  }, [user]);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -126,26 +159,42 @@ const SetupProfile = () => {
         uploadedLogoUrl = await uploadLogo();
       }
       
-      // Create brand profile directly with user ID
-      const { error: insertError } = await supabase
-        .from('brand_profiles')
-        .insert({
-          user_id: user.id,
-          company_name: companyName,
-          website: website || null,
-          industry: industry || null,
-          logo_url: uploadedLogoUrl,
-          is_complete: true
-        });
+      const profileData = {
+        user_id: user.id,
+        company_name: companyName,
+        website: website || null,
+        industry: industry || null,
+        logo_url: uploadedLogoUrl || logoUrl,
+        is_complete: true
+      };
+      
+      let error;
+      
+      if (existingProfile) {
+        // Update existing profile
+        const { error: updateError } = await supabase
+          .from('brand_profiles')
+          .update(profileData)
+          .eq('id', existingProfile.id);
+          
+        error = updateError;
+      } else {
+        // Create new brand profile
+        const { error: insertError } = await supabase
+          .from('brand_profiles')
+          .insert(profileData);
+          
+        error = insertError;
+      }
 
-      if (insertError) throw insertError;
+      if (error) throw error;
       
       // Update user role status to approved
       await updateUserRoleStatus(user.id);
       
       toast.success('Profile setup complete!');
       
-      // Redirect to brand dashboard instead of setup-brand
+      // Redirect to brand dashboard
       navigate('/brand');
     } catch (error) {
       console.error('Error setting up profile:', error);
@@ -187,10 +236,10 @@ const SetupProfile = () => {
               <div className="space-y-2">
                 <Label htmlFor="logo">Logo</Label>
                 <div className="flex items-center gap-4">
-                  {logoPreview && (
+                  {(logoPreview || logoUrl) && (
                     <div className="relative">
                       <img 
-                        src={logoPreview} 
+                        src={logoPreview || logoUrl || ''} 
                         alt="Logo preview" 
                         className="w-16 h-16 object-cover rounded-md"
                       />
@@ -204,7 +253,7 @@ const SetupProfile = () => {
                     </div>
                   )}
                   
-                  {!logoPreview && (
+                  {!(logoPreview || logoUrl) && (
                     <div className="relative">
                       <Input
                         id="logo"

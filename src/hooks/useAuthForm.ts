@@ -33,6 +33,7 @@ export function useAuthForm() {
           data: {
             first_name: firstName,
             last_name: lastName,
+            role: role.toLowerCase(), // Store role in user metadata
           },
           emailRedirectTo: `${window.location.origin}/auth?confirmation=true`,
         },
@@ -50,9 +51,8 @@ export function useAuthForm() {
           .eq('id', data.user.id);
 
         if (profileError) {
-          console.error('Failed to assign role:', profileError);
-          toast.error('Failed to assign role. Please contact support.');
-          return false;
+          console.error('Failed to assign role to profile:', profileError);
+          toast.error('Failed to assign role to profile. Please contact support.');
         }
 
         // Create user role entry and set to approved for creators automatically
@@ -68,7 +68,26 @@ export function useAuthForm() {
 
         if (roleError) {
           console.error('Failed to create user role:', roleError);
-          // Non-blocking error - continue with signup
+          // Continue with signup despite error
+        }
+        
+        // If the role is brand, create a brand profile entry
+        if (role === 'brand') {
+          // Create an initial brand profile with minimal data
+          const { error: brandProfileError } = await supabase
+            .from('brand_profiles')
+            .insert({
+              user_id: data.user.id,
+              company_name: `${firstName} ${lastName}'s Brand`, // Temporary company name until setup
+              is_complete: false
+            });
+
+          if (brandProfileError) {
+            console.error('Failed to create brand profile:', brandProfileError);
+            toast.error('Failed to create brand profile. You may need to set it up manually.');
+          } else {
+            console.log('Brand profile created successfully');
+          }
         }
 
         // Send welcome email based on role using ONLY Resend
