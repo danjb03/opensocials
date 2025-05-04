@@ -32,6 +32,10 @@ const BrandOnboardingGuard = ({ children, redirectTo = '/auth' }: BrandOnboardin
         }
         
         console.log('BrandOnboardingGuard: User profile:', data);
+        
+        // Check bypass flag for debugging
+        const bypassCheck = localStorage.getItem('bypass_brand_check');
+        console.log('BrandOnboardingGuard: bypass_brand_check flag:', bypassCheck);
       } catch (error) {
         console.error('Error in onboarding guard profile check:', error);
       }

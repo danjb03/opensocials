@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 
+// Define which fields are required for a brand profile to be considered complete
+const REQUIRED_BRAND_FIELDS = ['company_name'];
+
 interface BrandGuardProps {
   children: React.ReactNode;
   redirectTo?: string;
@@ -81,7 +84,7 @@ const BrandGuard = ({
         // Fetch the brand profile
         const { data: brandProfile, error: profileError } = await supabase
           .from('profiles')
-          .select('is_complete, status')
+          .select('*') // Get all fields to check required ones
           .eq('id', user.id)
           .eq('role', 'brand')
           .maybeSingle();
@@ -96,13 +99,16 @@ const BrandGuard = ({
         
         // Only check profile completion for actual brands with approved status
         if (isApproved) {
+          // Check for required fields
+          const missingRequiredFields = REQUIRED_BRAND_FIELDS.some(field => !brandProfile?.[field]);
           const profileComplete = brandProfile?.is_complete === true;
           const profileAccepted = brandProfile?.status === 'accepted';
           
-          console.log('BrandGuard: Profile status - complete:', profileComplete, 'accepted:', profileAccepted);
+          console.log('BrandGuard: Profile status - missingRequiredFields:', missingRequiredFields, 
+                     'complete:', profileComplete, 'accepted:', profileAccepted);
           
-          if ((!profileComplete || !profileAccepted) && !isSetupPage) {
-            console.log('BrandGuard: Brand profile not complete or not accepted, redirecting to setup');
+          if ((missingRequiredFields || !profileComplete || !profileAccepted) && !isSetupPage) {
+            console.log('BrandGuard: Brand profile missing required fields or not complete/accepted, redirecting to setup');
             navigate('/brand/setup-profile');
             return;
           }
