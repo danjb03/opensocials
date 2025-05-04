@@ -1,8 +1,6 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import type { ProjectFormValues } from '@/types/project';
 
 export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userId: string) => {
   const { toast } = useToast();
@@ -35,7 +33,6 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
 
   const handleChange = (e: any) => {
     const { name, value, type, checked } = e.target || {};
-    
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
@@ -43,72 +40,56 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
   };
 
   const validateDate = (dateString: string): boolean => {
-    if (!dateString) return true; // Empty dates will be converted to null
-    // Basic date format validation
+    if (!dateString) return true;
     return !isNaN(Date.parse(dateString));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate required fields
     if (!formData.name) {
-      toast({
-        title: 'Missing Fields',
-        description: 'Please enter a project name.',
-      });
+      toast({ title: 'Missing Fields', description: 'Please enter a project name.' });
       return;
     }
-    
-    // Validate dates if provided
+
     if (formData.start_date && !validateDate(formData.start_date)) {
-      toast({
-        title: 'Invalid Date',
-        description: 'Please enter a valid start date.',
-      });
+      toast({ title: 'Invalid Date', description: 'Please enter a valid start date.' });
       return;
     }
-    
+
     if (formData.end_date && !validateDate(formData.end_date)) {
-      toast({
-        title: 'Invalid Date',
-        description: 'Please enter a valid end date.',
-      });
+      toast({ title: 'Invalid Date', description: 'Please enter a valid end date.' });
       return;
     }
 
     if (formData.submission_deadline && !validateDate(formData.submission_deadline)) {
-      toast({
-        title: 'Invalid Date',
-        description: 'Please enter a valid submission deadline.',
-      });
+      toast({ title: 'Invalid Date', description: 'Please enter a valid submission deadline.' });
       return;
     }
 
     setLoading(true);
 
     try {
-      // Prepare content requirements in the correct format
-      const contentRequirements = {
-        videos: formData.content_requirements.videos.quantity > 0 ? { quantity: formData.content_requirements.videos.quantity } : undefined,
-        stories: formData.content_requirements.stories.quantity > 0 ? { quantity: formData.content_requirements.stories.quantity } : undefined,
-        posts: formData.content_requirements.posts.quantity > 0 ? { quantity: formData.content_requirements.posts.quantity } : undefined
-      };
-
-      // Ensure empty date strings are set to null
-      const start_date = formData.start_date ? formData.start_date : null;
-      const end_date = formData.end_date ? formData.end_date : null;
-      const submission_deadline = formData.submission_deadline ? formData.submission_deadline : null;
+      const contentRequirements: any = {};
+      if (formData.content_requirements.videos.quantity > 0) {
+        contentRequirements.videos = { quantity: formData.content_requirements.videos.quantity };
+      }
+      if (formData.content_requirements.stories.quantity > 0) {
+        contentRequirements.stories = { quantity: formData.content_requirements.stories.quantity };
+      }
+      if (formData.content_requirements.posts.quantity > 0) {
+        contentRequirements.posts = { quantity: formData.content_requirements.posts.quantity };
+      }
 
       const payload = {
         brand_id: userId,
         name: formData.name,
         campaign_type: formData.campaign_type,
-        start_date: start_date,
-        end_date: end_date,
+        start_date: formData.start_date?.trim() ? formData.start_date : null,
+        end_date: formData.end_date?.trim() ? formData.end_date : null,
         budget: parseFloat(formData.budget) || 0,
         currency: formData.currency,
-        content_requirements: contentRequirements,
+        content_requirements: Object.keys(contentRequirements).length ? contentRequirements : null,
         platforms: formData.platforms,
         usage_duration: formData.usage_duration || null,
         whitelisting: formData.whitelisting,
@@ -116,13 +97,12 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
         audience_focus: formData.audience_focus || null,
         campaign_objective: formData.campaign_objective,
         draft_approval: formData.draft_approval,
-        submission_deadline: submission_deadline,
+        submission_deadline: formData.submission_deadline?.trim() ? formData.submission_deadline : null,
         payment_structure: formData.payment_structure,
         description: formData.description || null,
         status: 'draft'
       };
 
-      console.log('Submitting project with payload:', payload);
       const { error } = await supabase.from('projects').insert(payload);
 
       if (error) {
