@@ -6,7 +6,6 @@ import { toast } from '@/components/ui/sonner';
 
 interface BrandProfile {
   id: string;
-  user_id: string;
   company_name: string;
   logo_url: string | null;
   website: string | null;
@@ -32,16 +31,28 @@ export const useBrandProfile = () => {
       setError(null);
 
       try {
-        // Get the brand profile directly using user id
+        // Get the profile for the current brand user
         const { data, error } = await supabase
-          .from('brand_profiles')
+          .from('profiles')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('id', user.id)
+          .eq('role', 'brand')
           .maybeSingle();
 
         if (error) throw error;
         
-        setProfile(data);
+        if (data) {
+          // Transform profile data to match expected BrandProfile interface
+          setProfile({
+            id: data.id,
+            company_name: data.company_name || '',
+            logo_url: data.logo_url,
+            website: data.website,
+            industry: data.industry,
+            is_complete: data.is_complete || false,
+            created_at: data.created_at || new Date().toISOString(),
+          });
+        }
       } catch (err: any) {
         console.error('Error fetching brand profile:', err);
         setError(err.message);
@@ -61,9 +72,9 @@ export const useBrandProfile = () => {
 
     try {
       const { error } = await supabase
-        .from('brand_profiles')
+        .from('profiles')
         .update(updates)
-        .eq('id', profile.id);
+        .eq('id', user.id);
 
       if (error) throw error;
       

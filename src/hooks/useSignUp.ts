@@ -46,15 +46,31 @@ export function useSignUp() {
       if (data.user) {
         console.log('User signed up:', data.user.id);
 
-        // Update the profile with role directly
+        // Create profile with role
+        const profileData = {
+          id: data.user.id,
+          first_name: firstName,
+          last_name: lastName,
+          role: role.toLowerCase(),
+          email: email
+        };
+        
+        // If role is brand, add brand-specific fields
+        if (role === 'brand') {
+          Object.assign(profileData, {
+            company_name: `${firstName} ${lastName}'s Brand`, // Temporary company name until setup
+            is_complete: false
+          });
+        }
+        
+        // Upsert to profiles (will create if doesn't exist)
         const { error: profileError } = await supabase
           .from('profiles')
-          .update({ role: role.toLowerCase() })
-          .eq('id', data.user.id);
+          .upsert(profileData, { onConflict: 'id' });
 
         if (profileError) {
-          console.error('Failed to assign role to profile:', profileError);
-          toast.error('Failed to assign role to profile. Please contact support.');
+          console.error('Failed to create profile:', profileError);
+          toast.error('Failed to create profile. Please contact support.');
         }
 
         // Create user role entry and set to pending until email confirmation
@@ -69,30 +85,6 @@ export function useSignUp() {
         if (roleError) {
           console.error('Failed to create user role:', roleError);
           // Continue with signup despite error
-        }
-        
-        // If the role is brand, create a brand profile entry
-        if (role === 'brand') {
-          // Create an initial brand profile with minimal data
-          // Use upsert instead of insert to handle potential duplicates
-          const { error: brandProfileError } = await supabase
-            .from('brand_profiles')
-            .upsert(
-              {
-                user_id: data.user.id,
-                company_name: `${firstName} ${lastName}'s Brand`, // Temporary company name until setup
-                is_complete: false
-              },
-              { onConflict: 'user_id' }
-            );
-
-          if (brandProfileError) {
-            console.error('Failed to create brand profile:', brandProfileError);
-            console.error('Error details:', JSON.stringify(brandProfileError));
-            toast.error('Failed to create brand profile. Please contact support.');
-          } else {
-            console.log('Brand profile created successfully');
-          }
         }
 
         toast.success('Account created! Please check your email to confirm.');

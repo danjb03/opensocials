@@ -36,56 +36,6 @@ export type Database = {
         }
         Relationships: []
       }
-      brand_profiles: {
-        Row: {
-          company_name: string
-          created_at: string | null
-          email: string | null
-          id: string
-          industry: string | null
-          is_complete: boolean | null
-          logo_url: string | null
-          role: string | null
-          status: string | null
-          user_id: string | null
-          website: string | null
-        }
-        Insert: {
-          company_name: string
-          created_at?: string | null
-          email?: string | null
-          id?: string
-          industry?: string | null
-          is_complete?: boolean | null
-          logo_url?: string | null
-          role?: string | null
-          status?: string | null
-          user_id?: string | null
-          website?: string | null
-        }
-        Update: {
-          company_name?: string
-          created_at?: string | null
-          email?: string | null
-          id?: string
-          industry?: string | null
-          is_complete?: boolean | null
-          logo_url?: string | null
-          role?: string | null
-          status?: string | null
-          user_id?: string | null
-          website?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "brand_profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       deal_earnings: {
         Row: {
           amount: number
@@ -191,19 +141,27 @@ export type Database = {
           avatar_url: string | null
           banner_url: string | null
           bio: string | null
+          brand_bio: string | null
+          brand_goal: string | null
+          budget_range: string | null
           company_name: string | null
           content_type: string | null
           created_at: string | null
+          display_name: string | null
           email: string | null
           engagement_rate: string | null
           first_name: string | null
           follower_count: string | null
           id: string
+          industry: string | null
           instagram_connected: boolean | null
+          is_complete: boolean | null
           is_profile_complete: boolean | null
           last_name: string | null
           linkedin_connected: boolean | null
+          logo_url: string | null
           primary_platform: string | null
+          profile_type: string | null
           role: string | null
           show_analytics: boolean | null
           show_instagram: boolean | null
@@ -214,6 +172,7 @@ export type Database = {
           status: string | null
           tiktok_connected: boolean | null
           updated_at: string | null
+          website: string | null
           youtube_connected: boolean | null
         }
         Insert: {
@@ -222,19 +181,27 @@ export type Database = {
           avatar_url?: string | null
           banner_url?: string | null
           bio?: string | null
+          brand_bio?: string | null
+          brand_goal?: string | null
+          budget_range?: string | null
           company_name?: string | null
           content_type?: string | null
           created_at?: string | null
+          display_name?: string | null
           email?: string | null
           engagement_rate?: string | null
           first_name?: string | null
           follower_count?: string | null
           id: string
+          industry?: string | null
           instagram_connected?: boolean | null
+          is_complete?: boolean | null
           is_profile_complete?: boolean | null
           last_name?: string | null
           linkedin_connected?: boolean | null
+          logo_url?: string | null
           primary_platform?: string | null
+          profile_type?: string | null
           role?: string | null
           show_analytics?: boolean | null
           show_instagram?: boolean | null
@@ -245,6 +212,7 @@ export type Database = {
           status?: string | null
           tiktok_connected?: boolean | null
           updated_at?: string | null
+          website?: string | null
           youtube_connected?: boolean | null
         }
         Update: {
@@ -253,19 +221,27 @@ export type Database = {
           avatar_url?: string | null
           banner_url?: string | null
           bio?: string | null
+          brand_bio?: string | null
+          brand_goal?: string | null
+          budget_range?: string | null
           company_name?: string | null
           content_type?: string | null
           created_at?: string | null
+          display_name?: string | null
           email?: string | null
           engagement_rate?: string | null
           first_name?: string | null
           follower_count?: string | null
           id?: string
+          industry?: string | null
           instagram_connected?: boolean | null
+          is_complete?: boolean | null
           is_profile_complete?: boolean | null
           last_name?: string | null
           linkedin_connected?: boolean | null
+          logo_url?: string | null
           primary_platform?: string | null
+          profile_type?: string | null
           role?: string | null
           show_analytics?: boolean | null
           show_instagram?: boolean | null
@@ -276,6 +252,7 @@ export type Database = {
           status?: string | null
           tiktok_connected?: boolean | null
           updated_at?: string | null
+          website?: string | null
           youtube_connected?: boolean | null
         }
         Relationships: []

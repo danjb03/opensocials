@@ -69,80 +69,52 @@ serve(async (req) => {
       );
     }
     
-    // Update profiles or brand_profiles based on role
-    if (role === "creator" || role === "admin" || role === "super_admin") {
-      // Profile should already be created by the database trigger, but ensure it exists
-      const { data: existingProfile, error: fetchError } = await supabase
+    // Check if profile already exists
+    const { data: existingProfile, error: fetchError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
+      
+    if (fetchError) {
+      console.error("Error fetching profile:", fetchError);
+      return new Response(
+        JSON.stringify({ error: fetchError.message }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      );
+    }
+    
+    if (!existingProfile) {
+      const firstName = user.raw_user_meta_data?.first_name || "";
+      const lastName = user.raw_user_meta_data?.last_name || "";
+      
+      // Create base profile data
+      const profileData = {
+        id: user.id,
+        first_name: firstName,
+        last_name: lastName,
+        role: role,
+        status: "pending"
+      };
+      
+      // Add brand-specific fields if role is brand
+      if (role === "brand") {
+        Object.assign(profileData, {
+          company_name: user.raw_user_meta_data?.company_name || `${firstName} ${lastName}'s Brand`,
+          is_complete: false
+        });
+      }
+      
+      const { error: profileError } = await supabase
         .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .maybeSingle();
+        .insert(profileData);
         
-      if (fetchError) {
-        console.error("Error fetching profile:", fetchError);
+      if (profileError) {
+        console.error("Error creating profile:", profileError);
         return new Response(
-          JSON.stringify({ error: fetchError.message }),
+          JSON.stringify({ error: profileError.message }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
         );
-      }
-      
-      if (!existingProfile) {
-        const firstName = user.raw_user_meta_data?.first_name || "";
-        const lastName = user.raw_user_meta_data?.last_name || "";
-        
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .insert({
-            id: user.id,
-            first_name: firstName,
-            last_name: lastName,
-            role: role
-          });
-          
-        if (profileError) {
-          console.error("Error creating profile:", profileError);
-          return new Response(
-            JSON.stringify({ error: profileError.message }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
-          );
-        }
-      }
-    } else if (role === "brand") {
-      // Brand profile should already be created by the database trigger, but ensure it exists
-      const { data: existingBrandProfile, error: fetchError } = await supabase
-        .from("brand_profiles")
-        .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle();
-        
-      if (fetchError) {
-        console.error("Error fetching brand profile:", fetchError);
-        return new Response(
-          JSON.stringify({ error: fetchError.message }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
-        );
-      }
-      
-      if (!existingBrandProfile) {
-        const firstName = user.raw_user_meta_data?.first_name || "";
-        const lastName = user.raw_user_meta_data?.last_name || "";
-        const companyName = user.raw_user_meta_data?.company_name || `${firstName} ${lastName}'s Brand`;
-        
-        const { error: brandProfileError } = await supabase
-          .from("brand_profiles")
-          .insert({
-            user_id: user.id,
-            company_name: companyName,
-            is_complete: false
-          });
-          
-        if (brandProfileError) {
-          console.error("Error creating brand profile:", brandProfileError);
-          return new Response(
-            JSON.stringify({ error: brandProfileError.message }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
-          );
-        }
       }
     }
     

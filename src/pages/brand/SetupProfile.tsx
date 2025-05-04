@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,9 +47,10 @@ const SetupProfile = () => {
       
       try {
         const { data, error } = await supabase
-          .from('brand_profiles')
+          .from('profiles')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('id', user.id)
+          .eq('role', 'brand')
           .maybeSingle();
           
         if (error) {
@@ -160,33 +162,20 @@ const SetupProfile = () => {
       }
       
       const profileData = {
-        user_id: user.id,
         company_name: companyName,
         website: website || null,
         industry: industry || null,
         logo_url: uploadedLogoUrl || logoUrl,
-        is_complete: true
+        is_complete: true,
+        role: 'brand'
       };
       
-      let error;
-      
-      if (existingProfile) {
-        // Update existing profile
-        const { error: updateError } = await supabase
-          .from('brand_profiles')
-          .update(profileData)
-          .eq('id', existingProfile.id);
+      // Update profile
+      const { error } = await supabase
+        .from('profiles')
+        .update(profileData)
+        .eq('id', user.id);
           
-        error = updateError;
-      } else {
-        // Create new brand profile
-        const { error: insertError } = await supabase
-          .from('brand_profiles')
-          .insert(profileData);
-          
-        error = insertError;
-      }
-
       if (error) throw error;
       
       // Update user role status to approved
@@ -319,7 +308,4 @@ const SetupProfile = () => {
         </Card>
       </div>
     </div>
-  );
-};
-
-export default SetupProfile;
+  
