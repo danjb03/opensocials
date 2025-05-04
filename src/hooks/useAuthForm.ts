@@ -1,8 +1,6 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
-import { sendEmail } from '@/utils/email';
 import type { UserRole } from '@/lib/auth';
 
 export function useAuthForm() {
@@ -25,7 +23,7 @@ export function useAuthForm() {
     setIsLoading(true);
 
     try {
-      // Sign up with Supabase, with auto confirm set to false so we can handle our own confirmations
+      // Sign up with Supabase, with auto confirm set to true to use Supabase's email confirmation
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -35,7 +33,7 @@ export function useAuthForm() {
             last_name: lastName,
             role: role.toLowerCase(), // Store role in user metadata
           },
-          emailRedirectTo: `${window.location.origin}/auth?confirmation=true`,
+          emailRedirectTo: `${window.location.origin}/auth`,
         },
       });
 
@@ -95,61 +93,7 @@ export function useAuthForm() {
           }
         }
 
-        // Send welcome email based on role using ONLY Resend
-        try {
-          let emailSubject, emailHtml;
-          // Create a custom token that includes the user ID for email confirmation
-          const confirmUrl = `${window.location.origin}/auth?confirmation=true&userId=${data.user.id}`;
-          
-          if (role === 'brand') {
-            emailSubject = 'Welcome to OpenSocials Brand Platform!';
-            emailHtml = `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h1 style="color: #333; text-align: center;">Welcome to OpenSocials!</h1>
-                <p>Hello ${firstName},</p>
-                <p>Thank you for creating a brand account on our platform. We're excited to have you onboard!</p>
-                <p>Please confirm your email address by clicking the button below:</p>
-                <p style="text-align: center;">
-                  <a href="${confirmUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Confirm Email</a>
-                </p>
-                <p>After confirming your email, please login and visit the brand setup page.</p>
-                <p>If you have any questions, please don't hesitate to reach out to our support team.</p>
-                <p>Best regards,<br>The OpenSocials Team</p>
-              </div>
-            `;
-          } else if (role === 'creator') {
-            emailSubject = 'Welcome to OpenSocials Creator Community!';
-            emailHtml = `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h1 style="color: #333; text-align: center;">Welcome to OpenSocials!</h1>
-                <p>Hello ${firstName},</p>
-                <p>Thank you for joining our creator community. We're thrilled to have you with us!</p>
-                <p>Please confirm your email address by clicking the button below:</p>
-                <p style="text-align: center;">
-                  <a href="${confirmUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Confirm Email</a>
-                </p>
-                <p>After confirming your email, please login and visit your creator dashboard to complete your profile setup.</p>
-                <p>If you have any questions, our support team is always here to help.</p>
-                <p>Best regards,<br>The OpenSocials Team</p>
-              </div>
-            `;
-          }
-          
-          if (emailSubject && emailHtml) {
-            await sendEmail({
-              to: email,
-              subject: emailSubject,
-              html: emailHtml,
-              from: 'OpenSocials <noreply@opensocials.net>'
-            });
-            console.log(`Welcome email sent to ${role} user:`, email);
-          }
-        } catch (emailError) {
-          console.error('Failed to send welcome email:', emailError);
-          // Don't block signup process if email fails
-        }
-
-        toast.success('Account created successfully! Please check your email to confirm.');
+        toast.success('Account created! Please check your email to confirm.');
         
         // Reset form fields and switch to login view
         resetForm();

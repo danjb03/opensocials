@@ -2,6 +2,9 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 
+// This file is kept as a placeholder in case email functionality is needed in the future
+// The Resend functionality has been removed in favor of Supabase's built-in email system
+
 interface SendEmailProps {
   to: string;
   subject: string;
@@ -9,29 +12,11 @@ interface SendEmailProps {
   from?: string;
 }
 
-/**
- * Send an email using the Resend API via Supabase Edge Function
- */
+// Placeholder function that logs but doesn't send emails
 export const sendEmail = async ({ to, subject, html, from = 'OpenSocials <noreply@opensocials.net>' }: SendEmailProps) => {
-  try {
-    console.log('Sending email to:', to);
-    console.log('Using from address:', from);
-    
-    const { data, error } = await supabase.functions.invoke('send-email', {
-      body: { to, subject, html, from },
-    });
-
-    if (error) {
-      console.error('Error sending email:', error);
-      toast.error('Failed to send email: ' + error.message);
-      return { success: false, error };
-    }
-
-    console.log('Email sent successfully:', data);
-    return { success: true, data };
-  } catch (err) {
-    console.error('Unexpected error sending email:', err);
-    toast.error('Failed to send email');
-    return { success: false, error: err };
-  }
+  console.log('Email sending has been disabled. Using Supabase native email system instead.');
+  console.log('Would have sent email to:', to);
+  console.log('With subject:', subject);
+  
+  return { success: true, data: null };
 };

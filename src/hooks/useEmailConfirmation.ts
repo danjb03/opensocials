@@ -9,17 +9,17 @@ export function useEmailConfirmation() {
 
   useEffect(() => {
     const checkConfirmation = async () => {
+      // Get the current URL parameters
       const url = new URL(window.location.href);
-      const isConfirmation = url.searchParams.get('confirmation');
+      const isConfirmation = url.hash.includes('#access_token=') || url.searchParams.get('confirmation') === 'true';
       const userId = url.searchParams.get('userId');
       
-      if (isConfirmation === 'true') {
+      if (isConfirmation) {
         try {
           // If we have a userId from the URL, use it directly
           // This allows our custom confirmation flow to work
           let userIdToUse = userId;
           
-          // If no userId in URL, try to get the current authenticated user
           if (!userIdToUse) {
             const { data: { user }, error } = await supabase.auth.getUser();
             if (error) {
@@ -121,7 +121,9 @@ export function useEmailConfirmation() {
         }
         
         // Clean up URL
-        window.history.replaceState({}, document.title, '/auth');
+        if (url.hash.includes('#access_token=')) {
+          window.history.replaceState({}, document.title, '/auth');
+        }
       }
     };
     
