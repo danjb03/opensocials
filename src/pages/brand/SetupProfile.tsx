@@ -308,4 +308,7 @@ const SetupProfile = () => {
         </Card>
       </div>
     </div>
-  
+  );
+};
+
+export default SetupProfile;
