@@ -3,14 +3,24 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Calendar, DollarSign } from 'lucide-react';
+import { Plus, ChevronDown, Eye } from 'lucide-react';
 import CreateProjectForm from '@/components/brand/CreateProjectForm';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/utils/project';
 import { ProjectFilters } from '@/components/brand/ProjectFilters';
 import { useAuth } from '@/lib/auth';
+import { 
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { statusColors, type ProjectStatus } from '@/types/projects';
 
 type Project = {
   id: string;
@@ -22,6 +32,7 @@ type Project = {
   description: string;
   campaign_type: string;
   platforms: string[];
+  status: ProjectStatus;
 };
 
 const Projects = () => {
@@ -39,15 +50,6 @@ const Projects = () => {
     startMonth: null as string | null
   });
 
-  // Calculate days remaining from today until a given date
-  const calculateDaysRemaining = (dateStr: string): number => {
-    const date = new Date(dateStr);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const timeDiff = date.getTime() - today.getTime();
-    return Math.ceil(timeDiff / (1000 * 3600 * 24));
-  };
-  
   // Fetch projects with filters
   const fetchProjects = async () => {
     if (!user) return;
@@ -81,7 +83,6 @@ const Projects = () => {
       // Apply start month filter
       if (filters.startMonth) {
         const [year, month] = filters.startMonth.split('-');
-        // Match start_date where year and month match
         query = query.gte('start_date', `${year}-${month}-01`)
                     .lt('start_date', month === '12' 
                       ? `${parseInt(year) + 1}-01-01` 
@@ -114,7 +115,6 @@ const Projects = () => {
   
   // Handle project creation
   const handleProjectCreated = (newProject: any) => {
-    // Add the new project to the state with a generated ID
     fetchProjects(); // Refresh projects from the database
     setIsDialogOpen(false);
     
@@ -129,6 +129,25 @@ const Projects = () => {
     setFilters(newFilters);
   };
 
+  // Helper function to render status badge
+  const renderStatus = (status: ProjectStatus) => {
+    const colorClass = statusColors[status] || "bg-gray-100 text-gray-800";
+    
+    return (
+      <Badge className={colorClass}>
+        {status.replace('_', ' ')}
+      </Badge>
+    );
+  };
+
+  const handleViewProject = (projectId: string) => {
+    // In the future, this would navigate to a detailed project view
+    toast({
+      title: "Coming Soon",
+      description: "Project details view is under development",
+    });
+  };
+
   return (
     <BrandLayout>
       <div className="container mx-auto p-6">
@@ -139,13 +158,11 @@ const Projects = () => {
           </div>
           
           <div className="flex items-center mt-4 md:mt-0 space-x-2">
-            {/* Project Filters */}
             <ProjectFilters 
               filters={filters} 
               onFiltersChange={handleFiltersChange} 
             />
             
-            {/* Create New Project Dialog */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
@@ -181,52 +198,55 @@ const Projects = () => {
           </div>
         )}
         
-        {/* Projects Grid */}
+        {/* Projects Table */}
         {!isLoading && projects.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project) => (
-              <Card key={project.id} className="overflow-hidden">
-                <CardHeader>
-                  <CardTitle>{project.name}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex items-start space-x-2">
-                    <Calendar className="h-5 w-5 text-gray-500 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">
-                        {new Date(project.start_date).toLocaleDateString()}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {calculateDaysRemaining(project.start_date)} days remaining
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <DollarSign className="h-5 w-5 text-gray-500 flex-shrink-0" />
-                    <p className="font-medium">
-                      {formatCurrency(project.budget, project.currency)}
-                    </p>
-                  </div>
-                  
-                  {/* Display platforms */}
-                  {project.platforms && project.platforms.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {project.platforms.map((platform) => (
-                        <span key={platform} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                          {platform}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  
-                  <p className="text-sm text-gray-600 pt-2">{project.description}</p>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" className="w-full">Manage</Button>
-                </CardFooter>
-              </Card>
-            ))}
+          <div className="rounded-md border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Campaign</TableHead>
+                  <TableHead>Creator(s)</TableHead>
+                  <TableHead>Budget</TableHead>
+                  <TableHead>Paid</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Performance</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {projects.map((project) => (
+                  <TableRow key={project.id}>
+                    <TableCell className="font-medium">{project.name}</TableCell>
+                    <TableCell>
+                      <span className="text-gray-500">Not assigned</span>
+                    </TableCell>
+                    <TableCell>{formatCurrency(project.budget, project.currency)}</TableCell>
+                    <TableCell>
+                      <span className="text-gray-500">—</span>
+                    </TableCell>
+                    <TableCell>
+                      {renderStatus(project.status as ProjectStatus)}
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-gray-500">—</span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleViewProject(project.id)}
+                          className="flex items-center gap-1"
+                        >
+                          <Eye className="h-4 w-4" />
+                          View
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         )}
       </div>
