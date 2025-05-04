@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -24,6 +25,7 @@ import CreatorDashboard from "./pages/creator/Dashboard";
 import CreatorDeals from "./pages/creator/Deals";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import DataDeletion from "./pages/DataDeletion";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const ProtectedRoute = ({ children, requiredRole }: { 
   children: React.ReactNode, 
@@ -63,6 +65,7 @@ const App = () => {
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/auth/reset-password" element={<ForgotPassword />} />
               <Route path="/data-deletion" element={<DataDeletion />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               
               {/* Creator Dashboard Routes */}
               <Route 
