@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { BarChart, LineChart, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line } from 'recharts';
+import { BarChart, LineChart, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, Bar } from 'recharts';
 import { audienceData, platformData, reachData } from './mock-data';
 
 export const OverviewTab = () => {
@@ -119,8 +119,8 @@ export const OverviewTab = () => {
                   verticalAlign="top"
                   height={36}
                 />
-                <BarChart.Bar yAxisId="left" dataKey="posts" fill="var(--color-posts)" barSize={30} />
-                <BarChart.Bar yAxisId="right" dataKey="engagement" fill="var(--color-engagement)" barSize={30} />
+                <Bar yAxisId="left" dataKey="posts" fill="var(--color-posts)" barSize={30} />
+                <Bar yAxisId="right" dataKey="engagement" fill="var(--color-engagement)" barSize={30} />
               </BarChart>
             </ChartContainer>
           </CardContent>
