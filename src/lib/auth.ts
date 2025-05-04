@@ -10,6 +10,7 @@ export interface AuthState {
   user: User | null;
   role: UserRole | null;
   isLoading: boolean;
+  emailConfirmed: boolean | null;
 }
 
 export const AuthContext = createContext<AuthState>({
@@ -17,6 +18,7 @@ export const AuthContext = createContext<AuthState>({
   user: null,
   role: null,
   isLoading: true,
+  emailConfirmed: null,
 });
 
 export const useAuth = () => {

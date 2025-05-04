@@ -20,6 +20,7 @@ const AuthPage = () => {
   const [lastName, setLastName] = useState('');
   const [role, setRole] = useState<UserRole>('creator');
 
+  // Extract confirmation token from URL if present
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSignUp) {
@@ -42,6 +43,7 @@ const AuthPage = () => {
             first_name: firstName,
             last_name: lastName,
           },
+          emailRedirectTo: `${window.location.origin}/auth?confirmation=true`,
         },
       });
 
@@ -65,6 +67,7 @@ const AuthPage = () => {
         // Send welcome email based on role
         try {
           let emailSubject, emailHtml;
+          const confirmUrl = `${window.location.origin}/auth?confirmation=true&t=${data.session?.access_token}`;
           
           if (role === 'brand') {
             emailSubject = 'Welcome to OpenSocials Brand Platform!';
@@ -73,7 +76,11 @@ const AuthPage = () => {
                 <h1 style="color: #333; text-align: center;">Welcome to OpenSocials!</h1>
                 <p>Hello ${firstName},</p>
                 <p>Thank you for creating a brand account on our platform. We're excited to have you onboard!</p>
-                <p>To complete your profile setup, please login and visit the brand setup page.</p>
+                <p>Please confirm your email address by clicking the button below:</p>
+                <p style="text-align: center;">
+                  <a href="${confirmUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Confirm Email</a>
+                </p>
+                <p>After confirming your email, please login and visit the brand setup page.</p>
                 <p>If you have any questions, please don't hesitate to reach out to our support team.</p>
                 <p>Best regards,<br>The OpenSocials Team</p>
               </div>
@@ -85,7 +92,11 @@ const AuthPage = () => {
                 <h1 style="color: #333; text-align: center;">Welcome to OpenSocials!</h1>
                 <p>Hello ${firstName},</p>
                 <p>Thank you for joining our creator community. We're thrilled to have you with us!</p>
-                <p>To complete your profile setup and start connecting with brands, please login and visit your creator dashboard.</p>
+                <p>Please confirm your email address by clicking the button below:</p>
+                <p style="text-align: center;">
+                  <a href="${confirmUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Confirm Email</a>
+                </p>
+                <p>After confirming your email, please login and visit your creator dashboard to complete your profile setup.</p>
                 <p>If you have any questions, our support team is always here to help.</p>
                 <p>Best regards,<br>The OpenSocials Team</p>
               </div>
@@ -105,7 +116,7 @@ const AuthPage = () => {
           // Don't block signup process if email fails
         }
 
-        toast.success('Account created successfully! Please check your email to confirm.');
+        toast.success('Account created successfully! Please check your email to confirm your account before logging in.');
         
         // Reset form fields and switch to login view
         setFirstName('');
@@ -131,6 +142,13 @@ const AuthPage = () => {
       });
 
       if (error) throw error;
+
+      // Check if email is confirmed
+      if (!data.user.email_confirmed_at) {
+        toast.error('Please confirm your email before logging in.');
+        setIsLoading(false);
+        return;
+      }
 
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -187,6 +205,36 @@ const AuthPage = () => {
       toast.error(err.message || 'Password reset failed.');
     }
   };
+
+  // Check for confirmation token in URL
+  const checkConfirmation = async () => {
+    const url = new URL(window.location.href);
+    const isConfirmation = url.searchParams.get('confirmation');
+    
+    if (isConfirmation === 'true') {
+      // Handle email confirmation
+      try {
+        const { error } = await supabase.auth.getUser();
+        if (!error) {
+          toast.success('Email successfully confirmed! You can now log in.');
+        } else {
+          console.error('Error confirming email:', error);
+          toast.error('Failed to confirm email. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error confirming email:', error);
+        toast.error('Failed to confirm email. Please try again.');
+      }
+      
+      // Clean up URL
+      window.history.replaceState({}, document.title, '/auth');
+    }
+  };
+  
+  // Check for confirmation on component mount
+  useState(() => {
+    checkConfirmation();
+  });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8">

@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState(null);
   const [user, setUser] = useState(null);
   const [role, setRole] = useState<UserRole | null>(null);
+  const [emailConfirmed, setEmailConfirmed] = useState<boolean | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -18,13 +19,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Fetch user role if authenticated, using setTimeout to prevent recursion
+        // Set email confirmation status
         if (session?.user) {
+          setEmailConfirmed(!!session.user.email_confirmed_at);
+          
+          // Fetch user role if authenticated, using setTimeout to prevent recursion
           setTimeout(() => {
             fetchUserRole(session.user.id);
           }, 0);
         } else {
           setRole(null);
+          setEmailConfirmed(null);
           setIsLoading(false);
         }
       }
@@ -36,6 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
+        setEmailConfirmed(!!session.user.email_confirmed_at);
         fetchUserRole(session.user.id);
       } else {
         setIsLoading(false);
@@ -98,7 +104,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, role, isLoading }}>
+    <AuthContext.Provider value={{ session, user, role, isLoading, emailConfirmed }}>
       {children}
     </AuthContext.Provider>
   );
