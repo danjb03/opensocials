@@ -1,25 +1,5 @@
 
 project_id = "pcnrnciwgdrukzciwexi"
 
-[api]
-enabled = true
-port = 54321
-schemas = ["public", "storage"]
-
-[db]
-port = 54322
-
-[studio]
-enabled = true
-port = 54323
-api_url = "http://localhost"
-
-[functions]
-[functions.request-data-deletion]
-verify_jwt = false
-
-[functions.meta-delete]
-verify_jwt = false
-
-[functions.meta-deauth]
-verify_jwt = false
+[functions.send-email]
+verify_jwt = true
