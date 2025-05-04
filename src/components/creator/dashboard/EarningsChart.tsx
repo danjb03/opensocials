@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import {
   LineChart,
   Line,
@@ -8,7 +9,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
 } from 'recharts';
 
 interface EarningsChartProps {
@@ -37,16 +37,22 @@ const EarningsChart: React.FC<EarningsChartProps> = ({ earningsData }) => {
       <CardHeader>
         <CardTitle>Earnings Over Time</CardTitle>
       </CardHeader>
-      <CardContent className="h-[300px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={earningsData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
-            <Line type="monotone" dataKey="amount" stroke="#2563eb" />
-          </LineChart>
-        </ResponsiveContainer>
+      <CardContent className="pt-6 pb-8">
+        <div className="h-[300px] w-full">
+          <ChartContainer
+            config={{
+              amount: { label: "Earnings", theme: { light: "#2563eb", dark: "#1e40af" } }
+            }}
+          >
+            <LineChart data={earningsData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip content={<ChartTooltipContent />} />
+              <Line type="monotone" dataKey="amount" stroke="var(--color-amount)" strokeWidth={2} dot={{ r: 4 }} />
+            </LineChart>
+          </ChartContainer>
+        </div>
       </CardContent>
     </Card>
   );
