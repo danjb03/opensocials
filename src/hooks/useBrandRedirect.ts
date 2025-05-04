@@ -27,9 +27,10 @@ export const useBrandRedirect = () => {
       try {
         // Check if brand profile exists and is complete
         const { data: brandProfile } = await supabase
-          .from('brand_profiles')
+          .from('profiles')
           .select('is_complete')
-          .eq('user_id', user.id)
+          .eq('id', user.id)
+          .eq('role', 'brand')
           .maybeSingle();
 
         const isSetupPage = location.pathname === '/brand/setup-profile';

@@ -67,33 +67,31 @@ export function useEmailConfirmation() {
             // Special handling for brand accounts
             if (userData?.role === 'brand') {
               console.log('Confirming brand account');
-              // Check if we need to create a brand profile
+              // Check if the profile is already marked as complete
               const { data: brandProfile, error: brandCheckError } = await supabase
-                .from('brand_profiles')
-                .select('id')
-                .eq('user_id', userId)
+                .from('profiles')
+                .select('is_complete')
+                .eq('id', userId)
+                .eq('role', 'brand')
                 .maybeSingle();
                 
               if (brandCheckError) {
                 console.error('Error checking brand profile:', brandCheckError);
               }
               
-              // If no brand profile exists yet, create one
-              if (!brandProfile) {
-                console.log('Creating brand profile for confirmed user');
-                const { error: createBrandError } = await supabase
-                  .from('brand_profiles')
-                  .upsert(
-                    {
-                      user_id: userId,
-                      company_name: 'My Brand', // Default name until setup
-                      is_complete: false
-                    },
-                    { onConflict: 'user_id' }
-                  );
+              // If is_complete is not true, update the profile
+              if (brandProfile && !brandProfile.is_complete) {
+                console.log('Updating brand profile for confirmed user');
+                const { error: updateError } = await supabase
+                  .from('profiles')
+                  .update({
+                    company_name: brandProfile.company_name || 'My Brand',
+                    is_complete: false
+                  })
+                  .eq('id', userId);
                 
-                if (createBrandError) {
-                  console.error('Failed to create brand profile:', createBrandError);
+                if (updateError) {
+                  console.error('Failed to update brand profile:', updateError);
                 }
               }
             }
