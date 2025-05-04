@@ -17,15 +17,50 @@ export function useSignIn() {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Special handling for unconfirmed email error
+        if (error.message.includes("Email not confirmed")) {
+          toast.error('Your email is not confirmed. Please check your inbox and click the confirmation link.');
+          console.error('Login error - email not confirmed:', error.message);
+          
+          // Offer resend confirmation option
+          const { error: resendError } = await supabase.auth.resend({
+            type: 'signup',
+            email: email,
+          });
+          
+          if (!resendError) {
+            toast.info('A new confirmation email has been sent to your address.');
+          } else {
+            console.error('Error resending confirmation email:', resendError);
+          }
+          
+          setIsLoading(false);
+          return;
+        } else {
+          throw error;
+        }
+      }
 
-      // Check if email is confirmed
+      // Check if email is confirmed - this is a double check even though Supabase should already prevent login
       if (!data.user.email_confirmed_at) {
         toast.error('Please confirm your email before logging in.');
+        
+        // Resend confirmation email
+        const { error: resendError } = await supabase.auth.resend({
+          type: 'signup',
+          email: email,
+        });
+        
+        if (!resendError) {
+          toast.info('A new confirmation email has been sent to your address.');
+        }
+        
         setIsLoading(false);
         return;
       }
 
+      // Continue with the rest of the sign in process
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('role')

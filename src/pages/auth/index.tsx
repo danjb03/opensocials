@@ -5,23 +5,33 @@ import Logo from '@/components/ui/logo';
 import { AuthForms } from '@/components/auth/AuthForms';
 import { useEffect } from 'react';
 import { toast } from '@/components/ui/sonner';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 const AuthPage = () => {
   const { isSignUp, toggleAuthMode } = useAuthPage();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   
   // Check if the URL contains a confirmation parameter and switch to login view
   useEffect(() => {
-    const url = new URL(window.location.href);
-    const isConfirmation = url.searchParams.get('confirmation') === 'true' || url.hash.includes('#access_token=');
+    const isConfirmation = searchParams.get('confirmation') === 'true' || window.location.hash.includes('#access_token=');
     
-    if (isConfirmation && isSignUp) {
-      // If we're in signup mode but this is a confirmation link, switch to login mode
-      toggleAuthMode();
-      toast.info('Please log in with your credentials.');
+    if (isConfirmation) {
+      console.log('Confirmation link detected, switching to login view');
+      // If this is a confirmation link, ensure we're in login mode
+      if (isSignUp) {
+        toggleAuthMode();
+      }
+      
+      if (window.location.hash.includes('#access_token=')) {
+        toast.info('Processing your email confirmation...');
+      } else {
+        toast.info('Please log in with your credentials.');
+      }
     }
-  }, [isSignUp, toggleAuthMode]);
+  }, [isSignUp, toggleAuthMode, searchParams]);
   
-  // Check for confirmation token in URL
+  // Process email confirmation if needed
   useEmailConfirmation();
 
   return (

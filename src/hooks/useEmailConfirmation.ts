@@ -9,120 +9,107 @@ export function useEmailConfirmation() {
 
   useEffect(() => {
     const checkConfirmation = async () => {
-      // Get the current URL parameters
+      // Check if this is a confirmation link from email
       const url = new URL(window.location.href);
       const isConfirmation = url.hash.includes('#access_token=') || url.searchParams.get('confirmation') === 'true';
-      const userId = url.searchParams.get('userId');
       
       if (isConfirmation) {
         try {
-          // If we have a userId from the URL, use it directly
-          // This allows our custom confirmation flow to work
-          let userIdToUse = userId;
+          console.log('Detected confirmation link');
           
-          if (!userIdToUse) {
-            const { data: { user }, error } = await supabase.auth.getUser();
-            if (error) {
-              console.error('Error getting current user:', error);
-              toast.error('Error confirming email. Please try logging in first.');
+          // Get the session from the hash fragment if present
+          if (url.hash.includes('#access_token=')) {
+            // This means the user clicked on the email confirmation link
+            // The session is created automatically by Supabase
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            
+            if (sessionError) {
+              console.error('Error getting session:', sessionError);
+              toast.error('Error confirming email. Please try logging in.');
               navigate('/auth');
               return;
             }
             
-            if (user) {
-              userIdToUse = user.id;
+            if (!session) {
+              console.error('No session found after confirmation');
+              toast.error('Email confirmation failed. Please try logging in directly.');
+              navigate('/auth');
+              return;
             }
-          }
-          
-          if (!userIdToUse) {
-            console.error('No user ID found for confirmation');
-            toast.error('Could not determine which account to confirm. Please try logging in.');
-            navigate('/auth');
-            return;
-          }
-          
-          console.log('Confirming email for user:', userIdToUse);
-          
-          // First, get the user's role to determine next steps
-          const { data: userData, error: userError } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', userIdToUse)
-            .single();
             
-          if (userError) {
-            console.error('Error fetching user role:', userError);
-            toast.error('Could not confirm your account. Please contact support.');
-            return;
-          }
-          
-          console.log('User role:', userData?.role);
-          
-          // Update the user_roles table to set status to approved
-          const { error: roleError } = await supabase
-            .from('user_roles')
-            .update({ status: 'approved' })
-            .eq('user_id', userIdToUse);
+            console.log('Session found after confirmation:', session);
             
-          if (roleError) {
-            console.error('Error updating role status:', roleError);
-            toast.error('Error updating account status. Please contact support.');
-            return;
-          }
-          
-          // Special handling for brand accounts
-          if (userData?.role === 'brand') {
-            // Check if we need to create a brand profile
-            const { data: brandProfile, error: brandCheckError } = await supabase
-              .from('brand_profiles')
-              .select('id')
-              .eq('user_id', userIdToUse)
-              .maybeSingle();
+            // User is now authenticated after clicking the confirmation link
+            const userId = session.user.id;
+            
+            // Update user_roles status to approved
+            const { error: roleError } = await supabase
+              .from('user_roles')
+              .update({ status: 'approved' })
+              .eq('user_id', userId);
               
-            if (brandCheckError) {
-              console.error('Error checking brand profile:', brandCheckError);
+            if (roleError) {
+              console.error('Error updating role status:', roleError);
+              toast.error('Error updating account status. Your account is confirmed but you may need to contact support.');
             }
             
-            // If no brand profile exists yet, create one
-            if (!brandProfile) {
-              console.log('Creating new brand profile during confirmation');
-              const { error: createBrandError } = await supabase
+            // Get user role from profiles
+            const { data: userData, error: userError } = await supabase
+              .from('profiles')
+              .select('role')
+              .eq('id', userId)
+              .single();
+              
+            if (userError) {
+              console.error('Error fetching user role:', userError);
+            }
+            
+            // Special handling for brand accounts
+            if (userData?.role === 'brand') {
+              console.log('Confirming brand account');
+              // Check if we need to create a brand profile
+              const { data: brandProfile, error: brandCheckError } = await supabase
                 .from('brand_profiles')
-                .upsert(
-                  {
-                    user_id: userIdToUse,
-                    company_name: 'My Brand', // Default name until setup
-                    is_complete: false
-                  },
-                  { onConflict: 'user_id' }
-                );
-              
-              if (createBrandError) {
-                console.error('Failed to create brand profile:', createBrandError);
-                console.error('Error details:', JSON.stringify(createBrandError));
-                toast.error('Failed to create brand profile. You may need to set it up manually.');
-              } else {
-                console.log('Brand profile created during confirmation');
+                .select('id')
+                .eq('user_id', userId)
+                .maybeSingle();
+                
+              if (brandCheckError) {
+                console.error('Error checking brand profile:', brandCheckError);
               }
-            } else {
-              console.log('Brand profile already exists:', brandProfile);
+              
+              // If no brand profile exists yet, create one
+              if (!brandProfile) {
+                console.log('Creating brand profile for confirmed user');
+                const { error: createBrandError } = await supabase
+                  .from('brand_profiles')
+                  .upsert(
+                    {
+                      user_id: userId,
+                      company_name: 'My Brand', // Default name until setup
+                      is_complete: false
+                    },
+                    { onConflict: 'user_id' }
+                  );
+                
+                if (createBrandError) {
+                  console.error('Failed to create brand profile:', createBrandError);
+                }
+              }
             }
-          }
-          
-          toast.success('Email successfully confirmed! Your account is now active. You can log in.');
-          
-          // Redirect to login view after a short delay
-          setTimeout(() => {
+            
+            // Sign out the user so they can login with their confirmed credentials
+            await supabase.auth.signOut();
+            
+            toast.success('Email confirmed successfully! You can now log in with your credentials.');
+            
+            // Redirect to auth page for login
             navigate('/auth');
-          }, 2000);
+          }
         } catch (error) {
-          console.error('Error confirming email:', error);
-          toast.error('Failed to confirm email. Please try again or contact support.');
-        }
-        
-        // Clean up URL
-        if (url.hash.includes('#access_token=')) {
-          window.history.replaceState({}, document.title, '/auth');
+          console.error('Error handling confirmation:', error);
+          toast.error('Failed to process email confirmation. Please try logging in or contact support.');
+          navigate('/auth');
         }
       }
     };
