@@ -57,7 +57,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log("Fetching role for user:", userId);
       
-      // Fetch the role directly from profiles table
+      // First check the user_roles table for the status
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role, status')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (roleError) {
+        console.error('Error fetching user role status:', roleError);
+      }
+      
+      // Fetch the role from profiles table
       const { data, error } = await supabase
         .from('profiles')
         .select('role')
@@ -76,7 +87,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       console.log("User role data:", data);
-
+      
+      // Check if we have role data from profiles
       if (data && data.role) {
         console.log("Setting role to:", data.role);
         setRole(data.role as UserRole);
@@ -89,6 +101,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           description: 'Your account does not have a role assigned. Please contact an administrator.',
           duration: 5000,
         });
+      }
+      
+      // Log the role status if available
+      if (roleData) {
+        console.log("Role status:", roleData.status);
       }
       
       setIsLoading(false);
