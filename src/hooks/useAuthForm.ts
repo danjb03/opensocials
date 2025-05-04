@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
@@ -24,7 +25,7 @@ export function useAuthForm() {
     setIsLoading(true);
 
     try {
-      // Sign up with Supabase, but we'll handle our own email confirmations
+      // Sign up with Supabase, with auto confirm set to false so we can handle our own confirmations
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -34,7 +35,6 @@ export function useAuthForm() {
             last_name: lastName,
           },
           emailRedirectTo: `${window.location.origin}/auth?confirmation=true`,
-          // Removed emailConfirm property as it's not recognized in the type
         },
       });
 
@@ -74,7 +74,8 @@ export function useAuthForm() {
         // Send welcome email based on role using ONLY Resend
         try {
           let emailSubject, emailHtml;
-          const confirmUrl = `${window.location.origin}/auth?confirmation=true&t=${data.session?.access_token}`;
+          // Create a custom token that includes the user ID for email confirmation
+          const confirmUrl = `${window.location.origin}/auth?confirmation=true&userId=${data.user.id}`;
           
           if (role === 'brand') {
             emailSubject = 'Welcome to OpenSocials Brand Platform!';

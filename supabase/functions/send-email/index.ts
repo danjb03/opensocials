@@ -16,7 +16,7 @@ interface EmailRequest {
   from?: string;
 }
 
-serve(async (req) => {
+const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -32,6 +32,7 @@ serve(async (req) => {
 
     console.log(`Sending email to: ${to}, subject: ${subject}, from: ${from}`);
 
+    // Configure the Resend email with the provided from address or default
     const { data, error } = await resend.emails.send({
       from,
       to,
@@ -71,4 +72,6 @@ serve(async (req) => {
       }
     );
   }
-});
+};
+
+serve(handler);
