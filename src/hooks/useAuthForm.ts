@@ -74,17 +74,22 @@ export function useAuthForm() {
         // If the role is brand, create a brand profile entry
         if (role === 'brand') {
           // Create an initial brand profile with minimal data
+          // Use upsert instead of insert to handle potential duplicates
           const { error: brandProfileError } = await supabase
             .from('brand_profiles')
-            .insert({
-              user_id: data.user.id,
-              company_name: `${firstName} ${lastName}'s Brand`, // Temporary company name until setup
-              is_complete: false
-            });
+            .upsert(
+              {
+                user_id: data.user.id,
+                company_name: `${firstName} ${lastName}'s Brand`, // Temporary company name until setup
+                is_complete: false
+              },
+              { onConflict: 'user_id' }
+            );
 
           if (brandProfileError) {
             console.error('Failed to create brand profile:', brandProfileError);
-            toast.error('Failed to create brand profile. You may need to set it up manually.');
+            console.error('Error details:', JSON.stringify(brandProfileError));
+            toast.error('Failed to create brand profile. Please contact support.');
           } else {
             console.log('Brand profile created successfully');
           }

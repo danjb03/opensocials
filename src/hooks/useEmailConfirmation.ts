@@ -56,6 +56,8 @@ export function useEmailConfirmation() {
             return;
           }
           
+          console.log('User role:', userData?.role);
+          
           // Update the user_roles table to set status to approved
           const { error: roleError } = await supabase
             .from('user_roles')
@@ -83,20 +85,27 @@ export function useEmailConfirmation() {
             
             // If no brand profile exists yet, create one
             if (!brandProfile) {
+              console.log('Creating new brand profile during confirmation');
               const { error: createBrandError } = await supabase
                 .from('brand_profiles')
-                .insert({
-                  user_id: userIdToUse,
-                  company_name: 'My Brand', // Default name until setup
-                  is_complete: false
-                });
+                .upsert(
+                  {
+                    user_id: userIdToUse,
+                    company_name: 'My Brand', // Default name until setup
+                    is_complete: false
+                  },
+                  { onConflict: 'user_id' }
+                );
               
               if (createBrandError) {
                 console.error('Failed to create brand profile:', createBrandError);
-                // Non-blocking error
+                console.error('Error details:', JSON.stringify(createBrandError));
+                toast.error('Failed to create brand profile. You may need to set it up manually.');
               } else {
                 console.log('Brand profile created during confirmation');
               }
+            } else {
+              console.log('Brand profile already exists:', brandProfile);
             }
           }
           
