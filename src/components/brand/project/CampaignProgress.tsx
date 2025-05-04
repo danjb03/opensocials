@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, Clock } from 'lucide-react';
 import { FileText, Users, Flag, Calendar, Globe, BarChart2 } from 'lucide-react';
+import { CampaignStep } from '@/types/project';
 
 // Define campaign step icons mapping
 const StepIcons = {
@@ -14,12 +15,6 @@ const StepIcons = {
   Globe,
   BarChart2
 };
-
-interface CampaignStep {
-  id: string;
-  label: string;
-  icon: keyof typeof StepIcons;
-}
 
 interface CampaignProgressProps {
   currentStep: number;
@@ -50,7 +45,7 @@ export const CampaignProgress: React.FC<CampaignProgressProps> = ({
           {campaignSteps.map((step, index) => {
             const isCompleted = index + 1 < currentStep;
             const isCurrent = index + 1 === currentStep;
-            const StepIcon = StepIcons[step.icon];
+            const StepIcon = StepIcons[step.icon as keyof typeof StepIcons];
             
             return (
               <div key={step.id} className={`flex flex-col items-center p-3 rounded-lg border ${
