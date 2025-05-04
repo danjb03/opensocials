@@ -95,12 +95,17 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
         posts: formData.content_requirements.posts.quantity > 0 ? { quantity: formData.content_requirements.posts.quantity } : undefined
       };
 
+      // Ensure empty date strings are set to null
+      const start_date = formData.start_date ? formData.start_date : null;
+      const end_date = formData.end_date ? formData.end_date : null;
+      const submission_deadline = formData.submission_deadline ? formData.submission_deadline : null;
+
       const payload = {
         brand_id: userId,
         name: formData.name,
         campaign_type: formData.campaign_type,
-        start_date: formData.start_date || null,
-        end_date: formData.end_date || null,
+        start_date: start_date,
+        end_date: end_date,
         budget: parseFloat(formData.budget) || 0,
         currency: formData.currency,
         content_requirements: contentRequirements,
@@ -111,16 +116,11 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
         audience_focus: formData.audience_focus || null,
         campaign_objective: formData.campaign_objective,
         draft_approval: formData.draft_approval,
-        submission_deadline: formData.submission_deadline || null,
+        submission_deadline: submission_deadline,
         payment_structure: formData.payment_structure,
         description: formData.description || null,
         status: 'draft'
       };
-
-      // Make absolutely sure that empty strings are converted to null for date fields
-      if (!payload.start_date || payload.start_date === '') payload.start_date = null;
-      if (!payload.end_date || payload.end_date === '') payload.end_date = null;
-      if (!payload.submission_deadline || payload.submission_deadline === '') payload.submission_deadline = null;
 
       console.log('Submitting project with payload:', payload);
       const { error } = await supabase.from('projects').insert(payload);

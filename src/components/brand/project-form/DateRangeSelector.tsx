@@ -12,10 +12,10 @@ import {
 import { cn } from "@/lib/utils";
 
 interface DateRangeSelectorProps {
-  startDate: Date | undefined;
-  endDate: Date | undefined;
-  onStartDateChange: (date: Date | undefined) => void;
-  onEndDateChange: (date: Date | undefined) => void;
+  startDate: Date | undefined | null;
+  endDate: Date | undefined | null;
+  onStartDateChange: (date: Date | null | undefined) => void;
+  onEndDateChange: (date: Date | null | undefined) => void;
   startLabel?: string;
   endLabel?: string;
   className?: string;
@@ -54,12 +54,12 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
-              selected={startDate}
+              selected={startDate || undefined}
               onSelect={(date) => {
-                onStartDateChange(date);
+                onStartDateChange(date || null);
                 // If end date is before start date, reset end date
                 if (endDate && date && endDate < date) {
-                  onEndDateChange(undefined);
+                  onEndDateChange(null);
                 }
               }}
               disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
@@ -91,8 +91,8 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
-              selected={endDate}
-              onSelect={onEndDateChange}
+              selected={endDate || undefined}
+              onSelect={(date) => onEndDateChange(date || null)}
               disabled={(date) => {
                 const today = new Date(new Date().setHours(0, 0, 0, 0));
                 return date < today || (startDate ? date < startDate : false);

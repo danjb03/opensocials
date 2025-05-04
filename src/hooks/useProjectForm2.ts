@@ -19,7 +19,7 @@ const formSchema = z.object({
   }),
   executionDate: z.date({
     required_error: "Please select an execution date.",
-  }),
+  }).nullable(),
   budget: z.string().min(1, {
     message: "Please enter a budget amount.",
   }),
@@ -44,11 +44,11 @@ export function useProjectForm2(onSuccess?: (project: ProjectFormValues) => void
       description: "",
       budget: "",
       currency: "USD",
-      executionDate: undefined, // Using undefined instead of empty string
+      executionDate: null, // Using null instead of undefined
     },
   });
 
-  function calculateDaysRemaining(date: Date): number {
+  function calculateDaysRemaining(date: Date | null): number {
     if (!date) return 0;
     
     const today = new Date();
@@ -60,8 +60,8 @@ export function useProjectForm2(onSuccess?: (project: ProjectFormValues) => void
   function onSubmit(values: ProjectFormValues) {
     console.log("Form values before submission:", values);
     
-    // Verify that executionDate is a valid Date object
-    if (!(values.executionDate instanceof Date) || isNaN(values.executionDate.getTime())) {
+    // Verify that executionDate is a valid Date object if provided
+    if (values.executionDate && (!(values.executionDate instanceof Date) || isNaN(values.executionDate.getTime()))) {
       toast({
         title: "Invalid Date",
         description: "Please select a valid execution date.",
@@ -72,12 +72,18 @@ export function useProjectForm2(onSuccess?: (project: ProjectFormValues) => void
     
     setIsSubmitting(true);
     
+    // Ensure dates are properly handled
+    const dataToSubmit = {
+      ...values,
+      executionDate: values.executionDate || null
+    };
+    
     // Simulate an API call
     setTimeout(() => {
       setIsSubmitting(false);
       
       if (onSuccess) {
-        onSuccess(values);
+        onSuccess(dataToSubmit);
       } else {
         toast({
           title: "Campaign created successfully",

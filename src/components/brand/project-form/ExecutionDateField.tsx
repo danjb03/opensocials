@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import type { ProjectFormValues } from '@/hooks/useProjectForm2';
 
 interface ExecutionDateFieldProps {
-  calculateDaysRemaining: (date: Date) => number;
+  calculateDaysRemaining: (date: Date | null) => number;
 }
 
 export function ExecutionDateField({ calculateDaysRemaining }: ExecutionDateFieldProps) {
@@ -63,15 +63,10 @@ export function ExecutionDateField({ calculateDaysRemaining }: ExecutionDateFiel
             <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="single"
-                selected={field.value}
+                selected={field.value || undefined}
                 onSelect={(date) => {
-                  if (date) {
-                    // Ensure we're working with a proper Date object
-                    const validDate = new Date(date.setHours(0, 0, 0, 0));
-                    field.onChange(validDate);
-                  } else {
-                    field.onChange(undefined);
-                  }
+                  // Handle both selection and deselection
+                  field.onChange(date || null);
                 }}
                 disabled={(date) => {
                   const today = new Date();
