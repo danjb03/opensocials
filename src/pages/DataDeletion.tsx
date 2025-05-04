@@ -1,9 +1,70 @@
-
+import { useState } from "react";
 import { Trash2, Shield, Mail } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useAuth } from "@/lib/auth";
 
 const DataDeletion = () => {
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleRequestDeletion = async () => {
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch("https://pcnrnciwgdrukzciwexi.supabase.co/functions/v1/request-data-deletion", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabase.auth.session()?.access_token || ""}`,
+        },
+        body: JSON.stringify({
+          userId: user?.id || null,
+          userEmail: user?.email || null,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "Request Submitted",
+          description: "Your data deletion request has been submitted successfully.",
+        });
+      } else {
+        toast({
+          title: "Request Failed",
+          description: "There was a problem submitting your request. Please try again later.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error submitting data deletion request:", error);
+      toast({
+        title: "Request Failed",
+        description: "There was a problem submitting your request. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="container max-w-4xl mx-auto py-10 px-4 md:px-6">
       <h1 className="text-3xl font-bold mb-6">Data Deletion URL Documentation</h1>
@@ -79,6 +140,34 @@ const DataDeletion = () => {
           <div className="flex gap-3">
             <div className="bg-primary text-primary-foreground w-7 h-7 rounded-full flex items-center justify-center shrink-0">5</div>
             <p><strong>Confirmation:</strong> The user will receive an email confirming the completion of the deletion process.</p>
+          </div>
+          
+          <div className="mt-8">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="w-full">
+                  Request Data Deletion
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action will submit a request to delete all your personal data from our systems.
+                    Once processed, this action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleRequestDeletion}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Submitting..." : "Yes, submit request"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </CardContent>
       </Card>
