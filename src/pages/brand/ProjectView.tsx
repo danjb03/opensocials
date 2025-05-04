@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,6 +35,15 @@ const CAMPAIGN_STEPS = [
   { id: 'live', label: 'Campaign Live', icon: Globe },
   { id: 'reporting', label: 'Performance Reporting', icon: BarChart2 },
 ];
+
+// Type for the content requirements to ensure proper typing
+interface ContentRequirements {
+  videos?: { quantity: number };
+  stories?: { quantity: number };
+  posts?: { quantity: number };
+  brief_uploaded?: boolean;
+  brief_files?: string[];
+}
 
 const ProjectView = () => {
   const { id } = useParams<{ id: string }>();
@@ -75,8 +83,9 @@ const ProjectView = () => {
           'completed': 6
         };
         
-        // Check for metadata containing brief upload info
-        setBriefUploaded(data.content_requirements?.brief_uploaded || false);
+        // Check for metadata containing brief upload info using type checking
+        const contentReqs = data.content_requirements as ContentRequirements | null;
+        setBriefUploaded(contentReqs?.brief_uploaded || false);
         setCurrentStep(statusStepMap[data.status] || 1);
       } catch (error) {
         console.error('Error fetching project:', error);
@@ -126,8 +135,8 @@ const ProjectView = () => {
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           // Store brief upload info in content_requirements object instead of a separate field
-          const updatedContentRequirements = {
-            ...(project.content_requirements || {}),
+          const updatedContentRequirements: ContentRequirements = {
+            ...(project.content_requirements as ContentRequirements || {}),
             brief_uploaded: true,
             brief_files: briefFiles.map(file => file.name)
           };
@@ -260,6 +269,11 @@ const ProjectView = () => {
     );
   };
 
+  // Extract content requirements with proper type handling
+  const contentRequirements = project.content_requirements as ContentRequirements | null;
+  const isBriefUploaded = contentRequirements?.brief_uploaded || false;
+  const briefFilesList = contentRequirements?.brief_files || [];
+
   return (
     <BrandLayout>
       <div className="container mx-auto p-6 max-w-7xl">
@@ -371,11 +385,11 @@ const ProjectView = () => {
                 </div>
               </div>
               
-              {project.content_requirements && (
+              {contentRequirements && (
                 <div className="py-4 grid grid-cols-2">
                   <div className="font-medium">Content Requirements</div>
                   <div>
-                    {Object.entries(project.content_requirements).map(([type, data]: [string, any]) => {
+                    {Object.entries(contentRequirements).map(([type, data]: [string, any]) => {
                       if (type === 'brief_uploaded' || type === 'brief_files') return null;
                       return (
                         <div key={type} className="capitalize">
@@ -402,7 +416,7 @@ const ProjectView = () => {
               )}
 
               {/* Brief & Contract Upload Section */}
-              {currentStep === 3 && !briefUploaded && (
+              {currentStep === 3 && !isBriefUploaded && (
                 <div className="py-4">
                   <div className="font-medium mb-2">Campaign Brief & Contract</div>
                   <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-6 mt-2 flex flex-col items-center">
@@ -450,7 +464,7 @@ const ProjectView = () => {
               )}
               
               {/* Show uploaded brief files if already uploaded */}
-              {briefUploaded && project.content_requirements?.brief_files && (
+              {isBriefUploaded && briefFilesList.length > 0 && (
                 <div className="py-4">
                   <div className="font-medium mb-2">Uploaded Campaign Materials</div>
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -459,19 +473,17 @@ const ProjectView = () => {
                       <span className="font-medium text-green-700">Brief and contract uploaded</span>
                     </div>
                     
-                    {Array.isArray(project.content_requirements.brief_files) && (
-                      <div className="mt-2">
-                        <p className="text-sm font-medium text-gray-700 mb-1">Files:</p>
-                        <div className="space-y-1">
-                          {project.content_requirements.brief_files.map((fileName: string, index: number) => (
-                            <div key={index} className="flex items-center">
-                              <FileText className="h-4 w-4 text-gray-500 mr-2" />
-                              <span className="text-sm text-gray-600">{fileName}</span>
-                            </div>
-                          ))}
-                        </div>
+                    <div className="mt-2">
+                      <p className="text-sm font-medium text-gray-700 mb-1">Files:</p>
+                      <div className="space-y-1">
+                        {briefFilesList.map((fileName: string, index: number) => (
+                          <div key={index} className="flex items-center">
+                            <FileText className="h-4 w-4 text-gray-500 mr-2" />
+                            <span className="text-sm text-gray-600">{fileName}</span>
+                          </div>
+                        ))}
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
               )}
