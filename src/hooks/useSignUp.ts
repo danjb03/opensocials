@@ -1,5 +1,3 @@
-
-import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import type { UserRole } from '@/lib/auth';
@@ -10,7 +8,7 @@ interface SignUpParams {
   firstName: string;
   lastName: string;
   role: UserRole;
-  setIsLoading: (isLoading: boolean) => void;
+  setIsLoading: (loading: boolean) => void;
   resetForm: () => void;
 }
 
@@ -25,10 +23,9 @@ export function useSignUp() {
     resetForm,
   }: SignUpParams): Promise<boolean> => {
     setIsLoading(true);
-    console.log(`Signing up user with role: ${role}`); // Debug log
+    console.log(`🆕 Signing up new ${role}...`);
 
     try {
-      // Sign up with Supabase, with auto confirm set to true to use Supabase's email confirmation
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -36,32 +33,28 @@ export function useSignUp() {
           data: {
             first_name: firstName,
             last_name: lastName,
-            role: role // Ensure the role is passed correctly in user metadata
+            role: role
           },
-          emailRedirectTo: `${window.location.origin}/auth?confirmation=true`,
-        },
+          emailRedirectTo: `${window.location.origin}/auth?confirmation=true`
+        }
       });
 
       if (error) throw error;
-      
-      console.log("Signup response:", data); // Debug log
 
       if (data.user) {
-        console.log('User signed up:', data.user.id, 'with role:', role);
-        toast.success('Account created! Please check your email to confirm.');
-        
-        // Reset form fields and switch to login view
+        console.log('✅ Signup complete:', data.user.id);
+        toast.success('Account created! Confirm via email before logging in.');
         resetForm();
-        return true; // Return true to indicate success so the parent component can update UI state
+        return true;
       }
     } catch (err: any) {
-      console.error('Signup error:', err.message);
-      toast.error(err.message || 'Signup failed.');
+      console.error('❌ Signup failed:', err.message);
+      toast.error(err.message || 'Signup failed. Try again.');
     } finally {
       setIsLoading(false);
     }
-    
-    return false; // Return false if signup was not successful
+
+    return false;
   };
 
   return { handleSignUp };
