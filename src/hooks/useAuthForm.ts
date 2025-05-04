@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
@@ -25,7 +24,7 @@ export function useAuthForm() {
     setIsLoading(true);
 
     try {
-      // Sign up with Supabase but explicitly disable email confirmation
+      // Sign up with Supabase, but we'll handle our own email confirmations
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -35,8 +34,7 @@ export function useAuthForm() {
             last_name: lastName,
           },
           emailRedirectTo: `${window.location.origin}/auth?confirmation=true`,
-          // This is critical - disable Supabase from sending its own emails
-          emailConfirm: false
+          // Removed emailConfirm property as it's not recognized in the type
         },
       });
 
