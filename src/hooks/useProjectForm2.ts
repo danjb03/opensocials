@@ -44,6 +44,7 @@ export function useProjectForm2(onSuccess?: (project: ProjectFormValues) => void
       description: "",
       budget: "",
       currency: "USD",
+      executionDate: undefined, // Changed from "" to undefined to fix date validation issues
     },
   });
 

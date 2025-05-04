@@ -91,7 +91,7 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
         currency: formData.currency,
         content_requirements: contentRequirements,
         platforms: formData.platforms,
-        usage_duration: formData.usage_duration,
+        usage_duration: formData.usage_duration || null,
         whitelisting: formData.whitelisting,
         exclusivity: formData.exclusivity || null,
         audience_focus: formData.audience_focus || null,
@@ -102,6 +102,11 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
         description: formData.description || null,
         status: 'draft'
       };
+
+      // Convert empty strings to null for date fields
+      if (payload.start_date === '') payload.start_date = null;
+      if (payload.end_date === '') payload.end_date = null;
+      if (payload.submission_deadline === '') payload.submission_deadline = null;
 
       console.log('Submitting project with payload:', payload);
       const { error } = await supabase.from('projects').insert(payload);
