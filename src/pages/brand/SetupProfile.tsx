@@ -138,6 +138,51 @@ const SetupProfile = () => {
     }
   };
 
+  const handleSkipForNow = async () => {
+    if (!user) {
+      toast.error('You must be logged in to continue');
+      navigate('/auth');
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      // Just update the minimal required fields
+      const profileData = {
+        company_name: companyName || 'My Brand',
+        is_complete: true,
+        role: 'brand'
+      };
+      
+      console.log("Updating minimal profile data:", profileData);
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update(profileData)
+        .eq('id', user.id);
+          
+      if (error) {
+        console.error("Profile update error:", error);
+        throw error;
+      }
+      
+      // Update user role status to approved
+      await updateUserRoleStatus(user.id);
+      console.log("User role status updated to approved");
+      
+      toast.success('Welcome to your brand dashboard!');
+      
+      // Navigate to brand dashboard immediately
+      navigate('/brand');
+    } catch (error: any) {
+      console.error('Error skipping profile setup:', error);
+      toast.error('Failed to continue: ' + (error.message || 'Unknown error'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -193,10 +238,8 @@ const SetupProfile = () => {
       
       toast.success('Profile setup complete!');
       
-      // Redirect to brand dashboard with a slight delay to ensure toast is visible
-      setTimeout(() => {
-        navigate('/brand');
-      }, 1000);
+      // Force redirect to brand dashboard
+      navigate('/brand');
     } catch (error: any) {
       console.error('Error setting up profile:', error);
       toast.error('Failed to set up profile: ' + (error.message || 'Unknown error'));
@@ -305,7 +348,7 @@ const SetupProfile = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => navigate('/brand')}
+                  onClick={handleSkipForNow}
                   className="flex items-center gap-2"
                   disabled={isLoading}
                 >
