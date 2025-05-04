@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from '@/lib/auth';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { Package, Users, CheckCircle, ArrowLeft } from 'lucide-react';
-import { useBrandRedirect } from '@/hooks/useBrandRedirect';
 import {
   LineChart,
   Line,
@@ -27,19 +26,10 @@ const mockData = [
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { isChecking } = useBrandRedirect();
 
   const handleBackToSuperAdmin = () => {
     navigate('/super-admin');
   };
-
-  if (isChecking) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
 
   return (
     <BrandLayout>

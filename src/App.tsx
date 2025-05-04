@@ -21,7 +21,7 @@ import CreatorSearch from "./pages/brand/CreatorSearch";
 import BrandOrders from "./pages/brand/Orders";
 import Projects from "./pages/brand/Projects";
 import SetupProfile from "./pages/brand/SetupProfile";
-import BrandOnboardingGuard from "./components/BrandOnboardingGuard";
+import BrandGuard from "./components/BrandGuard";
 import AdminLayout from "./components/layouts/AdminLayout";
 import CreatorDashboard from "./pages/creator/Dashboard";
 import CreatorDeals from "./pages/creator/Deals";
@@ -125,41 +125,33 @@ const App = () => {
               <Route 
                 path="/brand" 
                 element={
-                  <ProtectedRoute requiredRole="brand">
-                    <BrandOnboardingGuard>
-                      <BrandDashboard />
-                    </BrandOnboardingGuard>
-                  </ProtectedRoute>
+                  <BrandGuard>
+                    <BrandDashboard />
+                  </BrandGuard>
                 } 
               />
               <Route 
                 path="/brand/projects" 
                 element={
-                  <ProtectedRoute requiredRole="brand">
-                    <BrandOnboardingGuard>
-                      <Projects />
-                    </BrandOnboardingGuard>
-                  </ProtectedRoute>
+                  <BrandGuard>
+                    <Projects />
+                  </BrandGuard>
                 } 
               />
               <Route 
                 path="/brand/creators" 
                 element={
-                  <ProtectedRoute requiredRole="brand">
-                    <BrandOnboardingGuard>
-                      <CreatorSearch />
-                    </BrandOnboardingGuard>
-                  </ProtectedRoute>
+                  <BrandGuard>
+                    <CreatorSearch />
+                  </BrandGuard>
                 } 
               />
               <Route 
                 path="/brand/orders" 
                 element={
-                  <ProtectedRoute requiredRole="brand">
-                    <BrandOnboardingGuard>
-                      <BrandOrders />
-                    </BrandOnboardingGuard>
-                  </ProtectedRoute>
+                  <BrandGuard>
+                    <BrandOrders />
+                  </BrandGuard>
                 } 
               />
               
