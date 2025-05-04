@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,6 +20,8 @@ import BrandDashboard from "./pages/brand/Dashboard";
 import CreatorSearch from "./pages/brand/CreatorSearch";
 import BrandOrders from "./pages/brand/Orders";
 import Projects from "./pages/brand/Projects";
+import SetupProfile from "./pages/brand/SetupProfile";
+import BrandOnboardingGuard from "./components/BrandOnboardingGuard";
 import AdminLayout from "./components/layouts/AdminLayout";
 import CreatorDashboard from "./pages/creator/Dashboard";
 import CreatorDeals from "./pages/creator/Deals";
@@ -112,10 +115,20 @@ const App = () => {
               
               {/* Brand Dashboard Routes */}
               <Route 
+                path="/brand/setup-profile" 
+                element={
+                  <ProtectedRoute requiredRole="brand">
+                    <SetupProfile />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
                 path="/brand" 
                 element={
                   <ProtectedRoute requiredRole="brand">
-                    <BrandDashboard />
+                    <BrandOnboardingGuard>
+                      <BrandDashboard />
+                    </BrandOnboardingGuard>
                   </ProtectedRoute>
                 } 
               />
@@ -123,7 +136,9 @@ const App = () => {
                 path="/brand/projects" 
                 element={
                   <ProtectedRoute requiredRole="brand">
-                    <Projects />
+                    <BrandOnboardingGuard>
+                      <Projects />
+                    </BrandOnboardingGuard>
                   </ProtectedRoute>
                 } 
               />
@@ -131,7 +146,9 @@ const App = () => {
                 path="/brand/creators" 
                 element={
                   <ProtectedRoute requiredRole="brand">
-                    <CreatorSearch />
+                    <BrandOnboardingGuard>
+                      <CreatorSearch />
+                    </BrandOnboardingGuard>
                   </ProtectedRoute>
                 } 
               />
@@ -139,7 +156,9 @@ const App = () => {
                 path="/brand/orders" 
                 element={
                   <ProtectedRoute requiredRole="brand">
-                    <BrandOrders />
+                    <BrandOnboardingGuard>
+                      <BrandOrders />
+                    </BrandOnboardingGuard>
                   </ProtectedRoute>
                 } 
               />

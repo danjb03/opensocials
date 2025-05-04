@@ -36,6 +36,47 @@ export type Database = {
         }
         Relationships: []
       }
+      brand_profiles: {
+        Row: {
+          company_name: string
+          created_at: string | null
+          id: string
+          industry: string | null
+          is_complete: boolean | null
+          logo_url: string | null
+          user_id: string | null
+          website: string | null
+        }
+        Insert: {
+          company_name: string
+          created_at?: string | null
+          id?: string
+          industry?: string | null
+          is_complete?: boolean | null
+          logo_url?: string | null
+          user_id?: string | null
+          website?: string | null
+        }
+        Update: {
+          company_name?: string
+          created_at?: string | null
+          id?: string
+          industry?: string | null
+          is_complete?: boolean | null
+          logo_url?: string | null
+          user_id?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deal_earnings: {
         Row: {
           amount: number

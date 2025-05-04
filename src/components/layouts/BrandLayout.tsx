@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,8 @@ import Logo from "@/components/ui/logo";
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Home, Search, Package, Calendar } from 'lucide-react';
+import { useBrandProfile } from '@/hooks/useBrandProfile';
+import { Home, Search, Package, Calendar, Settings } from 'lucide-react';
 import SidebarToggle from './SidebarToggle';
 import Footer from './Footer';
 
@@ -17,6 +19,7 @@ const BrandLayout = ({ children }: BrandLayoutProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { profile } = useBrandProfile();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -84,12 +87,19 @@ const BrandLayout = ({ children }: BrandLayoutProps) => {
                 {!isSidebarCollapsed && <span>Orders</span>}
               </Link>
             </Button>
+
+            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
+              <Link to="/brand/setup-profile" className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Profile Setup</span>}
+              </Link>
+            </Button>
           </nav>
           
           <div className="mt-auto pt-4 border-t border-sidebar-border">
             {!isSidebarCollapsed && (
               <div className="text-sm opacity-70 mb-2">
-                Logged in as {user?.email}
+                {profile?.company_name || user?.email}
               </div>
             )}
             <Button 
