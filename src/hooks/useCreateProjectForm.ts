@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -26,9 +27,11 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
     draft_approval: true,
     submission_deadline: '',
     payment_structure: 'on_delivery' as const,
-    description: ''
+    description: '',
+    save_as_template: false
   });
 
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e: any) => {
@@ -39,8 +42,35 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
     }));
   };
 
+  const handlePlatformSelect = (platforms: string[]) => {
+    setFormData(prev => ({
+      ...prev,
+      platforms
+    }));
+  };
+
+  const handleAddContentType = (type: 'videos' | 'stories' | 'posts') => {
+    setFormData(prevState => ({
+      ...prevState,
+      content_requirements: {
+        ...prevState.content_requirements,
+        [type]: { quantity: 1 }
+      }
+    }));
+  };
+
+  const handleContentChange = (type: 'videos' | 'stories' | 'posts', quantity: number) => {
+    setFormData(prevState => ({
+      ...prevState,
+      content_requirements: {
+        ...prevState.content_requirements,
+        [type]: { quantity }
+      }
+    }));
+  };
+
   const validateDate = (dateString: string): boolean => {
-    if (!dateString) return true;
+    if (!dateString || dateString.trim() === '') return true;
     return !isNaN(Date.parse(dateString));
   };
 
@@ -135,8 +165,13 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
   return {
     formData,
     setFormData,
+    showAdvanced,
+    setShowAdvanced,
     handleChange,
     handleSubmit,
+    handleAddContentType,
+    handleContentChange,
+    handlePlatformSelect,
     loading
   };
 };

@@ -5,6 +5,7 @@ import BrandDashboardStats from '@/components/brand/dashboard/BrandDashboardStat
 import TodoPanel from '@/components/brand/dashboard/TodoPanel';
 import CreatorList from '@/components/brand/dashboard/CreatorList';
 import QuickActions from '@/components/brand/dashboard/QuickActions';
+import BrandCampaignTable from '@/components/brand/dashboard/BrandCampaignTable';
 import { useBrandDashboard } from '@/hooks/useBrandDashboard';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -54,11 +55,13 @@ const Dashboard = () => {
               completedProjects={projectStats.completedProjects}
             />
             
-            <div className="mb-6">
+            <div className="space-y-6">
+              <BrandCampaignTable />
+              
               <TodoPanel items={todoItems} />
+              
+              <CreatorList creators={creators} />
             </div>
-            
-            <CreatorList creators={creators} />
           </>
         )}
       </div>
