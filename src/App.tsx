@@ -29,6 +29,10 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import BrandOnboardingGuard from "./components/BrandOnboardingGuard";
 import ProjectView from './pages/brand/ProjectView';
+import EditCampaign from './pages/brand/EditCampaign';
+import ManageBudget from './pages/brand/ManageBudget';
+import CampaignAnalytics from './pages/brand/CampaignAnalytics';
+import CampaignAnalyticsList from './pages/brand/CampaignAnalyticsList';
 
 const ProtectedRoute = ({ children, requiredRole }: { 
   children: React.ReactNode, 
@@ -159,6 +163,39 @@ const App = () => {
                 element={
                   <BrandGuard>
                     <ProjectView />
+                  </BrandGuard>
+                } 
+              />
+              {/* Add the new routes */}
+              <Route 
+                path="/brand/projects/edit/:id" 
+                element={
+                  <BrandGuard>
+                    <EditCampaign />
+                  </BrandGuard>
+                } 
+              />
+              <Route 
+                path="/brand/projects/budget/:id" 
+                element={
+                  <BrandGuard>
+                    <ManageBudget />
+                  </BrandGuard>
+                } 
+              />
+              <Route 
+                path="/brand/projects/analytics/:id" 
+                element={
+                  <BrandGuard>
+                    <CampaignAnalytics />
+                  </BrandGuard>
+                } 
+              />
+              <Route 
+                path="/brand/analytics" 
+                element={
+                  <BrandGuard>
+                    <CampaignAnalyticsList />
                   </BrandGuard>
                 } 
               />

@@ -32,3 +32,10 @@ export interface ContentRequirements {
   brief_files?: string[];
   [key: string]: any; // Add index signature to make it compatible with Json type
 }
+
+// Add CampaignStep type to fix the error
+export type CampaignStep = {
+  id: string;
+  label: string;
+  icon: "FileText" | "Users" | "Flag" | "Calendar" | "Globe" | "BarChart2";
+};

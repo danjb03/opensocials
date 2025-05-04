@@ -4,10 +4,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectStatus } from '@/types/projects';
-import { ContentRequirements } from '@/types/project';
+import { ContentRequirements, CampaignStep } from '@/types/project';
 
 // Campaign progress steps
-export const CAMPAIGN_STEPS = [
+export const CAMPAIGN_STEPS: CampaignStep[] = [
   { id: 'create', label: 'Campaign Created', icon: 'FileText' },
   { id: 'talent', label: 'Talent Matchmaking', icon: 'Users' },
   { id: 'planning', label: 'Creative Planning', icon: 'Flag' },

@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useBrandProfile } from '@/hooks/useBrandProfile';
-import { Home, Search, Package, Calendar, Settings } from 'lucide-react';
+import { Home, Search, Package, Calendar, Settings, BarChart2 } from 'lucide-react';
 import SidebarToggle from './SidebarToggle';
 import Footer from './Footer';
 
@@ -85,6 +85,14 @@ const BrandLayout = ({ children }: BrandLayoutProps) => {
               <Link to="/brand/orders" className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
                 {!isSidebarCollapsed && <span>Orders</span>}
+              </Link>
+            </Button>
+            
+            {/* Add Analytics link */}
+            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
+              <Link to="/brand/analytics" className="flex items-center gap-2">
+                <BarChart2 className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Analytics</span>}
               </Link>
             </Button>
 
