@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { toast } from '@/components/ui/sonner';
+import { useLogoUpload } from './brand/useLogoUpload';
+import { useRoleStatus } from './brand/useRoleStatus';
+import { useBrandNavigation } from './brand/useBrandNavigation';
 
 export const useProfileSetup = () => {
   const { user } = useAuth();
@@ -15,9 +18,12 @@ export const useProfileSetup = () => {
   const [companyName, setCompanyName] = useState('');
   const [website, setWebsite] = useState('');
   const [industry, setIndustry] = useState<string>('');
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  
+  // Import modular hooks
+  const { logoFile, logoPreview, logoUrl, setLogoUrl, handleLogoChange, clearLogo, uploadLogo } = 
+    useLogoUpload(user?.id);
+  const { updateUserRoleStatus } = useRoleStatus();
+  const { redirectToDashboard } = useBrandNavigation();
 
   // Check for existing profile data
   useEffect(() => {
@@ -51,81 +57,7 @@ export const useProfileSetup = () => {
     };
     
     checkExistingProfile();
-  }, [user]);
-
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    setLogoFile(file);
-    const preview = URL.createObjectURL(file);
-    setLogoPreview(preview);
-  };
-
-  const clearLogo = () => {
-    setLogoFile(null);
-    if (logoPreview) {
-      URL.revokeObjectURL(logoPreview);
-    }
-    setLogoPreview(null);
-    setLogoUrl(null);
-  };
-
-  const uploadLogo = async (): Promise<string | null> => {
-    if (!logoFile || !user) return null;
-    
-    try {
-      const fileExt = logoFile.name.split('.').pop();
-      const filePath = `${user.id}/logo-${Date.now()}.${fileExt}`;
-      
-      const { data, error } = await supabase.storage
-        .from('brand-assets')
-        .upload(filePath, logoFile);
-
-      if (error) {
-        throw error;
-      }
-      
-      const { data: urlData } = supabase.storage
-        .from('brand-assets')
-        .getPublicUrl(data.path);
-        
-      return urlData.publicUrl;
-    } catch (error) {
-      console.error('Error uploading logo:', error);
-      toast.error('Failed to upload logo.');
-      return null;
-    }
-  };
-
-  // Update user role status to approved
-  const updateUserRoleStatus = async (userId: string) => {
-    try {
-      console.log('Updating user role status for:', userId);
-      const { error } = await supabase
-        .from('user_roles')
-        .update({ status: 'approved' })
-        .eq('user_id', userId);
-      
-      if (error) {
-        console.error('Failed to update user role status:', error);
-        return false;
-      }
-      console.log('User role status updated successfully');
-      return true;
-    } catch (error) {
-      console.error('Error updating user role status:', error);
-      return false;
-    }
-  };
-
-  const redirectToDashboard = () => {
-    console.log("Attempting to navigate to /brand");
-    window.localStorage.setItem('bypass_brand_check', 'true');
-    
-    // Force a full page reload to ensure fresh data
-    window.location.href = '/brand';
-  };
+  }, [user, setLogoUrl]);
 
   const handleSkipForNow = async () => {
     if (!user) {
