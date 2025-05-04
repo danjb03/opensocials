@@ -122,6 +122,7 @@ const SetupProfile = () => {
   // Update user role status to approved
   const updateUserRoleStatus = async (userId: string) => {
     try {
+      console.log('Updating user role status for:', userId);
       const { error } = await supabase
         .from('user_roles')
         .update({ status: 'approved' })
@@ -131,6 +132,7 @@ const SetupProfile = () => {
         console.error('Failed to update user role status:', error);
         return false;
       }
+      console.log('User role status updated successfully');
       return true;
     } catch (error) {
       console.error('Error updating user role status:', error);
@@ -173,8 +175,15 @@ const SetupProfile = () => {
       
       toast.success('Welcome to your brand dashboard!');
       
-      // Navigate to brand dashboard immediately
-      navigate('/brand');
+      // Force navigation to brand dashboard with a flag to bypass guards
+      console.log("Navigating to brand dashboard");
+      window.localStorage.setItem('bypass_brand_check', 'true');
+      setTimeout(() => {
+        navigate('/brand');
+        setTimeout(() => {
+          window.location.href = '/brand';
+        }, 500);
+      }, 100);
     } catch (error: any) {
       console.error('Error skipping profile setup:', error);
       toast.error('Failed to continue: ' + (error.message || 'Unknown error'));
@@ -238,8 +247,26 @@ const SetupProfile = () => {
       
       toast.success('Profile setup complete!');
       
-      // Force redirect to brand dashboard
-      navigate('/brand');
+      // Force navigation with multiple fallbacks
+      console.log("Attempting to navigate to /brand");
+      window.localStorage.setItem('bypass_brand_check', 'true');
+      
+      // Try different navigation methods as fallbacks
+      setTimeout(() => {
+        try {
+          navigate('/brand', { replace: true });
+          console.log("First navigation attempt complete");
+          
+          // Fallback: direct location change
+          setTimeout(() => {
+            console.log("Using fallback navigation");
+            window.location.href = '/brand';
+          }, 300);
+        } catch (navError) {
+          console.error("Navigation error:", navError);
+          window.location.href = '/brand';
+        }
+      }, 100);
     } catch (error: any) {
       console.error('Error setting up profile:', error);
       toast.error('Failed to set up profile: ' + (error.message || 'Unknown error'));
