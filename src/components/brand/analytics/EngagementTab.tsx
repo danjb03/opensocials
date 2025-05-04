@@ -6,13 +6,13 @@ import { engagementData } from './mock-data';
 
 export const EngagementTab = () => {
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardHeader>
         <CardTitle>Engagement Metrics</CardTitle>
         <CardDescription>Likes, comments, and shares over time</CardDescription>
       </CardHeader>
       <CardContent className="pt-6 pb-8">
-        <div className="h-[400px] w-full">
+        <div className="h-[450px] w-full">
           <ChartContainer 
             config={{ 
               likes: { label: "Likes", theme: { light: "#F97316", dark: "#EA580C" } },

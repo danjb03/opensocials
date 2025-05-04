@@ -6,8 +6,14 @@ import { Bar, BarChart } from 'recharts';
 import { audienceData, platformData, reachData } from './mock-data';
 
 export const OverviewTab = () => {
+  // Create a copy of audience data without percentages in labels
+  const formattedAudienceData = audienceData.map(item => ({
+    ...item,
+    name: item.name.replace(/: \d+%/, '') // Remove the percentage from the name
+  }));
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
@@ -47,13 +53,13 @@ export const OverviewTab = () => {
         </Card>
       </div>
       
-      <Card>
+      <Card className="overflow-hidden">
         <CardHeader>
           <CardTitle>Campaign Performance Overview</CardTitle>
           <CardDescription>Total reach and engagement metrics over time</CardDescription>
         </CardHeader>
         <CardContent className="pt-6 pb-8">
-          <div className="h-[400px] w-full">
+          <div className="h-[450px] w-full">
             <ChartContainer 
               config={{ 
                 reach: { label: "Reach", theme: { light: "#9b87f5", dark: "#7E69AB" } },
@@ -92,13 +98,13 @@ export const OverviewTab = () => {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle>Platform Performance</CardTitle>
             <CardDescription>Posts and engagement by platform</CardDescription>
           </CardHeader>
           <CardContent className="pt-6 pb-8">
-            <div className="h-[400px] w-full">
+            <div className="h-[450px] w-full">
               <ChartContainer 
                 config={{ 
                   posts: { label: "Posts", theme: { light: "#F97316", dark: "#EA580C" } },
@@ -131,40 +137,42 @@ export const OverviewTab = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle>Audience Demographics</CardTitle>
             <CardDescription>Age breakdown of engaged users</CardDescription>
           </CardHeader>
           <CardContent className="pt-6 pb-8">
-            <div className="h-[400px] w-full flex items-center justify-center">
-              <PieChart width={300} height={300} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-                <Pie
-                  data={audienceData}
-                  cx={150}
-                  cy={150}
-                  labelLine={true}
-                  outerRadius={80}
-                  innerRadius={0}
-                  paddingAngle={2}
-                  dataKey="value"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}`}
-                >
-                  {audienceData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value: number) => `${value}`} />
-                <Legend
-                  verticalAlign="bottom"
-                  height={36}
-                  payload={audienceData.map(entry => ({
-                    value: `${entry.name}: ${entry.value}`,
-                    color: entry.color,
-                    type: 'square'
-                  }))}
-                />
-              </PieChart>
+            <div className="h-[450px] w-full flex items-center justify-center">
+              <div className="w-[280px] h-[280px]">
+                <PieChart width={280} height={280}>
+                  <Pie
+                    data={formattedAudienceData}
+                    cx={140}
+                    cy={140}
+                    labelLine={true}
+                    outerRadius={100}
+                    innerRadius={0}
+                    paddingAngle={2}
+                    dataKey="value"
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {formattedAudienceData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value: number) => `${value}`} />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
+                    payload={formattedAudienceData.map(entry => ({
+                      value: `${entry.name}`,
+                      color: entry.color,
+                      type: 'square'
+                    }))}
+                  />
+                </PieChart>
+              </div>
             </div>
           </CardContent>
         </Card>

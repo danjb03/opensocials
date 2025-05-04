@@ -33,18 +33,21 @@ const EarningsChart: React.FC<EarningsChartProps> = ({ earningsData }) => {
   }
 
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardHeader>
         <CardTitle>Earnings Over Time</CardTitle>
       </CardHeader>
       <CardContent className="pt-6 pb-8">
-        <div className="h-[300px] w-full">
+        <div className="h-[400px] w-full">
           <ChartContainer
             config={{
               amount: { label: "Earnings", theme: { light: "#2563eb", dark: "#1e40af" } }
             }}
           >
-            <LineChart data={earningsData}>
+            <LineChart 
+              data={earningsData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
