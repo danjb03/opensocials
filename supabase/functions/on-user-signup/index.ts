@@ -42,7 +42,7 @@ serve(async (req) => {
     console.log(`Processing new user: ${user.id}`);
     
     // Extract role from user metadata
-    const role = user.raw_user_meta_data?.role?.toLowerCase();
+    const role = user.raw_user_meta_data?.role ? String(user.raw_user_meta_data.role).toLowerCase() : null;
     
     if (!role) {
       console.error("No role found in user metadata");
@@ -87,12 +87,15 @@ serve(async (req) => {
       }
       
       if (!existingProfile) {
+        const firstName = user.raw_user_meta_data?.first_name || "";
+        const lastName = user.raw_user_meta_data?.last_name || "";
+        
         const { error: profileError } = await supabase
           .from("profiles")
           .insert({
             id: user.id,
-            first_name: user.raw_user_meta_data?.first_name || "",
-            last_name: user.raw_user_meta_data?.last_name || "",
+            first_name: firstName,
+            last_name: lastName,
             role: role
           });
           

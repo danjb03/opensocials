@@ -40,30 +40,39 @@ export type Database = {
         Row: {
           company_name: string
           created_at: string | null
+          email: string | null
           id: string
           industry: string | null
           is_complete: boolean | null
           logo_url: string | null
+          role: string | null
+          status: string | null
           user_id: string | null
           website: string | null
         }
         Insert: {
           company_name: string
           created_at?: string | null
+          email?: string | null
           id?: string
           industry?: string | null
           is_complete?: boolean | null
           logo_url?: string | null
+          role?: string | null
+          status?: string | null
           user_id?: string | null
           website?: string | null
         }
         Update: {
           company_name?: string
           created_at?: string | null
+          email?: string | null
           id?: string
           industry?: string | null
           is_complete?: boolean | null
           logo_url?: string | null
+          role?: string | null
+          status?: string | null
           user_id?: string | null
           website?: string | null
         }
@@ -185,6 +194,7 @@ export type Database = {
           company_name: string | null
           content_type: string | null
           created_at: string | null
+          email: string | null
           engagement_rate: string | null
           first_name: string | null
           follower_count: string | null
@@ -201,6 +211,7 @@ export type Database = {
           show_location: boolean | null
           show_tiktok: boolean | null
           show_youtube: boolean | null
+          status: string | null
           tiktok_connected: boolean | null
           updated_at: string | null
           youtube_connected: boolean | null
@@ -214,6 +225,7 @@ export type Database = {
           company_name?: string | null
           content_type?: string | null
           created_at?: string | null
+          email?: string | null
           engagement_rate?: string | null
           first_name?: string | null
           follower_count?: string | null
@@ -230,6 +242,7 @@ export type Database = {
           show_location?: boolean | null
           show_tiktok?: boolean | null
           show_youtube?: boolean | null
+          status?: string | null
           tiktok_connected?: boolean | null
           updated_at?: string | null
           youtube_connected?: boolean | null
@@ -243,6 +256,7 @@ export type Database = {
           company_name?: string | null
           content_type?: string | null
           created_at?: string | null
+          email?: string | null
           engagement_rate?: string | null
           first_name?: string | null
           follower_count?: string | null
@@ -259,6 +273,7 @@ export type Database = {
           show_location?: boolean | null
           show_tiktok?: boolean | null
           show_youtube?: boolean | null
+          status?: string | null
           tiktok_connected?: boolean | null
           updated_at?: string | null
           youtube_connected?: boolean | null
