@@ -90,8 +90,8 @@ export const useProfileSetup = () => {
       }
       
       // Update user role status to approved
-      await updateUserRoleStatus(user.id);
-      console.log("✅ User role status updated to approved");
+      const roleUpdated = await updateUserRoleStatus(user.id);
+      console.log("✅ User role status updated successfully:", roleUpdated);
       
       toast.success('Welcome to your brand dashboard!');
       
@@ -103,7 +103,7 @@ export const useProfileSetup = () => {
       setTimeout(() => {
         console.log("🚀 Redirecting to dashboard with forced page reload");
         window.location.href = '/brand';
-      }, 300);
+      }, 500);
     } catch (error: any) {
       console.error('❌ Error skipping profile setup:', error);
       toast.error('Failed to continue: ' + (error.message || 'Unknown error'));
@@ -163,8 +163,8 @@ export const useProfileSetup = () => {
       console.log("✅ Profile updated successfully");
       
       // Update user role status to approved
-      await updateUserRoleStatus(user.id);
-      console.log("✅ User role status updated to approved");
+      const roleUpdated = await updateUserRoleStatus(user.id);
+      console.log("✅ User role status updated successfully:", roleUpdated);
       
       toast.success('Profile setup complete!');
       
@@ -176,7 +176,7 @@ export const useProfileSetup = () => {
       setTimeout(() => {
         console.log("🚀 Redirecting to dashboard with forced page reload");
         window.location.href = '/brand';
-      }, 300);
+      }, 500);
     } catch (error: any) {
       console.error('❌ Error setting up profile:', error);
       toast.error('Failed to set up profile: ' + (error.message || 'Unknown error'));

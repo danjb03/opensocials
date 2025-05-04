@@ -63,7 +63,16 @@ const BrandGuard = ({
       }
       
       try {
-        // Check user role status
+        // First check if we're already on the setup page
+        const isSetupPage = window.location.pathname === '/brand/setup-profile';
+        
+        if (isSetupPage) {
+          console.log('✅ Already on setup page, allowing access');
+          setIsChecking(false);
+          return;
+        }
+        
+        // Check user role status first - if it's approved, we don't need to force setup
         const { data: roleData, error: roleError } = await supabase
           .from('user_roles')
           .select('status')
@@ -78,11 +87,10 @@ const BrandGuard = ({
         
         // If role status is not approved, redirect to setup profile
         const isApproved = roleData?.status === 'approved';
-        const isSetupPage = window.location.pathname === '/brand/setup-profile';
         
-        console.log('🔑 Role status check - isApproved:', isApproved, 'isSetupPage:', isSetupPage);
+        console.log('🔑 Role status check - isApproved:', isApproved);
         
-        if (!isApproved && !isSetupPage) {
+        if (!isApproved) {
           console.log('🚨 User role not approved, redirecting to setup');
           navigate('/brand/setup-profile');
           return;
@@ -104,21 +112,17 @@ const BrandGuard = ({
         
         console.log('📦 Raw profile fetch response:', brandProfile);
         
-        // Only check profile completion for actual brands with approved status
-        if (isApproved) {
-          // Check for required fields
-          const missingRequiredFields = REQUIRED_BRAND_FIELDS.filter(field => !brandProfile?.[field]);
-          const profileComplete = brandProfile?.is_complete === true;
-          const profileAccepted = brandProfile?.status === 'accepted';
-          
-          console.log('❓ Missing required fields:', missingRequiredFields);
-          console.log('✅ Profile status - complete:', profileComplete, 'accepted:', profileAccepted);
-          
-          if ((missingRequiredFields.length > 0 || !profileComplete || !profileAccepted) && !isSetupPage) {
-            console.log('🚨 Brand profile missing required fields or not complete/accepted, redirecting to setup');
-            navigate('/brand/setup-profile');
-            return;
-          }
+        // Check for required fields
+        const missingRequiredFields = REQUIRED_BRAND_FIELDS.filter(field => !brandProfile?.[field]);
+        const profileComplete = brandProfile?.is_complete === true;
+        
+        console.log('❓ Missing required fields:', missingRequiredFields);
+        console.log('✅ Profile status - complete:', profileComplete);
+        
+        if ((missingRequiredFields.length > 0 || !profileComplete)) {
+          console.log('🚨 Brand profile missing required fields or not complete, redirecting to setup');
+          navigate('/brand/setup-profile');
+          return;
         }
 
         console.log('✅ All guard checks passed, showing brand dashboard');

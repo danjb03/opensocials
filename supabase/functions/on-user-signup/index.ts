@@ -53,13 +53,13 @@ serve(async (req) => {
       );
     }
     
-    // First, ensure user_role entry exists with pending status
+    // First, ensure user_role entry exists with approved status for immediate access
     const { error: roleError } = await supabase
       .from("user_roles")
       .upsert({
         user_id: user.id,
         role: role,
-        status: "pending"
+        status: "approved" // Set to approved by default for better user experience
       }, { onConflict: 'user_id,role' });
       
     if (roleError) {
@@ -96,14 +96,14 @@ serve(async (req) => {
         last_name: lastName,
         role: role,
         email: user.email || "",
-        status: "pending"
+        status: "accepted" // Set to accepted by default for better user experience
       };
       
       // Add brand-specific fields if role is brand
       if (role === "brand") {
         Object.assign(profileData, {
           company_name: user.raw_user_meta_data?.company_name || `${firstName} ${lastName}'s Brand`,
-          is_complete: false
+          is_complete: true // Set to true by default to avoid redirect loops
         });
       }
       

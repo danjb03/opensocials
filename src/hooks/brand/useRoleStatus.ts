@@ -11,17 +11,28 @@ export const useRoleStatus = () => {
   const updateUserRoleStatus = async (userId: string): Promise<boolean> => {
     try {
       console.log('Updating user role status for:', userId);
-      const { error } = await supabase
-        .from('user_roles')
-        .update({ status: 'approved' })
-        .eq('user_id', userId);
       
-      if (error) {
-        console.error('Failed to update user role status:', error);
-        return false;
+      // First check if the user role exists
+      const exists = await checkUserRoleExists(userId);
+      
+      if (exists) {
+        // Update existing role status to approved
+        const { error } = await supabase
+          .from('user_roles')
+          .update({ status: 'approved' })
+          .eq('user_id', userId);
+        
+        if (error) {
+          console.error('Failed to update user role status:', error);
+          return false;
+        }
+        console.log('User role status updated successfully');
+        return true;
+      } else {
+        // Create a new role entry with approved status
+        console.log('No user role found, creating one with approved status');
+        return await createUserRole(userId, 'brand');
       }
-      console.log('User role status updated successfully');
-      return true;
     } catch (error) {
       console.error('Error updating user role status:', error);
       return false;
@@ -59,7 +70,7 @@ export const useRoleStatus = () => {
         .insert({ 
           user_id: userId, 
           role: role,
-          status: 'approved' 
+          status: 'approved' // Explicitly set status to approved
         });
       
       if (error) {
@@ -68,8 +79,7 @@ export const useRoleStatus = () => {
         return false;
       }
       
-      console.log('User role created successfully');
-      toast.success('User role created successfully');
+      console.log('User role created successfully with approved status');
       return true;
     } catch (error) {
       console.error('Error creating user role:', error);
