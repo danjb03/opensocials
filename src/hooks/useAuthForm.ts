@@ -25,6 +25,7 @@ export function useAuthForm() {
     setIsLoading(true);
 
     try {
+      // Use disableAutoConfirmation to prevent Supabase from sending its own email
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -61,7 +62,7 @@ export function useAuthForm() {
           .from('user_roles')
           .insert({
             user_id: data.user.id,
-            role: role.toLowerCase(),
+            role: role.toLowerCase() as "creator" | "brand" | "admin" | "super_admin",
             status: roleStatus
           });
 
@@ -70,7 +71,7 @@ export function useAuthForm() {
           // Non-blocking error - continue with signup
         }
 
-        // Send welcome email based on role
+        // Send welcome email based on role using ONLY Resend
         try {
           let emailSubject, emailHtml;
           const confirmUrl = `${window.location.origin}/auth?confirmation=true&t=${data.session?.access_token}`;
@@ -114,6 +115,7 @@ export function useAuthForm() {
               to: email,
               subject: emailSubject,
               html: emailHtml,
+              from: 'OpenSocials <noreply@opensocials.net>'
             });
             console.log(`Welcome email sent to ${role} user:`, email);
           }

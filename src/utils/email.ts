@@ -12,7 +12,7 @@ interface SendEmailProps {
 /**
  * Send an email using the Resend API via Supabase Edge Function
  */
-export const sendEmail = async ({ to, subject, html, from }: SendEmailProps) => {
+export const sendEmail = async ({ to, subject, html, from = 'OpenSocials <noreply@opensocials.net>' }: SendEmailProps) => {
   try {
     console.log('Sending email to:', to);
     
