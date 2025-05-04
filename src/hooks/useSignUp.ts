@@ -36,7 +36,7 @@ export function useSignUp() {
           data: {
             first_name: firstName,
             last_name: lastName,
-            role: role, // Ensure the role is passed correctly
+            role: role // Ensure the role is passed correctly in user metadata
           },
           emailRedirectTo: `${window.location.origin}/auth?confirmation=true`,
         },
@@ -48,48 +48,6 @@ export function useSignUp() {
 
       if (data.user) {
         console.log('User signed up:', data.user.id, 'with role:', role);
-
-        // Create profile with role
-        const profileData = {
-          id: data.user.id,
-          first_name: firstName,
-          last_name: lastName,
-          role: role,
-          email: email
-        };
-        
-        // If role is brand, add brand-specific fields
-        if (role === 'brand') {
-          Object.assign(profileData, {
-            company_name: `${firstName} ${lastName}'s Brand`, // Temporary company name until setup
-            is_complete: false
-          });
-        }
-        
-        // Upsert to profiles (will create if doesn't exist)
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .upsert(profileData, { onConflict: 'id' });
-
-        if (profileError) {
-          console.error('Failed to create profile:', profileError);
-          toast.error('Failed to create profile. Please contact support.');
-        }
-
-        // Create user role entry and set to pending until email confirmation
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: data.user.id,
-            role: role,
-            status: 'pending'
-          });
-
-        if (roleError) {
-          console.error('Failed to create user role:', roleError);
-          // Continue with signup despite error
-        }
-
         toast.success('Account created! Please check your email to confirm.');
         
         // Reset form fields and switch to login view

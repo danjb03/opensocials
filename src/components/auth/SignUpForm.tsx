@@ -61,7 +61,7 @@ export const SignUpForm = ({
       <div>
         <Label htmlFor="role">Role</Label>
         <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
-          <SelectTrigger className="w-full">
+          <SelectTrigger id="role" className="w-full">
             <SelectValue placeholder="Select your role" />
           </SelectTrigger>
           <SelectContent>
