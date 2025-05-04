@@ -2,15 +2,16 @@
 'use client'
 
 import React from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useCreateProjectForm, CampaignType } from '@/hooks/useCreateProjectForm'
 import { CampaignTypeSelector } from './project-form/CampaignTypeSelector'
 import { ContentRequirements } from './project-form/ContentRequirements'
 import { PlatformSelector } from './project-form/PlatformSelector'
 import { DateRangeSelector } from './project-form/DateRangeSelector'
+import { BasicProjectInfo } from './project-form/BasicProjectInfo'
+import { BudgetSection } from './project-form/BudgetSection'
+import { WhitelistingSection } from './project-form/WhitelistingSection'
+import { SaveTemplateCheckbox } from './project-form/SaveTemplateCheckbox'
+import { FormSubmitButton } from './project-form/FormSubmitButton'
 import {
   Card,
   CardHeader,
@@ -54,6 +55,20 @@ const CreateProjectForm = ({ onSuccess, userId }: { onSuccess: (newProject: any)
     setFormData({ ...formData, platforms });
   };
 
+  const handleWhitelistingToggle = () => {
+    setFormData({
+      ...formData,
+      whitelisting: !formData.whitelisting,
+    });
+  };
+
+  const handleSaveAsTemplateChange = (checked: boolean) => {
+    setFormData({
+      ...formData,
+      save_as_template: checked,
+    });
+  };
+
   return (
     <Card className="w-full shadow-md">
       <CardHeader className="bg-slate-50 border-b">
@@ -64,17 +79,13 @@ const CreateProjectForm = ({ onSuccess, userId }: { onSuccess: (newProject: any)
       </CardHeader>
       <CardContent className="pt-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium mb-1">Project Name</label>
-            <Input
-              placeholder="Project Name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="border-slate-300 focus-visible:ring-blue-500"
-            />
-          </div>
+          <BasicProjectInfo 
+            name={formData.name}
+            description={formData.description}
+            showAdvanced={showAdvanced}
+            setShowAdvanced={setShowAdvanced}
+            onChange={handleChange}
+          />
 
           <div>
             <label className="block text-sm font-medium mb-1">Campaign Type</label>
@@ -107,18 +118,10 @@ const CreateProjectForm = ({ onSuccess, userId }: { onSuccess: (newProject: any)
             }
           />
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Budget</label>
-            <Input
-              type="number"
-              placeholder="Budget"
-              name="budget"
-              value={formData.budget}
-              onChange={handleChange}
-              required
-              className="border-slate-300 focus-visible:ring-blue-500"
-            />
-          </div>
+          <BudgetSection 
+            budget={formData.budget} 
+            onChange={handleChange}
+          />
 
           <ContentRequirements
             requirements={formData.content_requirements}
@@ -134,79 +137,19 @@ const CreateProjectForm = ({ onSuccess, userId }: { onSuccess: (newProject: any)
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="font-medium mb-2">Whitelisting</p>
-              <Button
-                type="button"
-                variant={formData.whitelisting ? 'default' : 'outline'}
-                onClick={() =>
-                  setFormData({
-                    ...formData,
-                    whitelisting: !formData.whitelisting,
-                  })
-                }
-                className={
-                  formData.whitelisting ? 'bg-blue-600 hover:bg-blue-700' : ''
-                }
-              >
-                {formData.whitelisting ? 'Yes' : 'No'}
-              </Button>
-            </div>
-            <div>
-              <p className="font-medium mb-2">Exclusivity</p>
-              <Input
-                placeholder="e.g. 3 months"
-                name="exclusivity"
-                value={formData.exclusivity}
-                onChange={handleChange}
-                className="border-slate-300 focus-visible:ring-blue-500"
-              />
-            </div>
-          </div>
+          <WhitelistingSection
+            whitelisting={formData.whitelisting}
+            exclusivity={formData.exclusivity}
+            onChange={handleChange}
+            onWhitelistingToggle={handleWhitelistingToggle}
+          />
 
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full justify-start text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-          >
-            {showAdvanced ? <ChevronUp className="mr-2" /> : <ChevronDown className="mr-2" />}
-            Additional Details
-          </Button>
+          <SaveTemplateCheckbox 
+            saveAsTemplate={formData.save_as_template} 
+            onChange={handleSaveAsTemplateChange} 
+          />
 
-          {showAdvanced && (
-            <Textarea
-              placeholder="Add posting times, hashtag guidelines, tone of voice..."
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              className="min-h-[120px] border-slate-300 focus-visible:ring-blue-500"
-            />
-          )}
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              checked={formData.save_as_template}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  save_as_template: e.target.checked,
-                })
-              }
-            />
-            <span className="text-sm text-gray-600">Save as Template</span>
-          </div>
-
-          <Button
-            type="submit"
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-lg font-medium py-3"
-            disabled={loading}
-          >
-            {loading ? 'Creating...' : '🚀 Launch Campaign'}
-          </Button>
+          <FormSubmitButton loading={loading} />
         </form>
       </CardContent>
     </Card>
