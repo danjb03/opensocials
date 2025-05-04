@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -66,8 +65,8 @@ const ManageBudget = () => {
     setBudget(e.target.value);
   };
 
-  const handleCurrencyChange = (value: string) => {
-    setCurrency(value as 'USD' | 'GBP' | 'EUR');
+  const handleCurrencyChange = (value: 'USD' | 'GBP' | 'EUR') => {
+    setCurrency(value);
   };
 
   const handleLineItemChange = (index: number, field: 'description' | 'amount', value: string) => {

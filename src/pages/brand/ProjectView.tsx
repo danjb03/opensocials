@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,6 +45,7 @@ interface ContentRequirements {
   posts?: { quantity: number };
   brief_uploaded?: boolean;
   brief_files?: string[];
+  [key: string]: any; // Add index signature to make it compatible with Json type
 }
 
 const ProjectView = () => {
