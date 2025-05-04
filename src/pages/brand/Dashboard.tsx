@@ -1,31 +1,27 @@
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useAuth } from '@/lib/auth';
-import BrandLayout from '@/components/layouts/BrandLayout';
-import { Package, Users, CheckCircle, ArrowLeft } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
 
-const mockData = [
-  { month: 'Jan', orders: 4 },
-  { month: 'Feb', orders: 7 },
-  { month: 'Mar', orders: 5 },
-  { month: 'Apr', orders: 12 },
-  { month: 'May', orders: 9 },
-  { month: 'Jun', orders: 15 },
-];
+import { useState } from 'react';
+import BrandLayout from '@/components/layouts/BrandLayout';
+import BrandDashboardStats from '@/components/brand/dashboard/BrandDashboardStats';
+import TodoPanel from '@/components/brand/dashboard/TodoPanel';
+import CreatorList from '@/components/brand/dashboard/CreatorList';
+import TopCampaigns from '@/components/brand/dashboard/TopCampaigns';
+import QuickActions from '@/components/brand/dashboard/QuickActions';
+import { useBrandDashboard } from '@/hooks/useBrandDashboard';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import { useAuth } from '@/lib/auth';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { 
+    isLoading,
+    projectStats,
+    todoItems,
+    creators,
+    topCampaigns
+  } = useBrandDashboard();
 
   const handleBackToSuperAdmin = () => {
     navigate('/super-admin');
@@ -45,63 +41,30 @@ const Dashboard = () => {
             Back to Super Admin
           </Button>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium">Active Projects</CardTitle>
-              <Package className="h-5 w-5 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">12</div>
-              <p className="text-sm text-muted-foreground">4 pending approval</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium">Creator Network</CardTitle>
-              <Users className="h-5 w-5 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">48</div>
-              <p className="text-sm text-muted-foreground">+5 this month</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium">Completed Campaigns</CardTitle>
-              <CheckCircle className="h-5 w-5 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">86</div>
-              <p className="text-sm text-muted-foreground">92% success rate</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card className="col-span-full">
-          <CardHeader>
-            <CardTitle>Campaign Performance</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={mockData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#666" />
-                <XAxis dataKey="month" stroke="#666" />
-                <YAxis stroke="#666" />
-                <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #666' }} />
-                <Line 
-                  type="monotone" 
-                  dataKey="orders" 
-                  stroke="#666" 
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          <>
+            <QuickActions />
+            
+            <BrandDashboardStats 
+              totalProjects={projectStats.totalProjects}
+              activeProjects={projectStats.activeProjects}
+              completedProjects={projectStats.completedProjects}
+            />
+            
+            <div className="mb-6">
+              <TodoPanel items={todoItems} />
+            </div>
+            
+            <CreatorList creators={creators} />
+            
+            <TopCampaigns campaigns={topCampaigns} />
+          </>
+        )}
       </div>
     </BrandLayout>
   );
