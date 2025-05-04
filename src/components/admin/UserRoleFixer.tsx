@@ -6,10 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRoleStatus } from '@/hooks/brand/useRoleStatus';
 import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
+
+// Define a type for the allowed role values
+type AppRole = Database['public']['Enums']['app_role'];
 
 export default function UserRoleFixer() {
   const [userId, setUserId] = useState('af6ad2ce-be6c-4620-a440-867c52d66918'); // Prefill with the user ID in question
-  const [userRole, setUserRole] = useState('brand');
+  const [userRole, setUserRole] = useState<AppRole>('brand');
   const [loading, setLoading] = useState(false);
   const [userExists, setUserExists] = useState<boolean | null>(null);
   const [roleExists, setRoleExists] = useState<boolean | null>(null);
@@ -63,7 +67,7 @@ export default function UserRoleFixer() {
       } else {
         console.log('Profile data:', data);
         if (data?.role) {
-          setUserRole(data.role);
+          setUserRole(data.role as AppRole);
         }
       }
     };
@@ -115,7 +119,7 @@ export default function UserRoleFixer() {
         
         <div className="space-y-2">
           <label htmlFor="role">Role</label>
-          <Select value={userRole} onValueChange={setUserRole}>
+          <Select value={userRole} onValueChange={(value) => setUserRole(value as AppRole)}>
             <SelectTrigger>
               <SelectValue placeholder="Select role" />
             </SelectTrigger>

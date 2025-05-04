@@ -1,6 +1,10 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
+import { Database } from '@/integrations/supabase/types';
+
+// Define a type for the allowed role values based on the database enum
+type AppRole = Database['public']['Enums']['app_role'];
 
 export const useRoleStatus = () => {
   // Update user role status to approved
@@ -47,7 +51,7 @@ export const useRoleStatus = () => {
   };
 
   // Create user role if it doesn't exist
-  const createUserRole = async (userId: string, role: string): Promise<boolean> => {
+  const createUserRole = async (userId: string, role: AppRole): Promise<boolean> => {
     try {
       console.log('Creating user role for:', userId, 'with role:', role);
       const { error } = await supabase
