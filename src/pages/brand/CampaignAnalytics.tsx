@@ -4,8 +4,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart, LineChart, PieChart, Pie, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line } from 'recharts';
-import { ChartContainer } from '@/components/ui/chart';
+import { BarChart, LineChart, PieChart, Pie, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line, Cell } from 'recharts';
+import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, ArrowLeft, Download, Share2, Users, Check, Repeat } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
@@ -36,10 +36,10 @@ const reachData = [
 ];
 
 const audienceData = [
-  { name: 'Age 18-24', value: 30 },
-  { name: 'Age 25-34', value: 40 },
-  { name: 'Age 35-44', value: 15 },
-  { name: 'Age 45+', value: 15 },
+  { name: 'Age 18-24', value: 30, color: '#9b87f5' },
+  { name: 'Age 25-34', value: 40, color: '#D946EF' },
+  { name: 'Age 35-44', value: 15, color: '#8B5CF6' },
+  { name: 'Age 45+', value: 15, color: '#6E59A5' },
 ];
 
 const platformData = [
@@ -259,48 +259,76 @@ const CampaignAnalytics = () => {
                 <CardTitle>Campaign Performance Overview</CardTitle>
                 <CardDescription>Total reach and engagement metrics over time</CardDescription>
               </CardHeader>
-              <CardContent className="h-80">
+              <CardContent className="h-96">
                 <ChartContainer 
                   config={{ 
                     reach: { label: "Reach", theme: { light: "#9b87f5", dark: "#7E69AB" } },
                     impressions: { label: "Impressions", theme: { light: "#0EA5E9", dark: "#0284C7" } },
                   }}
                 >
-                  <LineChart data={reachData}>
+                  <LineChart 
+                    data={reachData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip />
+                    <Tooltip content={<ChartTooltipContent />} />
                     <Legend />
-                    <Line type="monotone" dataKey="reach" stroke="var(--color-reach)" strokeWidth={2} />
-                    <Line type="monotone" dataKey="impressions" stroke="var(--color-impressions)" strokeWidth={2} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="reach" 
+                      stroke="var(--color-reach)" 
+                      strokeWidth={2}
+                      dot={{ r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="impressions" 
+                      stroke="var(--color-impressions)" 
+                      strokeWidth={2}
+                      dot={{ r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
                   </LineChart>
                 </ChartContainer>
               </CardContent>
             </Card>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Platform Performance</CardTitle>
                   <CardDescription>Posts and engagement by platform</CardDescription>
                 </CardHeader>
-                <CardContent className="h-80">
+                <CardContent className="h-96">
                   <ChartContainer 
                     config={{ 
                       posts: { label: "Posts", theme: { light: "#F97316", dark: "#EA580C" } },
                       engagement: { label: "Engagement", theme: { light: "#0EA5E9", dark: "#0284C7" } },
                     }}
                   >
-                    <BarChart data={platformData}>
+                    <BarChart 
+                      data={platformData}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 70 }}
+                    >
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
+                      <XAxis 
+                        dataKey="name" 
+                        angle={0} 
+                        textAnchor="middle"
+                        height={60}
+                      />
                       <YAxis yAxisId="left" />
                       <YAxis yAxisId="right" orientation="right" />
-                      <Tooltip />
-                      <Legend />
-                      <Bar yAxisId="left" dataKey="posts" fill="var(--color-posts)" />
-                      <Bar yAxisId="right" dataKey="engagement" fill="var(--color-engagement)" />
+                      <Tooltip content={<ChartTooltipContent />} />
+                      <Legend 
+                        verticalAlign="top"
+                        height={36}
+                      />
+                      <Bar yAxisId="left" dataKey="posts" fill="var(--color-posts)" barSize={30} />
+                      <Bar yAxisId="right" dataKey="engagement" fill="var(--color-engagement)" barSize={30} />
                     </BarChart>
                   </ChartContainer>
                 </CardContent>
@@ -311,26 +339,36 @@ const CampaignAnalytics = () => {
                   <CardTitle>Audience Demographics</CardTitle>
                   <CardDescription>Age breakdown of engaged users</CardDescription>
                 </CardHeader>
-                <CardContent className="h-80">
-                  <ChartContainer 
-                    config={{ 
-                      value: { theme: { light: "#9b87f5", dark: "#7E69AB" } },
-                    }}
-                  >
-                    <PieChart>
+                <CardContent className="h-96">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                       <Pie
                         data={audienceData}
                         cx="50%"
                         cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="var(--color-value)"
+                        labelLine={true}
+                        outerRadius={130}
+                        innerRadius={0}
+                        paddingAngle={2}
                         dataKey="value"
                         label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {audienceData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value: number) => `${value}%`} />
+                      <Legend 
+                        verticalAlign="bottom" 
+                        height={36}
+                        payload={audienceData.map(entry => ({
+                          value: `${entry.name}: ${entry.value}%`,
+                          color: entry.color,
+                          type: 'square'
+                        }))}
                       />
-                      <Tooltip />
                     </PieChart>
-                  </ChartContainer>
+                  </ResponsiveContainer>
                 </CardContent>
               </Card>
             </div>
@@ -350,15 +388,33 @@ const CampaignAnalytics = () => {
                     shares: { label: "Shares", theme: { light: "#0EA5E9", dark: "#0284C7" } },
                   }}
                 >
-                  <BarChart data={engagementData}>
+                  <BarChart 
+                    data={engagementData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="likes" fill="var(--color-likes)" />
-                    <Bar dataKey="comments" fill="var(--color-comments)" />
-                    <Bar dataKey="shares" fill="var(--color-shares)" />
+                    <Tooltip content={<ChartTooltipContent />} />
+                    <Legend verticalAlign="top" height={36} />
+                    <Bar 
+                      dataKey="likes" 
+                      fill="var(--color-likes)" 
+                      barSize={20} 
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <Bar 
+                      dataKey="comments" 
+                      fill="var(--color-comments)" 
+                      barSize={20} 
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <Bar 
+                      dataKey="shares" 
+                      fill="var(--color-shares)" 
+                      barSize={20} 
+                      radius={[4, 4, 0, 0]}
+                    />
                   </BarChart>
                 </ChartContainer>
               </CardContent>
@@ -452,7 +508,6 @@ const CampaignAnalytics = () => {
           </TabsContent>
 
           <TabsContent value="content" className="space-y-4">
-            {/* Content performance tab */}
             <Card>
               <CardHeader>
                 <CardTitle>Content Performance</CardTitle>
