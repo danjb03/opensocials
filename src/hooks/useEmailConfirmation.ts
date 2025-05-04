@@ -70,7 +70,7 @@ export function useEmailConfirmation() {
               // Check if the profile is already marked as complete
               const { data: brandProfile, error: brandCheckError } = await supabase
                 .from('profiles')
-                .select('is_complete')
+                .select('is_complete, company_name') // Include company_name in the query
                 .eq('id', userId)
                 .eq('role', 'brand')
                 .maybeSingle();
