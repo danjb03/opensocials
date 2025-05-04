@@ -153,12 +153,14 @@ const SetupProfile = () => {
     }
 
     setIsLoading(true);
+    console.log("Starting profile setup submission");
 
     try {
       // Upload logo if one was selected
       let uploadedLogoUrl = null;
       if (logoFile) {
         uploadedLogoUrl = await uploadLogo();
+        console.log("Logo uploaded:", uploadedLogoUrl);
       }
       
       const profileData = {
@@ -170,24 +172,34 @@ const SetupProfile = () => {
         role: 'brand'
       };
       
+      console.log("Updating profile with data:", profileData);
+      
       // Update profile
       const { error } = await supabase
         .from('profiles')
         .update(profileData)
         .eq('id', user.id);
           
-      if (error) throw error;
+      if (error) {
+        console.error("Profile update error:", error);
+        throw error;
+      }
+      
+      console.log("Profile updated successfully");
       
       // Update user role status to approved
       await updateUserRoleStatus(user.id);
+      console.log("User role status updated to approved");
       
       toast.success('Profile setup complete!');
       
-      // Redirect to brand dashboard
-      navigate('/brand');
-    } catch (error) {
+      // Redirect to brand dashboard with a slight delay to ensure toast is visible
+      setTimeout(() => {
+        navigate('/brand');
+      }, 1000);
+    } catch (error: any) {
       console.error('Error setting up profile:', error);
-      toast.error('Failed to set up profile. Please try again.');
+      toast.error('Failed to set up profile: ' + (error.message || 'Unknown error'));
     } finally {
       setIsLoading(false);
     }
