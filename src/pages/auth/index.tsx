@@ -1,26 +1,35 @@
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { toast } from '@/components/ui/sonner';
-import type { UserRole } from '@/lib/auth';
 import Logo from '@/components/ui/logo';
-import { sendEmail } from '@/utils/email';
+import { useAuthForm } from '@/hooks/useAuthForm';
+import { useEmailConfirmation } from '@/hooks/useEmailConfirmation';
+import { SignUpForm } from '@/components/auth/SignUpForm';
+import { LoginForm } from '@/components/auth/LoginForm';
 
 const AuthPage = () => {
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [role, setRole] = useState<UserRole>('creator');
+  const {
+    isLoading,
+    isSignUp,
+    email,
+    setEmail,
+    password,
+    setPassword,
+    firstName,
+    setFirstName,
+    lastName,
+    setLastName,
+    role,
+    setRole,
+    handleSignUp,
+    handleSignIn,
+    toggleAuthMode,
+    handleForgotPassword,
+  } = useAuthForm();
 
-  // Extract confirmation token from URL if present
+  // Check for confirmation token in URL
+  useEmailConfirmation();
+
+  // Combined auth handler
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSignUp) {
@@ -29,212 +38,6 @@ const AuthPage = () => {
       await handleSignIn();
     }
   };
-
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-          },
-          emailRedirectTo: `${window.location.origin}/auth?confirmation=true`,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data.user) {
-        console.log('User signed up:', data.user.id);
-
-        // Update the profile with role directly
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ role: role.toLowerCase() })
-          .eq('id', data.user.id);
-
-        if (profileError) {
-          console.error('Failed to assign role:', profileError);
-          toast.error('Failed to assign role. Please contact support.');
-          return;
-        }
-
-        // Send welcome email based on role
-        try {
-          let emailSubject, emailHtml;
-          const confirmUrl = `${window.location.origin}/auth?confirmation=true&t=${data.session?.access_token}`;
-          
-          if (role === 'brand') {
-            emailSubject = 'Welcome to OpenSocials Brand Platform!';
-            emailHtml = `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h1 style="color: #333; text-align: center;">Welcome to OpenSocials!</h1>
-                <p>Hello ${firstName},</p>
-                <p>Thank you for creating a brand account on our platform. We're excited to have you onboard!</p>
-                <p>Please confirm your email address by clicking the button below:</p>
-                <p style="text-align: center;">
-                  <a href="${confirmUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Confirm Email</a>
-                </p>
-                <p>After confirming your email, please login and visit the brand setup page.</p>
-                <p>If you have any questions, please don't hesitate to reach out to our support team.</p>
-                <p>Best regards,<br>The OpenSocials Team</p>
-              </div>
-            `;
-          } else if (role === 'creator') {
-            emailSubject = 'Welcome to OpenSocials Creator Community!';
-            emailHtml = `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h1 style="color: #333; text-align: center;">Welcome to OpenSocials!</h1>
-                <p>Hello ${firstName},</p>
-                <p>Thank you for joining our creator community. We're thrilled to have you with us!</p>
-                <p>Please confirm your email address by clicking the button below:</p>
-                <p style="text-align: center;">
-                  <a href="${confirmUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Confirm Email</a>
-                </p>
-                <p>After confirming your email, please login and visit your creator dashboard to complete your profile setup.</p>
-                <p>If you have any questions, our support team is always here to help.</p>
-                <p>Best regards,<br>The OpenSocials Team</p>
-              </div>
-            `;
-          }
-          
-          if (emailSubject && emailHtml) {
-            await sendEmail({
-              to: email,
-              subject: emailSubject,
-              html: emailHtml,
-            });
-            console.log(`Welcome email sent to ${role} user:`, email);
-          }
-        } catch (emailError) {
-          console.error('Failed to send welcome email:', emailError);
-          // Don't block signup process if email fails
-        }
-
-        toast.success('Account created successfully! Please check your email to confirm your account before logging in.');
-        
-        // Reset form fields and switch to login view
-        setFirstName('');
-        setLastName('');
-        setEmail('');
-        setPassword('');
-        setIsSignUp(false);
-      }
-    } catch (err: any) {
-      console.error('Signup error:', err.message);
-      toast.error(err.message || 'Signup failed.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSignIn = async () => {
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      // Check if email is confirmed
-      if (!data.user.email_confirmed_at) {
-        toast.error('Please confirm your email before logging in.');
-        setIsLoading(false);
-        return;
-      }
-
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', data.user.id)
-        .maybeSingle();
-
-      if (profileError) {
-        console.error('Error fetching user role:', profileError);
-        toast.error('Failed to fetch user role.');
-        return;
-      }
-
-      if (profileData?.role) {
-        switch (profileData.role) {
-          case 'super_admin':
-            navigate('/super-admin');
-            break;
-          case 'admin':
-            navigate('/admin');
-            break;
-          case 'brand':
-            navigate('/brand');
-            break;
-          case 'creator':
-            navigate('/creator');
-            break;
-          default:
-            console.error('Unknown role:', profileData.role);
-            toast.error('Invalid user role');
-        }
-      } else {
-        toast.error('No role assigned.');
-      }
-    } catch (err: any) {
-      console.error('Login error:', err.message);
-      toast.error(err.message || 'Login failed.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleForgotPassword = async () => {
-    if (!email) {
-      toast.error('Please enter your email first.');
-      return;
-    }
-
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
-      if (error) throw error;
-      toast.success('Check your email for reset instructions.');
-    } catch (err: any) {
-      toast.error(err.message || 'Password reset failed.');
-    }
-  };
-
-  // Check for confirmation token in URL
-  const checkConfirmation = async () => {
-    const url = new URL(window.location.href);
-    const isConfirmation = url.searchParams.get('confirmation');
-    
-    if (isConfirmation === 'true') {
-      // Handle email confirmation
-      try {
-        const { error } = await supabase.auth.getUser();
-        if (!error) {
-          toast.success('Email successfully confirmed! You can now log in.');
-        } else {
-          console.error('Error confirming email:', error);
-          toast.error('Failed to confirm email. Please try again.');
-        }
-      } catch (error) {
-        console.error('Error confirming email:', error);
-        toast.error('Failed to confirm email. Please try again.');
-      }
-      
-      // Clean up URL
-      window.history.replaceState({}, document.title, '/auth');
-    }
-  };
-  
-  // Check for confirmation on component mount
-  useState(() => {
-    checkConfirmation();
-  });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8">
@@ -247,89 +50,35 @@ const AuthPage = () => {
             {isSignUp ? 'Create your account' : 'Sign in to your account'}
           </h2>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleAuth}>
-          {isSignUp && (
-            <>
-              <div>
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="role">Role</Label>
-                <select
-                  id="role"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value as UserRole)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                >
-                  <option value="creator">Creator</option>
-                  <option value="brand">Brand</option>
-                  <option value="admin">Admin</option>
-                  <option value="super_admin">Super Admin</option>
-                </select>
-              </div>
-            </>
-          )}
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Button
-              type="button"
-              variant="link"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm"
-            >
-              {isSignUp ? 'Already have an account?' : 'Need an account?'}
-            </Button>
-            {!isSignUp && (
-              <Button
-                type="button"
-                variant="link"
-                onClick={handleForgotPassword}
-                className="text-sm"
-              >
-                Forgot password?
-              </Button>
-            )}
-          </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
-          </Button>
-        </form>
+        
+        {isSignUp ? (
+          <SignUpForm 
+            firstName={firstName}
+            setFirstName={setFirstName}
+            lastName={lastName}
+            setLastName={setLastName}
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            role={role}
+            setRole={setRole}
+            isLoading={isLoading}
+            onSubmit={handleSignUp}
+            onToggleMode={toggleAuthMode}
+          />
+        ) : (
+          <LoginForm
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            isLoading={isLoading}
+            onSubmit={handleAuth}
+            onToggleMode={toggleAuthMode}
+            onForgotPassword={handleForgotPassword}
+          />
+        )}
       </div>
     </div>
   );
