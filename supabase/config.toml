@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.meta-delete]
 verify_jwt = false
+
+[functions.meta-deauth]
+verify_jwt = false
