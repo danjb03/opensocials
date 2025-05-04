@@ -1,6 +1,6 @@
 
 import { format } from "date-fns";
-import { CalendarIcon, CalendarDaysIcon } from 'lucide-react';
+import { CalendarIcon } from 'lucide-react';
 import { useFormContext } from "react-hook-form";
 import {
   FormControl,
@@ -43,20 +43,20 @@ export function ExecutionDateField({ calculateDaysRemaining }: ExecutionDateFiel
                     !field.value && "text-muted-foreground"
                   )}
                 >
-                  <div className="flex items-center">
-                    <CalendarDaysIcon className="mr-2 h-4 w-4" />
-                    {field.value ? (
-                      <>
-                        {format(field.value, "PPP")}
-                        <span className="ml-2 text-sm text-gray-500">
-                          ({calculateDaysRemaining(field.value)} days remaining)
-                        </span>
-                      </>
-                    ) : (
-                      <span>Select date</span>
-                    )}
-                  </div>
-                  <CalendarIcon className="h-4 w-4 opacity-50" />
+                  {field.value ? (
+                    <span className="flex items-center gap-2">
+                      <CalendarIcon className="h-4 w-4 text-gray-500" />
+                      {format(field.value, "PPP")}
+                      <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                        {calculateDaysRemaining(field.value)} days remaining
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <CalendarIcon className="h-4 w-4 text-gray-500" />
+                      Select execution date
+                    </span>
+                  )}
                 </Button>
               </FormControl>
             </PopoverTrigger>

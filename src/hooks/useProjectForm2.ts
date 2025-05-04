@@ -57,7 +57,9 @@ export function useProjectForm2(onSuccess?: (project: ProjectFormValues) => void
   function onSubmit(values: ProjectFormValues) {
     setIsSubmitting(true);
     
+    // Log form data to verify dates are properly formatted
     console.log("Form values:", values);
+    console.log("Execution date:", values.executionDate instanceof Date ? values.executionDate.toISOString() : values.executionDate);
     
     // Simulate an API call
     setTimeout(() => {
@@ -67,8 +69,9 @@ export function useProjectForm2(onSuccess?: (project: ProjectFormValues) => void
         onSuccess(values);
       } else {
         toast({
-          title: "Project created",
-          description: `${values.name} has been successfully created.`,
+          title: "Campaign created successfully",
+          description: `${values.name} has been created.`,
+          variant: "default"
         });
       }
     }, 1000);

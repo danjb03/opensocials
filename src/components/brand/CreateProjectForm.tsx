@@ -9,6 +9,7 @@ import { CampaignTypeSelector } from './project-form/CampaignTypeSelector';
 import { ContentRequirements } from './project-form/ContentRequirements';
 import { PlatformSelector } from './project-form/PlatformSelector';
 import { DateRangeSelector } from './project-form/DateRangeSelector';
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 
 const CreateProjectForm = ({ onSuccess, userId }) => {
   const {
@@ -23,101 +24,126 @@ const CreateProjectForm = ({ onSuccess, userId }) => {
   } = useProjectForm(onSuccess, userId);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <h2 className="text-xl font-bold">Create New Project</h2>
+    <Card className="w-full shadow-md">
+      <CardHeader className="bg-slate-50 border-b">
+        <CardTitle className="text-xl">Create New Project</CardTitle>
+        <CardDescription>Set up your campaign details and requirements</CardDescription>
+      </CardHeader>
+      <CardContent className="pt-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium mb-1">Project Name</label>
+            <Input 
+              placeholder="Project Name" 
+              value={formData.name} 
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
+              required 
+              className="border-slate-300 focus-visible:ring-blue-500"
+            />
+          </div>
 
-      <Input 
-        placeholder="Project Name" 
-        value={formData.name} 
-        onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
-        required 
-      />
+          <div>
+            <label className="block text-sm font-medium mb-1">Campaign Type</label>
+            <CampaignTypeSelector 
+              selectedTypes={formData.campaign_type} 
+              onChange={(types) => setFormData({ ...formData, campaign_type: types })} 
+            />
+          </div>
 
-      <CampaignTypeSelector 
-        selectedTypes={formData.campaign_type} 
-        onChange={(types) => setFormData({ ...formData, campaign_type: types })} 
-      />
+          <DateRangeSelector 
+            startDate={formData.start_date ? new Date(formData.start_date) : undefined}
+            endDate={formData.end_date ? new Date(formData.end_date) : undefined}
+            onStartDateChange={(date) => setFormData({ ...formData, start_date: date ? date.toISOString().split('T')[0] : '' })}
+            onEndDateChange={(date) => setFormData({ ...formData, end_date: date ? date.toISOString().split('T')[0] : '' })}
+          />
 
-      <DateRangeSelector 
-        startDate={formData.start_date}
-        endDate={formData.end_date}
-        onStartDateChange={(date) => setFormData({ ...formData, start_date: date })}
-        onEndDateChange={(date) => setFormData({ ...formData, end_date: date })}
-      />
+          <div>
+            <label className="block text-sm font-medium mb-1">Budget</label>
+            <Input 
+              type="number" 
+              placeholder="Budget" 
+              value={formData.budget} 
+              onChange={(e) => setFormData({ ...formData, budget: parseInt(e.target.value) })} 
+              required 
+              className="border-slate-300 focus-visible:ring-blue-500"
+            />
+          </div>
 
-      <Input 
-        type="number" 
-        placeholder="Budget" 
-        value={formData.budget} 
-        onChange={(e) => setFormData({ ...formData, budget: parseInt(e.target.value) })} 
-        required 
-      />
+          <ContentRequirements 
+            requirements={formData.content_requirements}
+            onAdd={handleAddContentType}
+            onChange={handleContentChange}
+          />
 
-      <ContentRequirements 
-        requirements={formData.content_requirements}
-        onAdd={handleAddContentType}
-        onChange={handleContentChange}
-      />
+          <div>
+            <label className="block text-sm font-medium mb-1">Platforms</label>
+            <PlatformSelector 
+              selectedPlatforms={formData.platforms}
+              onChange={handlePlatformSelect}
+            />
+          </div>
 
-      <PlatformSelector 
-        selectedPlatforms={formData.platforms}
-        onChange={handlePlatformSelect}
-      />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="font-medium mb-2">Whitelisting</p>
+              <Button 
+                type="button" 
+                variant={formData.whitelisting ? 'default' : 'outline'} 
+                onClick={() => setFormData({ ...formData, whitelisting: !formData.whitelisting })}
+                className={formData.whitelisting ? "bg-blue-600 hover:bg-blue-700" : ""}
+              >
+                {formData.whitelisting ? 'Yes' : 'No'}
+              </Button>
+            </div>
+            <div>
+              <p className="font-medium mb-2">Exclusivity</p>
+              <Input 
+                placeholder="e.g. 3 months" 
+                value={formData.exclusivity} 
+                onChange={(e) => setFormData({ ...formData, exclusivity: e.target.value })} 
+                className="border-slate-300 focus-visible:ring-blue-500"
+              />
+            </div>
+          </div>
 
-      <div className="flex gap-4">
-        <div>
-          <p className="font-medium mb-2">Whitelisting</p>
           <Button 
             type="button" 
-            variant={formData.whitelisting ? 'default' : 'outline'} 
-            onClick={() => setFormData({ ...formData, whitelisting: !formData.whitelisting })}
+            variant="ghost" 
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="w-full justify-start text-blue-600 hover:text-blue-800 hover:bg-blue-50"
           >
-            {formData.whitelisting ? 'Yes' : 'No'}
+            {showAdvanced ? <ChevronUp className="mr-2" /> : <ChevronDown className="mr-2" />} 
+            Additional Details
           </Button>
-        </div>
-        <div>
-          <p className="font-medium mb-2">Exclusivity</p>
-          <Input 
-            placeholder="e.g. 3 months" 
-            value={formData.exclusivity} 
-            onChange={(e) => setFormData({ ...formData, exclusivity: e.target.value })} 
-          />
-        </div>
-      </div>
 
-      <Button 
-        type="button" 
-        variant="ghost" 
-        onClick={() => setShowAdvanced(!showAdvanced)}
-      >
-        {showAdvanced ? <ChevronUp className="mr-2" /> : <ChevronDown className="mr-2" />} 
-        Additional Details
-      </Button>
+          {showAdvanced && (
+            <Textarea 
+              placeholder="Add posting times, hashtag guidelines, tone of voice..." 
+              value={formData.description} 
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
+              className="min-h-[120px] border-slate-300 focus-visible:ring-blue-500"
+            />
+          )}
 
-      {showAdvanced && (
-        <Textarea 
-          placeholder="Add posting times, hashtag guidelines, tone of voice..." 
-          value={formData.description} 
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
-        />
-      )}
+          <div className="flex items-center gap-2">
+            <input 
+              type="checkbox" 
+              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              checked={formData.save_as_template} 
+              onChange={(e) => setFormData({ ...formData, save_as_template: e.target.checked })} 
+            />
+            <span className="text-sm text-gray-600">Save as Template</span>
+          </div>
 
-      <div className="flex items-center gap-2">
-        <input 
-          type="checkbox" 
-          checked={formData.save_as_template} 
-          onChange={(e) => setFormData({ ...formData, save_as_template: e.target.checked })} 
-        />
-        <span>Save as Template</span>
-      </div>
-
-      <Button 
-        type="submit" 
-        className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-lg"
-      >
-        🚀 Launch Campaign
-      </Button>
-    </form>
+          <Button 
+            type="submit" 
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-lg font-medium py-3"
+          >
+            🚀 Launch Campaign
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
 

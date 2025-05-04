@@ -98,21 +98,31 @@ export const useProjectForm = (onSuccess: (newProject: any) => void, userId: str
 
     console.log('Submitting project with payload:', payload);
 
-    const { error } = await supabase.from('projects').insert([payload]);
+    try {
+      const { error } = await supabase.from('projects').insert([payload]);
 
-    if (error) {
-      console.error('Error creating project:', error);
-      toast({ 
-        title: 'Project Creation Failed', 
-        description: error.message, 
-        variant: 'destructive' 
+      if (error) {
+        console.error('Error creating project:', error);
+        toast({ 
+          title: 'Project Creation Failed', 
+          description: error.message, 
+          variant: 'destructive' 
+        });
+      } else {
+        toast({ 
+          title: '🚀 Campaign Created', 
+          description: `${formData.name} is now saved.`,
+          variant: 'default'
+        });
+        onSuccess(payload);
+      }
+    } catch (err) {
+      console.error('Error during project creation:', err);
+      toast({
+        title: 'Project Creation Failed',
+        description: 'An unexpected error occurred. Please try again.',
+        variant: 'destructive'
       });
-    } else {
-      toast({ 
-        title: '🚀 Campaign Created', 
-        description: `${formData.name} is now saved.` 
-      });
-      onSuccess(payload);
     }
   };
 

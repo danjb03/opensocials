@@ -2,6 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { z } from "zod";
 import { Form } from "@/components/ui/form";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { CampaignNameField } from './project-form/CampaignNameField';
 import { ExecutionDateField } from './project-form/ExecutionDateField';
 import { BudgetFields } from './project-form/BudgetFields';
@@ -49,14 +50,22 @@ export function ProjectForm({ onSuccess }: ProjectFormProps) {
   });
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <CampaignNameField />
-        <ExecutionDateField calculateDaysRemaining={calculateDaysRemaining} />
-        <BudgetFields currencies={currencies} />
-        <DescriptionField />
-        <SubmitButton isSubmitting={isSubmitting} />
-      </form>
-    </Form>
+    <Card className="w-full shadow-md">
+      <CardHeader className="bg-slate-50 border-b">
+        <CardTitle className="text-xl">Create New Campaign</CardTitle>
+        <CardDescription>Fill in the details for your new marketing campaign.</CardDescription>
+      </CardHeader>
+      <CardContent className="pt-6">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <CampaignNameField />
+            <ExecutionDateField calculateDaysRemaining={calculateDaysRemaining} />
+            <BudgetFields currencies={currencies} />
+            <DescriptionField />
+            <SubmitButton isSubmitting={isSubmitting} />
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }

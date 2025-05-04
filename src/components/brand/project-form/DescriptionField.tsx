@@ -20,13 +20,13 @@ export function DescriptionField() {
       name="description"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Description</FormLabel>
+          <FormLabel className="text-base font-semibold">Description</FormLabel>
           <FormControl>
             <div className="relative">
               <FileText className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
               <Textarea 
                 placeholder="Describe the campaign and its goals" 
-                className="min-h-[120px] pl-10 pt-8" 
+                className="min-h-[120px] pl-10 pt-8 border-slate-300 focus-visible:ring-blue-500" 
                 {...field} 
               />
             </div>
