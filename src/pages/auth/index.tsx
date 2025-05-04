@@ -106,6 +106,13 @@ const AuthPage = () => {
         }
 
         toast.success('Account created successfully! Please check your email to confirm.');
+        
+        // Reset form fields and switch to login view
+        setFirstName('');
+        setLastName('');
+        setEmail('');
+        setPassword('');
+        setIsSignUp(false);
       }
     } catch (err: any) {
       console.error('Signup error:', err.message);
