@@ -19,7 +19,10 @@ import {
   Globe, 
   FileText, 
   CheckCircle, 
-  Clock
+  Clock,
+  Upload,
+  FilePlus,
+  FileCheck
 } from 'lucide-react';
 import { statusColors, type ProjectStatus } from '@/types/projects';
 import { formatCurrency } from '@/utils/project';
@@ -39,6 +42,8 @@ const ProjectView = () => {
   const [project, setProject] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
+  const [briefFiles, setBriefFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -88,6 +93,16 @@ const ProjectView = () => {
     try {
       if (!project) return;
       
+      // Check if we're on the Creative Planning step and need to upload brief files
+      if (currentStep === 3 && briefFiles.length === 0) {
+        toast({
+          title: 'Upload Required',
+          description: 'Please upload a brief and contract before proceeding',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
       let newStatus: ProjectStatus = 'new';
       let newStep = currentStep + 1;
       
@@ -97,6 +112,37 @@ const ProjectView = () => {
       else if (newStep === 4) newStatus = 'creators_assigned';
       else if (newStep === 5) newStatus = 'in_progress';
       else if (newStep === 6) newStatus = 'completed';
+      
+      // Handle file upload first if we're progressing from the Creative Planning step
+      if (currentStep === 3 && briefFiles.length > 0) {
+        setIsUploading(true);
+        try {
+          // This would be an actual file upload to Supabase storage
+          // For now we'll just simulate it
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Update project record with brief_uploaded flag
+          await supabase
+            .from('projects')
+            .update({ brief_uploaded: true })
+            .eq('id', id);
+            
+          toast({
+            title: 'Brief Uploaded',
+            description: 'Campaign brief and materials have been uploaded successfully',
+          });
+        } catch (error) {
+          console.error('Error uploading files:', error);
+          toast({
+            title: 'Upload Error',
+            description: 'Failed to upload campaign materials',
+            variant: 'destructive',
+          });
+          setIsUploading(false);
+          return;
+        }
+        setIsUploading(false);
+      }
       
       const { error } = await supabase
         .from('projects')
@@ -122,6 +168,12 @@ const ProjectView = () => {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setBriefFiles(Array.from(e.target.files));
+    }
+  };
+
   if (loading) {
     return (
       <BrandLayout>
@@ -140,7 +192,7 @@ const ProjectView = () => {
     return (
       <BrandLayout>
         <div className="container mx-auto p-6 max-w-7xl">
-          <Card>
+          <Card className="shadow-sm">
             <CardContent className="flex flex-col items-center justify-center pt-6 pb-6">
               <h2 className="text-xl font-semibold mb-2">Project not found</h2>
               <p className="text-gray-500 mb-4">The project you're looking for doesn't exist or you don't have access to it.</p>
@@ -205,15 +257,17 @@ const ProjectView = () => {
             <Button 
               variant="outline" 
               onClick={() => navigate('/brand/projects')}
+              className="shadow-sm"
             >
               Back to Projects
             </Button>
             {currentStep < CAMPAIGN_STEPS.length && (
               <Button 
                 onClick={handleProgressCampaign}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                disabled={isUploading}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-sm"
               >
-                Next Step
+                {isUploading ? 'Uploading...' : 'Next Step'}
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
             )}
@@ -221,12 +275,12 @@ const ProjectView = () => {
         </div>
 
         {/* Campaign Progress */}
-        <Card className="mb-8 overflow-hidden">
+        <Card className="mb-8 overflow-hidden shadow-sm">
           <CardHeader className="bg-gray-50 border-b">
             <CardTitle className="text-xl">Campaign Progress</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="mb-4">
+            <div className="mb-4 border rounded-lg p-4 bg-white shadow-sm">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium">Progress</span>
                 <span className="text-sm font-medium">{Math.round(progressPercentage)}%</span>
@@ -245,7 +299,7 @@ const ProjectView = () => {
                     isCompleted ? 'bg-green-50 border-green-200' : 
                     isCurrent ? 'bg-blue-50 border-blue-200' : 
                     'bg-gray-50 border-gray-200'
-                  }`}>
+                  } shadow-sm`}>
                     <div className={`rounded-full p-2 mb-2 ${
                       isCompleted ? 'bg-green-100 text-green-600' : 
                       isCurrent ? 'bg-blue-100 text-blue-600' : 
@@ -265,7 +319,7 @@ const ProjectView = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Campaign Details */}
-          <Card className="md:col-span-2">
+          <Card className="md:col-span-2 shadow-sm">
             <CardHeader className="bg-gray-50 border-b">
               <CardTitle className="text-xl">Campaign Details</CardTitle>
             </CardHeader>
@@ -293,7 +347,7 @@ const ProjectView = () => {
                 <div>
                   <div className="flex flex-wrap gap-1">
                     {project.platforms?.map((platform: string) => (
-                      <Badge key={platform} variant="outline" className="capitalize">{platform}</Badge>
+                      <Badge key={platform} variant="outline" className="capitalize shadow-sm">{platform}</Badge>
                     )) || "None specified"}
                   </div>
                 </div>
@@ -325,12 +379,60 @@ const ProjectView = () => {
                   <div className="text-gray-700">{project.description}</div>
                 </div>
               )}
+
+              {/* Brief & Contract Upload Section */}
+              {currentStep === 3 && (
+                <div className="py-4">
+                  <div className="font-medium mb-2">Campaign Brief & Contract</div>
+                  <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-6 mt-2 flex flex-col items-center">
+                    <div className="mb-4 flex flex-col items-center">
+                      <Upload className="h-12 w-12 text-gray-400 mb-3" />
+                      <p className="font-medium text-gray-700">Upload Campaign Brief & Contract</p>
+                      <p className="text-sm text-gray-500 mt-1 text-center">
+                        Upload your campaign brief, contract, and any other relevant documents for approval
+                      </p>
+                    </div>
+                    
+                    <label htmlFor="file-upload" className="cursor-pointer">
+                      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-md inline-flex items-center shadow-sm">
+                        <FilePlus className="mr-2 h-4 w-4" />
+                        Select Files
+                      </div>
+                      <input 
+                        id="file-upload" 
+                        name="file-upload" 
+                        type="file" 
+                        className="sr-only" 
+                        multiple
+                        onChange={handleFileChange}
+                      />
+                    </label>
+
+                    {briefFiles.length > 0 && (
+                      <div className="mt-4 w-full">
+                        <p className="text-sm font-medium text-gray-700 mb-2">Selected Files:</p>
+                        <div className="space-y-2">
+                          {briefFiles.map((file, index) => (
+                            <div key={index} className="flex items-center bg-white p-2 rounded border shadow-sm">
+                              <FileCheck className="h-4 w-4 text-green-500 mr-2" />
+                              <span className="text-sm truncate">{file.name}</span>
+                              <span className="text-xs text-gray-500 ml-2">
+                                ({Math.round(file.size / 1024)} KB)
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
           {/* Creator Assignment & Actions */}
           <div className="space-y-8">
-            <Card>
+            <Card className="shadow-sm">
               <CardHeader className="bg-gray-50 border-b">
                 <CardTitle className="text-xl">Assigned Creators</CardTitle>
               </CardHeader>
@@ -340,7 +442,7 @@ const ProjectView = () => {
                   <p>No creators assigned yet</p>
                   <Sheet>
                     <SheetTrigger asChild>
-                      <Button className="mt-4 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+                      <Button className="mt-4 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-sm">
                         <Users className="mr-2 h-4 w-4" /> Find Creators
                       </Button>
                     </SheetTrigger>
@@ -356,7 +458,7 @@ const ProjectView = () => {
                           Creator matching functionality will be implemented soon.
                         </p>
                         <Button 
-                          className="w-full mt-4"
+                          className="w-full mt-4 shadow-sm"
                           onClick={() => navigate('/brand/creator-search')}
                         >
                           Go to Creator Search
@@ -368,21 +470,21 @@ const ProjectView = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="shadow-sm">
               <CardHeader className="bg-gray-50 border-b">
                 <CardTitle className="text-xl">Campaign Actions</CardTitle>
               </CardHeader>
               <CardContent className="py-6">
                 <div className="space-y-3">
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start shadow-sm">
                     <FileText className="mr-2 h-4 w-4" />
                     Edit Campaign
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start shadow-sm">
                     <DollarSign className="mr-2 h-4 w-4" />
                     Manage Budget
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start shadow-sm">
                     <BarChart2 className="mr-2 h-4 w-4" />
                     View Analytics
                   </Button>
