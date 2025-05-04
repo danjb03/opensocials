@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { UserRole } from '@/lib/auth';
 
 interface SignUpFormProps {
@@ -59,17 +60,17 @@ export const SignUpForm = ({
       </div>
       <div>
         <Label htmlFor="role">Role</Label>
-        <select
-          id="role"
-          value={role}
-          onChange={(e) => setRole(e.target.value as UserRole)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-        >
-          <option value="creator">Creator</option>
-          <option value="brand">Brand</option>
-          <option value="admin">Admin</option>
-          <option value="super_admin">Super Admin</option>
-        </select>
+        <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select your role" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="creator">Creator</SelectItem>
+            <SelectItem value="brand">Brand</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+            <SelectItem value="super_admin">Super Admin</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div>
         <Label htmlFor="email">Email</Label>

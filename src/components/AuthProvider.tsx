@@ -57,7 +57,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log("Fetching role for user:", userId);
       
-      // First check the user_roles table for the status
+      // First, check if we can get the role from user metadata
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user?.user_metadata?.role) {
+        console.log("Found role in user metadata:", user.user_metadata.role);
+        setRole(user.user_metadata.role as UserRole);
+      }
+      
+      // Next check the user_roles table for the status
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role, status')
@@ -66,46 +74,46 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (roleError) {
         console.error('Error fetching user role status:', roleError);
+      } else if (roleData) {
+        console.log("Role status from user_roles:", roleData.status);
       }
       
-      // Fetch the role from profiles table
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .maybeSingle();
+      // Finally, fetch the role from profiles table if not found in metadata
+      if (!user?.user_metadata?.role) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', userId)
+          .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching user role:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to fetch user role: ' + error.message,
-          variant: 'destructive',
-        });
-        setIsLoading(false);
-        return;
+        if (error) {
+          console.error('Error fetching user role from profiles:', error);
+          toast({
+            title: 'Error',
+            description: 'Failed to fetch user role: ' + error.message,
+            variant: 'destructive',
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        console.log("User role data from profiles:", data);
+        
+        if (data && data.role) {
+          console.log("Setting role from profiles table:", data.role);
+          setRole(data.role as UserRole);
+        }
       }
-
-      console.log("User role data:", data);
       
-      // Check if we have role data from profiles
-      if (data && data.role) {
-        console.log("Setting role to:", data.role);
-        setRole(data.role as UserRole);
-      } else {
+      // If still no role found, show error
+      if (!role && !user?.user_metadata?.role) {
         console.log("No role found, setting to null");
-        setRole(null);
         
         toast({
           title: 'No Role Assigned',
           description: 'Your account does not have a role assigned. Please contact an administrator.',
           duration: 5000,
         });
-      }
-      
-      // Log the role status if available
-      if (roleData) {
-        console.log("Role status:", roleData.status);
       }
       
       setIsLoading(false);

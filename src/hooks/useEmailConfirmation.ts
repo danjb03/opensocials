@@ -53,24 +53,32 @@ export function useEmailConfirmation() {
               toast.error('Error updating account status. Your account is confirmed but you may need to contact support.');
             }
             
-            // Get user role from profiles
-            const { data: userData, error: userError } = await supabase
-              .from('profiles')
-              .select('role')
-              .eq('id', userId)
-              .single();
-              
-            if (userError) {
-              console.error('Error fetching user role:', userError);
+            // Get user role from profiles and user metadata
+            let userRole = session.user.user_metadata?.role;
+            
+            if (!userRole) {
+              const { data: userData, error: userError } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', userId)
+                .single();
+                
+              if (userError) {
+                console.error('Error fetching user role:', userError);
+              } else if (userData) {
+                userRole = userData.role;
+              }
             }
             
+            console.log('User role:', userRole);
+            
             // Special handling for brand accounts
-            if (userData?.role === 'brand') {
+            if (userRole === 'brand') {
               console.log('Confirming brand account');
               // Check if the profile is already marked as complete
               const { data: brandProfile, error: brandCheckError } = await supabase
                 .from('profiles')
-                .select('is_complete, company_name') // Include company_name in the query
+                .select('is_complete, company_name')
                 .eq('id', userId)
                 .eq('role', 'brand')
                 .maybeSingle();

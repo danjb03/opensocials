@@ -25,6 +25,7 @@ export function useSignUp() {
     resetForm,
   }: SignUpParams): Promise<boolean> => {
     setIsLoading(true);
+    console.log(`Signing up user with role: ${role}`); // Debug log
 
     try {
       // Sign up with Supabase, with auto confirm set to true to use Supabase's email confirmation
@@ -35,23 +36,25 @@ export function useSignUp() {
           data: {
             first_name: firstName,
             last_name: lastName,
-            role: role.toLowerCase(), // Store role in user metadata
+            role: role, // Ensure the role is passed correctly
           },
           emailRedirectTo: `${window.location.origin}/auth?confirmation=true`,
         },
       });
 
       if (error) throw error;
+      
+      console.log("Signup response:", data); // Debug log
 
       if (data.user) {
-        console.log('User signed up:', data.user.id);
+        console.log('User signed up:', data.user.id, 'with role:', role);
 
         // Create profile with role
         const profileData = {
           id: data.user.id,
           first_name: firstName,
           last_name: lastName,
-          role: role.toLowerCase(),
+          role: role,
           email: email
         };
         
@@ -78,7 +81,7 @@ export function useSignUp() {
           .from('user_roles')
           .insert({
             user_id: data.user.id,
-            role: role.toLowerCase() as "creator" | "brand" | "admin" | "super_admin",
+            role: role,
             status: 'pending'
           });
 

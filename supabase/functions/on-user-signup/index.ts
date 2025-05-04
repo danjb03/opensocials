@@ -40,6 +40,7 @@ serve(async (req) => {
 
     const user = record;
     console.log(`Processing new user: ${user.id}`);
+    console.log(`User metadata:`, user.raw_user_meta_data);
     
     // Extract role from user metadata
     const role = user.raw_user_meta_data?.role ? String(user.raw_user_meta_data.role).toLowerCase() : null;
@@ -94,6 +95,7 @@ serve(async (req) => {
         first_name: firstName,
         last_name: lastName,
         role: role,
+        email: user.email || "",
         status: "pending"
       };
       
