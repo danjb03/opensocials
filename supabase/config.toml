@@ -17,3 +17,6 @@ api_url = "http://localhost"
 [functions]
 [functions.request-data-deletion]
 verify_jwt = false
+
+[functions.meta-delete]
+verify_jwt = false

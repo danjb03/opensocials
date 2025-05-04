@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Trash2, Shield, Mail } from "lucide-react";
+import { Trash2, Shield, Mail, Database } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -22,16 +22,20 @@ const DataDeletion = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isMetaLoading, setIsMetaLoading] = useState(false);
 
   const handleRequestDeletion = async () => {
     setIsLoading(true);
     
     try {
+      // Get the current session
+      const { data: sessionData } = await supabase.auth.getSession();
+      
       const response = await fetch("https://pcnrnciwgdrukzciwexi.supabase.co/functions/v1/request-data-deletion", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${supabase.auth.session()?.access_token || ""}`,
+          "Authorization": `Bearer ${sessionData.session?.access_token || ""}`,
         },
         body: JSON.stringify({
           userId: user?.id || null,
@@ -62,6 +66,44 @@ const DataDeletion = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleMetaDataDeletion = async () => {
+    setIsMetaLoading(true);
+    
+    try {
+      if (!user?.id) {
+        throw new Error("User ID not available");
+      }
+      
+      const response = await fetch(`https://pcnrnciwgdrukzciwexi.supabase.co/functions/v1/meta-delete?user_id=${user.id}`, {
+        method: "GET",
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "Meta Data Deleted",
+          description: "Your connected social account data has been successfully deleted.",
+        });
+      } else {
+        toast({
+          title: "Deletion Failed",
+          description: result.error || "There was a problem deleting your meta data. Please try again later.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting meta data:", error);
+      toast({
+        title: "Deletion Failed",
+        description: "There was a problem deleting your meta data. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsMetaLoading(false);
     }
   };
 
@@ -169,6 +211,57 @@ const DataDeletion = () => {
               </AlertDialogContent>
             </AlertDialog>
           </div>
+        </CardContent>
+      </Card>
+      
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Meta Data Deletion
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-muted-foreground">
+          <p>
+            If you've connected your social media accounts to Open Socials, you can delete all meta data associated with these accounts using the button below. This will:
+          </p>
+          <ul className="list-disc pl-5 space-y-2">
+            <li>Remove all stored access tokens and refresh tokens</li>
+            <li>Delete all social account connections</li>
+            <li>Remove any cached profile data from third-party platforms</li>
+            <li>Revoke our application's access to your social accounts</li>
+          </ul>
+          
+          <div className="bg-muted p-4 rounded-md my-4 border border-muted-foreground/20">
+            <p className="font-medium text-sm mb-2">⚠️ Important Note:</p>
+            <p className="text-sm">This action only deletes your social media connection data from our servers. It does not delete your main Open Socials account or any other user data. To request a full account deletion, use the "Request Data Deletion" button above.</p>
+          </div>
+          
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="w-full">
+                Delete Meta Data
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Meta Data?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action will immediately delete all stored data related to your social media connections.
+                  You'll need to reconnect your accounts if you wish to use them with Open Socials in the future.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleMetaDataDeletion}
+                  disabled={isMetaLoading}
+                >
+                  {isMetaLoading ? "Deleting..." : "Yes, delete meta data"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </CardContent>
       </Card>
       
