@@ -16,14 +16,15 @@ export const sendEmail = async ({ to, subject, html, from = 'OpenSocials <norepl
     console.log('With subject:', subject);
     
     // Using Supabase's built-in email functionality directly
-    // This will use the email templates configured in the Supabase dashboard
-    // No need to call a separate edge function
-    
-    // For direct emails (not auth related), we can use the SQL function
-    const { data, error } = await supabase.rpc('send_email', {
-      to_email: to,
-      email_subject: subject,
-      email_content: html
+    // Since we can't use the strongly-typed RPC function due to TypeScript definition limitations,
+    // we'll use the more flexible functions.invoke method
+    const { data, error } = await supabase.functions.invoke('send-email', {
+      body: {
+        to_email: to,
+        email_subject: subject,
+        email_content: html,
+        from_email: from
+      }
     });
     
     if (error) {
