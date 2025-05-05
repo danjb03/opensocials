@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Order, OrderStage } from '@/types/orders';
 import CampaignStageNav from './CampaignStageNav';
 import CampaignSummary from './CampaignSummary';
@@ -21,6 +21,11 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   // Local state to manage order updates
   const [currentOrder, setCurrentOrder] = useState(order);
   
+  // Update local state when props change
+  useEffect(() => {
+    setCurrentOrder(order);
+  }, [order]);
+  
   // Define all campaign stages
   const stages: OrderStage[] = [
     'campaign_setup', 
@@ -41,12 +46,22 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   const handleMovePrevious = () => {
     if (previousStage) {
       onMoveStage(currentOrder.id, previousStage);
+      // Update local state to reflect the change immediately
+      setCurrentOrder({
+        ...currentOrder,
+        stage: previousStage
+      });
     }
   };
   
   const handleMoveNext = () => {
     if (nextStage) {
       onMoveStage(currentOrder.id, nextStage);
+      // Update local state to reflect the change immediately
+      setCurrentOrder({
+        ...currentOrder,
+        stage: nextStage
+      });
     }
   };
   

@@ -8,14 +8,34 @@ export const useOrderActions = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
-  const handleMoveStage = async (id: string, newStage: OrderStage) => {
+  // Map order stage to project status in the database
+  const mapOrderStageToProjectStatus = (stage: OrderStage): string => {
+    switch(stage) {
+      case 'campaign_setup':
+        return 'new';
+      case 'creator_selection':
+        return 'under_review';
+      case 'contract_payment':
+        return 'creators_assigned';
+      case 'planning_creation':
+        return 'in_progress';
+      case 'content_performance':
+        return 'completed';
+      default:
+        return 'new';
+    }
+  };
+
+  const handleMoveStage = async (id: string, newStage: OrderStage): Promise<boolean> => {
     try {
       setIsProcessing(true);
+      
+      const newStatus = mapOrderStageToProjectStatus(newStage);
       
       // Update project status in database
       const { error } = await supabase
         .from('projects')
-        .update({ status: newStage })
+        .update({ status: newStatus })
         .eq('id', id);
       
       if (error) throw error;

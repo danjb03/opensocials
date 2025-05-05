@@ -4,10 +4,11 @@ import { Order } from '@/types/orders';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { projectToOrder } from '@/utils/orderUtils';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export const useOrderData = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Fetch orders from Supabase using React Query
   const { data: orders = [], isLoading, error } = useQuery({
@@ -38,6 +39,11 @@ export const useOrderData = () => {
     staleTime: 60000, // 1 minute
   });
 
+  // Function to refresh orders data
+  const refreshOrders = () => {
+    queryClient.invalidateQueries({ queryKey: ['campaigns'] });
+  };
+
   // This function is returned for backward compatibility
   const setOrders = (updaterFn: (prev: Order[]) => Order[]) => {
     console.log('Note: Direct state updates will not persist to the database.');
@@ -47,6 +53,7 @@ export const useOrderData = () => {
   return {
     orders: orders || [],
     setOrders,
-    isLoading
+    isLoading,
+    refreshOrders
   };
 };
