@@ -73,7 +73,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   };
   
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-3xl mx-auto">
       <CampaignStageNav 
         currentStageIndex={currentStageIndex}
         stages={stages}
@@ -87,7 +87,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         orderId={currentOrder.id}
       />
       
-      <div className="mt-6">
+      <div className="mt-5">
         {renderStageContent()}
       </div>
     </div>
