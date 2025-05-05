@@ -97,8 +97,8 @@ export const projectToOrder = (project: Project): Order => {
   return {
     id: project.id,
     title: project.name,
-    description: project.description || '',
-    createdAt: project.created_at ? new Date(project.created_at).toISOString() : new Date().toISOString(),
+    description: '', // Default empty string since description is optional
+    createdAt: new Date().toISOString(), // Default to current date since created_at might not exist
     stage: stage,
     progress: getStageProgress(stage),
     budget: project.budget || 0,
