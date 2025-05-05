@@ -20,7 +20,7 @@ export const CreatorGrid = ({ creators, selectedCreators, onToggleCreator, onVie
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3">
       {creators.map(creator => (
         <CreatorCard
           key={creator.id}
