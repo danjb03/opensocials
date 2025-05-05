@@ -34,7 +34,10 @@ const CreatorSearch = () => {
     handleToggleCreator,
     addCreatorsToProject,
     resetFilters,
-    getActiveFilterCount
+    getActiveFilterCount,
+    availableCampaigns,
+    selectedCampaignId,
+    setSelectedCampaignId
   } = useCreatorSearch();
 
   const {
@@ -82,6 +85,9 @@ const CreatorSearch = () => {
         
         <SelectedCreatorsBar 
           selectedCreators={selectedCreators}
+          availableCampaigns={availableCampaigns}
+          selectedCampaignId={selectedCampaignId}
+          onSelectCampaign={setSelectedCampaignId}
           onAddToCart={addCreatorsToProject}
         />
         

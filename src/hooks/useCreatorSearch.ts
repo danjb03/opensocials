@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Creator } from '@/types/creator';
 import { mockCreatorsBase } from '@/data/mockCreators';
 import { calculateMatchScore } from '@/utils/creatorMatching';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useCreatorSearch = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -16,7 +17,36 @@ export const useCreatorSearch = () => {
   const [filterLocation, setFilterLocation] = useState(searchParams.get('location') || 'all');
   const [filterSkills, setFilterSkills] = useState<string[]>([]);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+  const [availableCampaigns, setAvailableCampaigns] = useState<{id: string, title: string}[]>([]);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Fetch available campaigns
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        const { data: user } = await supabase.auth.getUser();
+        if (!user.user) return;
+
+        const { data, error } = await supabase
+          .from('projects')
+          .select('id, name')
+          .eq('brand_id', user.user.id)
+          .in('status', ['active', 'draft'])
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setAvailableCampaigns(data.map(project => ({
+          id: project.id,
+          title: project.name
+        })));
+      } catch (error) {
+        console.error('Error fetching campaigns:', error);
+      }
+    };
+
+    fetchCampaigns();
+  }, []);
 
   // Apply filtering to the mock creators
   const filteredCreators: Creator[] = mockCreatorsBase.filter(creator => {
@@ -86,7 +116,7 @@ export const useCreatorSearch = () => {
     );
   };
 
-  const addCreatorsToProject = () => {
+  const addCreatorsToProject = async () => {
     if (selectedCreators.length === 0) {
       toast({
         title: "No creators selected",
@@ -96,13 +126,34 @@ export const useCreatorSearch = () => {
       return;
     }
 
-    toast({
-      title: "Creators added to project",
-      description: `${selectedCreators.length} creators added to your project.`
-    });
+    if (!selectedCampaignId) {
+      toast({
+        title: "No campaign selected",
+        description: "Please select a campaign to add the creators to.",
+        variant: "destructive"
+      });
+      return;
+    }
 
-    console.log("Selected creators:", selectedCreators);
-    setSelectedCreators([]);
+    try {
+      // Here we would normally add creators to the campaign in the database
+      // This is a mock implementation
+      toast({
+        title: "Creators added to campaign",
+        description: `${selectedCreators.length} creators added to your campaign.`
+      });
+
+      console.log("Selected creators:", selectedCreators);
+      console.log("Added to campaign:", selectedCampaignId);
+      setSelectedCreators([]);
+    } catch (error) {
+      console.error("Error adding creators to campaign:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add creators to campaign. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const resetFilters = () => {
@@ -144,6 +195,9 @@ export const useCreatorSearch = () => {
     handleToggleCreator,
     addCreatorsToProject,
     resetFilters,
-    getActiveFilterCount
+    getActiveFilterCount,
+    availableCampaigns,
+    selectedCampaignId,
+    setSelectedCampaignId
   };
 };
