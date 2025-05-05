@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import type { UserRole } from '@/lib/auth';
@@ -43,13 +44,28 @@ export function useSignUp() {
 
       if (data.user) {
         console.log('✅ Signup complete:', data.user.id);
-        toast.success('Account created! Confirm via email before logging in.');
+        
+        // Check if email was confirmed immediately (if email confirmation is disabled in Supabase)
+        if (data.user.email_confirmed_at) {
+          toast.success('Account created! You can now log in.');
+        } else {
+          toast.success('Account created! Please check your email to confirm your account.');
+        }
+        
         resetForm();
         return true;
       }
     } catch (err: any) {
       console.error('❌ Signup failed:', err.message);
-      toast.error(err.message || 'Signup failed. Try again.');
+      
+      // Special handling for email sending errors
+      if (err.message?.includes('sending email') || err.message?.includes('confirmation email')) {
+        toast.error('Account created but there was an issue sending the confirmation email. Please contact support.');
+        resetForm();
+        return true; // Return true since the account was created
+      } else {
+        toast.error(err.message || 'Signup failed. Try again.');
+      }
     } finally {
       setIsLoading(false);
     }
