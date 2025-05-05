@@ -2,17 +2,20 @@
 import React from 'react';
 import { Creator } from '@/types/orders';
 import { Button } from '@/components/ui/button';
-import { Bell } from 'lucide-react';
+import { Bell, UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import CreatorCard from './CreatorCard';
+import { useNavigate } from 'react-router-dom';
 
 interface CampaignCreatorsProps {
   creators: Creator[];
+  orderId: string;
 }
 
-const CampaignCreators: React.FC<CampaignCreatorsProps> = ({ creators }) => {
+const CampaignCreators: React.FC<CampaignCreatorsProps> = ({ creators, orderId }) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleNotifyCreator = async (creatorId: string, creatorName: string) => {
     try {
@@ -53,26 +56,34 @@ const CampaignCreators: React.FC<CampaignCreatorsProps> = ({ creators }) => {
     }
   };
 
+  const handleFindMoreCreators = () => {
+    // Navigate to creator search with the current campaign ID pre-selected
+    navigate(`/brand/creator-search?campaign=${orderId}`);
+  };
+
   return (
     <div>
-      <h3 className="font-medium text-gray-900 mb-3">Creators ({creators.length})</h3>
+      <div className="flex justify-between items-center mb-3">
+        <h3 className="font-medium text-gray-900">Creators ({creators.length})</h3>
+        <Button 
+          size="sm" 
+          variant="outline" 
+          className="flex items-center gap-1"
+          onClick={handleFindMoreCreators}
+        >
+          <UserPlus className="h-4 w-4 mr-1" />
+          Add More Creators
+        </Button>
+      </div>
+      
       <div className="space-y-3">
         {creators.length > 0 ? (
           creators.map(creator => (
-            <div key={creator.id} className="flex flex-col space-y-2">
-              <CreatorCard creator={creator} />
-              <div className="ml-auto">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="flex items-center gap-1 text-xs"
-                  onClick={() => handleNotifyCreator(creator.id, creator.name)}
-                >
-                  <Bell className="h-3.5 w-3.5 mr-1" />
-                  Notify Interest
-                </Button>
-              </div>
-            </div>
+            <CreatorCard 
+              key={creator.id} 
+              creator={creator} 
+              onNotifyInterest={handleNotifyCreator}
+            />
           ))
         ) : (
           <p className="text-gray-500 text-center py-6 bg-gray-50 rounded-md">

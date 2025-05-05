@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { CreatorFilters } from '@/components/brand/creator-search/CreatorFilters';
@@ -10,9 +10,12 @@ import { ViewToggle } from '@/components/brand/creator-search/ViewToggle';
 import { CreatorProfileModal } from '@/components/brand/creator-search/CreatorProfileModal';
 import { useCreatorSearch } from '@/hooks/useCreatorSearch';
 import { useCreatorProfileModal } from '@/hooks/useCreatorProfileModal';
+import { useSearchParams } from 'react-router-dom';
 
 const CreatorSearch = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [searchParams] = useSearchParams();
+  const campaignId = searchParams.get('campaign');
   
   const {
     searchTerm,
@@ -47,6 +50,13 @@ const CreatorSearch = () => {
     handleViewCreatorProfile,
     handleCloseProfileModal
   } = useCreatorProfileModal();
+  
+  // Set the campaign ID from URL parameter if present
+  useEffect(() => {
+    if (campaignId) {
+      setSelectedCampaignId(campaignId);
+    }
+  }, [campaignId, setSelectedCampaignId]);
 
   return (
     <BrandLayout>

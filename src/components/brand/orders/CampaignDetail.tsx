@@ -53,7 +53,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
       case 'campaign_setup':
         return <CampaignSummary order={order} />;
       case 'creator_selection':
-        return <CampaignCreators creators={order.creators} />;
+        return <CampaignCreators creators={order.creators} orderId={order.id} />;
       case 'contract_payment':
         return <ContractPaymentStage order={order} onComplete={handleMoveNext} />;
       case 'planning_creation':

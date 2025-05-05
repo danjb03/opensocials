@@ -1,14 +1,16 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Clock } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Bell } from 'lucide-react';
 import { Creator } from '@/types/orders';
+import { Button } from '@/components/ui/button';
 
 interface CreatorCardProps {
   creator: Creator;
+  onNotifyInterest: (creatorId: string, creatorName: string) => void;
 }
 
-const CreatorCard: React.FC<CreatorCardProps> = ({ creator }) => {
+const CreatorCard: React.FC<CreatorCardProps> = ({ creator, onNotifyInterest }) => {
   const getStatusColor = (status: string) => {
     switch(status) {
       case 'accepted':
@@ -37,25 +39,38 @@ const CreatorCard: React.FC<CreatorCardProps> = ({ creator }) => {
   };
 
   return (
-    <div className="flex items-center justify-between rounded-md border p-3">
-      <div className="flex items-center">
-        <img 
-          src={creator.imageUrl} 
-          alt={creator.name} 
-          className="h-10 w-10 rounded-full object-cover mr-3"
-        />
-        <div>
-          <p className="font-medium">{creator.name}</p>
-          <p className="text-sm text-gray-500">{creator.platform}</p>
+    <div className="rounded-md border p-3">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center">
+          <img 
+            src={creator.imageUrl} 
+            alt={creator.name} 
+            className="h-10 w-10 rounded-full object-cover mr-3"
+          />
+          <div>
+            <p className="font-medium">{creator.name}</p>
+            <p className="text-sm text-gray-500">{creator.platform}</p>
+          </div>
         </div>
+        <Badge 
+          variant="outline" 
+          className={`flex items-center ${getStatusColor(creator.status)}`}
+        >
+          {getStatusIcon(creator.status)}
+          <span className="capitalize">{creator.status}</span>
+        </Badge>
       </div>
-      <Badge 
-        variant="outline" 
-        className={`flex items-center ${getStatusColor(creator.status)}`}
-      >
-        {getStatusIcon(creator.status)}
-        <span className="capitalize">{creator.status}</span>
-      </Badge>
+      <div className="flex justify-end">
+        <Button 
+          size="sm" 
+          variant="outline" 
+          className="flex items-center gap-1 text-xs"
+          onClick={() => onNotifyInterest(creator.id, creator.name)}
+        >
+          <Bell className="h-3.5 w-3.5 mr-1" />
+          Notify Interest
+        </Button>
+      </div>
     </div>
   );
 };
