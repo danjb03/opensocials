@@ -26,6 +26,7 @@ export const ProjectsTable = ({ projects, isLoading }: ProjectsTableProps) => {
   const [priorityCount, setPriorityCount] = useState<number>(
     projects.filter(p => p.is_priority).length
   );
+  const [tableProjects, setTableProjects] = useState<Project[]>(projects);
 
   // Updated to redirect to campaigns section showing the specific campaign
   const handleViewProject = (projectId: string) => {
@@ -69,7 +70,9 @@ export const ProjectsTable = ({ projects, isLoading }: ProjectsTableProps) => {
       }
       
       // Force refresh the UI by updating the project in our local data
-      project.is_priority = newPriorityValue;
+      setTableProjects(prev => 
+        prev.map(p => p.id === project.id ? {...p, is_priority: newPriorityValue} : p)
+      );
       
     } catch (error) {
       console.error('Error updating priority status:', error);
@@ -78,6 +81,18 @@ export const ProjectsTable = ({ projects, isLoading }: ProjectsTableProps) => {
         description: "Failed to update priority status",
         variant: "destructive"
       });
+    }
+  };
+
+  // Handle project deletion and update the UI
+  const handleProjectDeleted = (projectId: string) => {
+    // Remove the project from the local state
+    setTableProjects(prev => prev.filter(p => p.id !== projectId));
+    
+    // Update priority count if needed
+    const deletedProject = projects.find(p => p.id === projectId);
+    if (deletedProject?.is_priority) {
+      setPriorityCount(prev => prev - 1);
     }
   };
 
@@ -95,13 +110,13 @@ export const ProjectsTable = ({ projects, isLoading }: ProjectsTableProps) => {
     );
   }
 
-  if (projects.length === 0) {
+  if (tableProjects.length === 0) {
     return null; // EmptyState component will be shown by the parent
   }
 
   // Separate priority and non-priority projects
-  const priorityProjects = projects.filter(project => project.is_priority);
-  const regularProjects = projects.filter(project => !project.is_priority);
+  const priorityProjects = tableProjects.filter(project => project.is_priority);
+  const regularProjects = tableProjects.filter(project => !project.is_priority);
   
   // Combine them with priority projects first
   const sortedProjects = [...priorityProjects, ...regularProjects];

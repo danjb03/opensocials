@@ -1,12 +1,10 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import React, { useState } from 'react';
 import { Order, OrderStage } from '@/types/orders';
+import CampaignStageNav from './CampaignStageNav';
 import CampaignSummary from './CampaignSummary';
 import CampaignCreators from './CampaignCreators';
 import CampaignContent from './CampaignContent';
-import CampaignStageNav from './CampaignStageNav';
 import ContractPaymentStage from './ContractPaymentStage';
 
 interface CampaignDetailProps {
@@ -15,7 +13,12 @@ interface CampaignDetailProps {
   onMoveStage: (id: string, newStage: OrderStage) => void;
 }
 
-const CampaignDetail: React.FC<CampaignDetailProps> = ({ order, onClose, onMoveStage }) => {
+const CampaignDetail: React.FC<CampaignDetailProps> = ({ 
+  order,
+  onClose,
+  onMoveStage
+}) => {
+  // Define all campaign stages
   const stages: OrderStage[] = [
     'campaign_setup', 
     'creator_selection', 
@@ -24,58 +27,46 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({ order, onClose, onMoveS
     'content_performance'
   ];
   
+  // Get current stage index
   const currentStageIndex = stages.indexOf(order.stage);
-  const canMoveToPrevious = currentStageIndex > 0;
-  const canMoveToNext = currentStageIndex < stages.length - 1;
-  const previousStage = canMoveToPrevious ? stages[currentStageIndex - 1] : undefined;
-  const nextStage = canMoveToNext ? stages[currentStageIndex + 1] : undefined;
-
-  const handleMoveNext = () => {
-    if (nextStage) {
-      onMoveStage(order.id, nextStage);
-    }
-  };
-
+  
+  // Previous and next stages
+  const previousStage = currentStageIndex > 0 ? stages[currentStageIndex - 1] : undefined;
+  const nextStage = currentStageIndex < stages.length - 1 ? stages[currentStageIndex + 1] : undefined;
+  
+  // Handle stage navigation
   const handleMovePrevious = () => {
     if (previousStage) {
       onMoveStage(order.id, previousStage);
     }
   };
-
-  // Show Contract & Payment stage component when the campaign is in that stage
-  if (order.stage === 'contract_payment') {
-    return (
-      <div className="space-y-6">
-        <CampaignStageNav
-          currentStageIndex={currentStageIndex}
-          stages={stages}
-          previousStage={previousStage}
-          nextStage={nextStage}
-          onClose={onClose}
-          onMovePrevious={handleMovePrevious}
-          onMoveNext={handleMoveNext}
-          canMovePrevious={canMoveToPrevious}
-          canMoveNext={false} // Disable next button as it's handled by the ContractPaymentStage component
-        />
-
-        <Card>
-          <CardHeader>
-            <CampaignSummary order={order} />
-          </CardHeader>
-        </Card>
-        
-        <ContractPaymentStage 
-          order={order} 
-          onMoveStage={onMoveStage} 
-        />
-      </div>
-    );
-  }
-
-  // Default view for other stages
+  
+  const handleMoveNext = () => {
+    if (nextStage) {
+      onMoveStage(order.id, nextStage);
+    }
+  };
+  
+  // Content to display based on current stage
+  const renderStageContent = () => {
+    switch (order.stage) {
+      case 'campaign_setup':
+        return <CampaignSummary order={order} />;
+      case 'creator_selection':
+        return <CampaignCreators creators={order.creators} />;
+      case 'contract_payment':
+        return <ContractPaymentStage order={order} onComplete={handleMoveNext} />;
+      case 'planning_creation':
+      case 'content_performance':
+        return <CampaignContent order={order} />;
+      default:
+        return <CampaignSummary order={order} />;
+    }
+  };
+  
   return (
-    <div className="space-y-6">
-      <CampaignStageNav
+    <div className="space-y-8">
+      <CampaignStageNav 
         currentStageIndex={currentStageIndex}
         stages={stages}
         previousStage={previousStage}
@@ -83,25 +74,14 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({ order, onClose, onMoveS
         onClose={onClose}
         onMovePrevious={handleMovePrevious}
         onMoveNext={handleMoveNext}
-        canMovePrevious={canMoveToPrevious}
-        canMoveNext={canMoveToNext}
+        canMovePrevious={currentStageIndex > 0}
+        canMoveNext={currentStageIndex < stages.length - 1}
+        orderId={order.id}
       />
-
-      <Card>
-        <CardHeader>
-          <CampaignSummary order={order} />
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <CampaignCreators creators={order.creators} />
-          
-          {order.contentItems && order.contentItems.length > 0 && (
-            <>
-              <Separator />
-              <CampaignContent contentItems={order.contentItems} />
-            </>
-          )}
-        </CardContent>
-      </Card>
+      
+      <div className="bg-white rounded-lg border p-6">
+        {renderStageContent()}
+      </div>
     </div>
   );
 };

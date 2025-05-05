@@ -10,6 +10,18 @@ import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 import { toast } from '@/components/ui/sonner'
+import { Trash2 } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 
 type CampaignRow = {
   project_id: string
@@ -31,45 +43,68 @@ type CampaignRow = {
 export default function BrandCampaignTable() {
   const [data, setData] = useState<CampaignRow[] | null>(null)
   const [loading, setLoading] = useState(true)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Get the session
-        const { data: sessionData } = await supabase.auth.getSession();
-        const accessToken = sessionData.session?.access_token;
+  const fetchData = async () => {
+    try {
+      // Get the session
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
 
-        if (!accessToken) {
-          toast.error("Authentication error. Please sign in again.");
-          return;
-        }
-
-        const res = await fetch('/functions/v1/get-brand-projects', {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-
-        if (!res.ok) {
-          throw new Error('Failed to fetch campaign data');
-        }
-
-        const json = await res.json();
-        setData(json);
-      } catch (error) {
-        console.error("Error fetching campaign data:", error);
-        toast.error("Failed to load campaigns");
-      } finally {
-        setLoading(false);
+      if (!accessToken) {
+        toast.error("Authentication error. Please sign in again.");
+        return;
       }
-    };
 
+      const res = await fetch('/functions/v1/get-brand-projects', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch campaign data');
+      }
+
+      const json = await res.json();
+      setData(json);
+    } catch (error) {
+      console.error("Error fetching campaign data:", error);
+      toast.error("Failed to load campaigns");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
 
   const handleViewProject = (projectId: string) => {
     navigate(`/brand/orders?projectId=${projectId}`);
+  };
+
+  const handleDeleteProject = async (projectId: string) => {
+    setDeletingId(projectId);
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectId);
+
+      if (error) throw error;
+      
+      toast.success("Campaign successfully deleted");
+      
+      // Remove the deleted item from the state
+      setData(data => data ? data.filter(item => item.project_id !== projectId) : null);
+    } catch (error) {
+      console.error("Error deleting campaign:", error);
+      toast.error("Failed to delete campaign");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   if (loading) {
@@ -126,13 +161,44 @@ export default function BrandCampaignTable() {
                 <p className="text-muted-foreground">{item.currency === 'GBP' ? '£' : '$'}{item.budget} total</p>
                 {item.deal_status && <p className="text-xs mt-1 text-muted-foreground">Deal: {item.deal_status}</p>}
               </div>
-              <Button 
-                variant="secondary" 
-                className="self-center"
-                onClick={() => handleViewProject(item.project_id)}
-              >
-                View
-              </Button>
+              <div className="flex self-center gap-2">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      className="border-red-200 text-red-600 hover:bg-red-50"
+                      size="sm"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Campaign</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete "{item.project_name}"? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={() => handleDeleteProject(item.project_id)} 
+                        className="bg-red-600 hover:bg-red-700 text-white"
+                        disabled={deletingId === item.project_id}
+                      >
+                        {deletingId === item.project_id ? "Deleting..." : "Delete Campaign"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                
+                <Button 
+                  variant="secondary" 
+                  onClick={() => handleViewProject(item.project_id)}
+                >
+                  View
+                </Button>
+              </div>
             </div>
           ))}
         </div>
