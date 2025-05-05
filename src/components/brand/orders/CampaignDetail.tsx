@@ -18,6 +18,9 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   onClose,
   onMoveStage
 }) => {
+  // Local state to manage order updates
+  const [currentOrder, setCurrentOrder] = useState(order);
+  
   // Define all campaign stages
   const stages: OrderStage[] = [
     'campaign_setup', 
@@ -28,7 +31,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   ];
   
   // Get current stage index
-  const currentStageIndex = stages.indexOf(order.stage);
+  const currentStageIndex = stages.indexOf(currentOrder.stage);
   
   // Previous and next stages
   const previousStage = currentStageIndex > 0 ? stages[currentStageIndex - 1] : undefined;
@@ -37,30 +40,35 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   // Handle stage navigation
   const handleMovePrevious = () => {
     if (previousStage) {
-      onMoveStage(order.id, previousStage);
+      onMoveStage(currentOrder.id, previousStage);
     }
   };
   
   const handleMoveNext = () => {
     if (nextStage) {
-      onMoveStage(order.id, nextStage);
+      onMoveStage(currentOrder.id, nextStage);
     }
+  };
+  
+  // Handle order updates
+  const handleOrderUpdate = (updatedOrder: Order) => {
+    setCurrentOrder(updatedOrder);
   };
   
   // Content to display based on current stage
   const renderStageContent = () => {
-    switch (order.stage) {
+    switch (currentOrder.stage) {
       case 'campaign_setup':
-        return <CampaignSummary order={order} />;
+        return <CampaignSummary order={currentOrder} onUpdateOrder={handleOrderUpdate} />;
       case 'creator_selection':
-        return <CampaignCreators creators={order.creators} orderId={order.id} />;
+        return <CampaignCreators creators={currentOrder.creators} orderId={currentOrder.id} />;
       case 'contract_payment':
-        return <ContractPaymentStage order={order} onComplete={handleMoveNext} />;
+        return <ContractPaymentStage order={currentOrder} onComplete={handleMoveNext} />;
       case 'planning_creation':
       case 'content_performance':
-        return <CampaignContent order={order} />;
+        return <CampaignContent order={currentOrder} />;
       default:
-        return <CampaignSummary order={order} />;
+        return <CampaignSummary order={currentOrder} onUpdateOrder={handleOrderUpdate} />;
     }
   };
   
@@ -76,7 +84,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         onMoveNext={handleMoveNext}
         canMovePrevious={currentStageIndex > 0}
         canMoveNext={currentStageIndex < stages.length - 1}
-        orderId={order.id}
+        orderId={currentOrder.id}
       />
       
       <div className="bg-white rounded-lg border p-6">
