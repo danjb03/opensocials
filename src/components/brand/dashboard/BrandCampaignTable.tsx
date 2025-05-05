@@ -69,7 +69,7 @@ export default function BrandCampaignTable() {
   }, []);
 
   const handleViewProject = (projectId: string) => {
-    navigate(`/brand/projects/${projectId}`);
+    navigate(`/brand/orders?projectId=${projectId}`);
   };
 
   if (loading) {

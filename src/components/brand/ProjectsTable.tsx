@@ -1,4 +1,3 @@
-
 import { 
   Table,
   TableBody,
@@ -42,8 +41,9 @@ export const ProjectsTable = ({ projects, isLoading }: ProjectsTableProps) => {
     );
   };
 
+  // Updated to redirect to campaigns section showing the specific campaign
   const handleViewProject = (projectId: string) => {
-    navigate(`/brand/projects/${projectId}`);
+    navigate(`/brand/orders?projectId=${projectId}`);
   };
 
   const handleTogglePriority = async (project: Project) => {

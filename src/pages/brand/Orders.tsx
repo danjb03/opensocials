@@ -1,5 +1,6 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import OrdersPipeline from '@/components/brand/orders/OrdersPipeline';
 import CampaignDetail from '@/components/brand/orders/CampaignDetail';
@@ -9,6 +10,9 @@ import OrdersLoading from '@/components/brand/orders/OrdersLoading';
 import { useOrderManagement } from '@/hooks/useOrderManagement';
 
 const BrandOrders = () => {
+  const [searchParams] = useSearchParams();
+  const projectId = searchParams.get('projectId');
+  
   const {
     orders,
     activeStage,
@@ -26,6 +30,16 @@ const BrandOrders = () => {
   const filteredOrders = orders.filter(order => 
     order.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Handle direct navigation to a specific campaign
+  useEffect(() => {
+    if (projectId && orders.length > 0 && !selectedOrder) {
+      const foundOrder = orders.find(order => order.id === projectId);
+      if (foundOrder) {
+        handleOrderSelect(foundOrder.id);
+      }
+    }
+  }, [projectId, orders, selectedOrder, handleOrderSelect]);
 
   if (isLoading) {
     return <OrdersLoading />;
