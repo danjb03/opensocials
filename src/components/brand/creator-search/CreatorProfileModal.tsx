@@ -10,6 +10,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import { Skeleton } from '@/components/ui/skeleton';
 import { Creator } from '@/types/creator';
 import { Instagram, Youtube, Twitter, Facebook, ExternalLink, BookmarkPlus, MessageSquare, BarChart2, Globe } from 'lucide-react';
+import { useCreatorInvitations, useToast } from '@/hooks';
 type CreatorProfileModalProps = {
   creator: Creator | null;
   isOpen: boolean;
@@ -22,7 +23,21 @@ export const CreatorProfileModal = ({
   onClose,
   isLoading = false
 }: CreatorProfileModalProps) => {
+  const { handleInviteCreator, isLoading: inviteLoading } = useCreatorInvitations();
+  const { toast } = useToast();
+  
   if (!creator && !isLoading) return null;
+  
+  const handleInviteCreator = () => {
+    if (!creator) return;
+    
+    handleInviteCreator(creator.id.toString(), creator.name);
+    toast({
+      title: "Creator invited",
+      description: `${creator.name} has been invited to collaborate.`,
+    });
+  };
+  
   const getSocialIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
       case 'instagram':
@@ -37,6 +52,7 @@ export const CreatorProfileModal = ({
         return <ExternalLink className="h-5 w-5" />;
     }
   };
+  
   const renderSocialLinks = () => {
     if (!creator?.socialLinks) return null;
     return <div className="flex gap-3 mt-4">
@@ -48,6 +64,7 @@ export const CreatorProfileModal = ({
       })}
       </div>;
   };
+  
   const renderAudienceLocation = () => {
     if (!creator?.audienceLocation) return null;
     return <div className="space-y-3">
@@ -81,6 +98,7 @@ export const CreatorProfileModal = ({
         </div>
       </div>;
   };
+  
   const renderLoadingState = () => <>
       <div className="relative w-full h-32 bg-muted/30">
         <Skeleton className="absolute w-24 h-24 rounded-full -bottom-12 left-6 border-4 border-background" />
@@ -105,10 +123,13 @@ export const CreatorProfileModal = ({
         </div>
       </div>
     </>;
+  
   const renderContent = () => {
     if (isLoading) return renderLoadingState();
     if (!creator) return null;
-    return <>
+    
+    return (
+      <>
         <div className="relative">
           {/* Banner image */}
           <div className="h-32 w-full overflow-hidden bg-gradient-to-r from-primary/20 via-primary/10 to-secondary/20">
@@ -222,7 +243,7 @@ export const CreatorProfileModal = ({
             <TabsContent value="campaigns">
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <p className="text-muted-foreground mb-4">No previous campaigns with this creator.</p>
-                <Button variant="outline">Invite to Campaign</Button>
+                <Button variant="outline" onClick={handleInviteCreator}>Invite to Campaign</Button>
               </div>
             </TabsContent>
           </Tabs>
@@ -233,17 +254,33 @@ export const CreatorProfileModal = ({
               Save
             </Button>
             
-            <Button className="gap-2">
-              <BarChart2 className="h-4 w-4" />
-              View Analytics
+            <Button className="gap-2" onClick={handleInviteCreator} disabled={inviteLoading?.[`invite-${creator.id}`]}>
+              {inviteLoading?.[`invite-${creator.id}`] ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Inviting...
+                </span>
+              ) : (
+                <>
+                  <UserPlus className="h-4 w-4" />
+                  Invite to Campaign
+                </>
+              )}
             </Button>
           </div>
         </div>
-      </>;
+      </>
+    );
   };
-  return <Dialog open={isOpen} onOpenChange={onClose}>
+  
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[800px] p-0 overflow-hidden max-h-[90vh] overflow-y-auto">
         {renderContent()}
       </DialogContent>
-    </Dialog>;
+    </Dialog>
+  );
 };

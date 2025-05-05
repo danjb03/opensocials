@@ -13,7 +13,7 @@ import { useCreatorProfileModal } from '@/hooks/useCreatorProfileModal';
 import { useSearchParams } from 'react-router-dom';
 
 const CreatorSearch = () => {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list'); // Changed default to 'list'
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list'); // Default to list view
   const [searchParams] = useSearchParams();
   const campaignId = searchParams.get('campaign');
   
@@ -60,10 +60,10 @@ const CreatorSearch = () => {
 
   return (
     <BrandLayout>
-      <div className="container mx-auto p-6 max-w-7xl">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-1">Find Creators</h1>
+            <h1 className="text-3xl font-bold mb-2">Find Creators</h1>
             <p className="text-gray-600">Discover and collaborate with creators that match your brand</p>
           </div>
           

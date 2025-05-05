@@ -10,7 +10,7 @@ type ViewToggleProps = {
 
 export const ViewToggle = ({ viewMode, onViewChange }: ViewToggleProps) => {
   return (
-    <div className="flex items-center bg-gray-50 p-1 rounded-lg">
+    <div className="flex items-center bg-gray-50 p-1 rounded-lg shadow-sm mt-4 md:mt-0">
       <Button
         variant={viewMode === 'grid' ? 'default' : 'ghost'}
         size="sm"
