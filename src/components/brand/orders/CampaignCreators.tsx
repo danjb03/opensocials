@@ -15,7 +15,7 @@ interface CampaignCreatorsProps {
 
 const CampaignCreators: React.FC<CampaignCreatorsProps> = ({ creators, orderId }) => {
   const navigate = useNavigate();
-  const { handleNotifyCreator, handleInviteCreator, isLoading } = useCreatorInvitations();
+  const { handleInviteCreator, isLoading } = useCreatorInvitations();
 
   const handleFindMoreCreators = () => {
     // Navigate to creator search with the current campaign ID pre-selected
@@ -28,8 +28,8 @@ const CampaignCreators: React.FC<CampaignCreatorsProps> = ({ creators, orderId }
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
+    <div className="mb-6">
+      <div className="flex justify-between items-center mb-4">
         <h3 className="font-medium text-gray-900">Creators ({creators.length})</h3>
         <Button 
           size="sm" 
@@ -38,7 +38,7 @@ const CampaignCreators: React.FC<CampaignCreatorsProps> = ({ creators, orderId }
           onClick={handleFindMoreCreators}
         >
           <Search className="h-4 w-4 mr-1" />
-          Search for more creators
+          Find creators
         </Button>
       </div>
       
@@ -48,9 +48,7 @@ const CampaignCreators: React.FC<CampaignCreatorsProps> = ({ creators, orderId }
             <CreatorCard 
               key={creator.id} 
               creator={creator} 
-              onNotifyInterest={handleNotifyCreator}
               onInviteCreator={inviteCreatorToCampaign}
-              showInviteButton={creator.status !== 'accepted' && creator.status !== 'declined' && creator.status !== 'completed'}
               isLoading={isLoading}
             />
           ))

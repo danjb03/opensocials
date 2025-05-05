@@ -1,86 +1,56 @@
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Clock } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Creator } from '@/types/orders';
-import CreatorActionButtons from './CreatorActionButtons';
 
 interface CreatorCardProps {
   creator: Creator;
-  onNotifyInterest: (creatorId: string, creatorName: string) => void;
-  onInviteCreator?: (creatorId: string, creatorName: string) => void;
-  showInviteButton?: boolean;
+  onInviteCreator: (creatorId: string, creatorName: string) => void;
   isLoading?: Record<string, boolean>;
 }
 
 const CreatorCard: React.FC<CreatorCardProps> = ({ 
-  creator, 
-  onNotifyInterest, 
+  creator,
   onInviteCreator,
-  showInviteButton = false,
-  isLoading
+  isLoading = {}
 }) => {
-  const getStatusColor = (status: string) => {
-    switch(status) {
-      case 'accepted':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'declined':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'invited':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'completed':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch(status) {
-      case 'accepted':
-      case 'completed':
-        return <CheckCircle className="h-4 w-4 mr-1.5" />;
-      case 'declined':
-        return <XCircle className="h-4 w-4 mr-1.5" />;
-      default:
-        return <Clock className="h-4 w-4 mr-1.5" />;
-    }
-  };
-
   return (
-    <div className="rounded-xl border border-gray-200 hover:border-blue-200 p-4 shadow-sm hover:shadow-md transition-all">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center">
-          <img 
-            src={creator.imageUrl} 
-            alt={creator.name} 
-            className="h-12 w-12 rounded-full object-cover mr-3 border-2 border-white shadow-sm"
-          />
-          <div>
-            <p className="font-semibold text-gray-900">{creator.name}</p>
-            <p className="text-sm text-gray-500">{creator.platform}</p>
-          </div>
+    <div className="rounded-lg border border-gray-200 hover:border-blue-200 p-3 shadow-sm transition-all flex justify-between items-center">
+      <div className="flex items-center">
+        <img 
+          src={creator.imageUrl} 
+          alt={creator.name} 
+          className="h-10 w-10 rounded-full object-cover mr-3 border border-white shadow-sm"
+        />
+        <div>
+          <p className="font-medium text-gray-900">{creator.name}</p>
+          <p className="text-xs text-gray-500">{creator.platform}</p>
         </div>
-        
-        {!showInviteButton && (
-          <Badge 
-            variant="outline" 
-            className={`flex items-center px-2.5 py-1 rounded-full ${getStatusColor(creator.status)}`}
-          >
-            {getStatusIcon(creator.status)}
-            <span className="capitalize font-medium">{creator.status}</span>
-          </Badge>
-        )}
       </div>
       
-      <CreatorActionButtons
-        creatorId={creator.id}
-        creatorName={creator.name}
-        showInviteButton={showInviteButton}
-        onNotifyInterest={onNotifyInterest}
-        onInviteCreator={onInviteCreator}
-        isLoading={isLoading}
-      />
+      <Button 
+        size="sm" 
+        variant="outline"
+        className="text-xs bg-white hover:bg-gray-50"
+        onClick={() => onInviteCreator(creator.id, creator.name)}
+        disabled={isLoading?.[`invite-${creator.id}`]}
+      >
+        {isLoading?.[`invite-${creator.id}`] ? (
+          <span className="flex items-center">
+            <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Inviting...
+          </span>
+        ) : (
+          <>
+            <UserPlus className="h-3 w-3 mr-1.5" />
+            Invite
+          </>
+        )}
+      </Button>
     </div>
   );
 };
