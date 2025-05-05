@@ -22,6 +22,11 @@ const CampaignCreators: React.FC<CampaignCreatorsProps> = ({ creators, orderId }
     navigate(`/brand/creator-search?campaign=${orderId}`);
   };
 
+  // Create handlers with the campaign ID included
+  const inviteCreatorToCampaign = (creatorId: string, creatorName: string) => {
+    handleInviteCreator(creatorId, creatorName, orderId);
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -44,7 +49,7 @@ const CampaignCreators: React.FC<CampaignCreatorsProps> = ({ creators, orderId }
               key={creator.id} 
               creator={creator} 
               onNotifyInterest={handleNotifyCreator}
-              onInviteCreator={handleInviteCreator}
+              onInviteCreator={inviteCreatorToCampaign}
               showInviteButton={creator.status !== 'accepted' && creator.status !== 'declined' && creator.status !== 'completed'}
               isLoading={isLoading}
             />
