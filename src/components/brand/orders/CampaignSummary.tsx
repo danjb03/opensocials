@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Order } from '@/types/orders';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Edit2, Save, X } from 'lucide-react';
@@ -96,9 +95,9 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="font-medium text-gray-900">Campaign Details</h3>
+        <h3 className="font-medium text-xl text-gray-900">Campaign Details</h3>
         
         {isEditing ? (
           <div className="flex gap-2">
@@ -115,6 +114,7 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
               size="sm" 
               onClick={handleSave}
               disabled={isSaving}
+              className="bg-black hover:bg-gray-800"
             >
               {isSaving ? (
                 <span className="flex items-center">
@@ -137,6 +137,7 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
             variant="outline" 
             size="sm"
             onClick={() => setIsEditing(true)}
+            className="border border-gray-300 hover:bg-gray-50"
           >
             <Edit2 className="h-4 w-4 mr-1" />
             Edit Details
@@ -144,94 +145,99 @@ const CampaignSummary: React.FC<CampaignSummaryProps> = ({
         )}
       </div>
       
-      <Card>
-        <CardContent className="pt-6">
-          {isEditing ? (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1 text-gray-700">Campaign Name</label>
+      {isEditing ? (
+        <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm space-y-5">
+          <div>
+            <label className="block text-sm font-medium mb-1.5 text-gray-700">Campaign Name</label>
+            <Input
+              name="title"
+              value={updatedData.title}
+              onChange={handleChange}
+              className="border-gray-200 focus-visible:ring-black"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-1.5 text-gray-700">Description</label>
+            <Textarea
+              name="description"
+              value={updatedData.description}
+              onChange={handleChange}
+              rows={3}
+              className="border-gray-200 focus-visible:ring-black"
+              placeholder="Add campaign description..."
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-sm font-medium mb-1.5 text-gray-700">Budget</label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                  $
+                </span>
                 <Input
-                  name="title"
-                  value={updatedData.title}
+                  name="budget"
+                  type="number"
+                  value={updatedData.budget}
                   onChange={handleChange}
+                  className="pl-7 border-gray-200 focus-visible:ring-black"
                 />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1 text-gray-700">Description</label>
-                <Textarea
-                  name="description"
-                  value={updatedData.description}
-                  onChange={handleChange}
-                  rows={3}
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700">Budget</label>
-                  <div className="relative">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                      $
-                    </span>
-                    <Input
-                      name="budget"
-                      type="number"
-                      value={updatedData.budget}
-                      onChange={handleChange}
-                      className="pl-7"
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700">Platform</label>
-                  <Select 
-                    value={updatedData.platform} 
-                    onValueChange={(value) => handleSelectChange('platform', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select platform" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="instagram">Instagram</SelectItem>
-                      <SelectItem value="tiktok">TikTok</SelectItem>
-                      <SelectItem value="youtube">YouTube</SelectItem>
-                      <SelectItem value="twitter">Twitter</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
             </div>
-          ) : (
-            <div className="space-y-4">
+            
+            <div>
+              <label className="block text-sm font-medium mb-1.5 text-gray-700">Platform</label>
+              <Select 
+                value={updatedData.platform} 
+                onValueChange={(value) => handleSelectChange('platform', value)}
+              >
+                <SelectTrigger className="border-gray-200 focus:ring-black">
+                  <SelectValue placeholder="Select platform" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="instagram">Instagram</SelectItem>
+                  <SelectItem value="tiktok">TikTok</SelectItem>
+                  <SelectItem value="youtube">YouTube</SelectItem>
+                  <SelectItem value="twitter">Twitter</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl overflow-hidden">
+          <div className="p-6 space-y-5">
+            <div className="border-b border-gray-100 pb-4">
+              <h2 className="text-2xl font-semibold text-gray-900">{order.title}</h2>
+              <p className="text-gray-600 mt-2 text-sm">
+                {order.description || 'No description provided'}
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-8">
               <div>
-                <h3 className="text-xl font-semibold">{order.title}</h3>
-                <p className="text-gray-500 mt-1">{order.description || 'No description provided'}</p>
+                <p className="text-sm text-gray-500 mb-1">Budget</p>
+                <p className="font-semibold text-lg">${order.budget.toLocaleString()}</p>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">Budget</p>
-                  <p className="font-medium">${order.budget.toLocaleString()}</p>
-                </div>
-                
-                <div>
-                  <p className="text-sm text-gray-500">Platform</p>
-                  <Badge className="mt-1 capitalize">{order.platform || 'Not specified'}</Badge>
-                </div>
-              </div>
-              
               <div>
-                <p className="text-sm text-gray-500">Status</p>
-                <Badge variant="outline" className="mt-1 bg-blue-50 text-blue-700 border-blue-200">
-                  {order.stage.replace('_', ' ')}
+                <p className="text-sm text-gray-500 mb-1">Platform</p>
+                <Badge className="mt-1 capitalize text-sm px-3 py-1 font-medium bg-gray-100 text-gray-800 hover:bg-gray-200">
+                  {order.platform || 'Not specified'}
                 </Badge>
               </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+            
+            <div>
+              <p className="text-sm text-gray-500 mb-1">Status</p>
+              <Badge variant="outline" className="px-3 py-1 bg-blue-50 text-blue-700 border-blue-200 capitalize">
+                {order.stage.replace('_', ' ')}
+              </Badge>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
