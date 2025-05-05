@@ -3,9 +3,11 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Order } from '@/types/orders';
 import { useToast } from '@/hooks/use-toast';
-import { FileUp, Upload, FileCheck, CreditCard } from 'lucide-react';
+import { FileText, Upload, CreditCard, Info, Check } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from '@/components/ui/alert-dialog';
+import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 interface ContractPaymentStageProps {
   order: Order;
@@ -71,120 +73,151 @@ const ContractPaymentStage: React.FC<ContractPaymentStageProps> = ({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-medium text-gray-900 mb-3">Contract & Payment</h3>
-        <p className="text-gray-600 mb-4">
-          Upload contract documents, campaign brief, and process payment to finalize your campaign.
-        </p>
-        
-        {/* Contract Upload Section */}
-        <div className="mb-6 p-4 border rounded-md">
-          <h4 className="font-medium text-sm mb-3">1. Upload Contract Documents</h4>
-          <div className="bg-gray-50 border-2 border-dashed rounded-lg p-4 mb-3">
-            <div className="flex flex-col items-center py-2">
-              <FileUp className="h-8 w-8 text-gray-400 mb-2" />
-              <p className="text-sm text-gray-600 mb-1">Drag and drop your contract files, or</p>
-              <label htmlFor="contract-upload" className="cursor-pointer">
-                <span className="text-blue-600 hover:text-blue-800 text-sm font-medium">Browse files</span>
-                <input 
-                  id="contract-upload" 
-                  name="contract-upload" 
-                  type="file" 
-                  className="sr-only" 
-                  multiple
-                  onChange={handleContractFileChange}
-                />
-              </label>
-            </div>
-          </div>
+      <Card className="bg-[#f7f9fc] border-0">
+        <CardContent className="p-6">
+          <h3 className="text-xl font-semibold text-black mb-6">Contract & Payment</h3>
           
-          {contractFiles.length > 0 && (
-            <div className="mb-3">
-              <p className="text-sm font-medium mb-2">Selected Contract Files:</p>
-              <div className="space-y-2">
-                {contractFiles.map((file, index) => (
-                  <div key={index} className="flex items-center p-2 rounded-md bg-blue-50 border border-blue-100">
-                    <FileCheck className="h-4 w-4 text-blue-500 mr-2" />
-                    <span className="text-sm">{file.name}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* Campaign Brief Upload Section */}
+            <div>
+              <h4 className="text-base font-medium mb-2">Campaign Brief</h4>
+              <p className="text-gray-600 text-sm mb-4">
+                Upload the campaign brief document with all project details
+              </p>
+              
+              <div className="border-2 border-dashed border-gray-300 rounded-md p-6 bg-white">
+                <div className="flex flex-col items-center justify-center text-center">
+                  <Upload className="h-10 w-10 text-gray-400 mb-4" />
+                  <p className="text-sm mb-2">Drag and drop or click to upload</p>
+                  <p className="text-xs text-gray-500 mb-4">PDF, DOCX, or PPT files</p>
+                  
+                  <label htmlFor="brief-upload">
+                    <Button variant="outline" className="bg-black hover:bg-gray-800 text-white">
+                      <FileText className="mr-2 h-4 w-4" />
+                      Select Brief Files
+                    </Button>
+                    <input 
+                      id="brief-upload" 
+                      name="brief-upload" 
+                      type="file" 
+                      className="sr-only" 
+                      multiple
+                      onChange={handleBriefFileChange}
+                    />
+                  </label>
+                </div>
+              </div>
+              
+              {briefFiles.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-sm font-medium mb-2">Selected Brief Files:</p>
+                  <div className="space-y-2">
+                    {briefFiles.map((file, index) => (
+                      <div key={index} className="flex items-center p-2 rounded-md bg-white border border-gray-200">
+                        <Check className="h-4 w-4 text-green-500 mr-2" />
+                        <span className="text-sm">{file.name}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-        
-        {/* Campaign Brief Upload Section */}
-        <div className="mb-6 p-4 border rounded-md">
-          <h4 className="font-medium text-sm mb-3">2. Upload Campaign Brief</h4>
-          <div className="bg-gray-50 border-2 border-dashed rounded-lg p-4 mb-3">
-            <div className="flex flex-col items-center py-2">
-              <Upload className="h-8 w-8 text-gray-400 mb-2" />
-              <p className="text-sm text-gray-600 mb-1">Upload your campaign brief and materials</p>
-              <label htmlFor="brief-upload" className="cursor-pointer">
-                <span className="text-blue-600 hover:text-blue-800 text-sm font-medium">Select files</span>
-                <input 
-                  id="brief-upload" 
-                  name="brief-upload" 
-                  type="file" 
-                  className="sr-only" 
-                  multiple
-                  onChange={handleBriefFileChange}
-                />
-              </label>
-            </div>
-          </div>
-          
-          {briefFiles.length > 0 && (
-            <div className="mb-3">
-              <p className="text-sm font-medium mb-2">Selected Brief Files:</p>
-              <div className="space-y-2">
-                {briefFiles.map((file, index) => (
-                  <div key={index} className="flex items-center p-2 rounded-md bg-green-50 border border-green-100">
-                    <FileCheck className="h-4 w-4 text-green-500 mr-2" />
-                    <span className="text-sm">{file.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-        
-        {/* Payment Section */}
-        <div className="mb-6 p-4 border rounded-md">
-          <h4 className="font-medium text-sm mb-3">3. Process Payment</h4>
-          <div className="space-y-4 mb-4">
-            <div className="p-3 rounded-md bg-gray-50 border flex items-center justify-between">
-              <div>
-                <p className="font-medium">Campaign Total</p>
-                <p className="text-lg font-bold">{order.currency} {order.budget.toLocaleString()}</p>
-              </div>
-              <CreditCard className="h-6 w-6 text-gray-400" />
+                </div>
+              )}
             </div>
             
-            <div className="p-3 rounded-md bg-gray-50 border">
-              <p className="font-medium text-sm mb-1">Payment Terms</p>
-              <p className="text-sm text-gray-700">
-                50% deposit due now ({order.currency} {(order.budget * 0.5).toLocaleString()})<br/>
-                50% due upon campaign completion
+            {/* Contract Documents Upload Section */}
+            <div>
+              <h4 className="text-base font-medium mb-2">Contract Documents</h4>
+              <p className="text-gray-600 text-sm mb-4">
+                Upload the signed contract and any other legal documents
+              </p>
+              
+              <div className="border-2 border-dashed border-gray-300 rounded-md p-6 bg-white">
+                <div className="flex flex-col items-center justify-center text-center">
+                  <Upload className="h-10 w-10 text-gray-400 mb-4" />
+                  <p className="text-sm mb-2">Drag and drop or click to upload</p>
+                  <p className="text-xs text-gray-500 mb-4">PDF or DOCX files</p>
+                  
+                  <label htmlFor="contract-upload">
+                    <Button variant="outline" className="bg-black hover:bg-gray-800 text-white">
+                      <FileText className="mr-2 h-4 w-4" />
+                      Select Contract Files
+                    </Button>
+                    <input 
+                      id="contract-upload" 
+                      name="contract-upload" 
+                      type="file" 
+                      className="sr-only" 
+                      multiple
+                      onChange={handleContractFileChange}
+                    />
+                  </label>
+                </div>
+              </div>
+              
+              {contractFiles.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-sm font-medium mb-2">Selected Contract Files:</p>
+                  <div className="space-y-2">
+                    {contractFiles.map((file, index) => (
+                      <div key={index} className="flex items-center p-2 rounded-md bg-white border border-gray-200">
+                        <Check className="h-4 w-4 text-green-500 mr-2" />
+                        <span className="text-sm">{file.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <Separator className="my-6" />
+          
+          {/* Payment Section */}
+          <div>
+            <h4 className="text-base font-medium mb-3">Payment</h4>
+            
+            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-4">
+              <div className="flex flex-col items-center justify-center text-center mb-4">
+                <CreditCard className="h-12 w-12 text-blue-500 mb-4" />
+                <h5 className="text-lg font-medium mb-1">Process Payment</h5>
+                <p className="text-gray-600 text-sm">Complete payment to process campaign</p>
+              </div>
+              
+              <div className="border border-gray-200 rounded-md p-4 mb-6">
+                <div className="flex justify-between items-center mb-2">
+                  <h6 className="font-medium">Campaign Invoice</h6>
+                  <span className="text-gray-500 text-sm">#{order.id.substring(0, 8)}</span>
+                </div>
+                
+                <div className="flex justify-between py-2 border-b border-gray-100">
+                  <span className="text-gray-600">Campaign cost</span>
+                  <span>{order.currency} {order.budget.toLocaleString()}</span>
+                </div>
+                
+                <div className="flex justify-between pt-2 font-medium">
+                  <span>Total</span>
+                  <span>{order.currency} {order.budget.toLocaleString()}</span>
+                </div>
+              </div>
+              
+              <Button 
+                className="w-full bg-gray-700 hover:bg-gray-800 text-white"
+                disabled={contractFiles.length === 0 || briefFiles.length === 0 || isLoading}
+                onClick={initiatePayment}
+              >
+                <CreditCard className="mr-2 h-4 w-4" />
+                Process Payment
+              </Button>
+            </div>
+            
+            <div className="bg-blue-50 border border-blue-100 rounded p-4 flex items-start">
+              <Info className="h-5 w-5 text-blue-500 mr-3 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-blue-700">
+                Campaign will automatically progress once all steps are completed. Please upload the required documents and complete payment.
               </p>
             </div>
           </div>
-        </div>
-        
-        {/* Submit Button */}
-        <Button 
-          className="w-full bg-black text-white hover:bg-gray-800 flex items-center justify-center gap-2"
-          disabled={contractFiles.length === 0 || briefFiles.length === 0}
-          onClick={initiatePayment}
-        >
-          <CreditCard className="h-4 w-4" />
-          Continue to Payment
-        </Button>
-        
-        <p className="text-xs text-gray-500 text-center mt-3">
-          By proceeding, you agree to the terms and conditions of this campaign.
-        </p>
-      </div>
+        </CardContent>
+      </Card>
       
       {/* Payment Dialog */}
       <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
