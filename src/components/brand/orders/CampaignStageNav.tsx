@@ -30,7 +30,7 @@ const CampaignStageNav: React.FC<CampaignStageNavProps> = ({
   const currentStage = stages[currentStageIndex];
   const isContractPaymentStage = currentStage === 'contract_payment';
   
-  // Conditional message for Contract & Payment stage
+  // Simplified message for stage info
   const getStageMessage = () => {
     if (isContractPaymentStage) {
       return "Complete all required steps to proceed";
@@ -44,48 +44,34 @@ const CampaignStageNav: React.FC<CampaignStageNavProps> = ({
         <Button variant="outline" size="sm" onClick={onClose}>
           <ChevronLeft className="h-4 w-4 mr-1" /> Back to campaigns
         </Button>
-        <div className="flex space-x-2">
+        
+        <div className="flex space-x-3">
           {canMovePrevious && (
             <Button 
               variant="outline" 
               size="sm" 
               onClick={onMovePrevious}
+              className="shadow-sm"
             >
-              Move to {orderStageLabels[previousStage!]}
+              <ChevronLeft className="h-4 w-4 mr-1" /> Previous Stage
             </Button>
           )}
+          
           {canMoveNext && !isContractPaymentStage && (
             <Button 
               size="sm" 
               onClick={onMoveNext}
+              className="shadow-sm bg-black text-white hover:bg-gray-800"
             >
-              Move to {orderStageLabels[nextStage!]} <ChevronRight className="h-4 w-4 ml-1" />
+              Complete Next Steps <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           )}
         </div>
       </div>
+      
       <div className="border-t bg-gray-50 flex justify-between p-4 mt-4">
         <div className="text-sm text-gray-500">
           {getStageMessage()}
-        </div>
-        <div className="flex space-x-2">
-          {canMovePrevious && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onMovePrevious}
-            >
-              Previous Stage
-            </Button>
-          )}
-          {canMoveNext && !isContractPaymentStage && (
-            <Button 
-              size="sm" 
-              onClick={onMoveNext}
-            >
-              Next Stage
-            </Button>
-          )}
         </div>
       </div>
     </div>
