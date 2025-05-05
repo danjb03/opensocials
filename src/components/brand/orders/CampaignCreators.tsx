@@ -67,13 +67,14 @@ const CampaignCreators: React.FC<CampaignCreatorsProps> = ({ creators, orderId }
 
       if (creatorError) throw creatorError;
 
-      // Create a formal invitation for the creator
+      // Instead of using creator_invitations table (which doesn't exist),
+      // we'll use the brand_creator_connections table with a specific status
       const { error } = await supabase
-        .from('creator_invitations')
+        .from('brand_creator_connections')
         .insert({
           creator_id: creatorId,
-          campaign_id: orderId,
-          status: 'pending',
+          brand_id: (await supabase.auth.getUser()).data.user?.id,
+          status: 'invited',
           created_at: new Date().toISOString()
         });
 
