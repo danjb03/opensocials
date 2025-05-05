@@ -10,7 +10,7 @@ export const useOrderActions = () => {
   const queryClient = useQueryClient();
 
   // Handle moving order to a different stage
-  const { mutate: handleMoveStage } = useMutation({
+  const { mutate } = useMutation({
     mutationFn: async ({ id, newStage }: { id: string, newStage: OrderStage }) => {
       // Map order stage back to project status
       let projectStatus: string;
@@ -64,6 +64,11 @@ export const useOrderActions = () => {
       });
     }
   });
+
+  // Create a wrapper function with the expected signature
+  const handleMoveStage = (id: string, newStage: OrderStage) => {
+    mutate({ id, newStage });
+  };
 
   return {
     handleMoveStage

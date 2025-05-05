@@ -1,5 +1,5 @@
 
-import { OrderStage, Order, projectToOrder, Creator, ContentItem } from '@/types/orders';
+import { OrderStage, Order, Creator, ContentItem } from '@/types/orders';
 import { Project } from '@/types/projects';
 
 // Helper function to calculate progress percentage based on stage
@@ -81,4 +81,31 @@ export const generateMockContentItems = (projectId: string): ContentItem[] => {
   }
   
   return [];
+};
+
+// Map a project from database to Order interface for the UI
+export const projectToOrder = (project: Project): Order => {
+  // Map project status to order stage
+  const stage: OrderStage = mapProjectStatusToOrderStage(project.status || 'new');
+  
+  // Generate mock creators and content items for demo purposes
+  // In a real implementation, these would be fetched from the database
+  const creators = generateMockCreators(project.id);
+  const contentItems = generateMockContentItems(project.id);
+  
+  // Map project to order
+  return {
+    id: project.id,
+    title: project.name,
+    description: project.description || '',
+    createdAt: project.created_at ? new Date(project.created_at).toISOString() : new Date().toISOString(),
+    stage: stage,
+    progress: getStageProgress(stage),
+    budget: project.budget || 0,
+    currency: project.currency || 'USD',
+    dueDate: project.end_date,
+    creators: creators,
+    platformsList: project.platforms || [],
+    contentItems: contentItems
+  };
 };
