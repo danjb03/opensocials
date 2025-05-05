@@ -30,41 +30,41 @@ const CreatorCard: React.FC<CreatorCardProps> = ({ creator, onNotifyInterest }) 
     switch(status) {
       case 'accepted':
       case 'completed':
-        return <CheckCircle className="h-4 w-4 mr-1" />;
+        return <CheckCircle className="h-4 w-4 mr-1.5" />;
       case 'declined':
-        return <XCircle className="h-4 w-4 mr-1" />;
+        return <XCircle className="h-4 w-4 mr-1.5" />;
       default:
-        return <Clock className="h-4 w-4 mr-1" />;
+        return <Clock className="h-4 w-4 mr-1.5" />;
     }
   };
 
   return (
-    <div className="rounded-md border p-3">
-      <div className="flex items-center justify-between mb-2">
+    <div className="rounded-xl border border-gray-200 hover:border-blue-200 p-4 shadow-sm hover:shadow-md transition-all">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center">
           <img 
             src={creator.imageUrl} 
             alt={creator.name} 
-            className="h-10 w-10 rounded-full object-cover mr-3"
+            className="h-12 w-12 rounded-full object-cover mr-3 border-2 border-white shadow-sm"
           />
           <div>
-            <p className="font-medium">{creator.name}</p>
+            <p className="font-semibold text-gray-900">{creator.name}</p>
             <p className="text-sm text-gray-500">{creator.platform}</p>
           </div>
         </div>
         <Badge 
           variant="outline" 
-          className={`flex items-center ${getStatusColor(creator.status)}`}
+          className={`flex items-center px-2.5 py-1 rounded-full ${getStatusColor(creator.status)}`}
         >
           {getStatusIcon(creator.status)}
-          <span className="capitalize">{creator.status}</span>
+          <span className="capitalize font-medium">{creator.status}</span>
         </Badge>
       </div>
-      <div className="flex justify-end">
+      <div className="flex justify-end mt-2">
         <Button 
           size="sm" 
           variant="outline" 
-          className="flex items-center gap-1 text-xs"
+          className="flex items-center gap-1 text-xs bg-white hover:bg-gray-50 border-gray-200 hover:border-blue-300 rounded-lg shadow-sm"
           onClick={() => onNotifyInterest(creator.id, creator.name)}
         >
           <Bell className="h-3.5 w-3.5 mr-1" />

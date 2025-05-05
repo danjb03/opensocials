@@ -73,26 +73,26 @@ const ContractPaymentStage: React.FC<ContractPaymentStageProps> = ({
 
   return (
     <div className="space-y-6">
-      <Card className="bg-[#f7f9fc] border-0">
+      <Card className="bg-[#f8fafc] border border-gray-200 rounded-xl shadow-sm overflow-hidden">
         <CardContent className="p-6">
-          <h3 className="text-xl font-semibold text-black mb-6">Contract & Payment</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-6">Contract & Payment</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             {/* Campaign Brief Upload Section */}
-            <div>
-              <h4 className="text-base font-medium mb-2">Campaign Brief</h4>
+            <div className="space-y-3">
+              <h4 className="text-base font-semibold text-gray-800 mb-2">Campaign Brief</h4>
               <p className="text-gray-600 text-sm mb-4">
                 Upload the campaign brief document with all project details
               </p>
               
-              <div className="border-2 border-dashed border-gray-300 rounded-md p-6 bg-white">
+              <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 bg-white hover:border-blue-300 transition-colors">
                 <div className="flex flex-col items-center justify-center text-center">
-                  <Upload className="h-10 w-10 text-gray-400 mb-4" />
-                  <p className="text-sm mb-2">Drag and drop or click to upload</p>
+                  <Upload className="h-10 w-10 text-blue-500 mb-4" />
+                  <p className="text-sm font-medium mb-2">Drag and drop or click to upload</p>
                   <p className="text-xs text-gray-500 mb-4">PDF, DOCX, or PPT files</p>
                   
                   <label htmlFor="brief-upload">
-                    <Button variant="outline" className="bg-black hover:bg-gray-800 text-white">
+                    <Button variant="outline" className="bg-blue-600 hover:bg-blue-700 text-white border-0">
                       <FileText className="mr-2 h-4 w-4" />
                       Select Brief Files
                     </Button>
@@ -113,7 +113,7 @@ const ContractPaymentStage: React.FC<ContractPaymentStageProps> = ({
                   <p className="text-sm font-medium mb-2">Selected Brief Files:</p>
                   <div className="space-y-2">
                     {briefFiles.map((file, index) => (
-                      <div key={index} className="flex items-center p-2 rounded-md bg-white border border-gray-200">
+                      <div key={index} className="flex items-center p-2 rounded-lg bg-white border border-gray-200 shadow-sm">
                         <Check className="h-4 w-4 text-green-500 mr-2" />
                         <span className="text-sm">{file.name}</span>
                       </div>
@@ -124,20 +124,20 @@ const ContractPaymentStage: React.FC<ContractPaymentStageProps> = ({
             </div>
             
             {/* Contract Documents Upload Section */}
-            <div>
-              <h4 className="text-base font-medium mb-2">Contract Documents</h4>
+            <div className="space-y-3">
+              <h4 className="text-base font-semibold text-gray-800 mb-2">Contract Documents</h4>
               <p className="text-gray-600 text-sm mb-4">
                 Upload the signed contract and any other legal documents
               </p>
               
-              <div className="border-2 border-dashed border-gray-300 rounded-md p-6 bg-white">
+              <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 bg-white hover:border-blue-300 transition-colors">
                 <div className="flex flex-col items-center justify-center text-center">
-                  <Upload className="h-10 w-10 text-gray-400 mb-4" />
-                  <p className="text-sm mb-2">Drag and drop or click to upload</p>
+                  <Upload className="h-10 w-10 text-blue-500 mb-4" />
+                  <p className="text-sm font-medium mb-2">Drag and drop or click to upload</p>
                   <p className="text-xs text-gray-500 mb-4">PDF or DOCX files</p>
                   
                   <label htmlFor="contract-upload">
-                    <Button variant="outline" className="bg-black hover:bg-gray-800 text-white">
+                    <Button variant="outline" className="bg-blue-600 hover:bg-blue-700 text-white border-0">
                       <FileText className="mr-2 h-4 w-4" />
                       Select Contract Files
                     </Button>
@@ -158,7 +158,7 @@ const ContractPaymentStage: React.FC<ContractPaymentStageProps> = ({
                   <p className="text-sm font-medium mb-2">Selected Contract Files:</p>
                   <div className="space-y-2">
                     {contractFiles.map((file, index) => (
-                      <div key={index} className="flex items-center p-2 rounded-md bg-white border border-gray-200">
+                      <div key={index} className="flex items-center p-2 rounded-lg bg-white border border-gray-200 shadow-sm">
                         <Check className="h-4 w-4 text-green-500 mr-2" />
                         <span className="text-sm">{file.name}</span>
                       </div>
@@ -173,34 +173,36 @@ const ContractPaymentStage: React.FC<ContractPaymentStageProps> = ({
           
           {/* Payment Section */}
           <div>
-            <h4 className="text-base font-medium mb-3">Payment</h4>
+            <h4 className="text-base font-semibold text-gray-800 mb-4">Payment</h4>
             
-            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-4">
-              <div className="flex flex-col items-center justify-center text-center mb-4">
-                <CreditCard className="h-12 w-12 text-blue-500 mb-4" />
-                <h5 className="text-lg font-medium mb-1">Process Payment</h5>
+            <div className="bg-white border border-gray-200 rounded-xl p-6 mb-4 shadow-sm">
+              <div className="flex flex-col items-center justify-center text-center mb-6">
+                <div className="bg-blue-50 p-3 rounded-full mb-4">
+                  <CreditCard className="h-8 w-8 text-blue-600" />
+                </div>
+                <h5 className="text-lg font-semibold mb-1 text-gray-900">Process Payment</h5>
                 <p className="text-gray-600 text-sm">Complete payment to process campaign</p>
               </div>
               
-              <div className="border border-gray-200 rounded-md p-4 mb-6">
-                <div className="flex justify-between items-center mb-2">
-                  <h6 className="font-medium">Campaign Invoice</h6>
+              <div className="border border-gray-200 rounded-xl p-4 mb-6 bg-gray-50">
+                <div className="flex justify-between items-center mb-3">
+                  <h6 className="font-semibold text-gray-900">Campaign Invoice</h6>
                   <span className="text-gray-500 text-sm">#{order.id.substring(0, 8)}</span>
                 </div>
                 
                 <div className="flex justify-between py-2 border-b border-gray-100">
                   <span className="text-gray-600">Campaign cost</span>
-                  <span>{order.currency} {order.budget.toLocaleString()}</span>
+                  <span className="font-medium">{order.currency} {order.budget.toLocaleString()}</span>
                 </div>
                 
-                <div className="flex justify-between pt-2 font-medium">
+                <div className="flex justify-between pt-3 font-semibold text-gray-900">
                   <span>Total</span>
                   <span>{order.currency} {order.budget.toLocaleString()}</span>
                 </div>
               </div>
               
               <Button 
-                className="w-full bg-gray-700 hover:bg-gray-800 text-white"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-base py-2.5 shadow-sm transition-all"
                 disabled={contractFiles.length === 0 || briefFiles.length === 0 || isLoading}
                 onClick={initiatePayment}
               >
@@ -209,7 +211,7 @@ const ContractPaymentStage: React.FC<ContractPaymentStageProps> = ({
               </Button>
             </div>
             
-            <div className="bg-blue-50 border border-blue-100 rounded p-4 flex items-start">
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start">
               <Info className="h-5 w-5 text-blue-500 mr-3 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-blue-700">
                 Campaign will automatically progress once all steps are completed. Please upload the required documents and complete payment.
@@ -221,18 +223,18 @@ const ContractPaymentStage: React.FC<ContractPaymentStageProps> = ({
       
       {/* Payment Dialog */}
       <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md rounded-xl">
           <DialogHeader>
-            <DialogTitle>Complete Payment</DialogTitle>
+            <DialogTitle className="text-xl font-bold">Complete Payment</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="rounded-md bg-gray-50 p-4 border">
-              <h4 className="font-medium mb-2">Campaign: {order.title}</h4>
+            <div className="rounded-xl bg-gray-50 p-4 border border-gray-200">
+              <h4 className="font-semibold mb-2 text-gray-900">Campaign: {order.title}</h4>
               <div className="flex justify-between mb-1">
-                <span>Deposit (50%)</span>
-                <span>{order.currency} {(order.budget * 0.5).toLocaleString()}</span>
+                <span className="text-gray-600">Deposit (50%)</span>
+                <span className="font-medium">{order.currency} {(order.budget * 0.5).toLocaleString()}</span>
               </div>
-              <div className="border-t pt-2 mt-2 flex justify-between font-medium">
+              <div className="border-t pt-2 mt-2 flex justify-between font-semibold text-gray-900">
                 <span>Total Due Now</span>
                 <span>{order.currency} {(order.budget * 0.5).toLocaleString()}</span>
               </div>
@@ -243,7 +245,7 @@ const ContractPaymentStage: React.FC<ContractPaymentStageProps> = ({
             </p>
             
             <Button
-              className="w-full bg-[#5469d4] hover:bg-[#4a5bc7] text-white"
+              className="w-full bg-[#5469d4] hover:bg-[#4a5bc7] text-white font-medium py-2.5 rounded-lg shadow-sm"
               onClick={handleProcessPayment}
               disabled={isLoading}
             >
@@ -259,15 +261,15 @@ const ContractPaymentStage: React.FC<ContractPaymentStageProps> = ({
       
       {/* Success Dialog */}
       <AlertDialog open={isPaymentSuccessOpen} onOpenChange={setIsPaymentSuccessOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Payment Successful!</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-xl font-bold text-green-600">Payment Successful!</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600">
               Your payment has been processed and the campaign is now ready to move to the planning stage.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={handlePaymentSuccess}>Continue</AlertDialogAction>
+            <AlertDialogAction onClick={handlePaymentSuccess} className="bg-blue-600 hover:bg-blue-700 text-white font-medium">Continue</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
