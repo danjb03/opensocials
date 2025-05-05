@@ -7,6 +7,7 @@ import CampaignSummary from './CampaignSummary';
 import CampaignCreators from './CampaignCreators';
 import CampaignContent from './CampaignContent';
 import CampaignStageNav from './CampaignStageNav';
+import ContractPaymentStage from './ContractPaymentStage';
 
 interface CampaignDetailProps {
   order: Order;
@@ -41,6 +42,37 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({ order, onClose, onMoveS
     }
   };
 
+  // Show Contract & Payment stage component when the campaign is in that stage
+  if (order.stage === 'contract_payment') {
+    return (
+      <div className="space-y-6">
+        <CampaignStageNav
+          currentStageIndex={currentStageIndex}
+          stages={stages}
+          previousStage={previousStage}
+          nextStage={nextStage}
+          onClose={onClose}
+          onMovePrevious={handleMovePrevious}
+          onMoveNext={handleMoveNext}
+          canMovePrevious={canMoveToPrevious}
+          canMoveNext={false} // Disable next button as it's handled by the ContractPaymentStage component
+        />
+
+        <Card>
+          <CardHeader>
+            <CampaignSummary order={order} />
+          </CardHeader>
+        </Card>
+        
+        <ContractPaymentStage 
+          order={order} 
+          onMoveStage={onMoveStage} 
+        />
+      </div>
+    );
+  }
+
+  // Default view for other stages
   return (
     <div className="space-y-6">
       <CampaignStageNav

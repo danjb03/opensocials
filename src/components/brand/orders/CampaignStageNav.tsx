@@ -27,6 +27,17 @@ const CampaignStageNav: React.FC<CampaignStageNavProps> = ({
   canMovePrevious,
   canMoveNext,
 }) => {
+  const currentStage = stages[currentStageIndex];
+  const isContractPaymentStage = currentStage === 'contract_payment';
+  
+  // Conditional message for Contract & Payment stage
+  const getStageMessage = () => {
+    if (isContractPaymentStage) {
+      return "Complete all required steps to proceed";
+    }
+    return `Stage: ${currentStageIndex + 1} of ${stages.length}`;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -43,7 +54,7 @@ const CampaignStageNav: React.FC<CampaignStageNavProps> = ({
               Move to {orderStageLabels[previousStage!]}
             </Button>
           )}
-          {canMoveNext && (
+          {canMoveNext && !isContractPaymentStage && (
             <Button 
               size="sm" 
               onClick={onMoveNext}
@@ -55,7 +66,7 @@ const CampaignStageNav: React.FC<CampaignStageNavProps> = ({
       </div>
       <div className="border-t bg-gray-50 flex justify-between p-4 mt-4">
         <div className="text-sm text-gray-500">
-          Stage: {currentStageIndex + 1} of {stages.length}
+          {getStageMessage()}
         </div>
         <div className="flex space-x-2">
           {canMovePrevious && (
@@ -67,7 +78,7 @@ const CampaignStageNav: React.FC<CampaignStageNavProps> = ({
               Previous Stage
             </Button>
           )}
-          {canMoveNext && (
+          {canMoveNext && !isContractPaymentStage && (
             <Button 
               size="sm" 
               onClick={onMoveNext}
