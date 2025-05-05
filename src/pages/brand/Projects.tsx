@@ -5,7 +5,7 @@ import BrandLayout from '@/components/layouts/BrandLayout';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import CreateProjectForm from '@/components/brand/CreateProjectForm';
 import { useAuth } from '@/lib/auth';
-import { ProjectsTable } from '@/components/brand/ProjectsTable';
+import { ProjectsTable } from '@/components/brand/projects';
 import { ProjectsHeader } from '@/components/brand/ProjectsHeader';
 import { EmptyProjectsState } from '@/components/brand/EmptyProjectsState';
 import { useProjects } from '@/hooks/useProjects';

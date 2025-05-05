@@ -1,22 +1,19 @@
+
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Eye, Star, Calendar, DollarSign, Users, BarChart2 } from 'lucide-react';
-import { formatCurrency } from '@/utils/project';
-import { statusColors, type ProjectStatus } from '@/types/projects';
-import type { Project } from '@/types/projects';
+import { Calendar, DollarSign, Users, BarChart2 } from 'lucide-react';
+import { Project } from '@/types/projects';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { ProjectRow } from './ProjectRow';
 
 interface ProjectsTableProps {
   projects: Project[];
@@ -29,17 +26,6 @@ export const ProjectsTable = ({ projects, isLoading }: ProjectsTableProps) => {
   const [priorityCount, setPriorityCount] = useState<number>(
     projects.filter(p => p.is_priority).length
   );
-
-  // Helper function to render status badge
-  const renderStatus = (status: ProjectStatus) => {
-    const colorClass = statusColors[status] || "bg-gray-100 text-gray-800";
-    
-    return (
-      <Badge className={colorClass + " capitalize"}>
-        {status.replace(/_/g, ' ')}
-      </Badge>
-    );
-  };
 
   // Updated to redirect to campaigns section showing the specific campaign
   const handleViewProject = (projectId: string) => {
@@ -173,77 +159,13 @@ export const ProjectsTable = ({ projects, isLoading }: ProjectsTableProps) => {
                   </TableRow>
                 )}
                 
-                <TableRow 
-                  key={project.id} 
-                  className={`hover:bg-gray-50/50 ${project.is_priority ? "bg-amber-50/30" : ""}`}
-                >
-                  <TableCell className="font-medium">
-                    <div className="flex flex-col">
-                      <span>{project.name}</span>
-                      <span className="text-xs text-gray-500">{project.campaign_type}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      {project.start_date && (
-                        <div>
-                          <span className="text-gray-700 font-medium">Start:</span>{" "}
-                          {new Date(project.start_date).toLocaleDateString()}
-                        </div>
-                      )}
-                      {project.end_date && (
-                        <div>
-                          <span className="text-gray-700 font-medium">End:</span>{" "}
-                          {new Date(project.end_date).toLocaleDateString()}
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="font-medium">{formatCurrency(project.budget, project.currency)}</div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center">
-                      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-                        Assignment Pending
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {renderStatus(project.status as ProjectStatus)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 h-2 rounded-full" style={{ width: '35%' }}></div>
-                      </div>
-                      <span className="text-xs text-gray-500">35%</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className={`flex items-center gap-1 hover:bg-gray-100 transition-colors ${
-                          project.is_priority ? "border-yellow-400 text-yellow-600" : ""
-                        }`}
-                        onClick={() => handleTogglePriority(project)}
-                      >
-                        <Star className={`h-4 w-4 ${project.is_priority ? "fill-yellow-400 text-yellow-400" : ""}`} />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => handleViewProject(project.id)}
-                        className="flex items-center gap-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700"
-                      >
-                        <Eye className="h-4 w-4" />
-                        View
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
+                <ProjectRow 
+                  key={project.id}
+                  project={project}
+                  isPrioritySeparator={isPrioritySeparator}
+                  onTogglePriority={handleTogglePriority}
+                  onViewProject={handleViewProject}
+                />
               </>
             );
           })}
