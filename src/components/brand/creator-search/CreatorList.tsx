@@ -20,7 +20,7 @@ export const CreatorList = ({ creators, selectedCreators, onToggleCreator, onVie
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {creators.map(creator => (
         <CreatorListItem
           key={creator.id}

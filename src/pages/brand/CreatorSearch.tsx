@@ -13,7 +13,7 @@ import { useCreatorProfileModal } from '@/hooks/useCreatorProfileModal';
 import { useSearchParams } from 'react-router-dom';
 
 const CreatorSearch = () => {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list'); // Changed default to 'list'
   const [searchParams] = useSearchParams();
   const campaignId = searchParams.get('campaign');
   

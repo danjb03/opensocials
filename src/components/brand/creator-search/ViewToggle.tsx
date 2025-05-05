@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Grid2x2, List } from 'lucide-react';
+import { LayoutGrid, LayoutList } from 'lucide-react';
 
 type ViewToggleProps = {
   viewMode: 'grid' | 'list';
@@ -10,21 +10,24 @@ type ViewToggleProps = {
 
 export const ViewToggle = ({ viewMode, onViewChange }: ViewToggleProps) => {
   return (
-    <div className="flex items-center">
+    <div className="flex items-center bg-gray-50 p-1 rounded-lg">
       <Button
-        variant={viewMode === 'grid' ? 'default' : 'outline'}
+        variant={viewMode === 'grid' ? 'default' : 'ghost'}
         size="sm"
-        className="mr-2"
+        className="mr-1 px-3"
         onClick={() => onViewChange('grid')}
       >
-        <Grid2x2 className="h-4 w-4" />
+        <LayoutGrid className="h-4 w-4 mr-1.5" />
+        <span className="text-xs">Grid</span>
       </Button>
       <Button
-        variant={viewMode === 'list' ? 'default' : 'outline'}
+        variant={viewMode === 'list' ? 'default' : 'ghost'}
         size="sm"
+        className="px-3"
         onClick={() => onViewChange('list')}
       >
-        <List className="h-4 w-4" />
+        <LayoutList className="h-4 w-4 mr-1.5" />
+        <span className="text-xs">List</span>
       </Button>
     </div>
   );
