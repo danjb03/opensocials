@@ -42,7 +42,7 @@ type CreatorCardProps = {
 
 export const CreatorCard = ({ creator, isSelected, onToggleSelect, onViewProfile }: CreatorCardProps) => {
   return (
-    <Card key={creator.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 group border-gray-100">
+    <Card key={creator.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 group border-gray-100">
       <div className="relative aspect-video">
         <img 
           src={creator.imageUrl} 
@@ -56,15 +56,15 @@ export const CreatorCard = ({ creator, isSelected, onToggleSelect, onViewProfile
           </div>
         )}
         
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-3">
           <div className="flex items-center">
-            <Avatar className="h-10 w-10 border-2 border-white mr-3">
+            <Avatar className="h-8 w-8 border-2 border-white mr-2">
               <AvatarImage src={creator.imageUrl} alt={creator.name} />
               <AvatarFallback>{creator.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-bold text-lg text-white">{creator.name}</h3>
-              <div className="flex items-center text-sm text-white/90">
+              <h3 className="font-bold text-base text-white">{creator.name}</h3>
+              <div className="flex items-center text-xs text-white/90">
                 <span className="flex items-center">
                   {creator.platform} · {creator.followers}
                 </span>
@@ -74,52 +74,52 @@ export const CreatorCard = ({ creator, isSelected, onToggleSelect, onViewProfile
         </div>
       </div>
       
-      <CardContent className="p-5">
-        <div className="flex items-center justify-between mb-3">
-          <div className="bg-gray-50 px-3 py-1 rounded-full text-sm">
+      <CardContent className="p-3">
+        <div className="flex items-center justify-between mb-2">
+          <div className="bg-gray-50 px-2 py-0.5 rounded-full text-xs">
             <span className="font-medium text-primary">{creator.engagement}</span> engagement
           </div>
           
           <Button 
             variant="ghost" 
             size="sm" 
-            className="text-primary hover:bg-primary/10"
+            className="text-primary hover:bg-primary/10 h-7 px-2"
             onClick={() => onViewProfile(creator.id)}
           >
-            <Info className="h-4 w-4 mr-1" />
+            <Info className="h-3 w-3 mr-1" />
             Profile
           </Button>
         </div>
         
-        <div className="flex flex-wrap gap-1.5 mt-3 mb-4">
+        <div className="flex flex-wrap gap-1 mt-2 mb-3">
           {creator.skills.slice(0, 3).map(skill => (
-            <span key={skill} className="bg-gray-100 text-gray-800 text-xs px-2.5 py-0.5 rounded-full font-medium">
+            <span key={skill} className="bg-gray-100 text-gray-800 text-xs px-2 py-0.5 rounded-full font-medium">
               {skill}
             </span>
           ))}
           {creator.skills.length > 3 && (
-            <span className="text-xs px-2.5 py-0.5 text-muted-foreground">
+            <span className="text-xs px-2 py-0.5 text-muted-foreground">
               +{creator.skills.length - 3} more
             </span>
           )}
         </div>
         
         <Button
-          className="w-full mt-3 relative overflow-hidden group"
+          className="w-full mt-2 relative overflow-hidden group h-8 text-xs"
           variant={isSelected ? "default" : "outline"}
           onClick={() => onToggleSelect(creator.id)}
         >
           {isSelected ? (
             <>
               <span className="flex items-center">
-                <Check className="mr-2 h-4 w-4" />
+                <Check className="mr-1 h-3 w-3" />
                 Selected
               </span>
             </>
           ) : (
             <>
               <span className="relative z-10 flex items-center">
-                <PlusCircle className="mr-2 h-4 w-4" />
+                <PlusCircle className="mr-1 h-3 w-3" />
                 Add to Project
               </span>
             </>
