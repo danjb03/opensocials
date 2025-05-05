@@ -84,7 +84,7 @@ const BrandLayout = ({ children }: BrandLayoutProps) => {
             <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
               <Link to="/brand/orders" className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
-                {!isSidebarCollapsed && <span>Orders</span>}
+                {!isSidebarCollapsed && <span>Campaigns</span>}
               </Link>
             </Button>
             
