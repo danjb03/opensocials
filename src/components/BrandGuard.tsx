@@ -73,21 +73,15 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
 
         console.log('📦 Raw profile fetch:', profile);
 
-        const isApproved = profile.status === 'accepted' || profile.status === 'approved';
-        const missingRequiredFields = REQUIRED_BRAND_FIELDS.filter(field => !profile[field]);
-        const profileComplete = profile.is_complete === true;
-
-        console.log('❓ Missing fields:', missingRequiredFields);
-        console.log('✅ is_complete:', profileComplete);
-        console.log('🔑 isApproved:', isApproved);
-
-        if (missingRequiredFields.length > 0 || !profileComplete || !isApproved) {
-          console.log('🚨 Profile incomplete or not approved, redirecting to setup');
+        // Simplified check: Use is_complete as the primary indicator
+        // Only redirect if profile is explicitly not complete
+        if (profile.is_complete !== true) {
+          console.log('🚨 Profile marked as incomplete, redirecting to setup');
           navigate('/brand/setup-profile');
           return;
         }
 
-        console.log('✅ All checks passed. Showing dashboard.');
+        console.log('✅ Profile is complete, allowing access to dashboard');
         setIsChecking(false);
       } catch (err) {
         console.error('❌ Error in guard logic:', err);

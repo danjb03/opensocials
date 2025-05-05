@@ -23,6 +23,7 @@ const industries = [
 
 const SetupProfile = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const {
     companyName,
     setCompanyName,
@@ -38,6 +39,38 @@ const SetupProfile = () => {
     handleSkipForNow,
     handleSubmit
   } = useProfileSetup();
+
+  // Check if profile is already complete and redirect if necessary
+  useEffect(() => {
+    const checkProfileCompletion = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('is_complete')
+          .eq('id', user.id)
+          .eq('role', 'brand')
+          .maybeSingle();
+          
+        if (error) {
+          console.error('Error checking profile completion:', error);
+          return;
+        }
+        
+        // If profile is already marked as complete, redirect to dashboard
+        if (data?.is_complete === true) {
+          console.log('Profile is already complete, redirecting from setup page');
+          toast.info('Your profile is already set up');
+          navigate('/brand');
+        }
+      } catch (error) {
+        console.error('Error in profile completion check:', error);
+      }
+    };
+    
+    checkProfileCompletion();
+  }, [user, navigate]);
 
   // Debug check on initial load to verify profile status
   useEffect(() => {

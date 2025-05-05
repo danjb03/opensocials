@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import BrandGuard from './BrandGuard';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,13 +24,8 @@ const BrandOnboardingGuard = ({ children, redirectTo = '/auth' }) => {
         return;
       }
 
-      const required = ['company_name', 'website', 'logo_url', 'industry'];
-      const missing = required.filter(f => !data?.[f]);
-
       console.log('📦 Profile:', data);
-      console.log('❓ Missing:', missing);
       console.log('✅ is_complete:', data?.is_complete);
-      console.log('🟢 status:', data?.status);
       console.log('🚪 bypass_brand_check:', localStorage.getItem('bypass_brand_check'));
     };
 

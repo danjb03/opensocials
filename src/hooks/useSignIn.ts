@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 
@@ -63,7 +62,7 @@ export function useSignIn() {
       // Continue with the rest of the sign in process
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, is_complete')
         .eq('id', data.user.id)
         .maybeSingle();
 
@@ -73,21 +72,17 @@ export function useSignIn() {
         return;
       }
 
-      // Also check the user role status to ensure it's approved
-      const { data: roleData, error: roleError } = await supabase
-        .from('user_roles')
-        .select('status')
-        .eq('user_id', data.user.id)
-        .maybeSingle();
+      // For brand users, check if their profile is complete
+      if (profileData?.role === 'brand') {
+        console.log('Brand user logged in, checking profile completion:', profileData);
         
-      if (roleError) {
-        console.error('Error fetching role status:', roleError);
-      }
-
-      // If brand user and status is not approved, redirect to setup page
-      if (profileData?.role === 'brand' && roleData?.status !== 'approved') {
-        window.location.href = '/brand/setup-profile';
-        return;
+        // Only redirect to setup page if is_complete is explicitly false
+        // Otherwise, go to the dashboard
+        if (profileData.is_complete === false) {
+          window.location.href = '/brand/setup-profile';
+          setIsLoading(false);
+          return;
+        }
       }
 
       // Route based on role

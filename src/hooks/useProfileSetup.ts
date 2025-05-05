@@ -47,6 +47,13 @@ export const useProfileSetup = () => {
           setWebsite(data.website || '');
           setIndustry(data.industry || '');
           setLogoUrl(data.logo_url || null);
+          
+          // If profile is already complete, redirect to dashboard
+          if (data.is_complete === true) {
+            console.log('Profile is already complete, redirecting to dashboard');
+            toast.info('Your profile is already set up');
+            redirectToDashboard();
+          }
         }
       } catch (error) {
         console.error('❌ Error checking brand profile:', error);
@@ -54,7 +61,7 @@ export const useProfileSetup = () => {
     };
     
     checkExistingProfile();
-  }, [user, setLogoUrl]);
+  }, [user, setLogoUrl, redirectToDashboard]);
 
   const handleSkipForNow = async () => {
     if (!user) {
@@ -68,7 +75,7 @@ export const useProfileSetup = () => {
     try {
       const profileData = {
         company_name: companyName || 'My Brand',
-        is_complete: true,
+        is_complete: true, // Always set to true when skipping
         role: 'brand',
         status: 'accepted'
       };
@@ -125,7 +132,7 @@ export const useProfileSetup = () => {
         website: website || null,
         industry: industry || null,
         logo_url: uploadedLogoUrl || logoUrl,
-        is_complete: true,
+        is_complete: true, // Always set to true when submitting
         role: 'brand',
         status: 'accepted'
       };
@@ -170,4 +177,3 @@ export const useProfileSetup = () => {
     handleSubmit
   };
 };
-

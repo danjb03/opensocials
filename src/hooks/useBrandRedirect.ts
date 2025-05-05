@@ -24,6 +24,12 @@ export const useBrandRedirect = () => {
         return;
       }
 
+      // Skip check if we're already on the setup page
+      if (location.pathname === '/brand/setup-profile') {
+        setIsChecking(false);
+        return;
+      }
+
       try {
         // Check if brand profile exists and is complete
         const { data: brandProfile } = await supabase
@@ -33,9 +39,11 @@ export const useBrandRedirect = () => {
           .eq('role', 'brand')
           .maybeSingle();
 
-        const isSetupPage = location.pathname === '/brand/setup-profile';
+        console.log('Brand profile check:', brandProfile);
 
-        if (!brandProfile?.is_complete && !isSetupPage) {
+        // Only redirect if is_complete is explicitly false
+        // If is_complete is true or null/undefined, don't redirect
+        if (brandProfile?.is_complete === false) {
           navigate('/brand/setup-profile');
         }
       } catch (err) {
