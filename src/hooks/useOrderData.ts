@@ -2,39 +2,50 @@
 import { useState, useEffect } from 'react';
 import { Order } from '@/types/orders';
 import { useToast } from '@/hooks/use-toast';
-import { generateMockOrders } from '@/utils/orderUtils';
+import { supabase } from '@/integrations/supabase/client';
+import { projectToOrder } from '@/utils/orderUtils';
+import { useQuery } from '@tanstack/react-query';
 
 export const useOrderData = () => {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Initialize orders from mock data
-  useEffect(() => {
-    const fetchOrders = async () => {
-      setIsLoading(true);
-      
+  // Fetch orders from Supabase using React Query
+  const { data: orders = [], isLoading, error } = useQuery({
+    queryKey: ['campaigns'],
+    queryFn: async () => {
       try {
-        // In a real app, you would fetch from an API here
-        const mappedOrders = generateMockOrders();
-        setOrders(mappedOrders);
+        const { data: projects, error } = await supabase
+          .from('projects')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          throw error;
+        }
+
+        // Map projects to orders
+        return projects.map(project => projectToOrder(project));
       } catch (error) {
-        console.error('Error fetching orders:', error);
+        console.error('Error fetching campaigns:', error);
         toast({
           title: 'Error',
           description: 'Failed to load campaigns',
           variant: 'destructive',
         });
-      } finally {
-        setIsLoading(false);
+        return [];
       }
-    };
-    
-    fetchOrders();
-  }, [toast]);
+    },
+    staleTime: 60000, // 1 minute
+  });
+
+  // This function is returned for backward compatibility
+  const setOrders = (updaterFn: (prev: Order[]) => Order[]) => {
+    console.log('Note: Direct state updates will not persist to the database.');
+    // In a real implementation, this would make API calls to update the database
+  };
 
   return {
-    orders,
+    orders: orders || [],
     setOrders,
     isLoading
   };

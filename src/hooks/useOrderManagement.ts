@@ -1,7 +1,6 @@
 
-import { useState, useEffect } from 'react';
-import { Order, OrderStage } from '@/types/orders';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
+import { OrderStage } from '@/types/orders';
 import { useOrderData } from './useOrderData';
 import { useOrderActions } from './useOrderActions';
 
