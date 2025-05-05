@@ -1,22 +1,24 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Clock, Bell, UserPlus } from 'lucide-react';
+import { CheckCircle, XCircle, Clock } from 'lucide-react';
 import { Creator } from '@/types/orders';
-import { Button } from '@/components/ui/button';
+import CreatorActionButtons from './CreatorActionButtons';
 
 interface CreatorCardProps {
   creator: Creator;
   onNotifyInterest: (creatorId: string, creatorName: string) => void;
   onInviteCreator?: (creatorId: string, creatorName: string) => void;
   showInviteButton?: boolean;
+  isLoading?: Record<string, boolean>;
 }
 
 const CreatorCard: React.FC<CreatorCardProps> = ({ 
   creator, 
   onNotifyInterest, 
   onInviteCreator,
-  showInviteButton = false
+  showInviteButton = false,
+  isLoading
 }) => {
   const getStatusColor = (status: string) => {
     switch(status) {
@@ -70,29 +72,15 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
           </Badge>
         )}
       </div>
-      <div className="flex justify-end mt-2 gap-2">
-        {showInviteButton && onInviteCreator && (
-          <Button 
-            size="sm" 
-            variant="default" 
-            className="flex items-center gap-1 text-xs"
-            onClick={() => onInviteCreator(creator.id, creator.name)}
-          >
-            <UserPlus className="h-3.5 w-3.5 mr-1" />
-            Invite
-          </Button>
-        )}
-        
-        <Button 
-          size="sm" 
-          variant="outline" 
-          className="flex items-center gap-1 text-xs bg-white hover:bg-gray-50 border-gray-200 hover:border-blue-300 rounded-lg shadow-sm"
-          onClick={() => onNotifyInterest(creator.id, creator.name)}
-        >
-          <Bell className="h-3.5 w-3.5 mr-1" />
-          Notify Interest
-        </Button>
-      </div>
+      
+      <CreatorActionButtons
+        creatorId={creator.id}
+        creatorName={creator.name}
+        showInviteButton={showInviteButton}
+        onNotifyInterest={onNotifyInterest}
+        onInviteCreator={onInviteCreator}
+        isLoading={isLoading}
+      />
     </div>
   );
 };

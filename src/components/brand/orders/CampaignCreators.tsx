@@ -2,11 +2,11 @@
 import React from 'react';
 import { Creator } from '@/types/orders';
 import { Button } from '@/components/ui/button';
-import { Bell, UserPlus, Search } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import CreatorCard from './CreatorCard';
+import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import CreatorCard from './CreatorCard';
+import CreatorEmptyState from './CreatorEmptyState';
+import { useCreatorInvitations } from '@/hooks/useCreatorInvitations';
 
 interface CampaignCreatorsProps {
   creators: Creator[];
@@ -14,86 +14,8 @@ interface CampaignCreatorsProps {
 }
 
 const CampaignCreators: React.FC<CampaignCreatorsProps> = ({ creators, orderId }) => {
-  const { toast } = useToast();
   const navigate = useNavigate();
-
-  const handleNotifyCreator = async (creatorId: string, creatorName: string) => {
-    try {
-      // Find creator in database by ID
-      const { data: creatorData, error: creatorError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', creatorId)
-        .single();
-
-      if (creatorError) throw creatorError;
-
-      // Create a deal to notify the creator of interest
-      const { error } = await supabase
-        .from('deals')
-        .insert({
-          creator_id: creatorId,
-          brand_id: (await supabase.auth.getUser()).data.user?.id,
-          status: 'pending',
-          title: 'Campaign interest notification',
-          value: 0, // Placeholder value, will be updated when terms are agreed
-          description: 'A brand has shown interest in working with you on a campaign.'
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Creator notified",
-        description: `${creatorName} has been notified of your interest.`,
-      });
-    } catch (error) {
-      console.error('Error notifying creator:', error);
-      toast({
-        title: "Notification failed",
-        description: "There was an error notifying the creator. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleInviteCreator = async (creatorId: string, creatorName: string) => {
-    try {
-      // Find creator in database by ID
-      const { data: creatorData, error: creatorError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', creatorId)
-        .single();
-
-      if (creatorError) throw creatorError;
-
-      // Instead of using creator_invitations table (which doesn't exist),
-      // we'll use the brand_creator_connections table with a specific status
-      const { error } = await supabase
-        .from('brand_creator_connections')
-        .insert({
-          creator_id: creatorId,
-          brand_id: (await supabase.auth.getUser()).data.user?.id,
-          status: 'invited',
-          created_at: new Date().toISOString()
-        });
-
-      if (error) throw error;
-
-      // Update local state to reflect that the creator has been invited
-      toast({
-        title: "Invitation sent",
-        description: `${creatorName} has been invited to participate in this campaign.`,
-      });
-    } catch (error) {
-      console.error('Error inviting creator:', error);
-      toast({
-        title: "Invitation failed",
-        description: "There was an error sending the invitation. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
+  const { handleNotifyCreator, handleInviteCreator, isLoading } = useCreatorInvitations();
 
   const handleFindMoreCreators = () => {
     // Navigate to creator search with the current campaign ID pre-selected
@@ -124,22 +46,11 @@ const CampaignCreators: React.FC<CampaignCreatorsProps> = ({ creators, orderId }
               onNotifyInterest={handleNotifyCreator}
               onInviteCreator={handleInviteCreator}
               showInviteButton={creator.status !== 'accepted' && creator.status !== 'declined' && creator.status !== 'completed'}
+              isLoading={isLoading}
             />
           ))
         ) : (
-          <div className="text-center py-6 bg-gray-50 rounded-lg border border-dashed">
-            <UserPlus className="h-12 w-12 mx-auto text-gray-300 mb-2" />
-            <p className="text-gray-500 mb-4">No creators assigned to this campaign yet</p>
-            <Button 
-              variant="default" 
-              size="sm" 
-              className="mx-auto"
-              onClick={handleFindMoreCreators}
-            >
-              <Search className="h-4 w-4 mr-1" />
-              Search for creators
-            </Button>
-          </div>
+          <CreatorEmptyState onFindCreators={handleFindMoreCreators} />
         )}
       </div>
     </div>
