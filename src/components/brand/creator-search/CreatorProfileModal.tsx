@@ -1,22 +1,26 @@
+
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsItem, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Creator } from '@/types/creator';
-import { Instagram, Youtube, Twitter, Facebook, ExternalLink, BookmarkPlus, MessageSquare, BarChart2, Globe } from 'lucide-react';
-import { useCreatorInvitations, useToast } from '@/hooks';
+import { Instagram, Youtube, Twitter, Facebook, ExternalLink, BookmarkPlus, MessageSquare, BarChart2, Globe, UserPlus } from 'lucide-react';
+import { useCreatorInvitations } from '@/hooks/useCreatorInvitations';
+import { useToast } from '@/hooks/use-toast';
+
 type CreatorProfileModalProps = {
   creator: Creator | null;
   isOpen: boolean;
   onClose: () => void;
   isLoading?: boolean;
 };
+
 export const CreatorProfileModal = ({
   creator,
   isOpen,
@@ -28,7 +32,7 @@ export const CreatorProfileModal = ({
   
   if (!creator && !isLoading) return null;
   
-  const handleInviteCreator = () => {
+  const inviteCreator = () => {
     if (!creator) return;
     
     handleInviteCreator(creator.id.toString(), creator.name);
@@ -243,7 +247,7 @@ export const CreatorProfileModal = ({
             <TabsContent value="campaigns">
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <p className="text-muted-foreground mb-4">No previous campaigns with this creator.</p>
-                <Button variant="outline" onClick={handleInviteCreator}>Invite to Campaign</Button>
+                <Button variant="outline" onClick={inviteCreator}>Invite to Campaign</Button>
               </div>
             </TabsContent>
           </Tabs>
@@ -254,7 +258,7 @@ export const CreatorProfileModal = ({
               Save
             </Button>
             
-            <Button className="gap-2" onClick={handleInviteCreator} disabled={inviteLoading?.[`invite-${creator.id}`]}>
+            <Button className="gap-2" onClick={inviteCreator} disabled={inviteLoading?.[`invite-${creator.id}`]}>
               {inviteLoading?.[`invite-${creator.id}`] ? (
                 <span className="flex items-center">
                   <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
