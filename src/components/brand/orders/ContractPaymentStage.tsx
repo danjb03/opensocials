@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Order } from '@/types/orders';
 import { useToast } from '@/hooks/use-toast';
 import { FileUp, Upload, FileCheck, CreditCard } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from '@/components/ui/alert-dialog';
 
 interface ContractPaymentStageProps {
   order: Order;
@@ -17,6 +19,8 @@ const ContractPaymentStage: React.FC<ContractPaymentStageProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [contractFiles, setContractFiles] = useState<File[]>([]);
   const [briefFiles, setBriefFiles] = useState<File[]>([]);
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [isPaymentSuccessOpen, setIsPaymentSuccessOpen] = useState(false);
   const { toast } = useToast();
 
   const handleContractFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,20 +35,38 @@ const ContractPaymentStage: React.FC<ContractPaymentStageProps> = ({
     }
   };
 
+  const initiatePayment = () => {
+    if (contractFiles.length === 0 || briefFiles.length === 0) {
+      toast({
+        title: "Files Required",
+        description: "Please upload both contract documents and campaign brief before proceeding to payment.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsPaymentDialogOpen(true);
+  };
+
   const handleProcessPayment = () => {
     setIsLoading(true);
     
-    // Simulate contract upload and payment processing
+    // Here you would integrate with Stripe
+    // This is just a placeholder for the actual Stripe integration
     setTimeout(() => {
       setIsLoading(false);
-      
-      toast({
-        title: "Payment processed",
-        description: "Contract uploaded and payment processed successfully."
-      });
-      
-      onComplete();
+      setIsPaymentDialogOpen(false);
+      setIsPaymentSuccessOpen(true);
     }, 2000);
+  };
+
+  const handlePaymentSuccess = () => {
+    setIsPaymentSuccessOpen(false);
+    toast({
+      title: "Payment processed",
+      description: "Contract uploaded and payment processed successfully."
+    });
+    onComplete();
   };
 
   return (
@@ -152,21 +174,70 @@ const ContractPaymentStage: React.FC<ContractPaymentStageProps> = ({
         {/* Submit Button */}
         <Button 
           className="w-full bg-black text-white hover:bg-gray-800 flex items-center justify-center gap-2"
-          disabled={isLoading || (contractFiles.length === 0 && briefFiles.length === 0)}
-          onClick={handleProcessPayment}
+          disabled={contractFiles.length === 0 || briefFiles.length === 0}
+          onClick={initiatePayment}
         >
-          {isLoading ? "Processing..." : (
-            <>
-              <CreditCard className="h-4 w-4" />
-              Process Payment & Finalize Contract
-            </>
-          )}
+          <CreditCard className="h-4 w-4" />
+          Continue to Payment
         </Button>
         
         <p className="text-xs text-gray-500 text-center mt-3">
           By proceeding, you agree to the terms and conditions of this campaign.
         </p>
       </div>
+      
+      {/* Payment Dialog */}
+      <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Complete Payment</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="rounded-md bg-gray-50 p-4 border">
+              <h4 className="font-medium mb-2">Campaign: {order.title}</h4>
+              <div className="flex justify-between mb-1">
+                <span>Deposit (50%)</span>
+                <span>{order.currency} {(order.budget * 0.5).toLocaleString()}</span>
+              </div>
+              <div className="border-t pt-2 mt-2 flex justify-between font-medium">
+                <span>Total Due Now</span>
+                <span>{order.currency} {(order.budget * 0.5).toLocaleString()}</span>
+              </div>
+            </div>
+            
+            <p className="text-sm text-gray-600">
+              You will be redirected to Stripe's secure payment page to complete your transaction.
+            </p>
+            
+            <Button
+              className="w-full bg-[#5469d4] hover:bg-[#4a5bc7] text-white"
+              onClick={handleProcessPayment}
+              disabled={isLoading}
+            >
+              {isLoading ? "Processing..." : "Pay with Stripe"}
+            </Button>
+            
+            <p className="text-xs text-gray-500 text-center">
+              Payments are securely processed by Stripe. We do not store your payment details.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Success Dialog */}
+      <AlertDialog open={isPaymentSuccessOpen} onOpenChange={setIsPaymentSuccessOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Payment Successful!</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your payment has been processed and the campaign is now ready to move to the planning stage.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={handlePaymentSuccess}>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
