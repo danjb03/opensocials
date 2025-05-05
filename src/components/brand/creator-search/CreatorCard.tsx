@@ -42,8 +42,8 @@ type CreatorCardProps = {
 
 export const CreatorCard = ({ creator, isSelected, onToggleSelect, onViewProfile }: CreatorCardProps) => {
   return (
-    <Card key={creator.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 group border-gray-100">
-      <div className="relative aspect-video">
+    <Card key={creator.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 group border-gray-100 max-w-[280px]">
+      <div className="relative h-36">
         <img 
           src={creator.imageUrl} 
           alt={creator.name} 
@@ -51,21 +51,21 @@ export const CreatorCard = ({ creator, isSelected, onToggleSelect, onViewProfile
         />
         
         {creator.matchScore && (
-          <div className="absolute top-3 right-3 bg-black/80 text-white rounded-full px-2 py-1 text-xs font-semibold">
+          <div className="absolute top-2 right-2 bg-black/80 text-white rounded-full px-2 py-0.5 text-xs font-semibold">
             {creator.matchScore}% Match
           </div>
         )}
         
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-3">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-2">
           <div className="flex items-center">
-            <Avatar className="h-8 w-8 border-2 border-white mr-2">
+            <Avatar className="h-6 w-6 border-2 border-white mr-1.5">
               <AvatarImage src={creator.imageUrl} alt={creator.name} />
               <AvatarFallback>{creator.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-bold text-base text-white">{creator.name}</h3>
+              <h3 className="font-bold text-sm text-white">{creator.name}</h3>
               <div className="flex items-center text-xs text-white/90">
-                <span className="flex items-center">
+                <span className="flex items-center text-[10px]">
                   {creator.platform} · {creator.followers}
                 </span>
               </div>
@@ -74,16 +74,16 @@ export const CreatorCard = ({ creator, isSelected, onToggleSelect, onViewProfile
         </div>
       </div>
       
-      <CardContent className="p-3">
-        <div className="flex items-center justify-between mb-2">
-          <div className="bg-gray-50 px-2 py-0.5 rounded-full text-xs">
-            <span className="font-medium text-primary">{creator.engagement}</span> engagement
+      <CardContent className="p-2">
+        <div className="flex items-center justify-between mb-1.5">
+          <div className="bg-gray-50 px-1.5 py-0.5 rounded-full text-xs">
+            <span className="font-medium text-primary text-[10px]">{creator.engagement}</span> engagement
           </div>
           
           <Button 
             variant="ghost" 
             size="sm" 
-            className="text-primary hover:bg-primary/10 h-7 px-2"
+            className="text-primary hover:bg-primary/10 h-6 px-1.5 text-[10px]"
             onClick={() => onViewProfile(creator.id)}
           >
             <Info className="h-3 w-3 mr-1" />
@@ -91,21 +91,21 @@ export const CreatorCard = ({ creator, isSelected, onToggleSelect, onViewProfile
           </Button>
         </div>
         
-        <div className="flex flex-wrap gap-1 mt-2 mb-3">
-          {creator.skills.slice(0, 3).map(skill => (
-            <span key={skill} className="bg-gray-100 text-gray-800 text-xs px-2 py-0.5 rounded-full font-medium">
+        <div className="flex flex-wrap gap-1 mt-1 mb-2">
+          {creator.skills.slice(0, 2).map(skill => (
+            <span key={skill} className="bg-gray-100 text-gray-800 text-[10px] px-1.5 py-0.5 rounded-full font-medium">
               {skill}
             </span>
           ))}
-          {creator.skills.length > 3 && (
-            <span className="text-xs px-2 py-0.5 text-muted-foreground">
-              +{creator.skills.length - 3} more
+          {creator.skills.length > 2 && (
+            <span className="text-[10px] px-1 py-0.5 text-muted-foreground">
+              +{creator.skills.length - 2} more
             </span>
           )}
         </div>
         
         <Button
-          className="w-full mt-2 relative overflow-hidden group h-8 text-xs"
+          className="w-full mt-1 relative overflow-hidden group h-7 text-[10px]"
           variant={isSelected ? "default" : "outline"}
           onClick={() => onToggleSelect(creator.id)}
         >

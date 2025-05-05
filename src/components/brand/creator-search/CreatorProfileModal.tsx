@@ -45,24 +45,24 @@ export const CreatorProfileModal = ({
   const getSocialIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
       case 'instagram':
-        return <Instagram className="h-4 w-4" />;
+        return <Instagram className="h-3 w-3" />;
       case 'youtube':
-        return <Youtube className="h-4 w-4" />;
+        return <Youtube className="h-3 w-3" />;
       case 'twitter':
-        return <Twitter className="h-4 w-4" />;
+        return <Twitter className="h-3 w-3" />;
       case 'facebook':
-        return <Facebook className="h-4 w-4" />;
+        return <Facebook className="h-3 w-3" />;
       default:
-        return <ExternalLink className="h-4 w-4" />;
+        return <ExternalLink className="h-3 w-3" />;
     }
   };
   
   const renderSocialLinks = () => {
     if (!creator?.socialLinks) return null;
-    return <div className="flex gap-2 mt-3">
+    return <div className="flex gap-1.5 mt-2">
         {Object.entries(creator.socialLinks).map(([platform, url]) => {
         if (!url) return null;
-        return <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-secondary rounded-full hover:bg-secondary/80 transition-colors" aria-label={`Visit ${creator?.name}'s ${platform}`}>
+        return <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="p-1 bg-secondary rounded-full hover:bg-secondary/80 transition-colors" aria-label={`Visit ${creator?.name}'s ${platform}`}>
               {getSocialIcon(platform)}
             </a>;
       })}
@@ -71,32 +71,32 @@ export const CreatorProfileModal = ({
   
   const renderAudienceLocation = () => {
     if (!creator?.audienceLocation) return null;
-    return <div className="space-y-2">
-        <h3 className="font-medium text-base flex items-center gap-1.5">
-          <Globe className="h-4 w-4" />
+    return <div className="space-y-1.5">
+        <h3 className="font-medium text-sm flex items-center gap-1">
+          <Globe className="h-3 w-3" />
           Audience Location
         </h3>
-        <div className="bg-muted/30 p-3 rounded-lg">
-          <div className="mb-2">
-            <h4 className="text-xs text-muted-foreground">Primary Location</h4>
-            <p className="font-semibold text-sm">{creator.audienceLocation.primary}</p>
+        <div className="bg-muted/30 p-2 rounded-lg text-xs">
+          <div className="mb-1.5">
+            <h4 className="text-[10px] text-muted-foreground">Primary Location</h4>
+            <p className="font-semibold">{creator.audienceLocation.primary}</p>
           </div>
           
-          {creator.audienceLocation.secondary && creator.audienceLocation.secondary.length > 0 && <div className="mb-2">
-              <h4 className="text-xs text-muted-foreground">Secondary Locations</h4>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {creator.audienceLocation.secondary.map(location => <Badge key={location} variant="outline" className="text-xs py-0">{location}</Badge>)}
+          {creator.audienceLocation.secondary && creator.audienceLocation.secondary.length > 0 && <div className="mb-1.5">
+              <h4 className="text-[10px] text-muted-foreground">Secondary Locations</h4>
+              <div className="flex flex-wrap gap-1 mt-0.5">
+                {creator.audienceLocation.secondary.map(location => <Badge key={location} variant="outline" className="text-[10px] py-0">{location}</Badge>)}
               </div>
             </div>}
           
           {creator.audienceLocation.countries && creator.audienceLocation.countries.length > 0 && <div>
-              <h4 className="text-xs text-muted-foreground mb-1">Audience Breakdown</h4>
-              {creator.audienceLocation.countries.map(country => <div key={country.name} className="mb-1.5">
-                  <div className="flex justify-between text-xs mb-0.5">
+              <h4 className="text-[10px] text-muted-foreground mb-0.5">Audience Breakdown</h4>
+              {creator.audienceLocation.countries.map(country => <div key={country.name} className="mb-1">
+                  <div className="flex justify-between text-[10px] mb-0.5">
                     <span>{country.name}</span>
                     <span className="font-medium">{country.percentage}%</span>
                   </div>
-                  <Progress value={country.percentage} className="h-1.5" />
+                  <Progress value={country.percentage} className="h-1" />
                 </div>)}
             </div>}
         </div>
@@ -104,26 +104,26 @@ export const CreatorProfileModal = ({
   };
   
   const renderLoadingState = () => <>
-      <div className="relative w-full h-24 bg-muted/30">
-        <Skeleton className="absolute w-16 h-16 rounded-full -bottom-8 left-4 border-4 border-background" />
+      <div className="relative w-full h-16 bg-muted/30">
+        <Skeleton className="absolute w-12 h-12 rounded-full -bottom-6 left-4 border-4 border-background" />
       </div>
-      <div className="pt-12 px-4 pb-4">
-        <Skeleton className="h-6 w-1/3 mb-2" />
+      <div className="pt-8 px-4 pb-4">
+        <Skeleton className="h-4 w-1/3 mb-2" />
         <Skeleton className="h-3 w-1/4 mb-4" />
         <Skeleton className="h-3 w-full mb-2" />
         <Skeleton className="h-3 w-full mb-2" />
         <Skeleton className="h-3 w-3/4 mb-4" />
         
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <Skeleton className="h-16 rounded-md" />
-          <Skeleton className="h-16 rounded-md" />
-          <Skeleton className="h-16 rounded-md" />
-          <Skeleton className="h-16 rounded-md" />
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <Skeleton className="h-12 rounded-md" />
+          <Skeleton className="h-12 rounded-md" />
+          <Skeleton className="h-12 rounded-md" />
+          <Skeleton className="h-12 rounded-md" />
         </div>
         
         <div className="flex justify-end gap-2 mt-4">
-          <Skeleton className="h-8 w-24" />
-          <Skeleton className="h-8 w-24" />
+          <Skeleton className="h-6 w-16" />
+          <Skeleton className="h-6 w-16" />
         </div>
       </div>
     </>;
@@ -136,86 +136,86 @@ export const CreatorProfileModal = ({
       <>
         <div className="relative">
           {/* Banner image */}
-          <div className="h-24 w-full overflow-hidden bg-gradient-to-r from-primary/20 via-primary/10 to-secondary/20">
+          <div className="h-16 w-full overflow-hidden bg-gradient-to-r from-primary/20 via-primary/10 to-secondary/20">
             {creator.bannerImageUrl && <img src={creator.bannerImageUrl} alt="" className="w-full h-full object-cover opacity-90" />}
           </div>
           
           {/* Avatar */}
-          <Avatar className="absolute w-16 h-16 -bottom-8 left-4 border-4 border-background">
+          <Avatar className="absolute w-12 h-12 -bottom-6 left-4 border-3 border-background">
             <AvatarImage src={creator.imageUrl} alt={creator.name} />
             <AvatarFallback>{creator.name.substring(0, 2)}</AvatarFallback>
           </Avatar>
         </div>
         
-        <div className="pt-12 px-4 pb-4">
-          <div className="flex justify-between items-start mb-4">
+        <div className="pt-8 px-3 pb-3">
+          <div className="flex justify-between items-start mb-3">
             <div>
-              <h2 className="text-xl font-bold">{creator.name}</h2>
-              <p className="text-muted-foreground text-sm">{creator.platform} Creator</p>
+              <h2 className="text-base font-bold">{creator.name}</h2>
+              <p className="text-muted-foreground text-xs">{creator.platform} Creator</p>
               {renderSocialLinks()}
             </div>
             
-            <div className="flex flex-col gap-1.5 items-end">
-              <Badge variant="secondary" className="text-xs py-0.5">
+            <div className="flex flex-col gap-1 items-end">
+              <Badge variant="secondary" className="text-[10px] py-0.5">
                 {creator.audience}
               </Badge>
-              <Badge variant="outline" className="text-xs py-0.5">
+              <Badge variant="outline" className="text-[10px] py-0.5">
                 {creator.contentType}
               </Badge>
-              {creator.audienceLocation && <Badge variant="secondary" className="text-xs py-0.5 flex items-center gap-1">
-                  <Globe className="h-3 w-3" />
+              {creator.audienceLocation && <Badge variant="secondary" className="text-[10px] py-0.5 flex items-center gap-1">
+                  <Globe className="h-2 w-2" />
                   {creator.audienceLocation.primary}
                 </Badge>}
             </div>
           </div>
           
-          <Tabs defaultValue="about" className="mt-4">
-            <TabsList className="grid grid-cols-3 mb-4">
-              <TabsTrigger value="about" className="text-xs">About</TabsTrigger>
-              <TabsTrigger value="metrics" className="text-xs">Metrics</TabsTrigger>
-              <TabsTrigger value="campaigns" className="text-xs">Campaigns</TabsTrigger>
+          <Tabs defaultValue="about" className="mt-3">
+            <TabsList className="grid grid-cols-3 mb-3 h-8">
+              <TabsTrigger value="about" className="text-[10px]">About</TabsTrigger>
+              <TabsTrigger value="metrics" className="text-[10px]">Metrics</TabsTrigger>
+              <TabsTrigger value="campaigns" className="text-[10px]">Campaigns</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="about" className="space-y-3">
-              <div className="space-y-2">
-                <h3 className="font-medium text-base">About Me</h3>
-                <p className="text-muted-foreground text-sm">
+            <TabsContent value="about" className="space-y-2">
+              <div className="space-y-1">
+                <h3 className="font-medium text-sm">About Me</h3>
+                <p className="text-muted-foreground text-xs">
                   {creator.about || "No information provided."}
                 </p>
               </div>
               
-              <Separator className="my-3" />
+              <Separator className="my-2" />
               
               {renderAudienceLocation()}
               
-              <Separator className="my-3" />
+              <Separator className="my-2" />
               
-              <div className="space-y-2">
-                <h3 className="font-medium text-base">Skills</h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {creator.skills.map(skill => <Badge key={skill} variant="secondary" className="text-xs">
+              <div className="space-y-1">
+                <h3 className="font-medium text-sm">Skills</h3>
+                <div className="flex flex-wrap gap-1">
+                  {creator.skills.map(skill => <Badge key={skill} variant="secondary" className="text-[10px]">
                       {skill}
                     </Badge>)}
                 </div>
               </div>
             </TabsContent>
             
-            <TabsContent value="metrics" className="space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="bg-muted/30 p-3 rounded-lg">
-                  <h3 className="text-xs text-muted-foreground mb-1">Followers</h3>
-                  <p className="text-lg font-semibold">{creator.metrics?.followerCount || creator.followers}</p>
+            <TabsContent value="metrics" className="space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-muted/30 p-2 rounded-lg">
+                  <h3 className="text-[10px] text-muted-foreground mb-0.5">Followers</h3>
+                  <p className="text-sm font-semibold">{creator.metrics?.followerCount || creator.followers}</p>
                 </div>
                 
-                <div className="bg-muted/30 p-3 rounded-lg">
-                  <h3 className="text-xs text-muted-foreground mb-1">Engagement Rate</h3>
-                  <div className="flex items-end gap-2">
-                    <p className="text-lg font-semibold">{creator.metrics?.engagementRate || creator.engagement}</p>
+                <div className="bg-muted/30 p-2 rounded-lg">
+                  <h3 className="text-[10px] text-muted-foreground mb-0.5">Engagement Rate</h3>
+                  <div className="flex items-end gap-1">
+                    <p className="text-sm font-semibold">{creator.metrics?.engagementRate || creator.engagement}</p>
                     <HoverCard>
                       <HoverCardTrigger asChild>
-                        <span className="text-xs text-muted-foreground cursor-help">What's this?</span>
+                        <span className="text-[10px] text-muted-foreground cursor-help">What's this?</span>
                       </HoverCardTrigger>
-                      <HoverCardContent className="w-64 text-xs">
+                      <HoverCardContent className="w-48 text-[10px] p-2">
                         <p>
                           Engagement rate is calculated as (likes + comments) / followers × 100%.
                           This represents how much your audience interacts with your content.
@@ -225,43 +225,43 @@ export const CreatorProfileModal = ({
                   </div>
                 </div>
                 
-                <div className="bg-muted/30 p-3 rounded-lg">
-                  <h3 className="text-xs text-muted-foreground mb-1">Average Views</h3>
-                  <p className="text-lg font-semibold">{creator.metrics?.avgViews || "Not available"}</p>
+                <div className="bg-muted/30 p-2 rounded-lg">
+                  <h3 className="text-[10px] text-muted-foreground mb-0.5">Average Views</h3>
+                  <p className="text-sm font-semibold">{creator.metrics?.avgViews || "Not available"}</p>
                 </div>
                 
-                <div className="bg-muted/30 p-3 rounded-lg">
-                  <h3 className="text-xs text-muted-foreground mb-1">Average Likes</h3>
-                  <p className="text-lg font-semibold">{creator.metrics?.avgLikes || "Not available"}</p>
+                <div className="bg-muted/30 p-2 rounded-lg">
+                  <h3 className="text-[10px] text-muted-foreground mb-0.5">Average Likes</h3>
+                  <p className="text-sm font-semibold">{creator.metrics?.avgLikes || "Not available"}</p>
                 </div>
                 
-                <div className="col-span-1 md:col-span-2 bg-muted/30 p-3 rounded-lg">
-                  <div className="flex justify-between items-center mb-1">
-                    <h3 className="text-xs text-muted-foreground">Price Range</h3>
-                    <p className="font-semibold text-sm">{creator.priceRange}</p>
+                <div className="col-span-2 bg-muted/30 p-2 rounded-lg">
+                  <div className="flex justify-between items-center mb-0.5">
+                    <h3 className="text-[10px] text-muted-foreground">Price Range</h3>
+                    <p className="font-semibold text-xs">{creator.priceRange}</p>
                   </div>
                 </div>
               </div>
             </TabsContent>
             
             <TabsContent value="campaigns">
-              <div className="flex flex-col items-center justify-center py-6 text-center">
-                <p className="text-muted-foreground mb-3 text-sm">No previous campaigns with this creator.</p>
-                <Button variant="outline" onClick={inviteCreator} size="sm">Invite to Campaign</Button>
+              <div className="flex flex-col items-center justify-center py-4 text-center">
+                <p className="text-muted-foreground mb-2 text-xs">No previous campaigns with this creator.</p>
+                <Button variant="outline" onClick={inviteCreator} size="sm" className="text-[10px] h-7 px-2">Invite to Campaign</Button>
               </div>
             </TabsContent>
           </Tabs>
           
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <BookmarkPlus className="h-3.5 w-3.5" />
+          <div className="flex justify-end gap-2 mt-3">
+            <Button variant="outline" size="sm" className="gap-1 text-[10px] h-7 px-2">
+              <BookmarkPlus className="h-3 w-3" />
               Save
             </Button>
             
-            <Button className="gap-1.5" size="sm" onClick={inviteCreator} disabled={inviteLoading?.[`invite-${creator.id}`]}>
+            <Button className="gap-1 text-[10px] h-7 px-2" size="sm" onClick={inviteCreator} disabled={inviteLoading?.[`invite-${creator.id}`]}>
               {inviteLoading?.[`invite-${creator.id}`] ? (
                 <span className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-1.5 h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin -ml-0.5 mr-1 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
@@ -269,7 +269,7 @@ export const CreatorProfileModal = ({
                 </span>
               ) : (
                 <>
-                  <UserPlus className="h-3.5 w-3.5" />
+                  <UserPlus className="h-3 w-3" />
                   Invite to Campaign
                 </>
               )}
@@ -282,7 +282,7 @@ export const CreatorProfileModal = ({
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[650px] p-0 overflow-hidden max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden max-h-[80vh] overflow-y-auto">
         {renderContent()}
       </DialogContent>
     </Dialog>
