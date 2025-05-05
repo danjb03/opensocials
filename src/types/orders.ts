@@ -37,6 +37,7 @@ export interface Order {
   creators: Creator[];
   platformsList: string[];
   contentItems?: ContentItem[];
+  platform?: string; // Added platform property to match usage in CampaignSummary
 }
 
 export interface ContentItem {
