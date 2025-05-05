@@ -30,12 +30,12 @@ export const CreatorListItem = ({ creator, isSelected, onToggleSelect, onViewPro
 
   return (
     <div 
-      className="group rounded-xl border border-gray-100 hover:border-primary/30 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden bg-white"
+      className="group rounded-md border border-gray-100 hover:border-primary/30 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden bg-white"
     >
-      <div className="flex flex-col md:flex-row items-start">
-        {/* Creator image and info - larger on mobile, side by side on desktop */}
-        <div className="relative md:w-[280px] overflow-hidden">
-          <div className="aspect-video md:aspect-square w-full">
+      <div className="flex items-start">
+        {/* Creator image - smaller */}
+        <div className="relative w-[70px] overflow-hidden">
+          <div className="aspect-square w-full">
             <img 
               src={creator.imageUrl} 
               alt={creator.name} 
@@ -44,93 +44,90 @@ export const CreatorListItem = ({ creator, isSelected, onToggleSelect, onViewPro
           </div>
           
           {creator.matchScore && (
-            <div className="absolute top-3 right-3 bg-black/80 text-white rounded-full px-2 py-1 text-xs font-semibold">
-              {creator.matchScore}% Match
+            <div className="absolute top-1 right-1 bg-black/80 text-white rounded-full px-1 py-0.5 text-[8px] font-semibold">
+              {creator.matchScore}%
             </div>
           )}
         </div>
         
-        {/* Creator details */}
-        <div className="flex-1 p-5 flex flex-col h-full justify-between">
+        {/* Creator details - compacted */}
+        <div className="flex-1 p-2 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-1">
               <div className="flex items-center">
-                <Avatar className="h-10 w-10 border-2 border-white mr-3 shadow-sm">
+                <Avatar className="h-5 w-5 border-[1px] border-white mr-1.5 shadow-sm">
                   <AvatarImage src={creator.imageUrl} alt={creator.name} />
                   <AvatarFallback>{creator.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-bold text-lg">{creator.name}</h3>
-                  <div className="flex items-center text-sm text-muted-foreground">
+                  <h3 className="font-bold text-xs">{creator.name}</h3>
+                  <div className="flex items-center text-[10px] text-muted-foreground">
                     <span>{creator.platform}</span>
-                    <span className="mx-1.5">•</span>
+                    <span className="mx-1">•</span>
                     <span>{creator.followers}</span>
                   </div>
                 </div>
               </div>
               
-              <div className="hidden md:flex items-center gap-2">
-                <Badge variant="outline" className="bg-gray-50/80 hover:bg-gray-50 whitespace-nowrap">
+              <div className="flex items-center gap-1">
+                <Badge variant="outline" className="bg-gray-50/80 hover:bg-gray-50 whitespace-nowrap text-[8px] px-1.5 py-0">
                   {creator.audience}
-                </Badge>
-                <Badge variant="outline" className="bg-gray-50/80 hover:bg-gray-50 whitespace-nowrap">
-                  {creator.contentType}
                 </Badge>
               </div>
             </div>
             
-            <div className="flex items-center gap-3 flex-wrap my-4">
-              <div className="bg-primary/5 text-primary px-3 py-1 rounded-full text-sm font-medium">
-                {creator.engagement} engagement
+            <div className="flex items-center gap-1 flex-wrap my-1">
+              <div className="bg-primary/5 text-primary px-2 py-0.5 rounded-full text-[8px]">
+                {creator.engagement}
               </div>
-              <div className="bg-primary/5 text-primary px-3 py-1 rounded-full text-sm">
+              <div className="bg-primary/5 text-primary px-2 py-0.5 rounded-full text-[8px]">
                 {creator.priceRange}
               </div>
             </div>
             
-            <div className="flex flex-wrap gap-1.5 mt-4">
-              {creator.skills.slice(0, 5).map(skill => (
-                <span key={skill} className="bg-gray-100 text-gray-800 text-xs px-2.5 py-0.5 rounded-full font-medium">
+            <div className="flex flex-wrap gap-1 mt-1">
+              {creator.skills.slice(0, 2).map(skill => (
+                <span key={skill} className="bg-gray-100 text-gray-800 text-[8px] px-1.5 py-0 rounded-full">
                   {skill}
                 </span>
               ))}
-              {creator.skills.length > 5 && (
-                <span className="text-xs px-2.5 py-0.5 text-muted-foreground">
-                  +{creator.skills.length - 5} more
+              {creator.skills.length > 2 && (
+                <span className="text-[8px] px-1 py-0 text-muted-foreground">
+                  +{creator.skills.length - 2}
                 </span>
               )}
             </div>
           </div>
           
-          <div className="flex flex-wrap items-center justify-between gap-3 mt-6">
+          <div className="flex flex-wrap items-center justify-between gap-1 mt-1">
             <Button
               size="sm"
               variant={isSelected ? "default" : "outline"}
               onClick={() => onToggleSelect(creator.id)}
-              className="min-w-[140px]"
+              className="h-6 text-[8px] px-2"
             >
               {isSelected ? (
                 <>
-                  <Check className="mr-2 h-4 w-4" />
+                  <Check className="mr-1 h-3 w-3" />
                   Selected
                 </>
               ) : (
                 <>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Add to Project
+                  <PlusCircle className="mr-1 h-3 w-3" />
+                  Add
                 </>
               )}
             </Button>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => onViewProfile(creator.id)}
-                className="px-3"
+                className="h-6 text-[8px] px-2"
               >
-                <Info className="h-4 w-4 mr-1.5" />
-                View Profile
+                <Info className="h-3 w-3 mr-1" />
+                View
               </Button>
               
               <Button
@@ -138,13 +135,13 @@ export const CreatorListItem = ({ creator, isSelected, onToggleSelect, onViewPro
                 variant="default"
                 onClick={handleInvite}
                 disabled={isLoading?.[`invite-${creator.id}`]}
-                className="px-3"
+                className="h-6 text-[8px] px-2"
               >
                 {isLoading?.[`invite-${creator.id}`] ? (
-                  "Inviting..."
+                  "..."
                 ) : (
                   <>
-                    <UserPlus className="h-4 w-4 mr-1.5" />
+                    <UserPlus className="h-3 w-3 mr-1" />
                     Invite
                   </>
                 )}
