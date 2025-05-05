@@ -1,4 +1,6 @@
 
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import CreateProjectForm from '@/components/brand/CreateProjectForm';
@@ -11,6 +13,7 @@ import { Card, CardContent } from '@/components/ui/card';
 
 const Projects = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const { 
     projects, 
     isLoading, 
@@ -20,6 +23,17 @@ const Projects = () => {
     handleFiltersChange,
     handleProjectCreated
   } = useProjects();
+
+  // Check for query parameter to open the dialog automatically
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get('action') === 'create') {
+      setIsDialogOpen(true);
+      // Clean up the URL after processing the action
+      const newUrl = location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [location, setIsDialogOpen]);
 
   return (
     <BrandLayout>

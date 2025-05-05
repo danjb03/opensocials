@@ -8,7 +8,8 @@ const OrdersHeader = () => {
   const navigate = useNavigate();
 
   const handleCreateCampaign = () => {
-    navigate('/brand/projects/create');
+    // Navigate to projects page with a query parameter to trigger dialog
+    navigate('/brand/projects?action=create');
   };
 
   return (
