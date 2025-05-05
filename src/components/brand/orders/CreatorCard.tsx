@@ -1,16 +1,23 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Clock, Bell } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Bell, UserPlus } from 'lucide-react';
 import { Creator } from '@/types/orders';
 import { Button } from '@/components/ui/button';
 
 interface CreatorCardProps {
   creator: Creator;
   onNotifyInterest: (creatorId: string, creatorName: string) => void;
+  onInviteCreator?: (creatorId: string, creatorName: string) => void;
+  showInviteButton?: boolean;
 }
 
-const CreatorCard: React.FC<CreatorCardProps> = ({ creator, onNotifyInterest }) => {
+const CreatorCard: React.FC<CreatorCardProps> = ({ 
+  creator, 
+  onNotifyInterest, 
+  onInviteCreator,
+  showInviteButton = false
+}) => {
   const getStatusColor = (status: string) => {
     switch(status) {
       case 'accepted':
@@ -52,15 +59,30 @@ const CreatorCard: React.FC<CreatorCardProps> = ({ creator, onNotifyInterest }) 
             <p className="text-sm text-gray-500">{creator.platform}</p>
           </div>
         </div>
-        <Badge 
-          variant="outline" 
-          className={`flex items-center px-2.5 py-1 rounded-full ${getStatusColor(creator.status)}`}
-        >
-          {getStatusIcon(creator.status)}
-          <span className="capitalize font-medium">{creator.status}</span>
-        </Badge>
+        
+        {!showInviteButton && (
+          <Badge 
+            variant="outline" 
+            className={`flex items-center px-2.5 py-1 rounded-full ${getStatusColor(creator.status)}`}
+          >
+            {getStatusIcon(creator.status)}
+            <span className="capitalize font-medium">{creator.status}</span>
+          </Badge>
+        )}
       </div>
-      <div className="flex justify-end mt-2">
+      <div className="flex justify-end mt-2 gap-2">
+        {showInviteButton && onInviteCreator && (
+          <Button 
+            size="sm" 
+            variant="default" 
+            className="flex items-center gap-1 text-xs"
+            onClick={() => onInviteCreator(creator.id, creator.name)}
+          >
+            <UserPlus className="h-3.5 w-3.5 mr-1" />
+            Invite
+          </Button>
+        )}
+        
         <Button 
           size="sm" 
           variant="outline" 
