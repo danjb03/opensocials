@@ -27,6 +27,7 @@ export function useSignUp() {
     console.log(`🆕 Signing up new ${role}...`);
 
     try {
+      // Sign up the user with Supabase - this will trigger built-in email confirmation
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -60,7 +61,7 @@ export function useSignUp() {
       
       // Special handling for email sending errors
       if (err.message?.includes('sending email') || err.message?.includes('confirmation email')) {
-        toast.error('Account created but there was an issue sending the confirmation email. Please contact support.');
+        toast.error('Account created but there was an issue sending the confirmation email. Please check your Supabase email configuration.');
         resetForm();
         return true; // Return true since the account was created
       } else {
