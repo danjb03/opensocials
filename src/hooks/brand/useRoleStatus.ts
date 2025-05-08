@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { Database } from '@/integrations/supabase/types';
@@ -65,18 +64,31 @@ export const useRoleStatus = () => {
   const createUserRole = async (userId: string, role: AppRole): Promise<boolean> => {
     try {
       console.log('Creating user role for:', userId, 'with role:', role);
-      const { error } = await supabase
+      
+      // First create/update the entry in user_roles table
+      const { error: roleError } = await supabase
         .from('user_roles')
-        .insert({ 
+        .upsert({ 
           user_id: userId, 
           role: role,
           status: 'approved' // Explicitly set status to approved
         });
       
-      if (error) {
-        console.error('Failed to create user role:', error);
+      if (roleError) {
+        console.error('Failed to create user role:', roleError);
         toast.error('Failed to create user role');
         return false;
+      }
+      
+      // Then update the profile table to keep roles in sync
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ role: role })
+        .eq('id', userId);
+        
+      if (profileError) {
+        console.error('Failed to update profile role:', profileError);
+        // Continue anyway since the user_roles table is the primary source of truth
       }
       
       console.log('User role created successfully with approved status');

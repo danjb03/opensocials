@@ -60,16 +60,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // First, check if we can get the role from user metadata
       const { data: { user } } = await supabase.auth.getUser();
       
-      if (user?.user_metadata?.role) {
+      if (user?.user_metadata?.role === 'super_admin') {
+        console.log("Found super_admin role in user metadata");
+        setRole('super_admin');
+        setIsLoading(false);
+        return;
+      } else if (user?.user_metadata?.role) {
         console.log("Found role in user metadata:", user.user_metadata.role);
         setRole(user.user_metadata.role as UserRole);
       }
       
-      // Next check the user_roles table for the role and status
+      // Next check the user_roles table specifically for super_admin role
+      const { data: superAdminRole, error: superAdminError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'super_admin')
+        .eq('status', 'approved')
+        .maybeSingle();
+      
+      if (superAdminRole) {
+        console.log("Found super_admin role in user_roles table");
+        setRole('super_admin');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Check other roles in user_roles table
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role, status')
         .eq('user_id', userId)
+        .eq('status', 'approved')
         .maybeSingle();
       
       if (roleError) {
@@ -77,6 +99,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } else if (roleData) {
         console.log("Role data from user_roles:", roleData);
         setRole(roleData.role as UserRole);
+        setIsLoading(false);
+        return;
       }
       
       // Finally, check the profiles table if role still not found

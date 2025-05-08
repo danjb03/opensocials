@@ -7,12 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useRoleStatus } from '@/hooks/brand/useRoleStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
+import { toast } from '@/components/ui/sonner';
+import { RoleDisplay } from '../RoleDisplay';
 
 // Define a type for the allowed role values
 type AppRole = Database['public']['Enums']['app_role'];
 
 export default function UserRoleFixer() {
-  const [userId, setUserId] = useState('af6ad2ce-be6c-4620-a440-867c52d66918'); // Prefill with the user ID in question
+  const [userId, setUserId] = useState('af6ad2ce-be6c-4620-a440-867c52d66918');
   const [userRole, setUserRole] = useState<AppRole>('brand');
   const [loading, setLoading] = useState(false);
   const [userExists, setUserExists] = useState<boolean | null>(null);
@@ -80,8 +82,47 @@ export default function UserRoleFixer() {
     const success = await createUserRole(userId, userRole);
     if (success) {
       setRoleExists(true);
+      toast.success(`Role ${userRole} created for user`);
     }
     setLoading(false);
+  };
+
+  const handleUpdateRole = async () => {
+    setLoading(true);
+    try {
+      // First update the user_roles table
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .upsert({ 
+          user_id: userId,
+          role: userRole,
+          status: 'approved'
+        }, { onConflict: 'user_id,role' });
+        
+      if (roleError) {
+        throw new Error(`Failed to update user_roles: ${roleError.message}`);
+      }
+      
+      // Then update the profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ role: userRole })
+        .eq('id', userId);
+        
+      if (profileError) {
+        throw new Error(`Failed to update profile: ${profileError.message}`);
+      }
+      
+      toast.success(`User role updated to ${userRole}`);
+      // Refresh roleExists state
+      const roleExists = await checkUserRoleExists(userId);
+      setRoleExists(roleExists);
+    } catch (error) {
+      console.error('Error updating role:', error);
+      toast.error(`Failed to update role: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -111,9 +152,18 @@ export default function UserRoleFixer() {
         )}
         
         {userDetails && (
-          <div className="bg-muted p-3 rounded-md">
-            <p>Email: {userDetails.email}</p>
-            <p>Created: {new Date(userDetails.created_at).toLocaleString()}</p>
+          <div className="bg-muted p-3 rounded-md space-y-2">
+            <p><strong>Email:</strong> {userDetails.email}</p>
+            <p><strong>Created:</strong> {new Date(userDetails.created_at).toLocaleString()}</p>
+            {userDetails.user_metadata?.role && (
+              <p><strong>Metadata Role:</strong> {userDetails.user_metadata.role}</p>
+            )}
+            {userId && (
+              <div className="mt-2">
+                <strong>Current Role: </strong>
+                <RoleDisplay userId={userId} />
+              </div>
+            )}
           </div>
         )}
         
@@ -141,13 +191,24 @@ export default function UserRoleFixer() {
         )}
       </CardContent>
       
-      <CardFooter>
+      <CardFooter className="flex flex-col space-y-2">
+        {!roleExists && (
+          <Button 
+            onClick={handleCreateRole} 
+            disabled={loading || userExists === false} 
+            className="w-full"
+          >
+            {loading ? "Creating..." : "Create Missing Role"}
+          </Button>
+        )}
+        
         <Button 
-          onClick={handleCreateRole} 
-          disabled={loading || userExists === false || roleExists === true} 
+          onClick={handleUpdateRole}
+          disabled={loading || userExists === false}
+          variant="default"
           className="w-full"
         >
-          {loading ? "Checking..." : "Create Missing Role"}
+          {loading ? "Updating..." : "Update Role"}
         </Button>
       </CardFooter>
     </Card>

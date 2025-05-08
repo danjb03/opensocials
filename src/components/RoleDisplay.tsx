@@ -1,5 +1,6 @@
 
 import { useUserRole } from '@/hooks/useUserRole';
+import { Badge } from '@/components/ui/badge';
 
 interface RoleDisplayProps {
   userId: string;
@@ -13,12 +14,28 @@ export const RoleDisplay = ({ userId }: RoleDisplayProps) => {
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div className="text-red-500">Error: {error}</div>;
   }
 
   if (!role) {
-    return <div>No role assigned</div>;
+    return <div className="text-amber-500">No role assigned</div>;
   }
 
-  return <div>Your role: {role}</div>;
+  const getBadgeVariant = (userRole: string) => {
+    switch (userRole) {
+      case 'super_admin': return 'destructive';
+      case 'admin': return 'outline';
+      case 'brand': return 'secondary';
+      case 'creator': return 'default';
+      default: return 'outline';
+    }
+  };
+
+  return (
+    <Badge variant={getBadgeVariant(role)}>
+      {role === 'super_admin' ? 'Super Admin' : 
+       role === 'admin' ? 'Admin' : 
+       role.charAt(0).toUpperCase() + role.slice(1)}
+    </Badge>
+  );
 };

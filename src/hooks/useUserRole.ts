@@ -22,7 +22,24 @@ export const useUserRole = (userId: string | undefined) => {
       setError(null);
       
       try {
-        // Fetch role directly from profiles table
+        // First, check if we can get the role from user_roles table for most accurate status
+        const { data: roleData, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role, status')
+          .eq('user_id', userId)
+          .eq('status', 'approved')
+          .maybeSingle();
+
+        if (roleError) {
+          console.error('Error fetching from user_roles:', roleError.message);
+        } else if (roleData?.role) {
+          console.log('Found approved role in user_roles:', roleData.role);
+          setRole(roleData.role as UserRole);
+          setIsLoading(false);
+          return;
+        }
+        
+        // If not found in user_roles, check profiles table as fallback
         const { data, error } = await supabase
           .from('profiles')
           .select('role')
@@ -38,6 +55,7 @@ export const useUserRole = (userId: string | undefined) => {
 
         // Process the response data
         if (data?.role) {
+          console.log('Found role in profiles:', data.role);
           setRole(data.role as UserRole);
         } else {
           setRole(null);
