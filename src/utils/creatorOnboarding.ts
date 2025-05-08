@@ -15,23 +15,25 @@ export async function submitCreatorProfile({
   creatorType: string;
 }) {
   try {
-    // Fetch creator type ID safely
-    const { data: typeRow, error: typeError } = await supabase
+    // ---- GET CREATOR TYPE ----
+    const { data: rawTypeRow, error: typeError } = await supabase
       .from("creator_types")
-      .select("*")
+      .select("id")
       .eq("type_name", creatorType)
       .maybeSingle();
 
-    if (typeError || !typeRow || !typeRow.id) {
+    if (typeError || !rawTypeRow || !("id" in rawTypeRow)) {
       console.error("Error fetching creator type:", typeError);
       throw new Error("Creator type not found");
     }
 
-    // Update profile with creator_type_id
+    const typeId = rawTypeRow.id!;
+
+    // ---- UPDATE PROFILE WITH CREATOR TYPE ----
     const { error: profileError } = await supabase
       .from("profiles")
       .update({ 
-        creator_type_id: typeRow.id,
+        creator_type_id: typeId,
         is_profile_complete: true 
       })
       .eq("id", userId);
@@ -41,13 +43,13 @@ export async function submitCreatorProfile({
       throw new Error("Failed to update profile");
     }
 
-    // Fetch industry IDs
-    const { data: industryRows, error: industryError } = await supabase
+    // ---- GET INDUSTRY TAG IDS ----
+    const { data: rawIndustryRows, error: industryError } = await supabase
       .from("creator_industries")
-      .select("*")
+      .select("id, name")
       .in("name", industries);
 
-    if (industryError || !industryRows || industryRows.length === 0) {
+    if (industryError || !rawIndustryRows || rawIndustryRows.length === 0) {
       console.error("Error fetching industry IDs:", industryError);
       throw new Error("Industry tags not found");
     }
@@ -63,15 +65,14 @@ export async function submitCreatorProfile({
       throw new Error("Failed to update industry tags");
     }
 
-    // Use a type guard to ensure each row has a valid id property
-    const inserts = industryRows
-      .filter((row): row is typeof row => row?.id !== undefined)
+    const inserts = rawIndustryRows
+      .filter((row): row is { id: string; name: string } => !!row && typeof row.id === "string")
       .map(row => ({
         creator_id: userId,
         industry_id: row.id
       }));
 
-    // Insert the new industry connections
+    // ---- INSERT INDUSTRY TAGS ----
     if (inserts.length > 0) {
       const { error: tagError } = await supabase
         .from("creator_industry_tags")
