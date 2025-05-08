@@ -16,6 +16,18 @@ import {
 } from '@/components/ui/form';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { industries } from '@/data/industries';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, { message: 'First name is required' }),
@@ -25,6 +37,7 @@ const profileFormSchema = z.object({
   contentType: z.string().min(1, { message: 'Content type is required' }),
   audience: z.string().min(1, { message: 'Target audience is required' }),
   location: z.string().min(1, { message: 'Location is required' }),
+  industries: z.array(z.string()).optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -47,6 +60,8 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
   onAvatarChange
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [selectedIndustries, setSelectedIndustries] = React.useState<string[]>(initialValues.industries || []);
+  const [open, setOpen] = React.useState(false);
   
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -58,6 +73,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
       contentType: initialValues.contentType || '',
       audience: initialValues.audience || '',
       location: initialValues.location || '',
+      industries: initialValues.industries || [],
     }
   });
 
@@ -74,7 +90,17 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
 
   const handleFormSubmit = (values: ProfileFormValues) => {
     console.log('Form submitted with values:', values);
+    // Ensure the industries are included in the form submission
+    values.industries = selectedIndustries;
     onSubmit(values);
+  };
+
+  const handleIndustrySelect = (industry: string) => {
+    setSelectedIndustries(current => 
+      current.includes(industry) 
+        ? current.filter(i => i !== industry)
+        : [...current, industry]
+    );
   };
 
   return (
@@ -156,6 +182,57 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
               )}
             />
 
+            <div>
+              <FormLabel>Industries</FormLabel>
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="w-full justify-between text-start font-normal"
+                  >
+                    {selectedIndustries.length > 0
+                      ? `${selectedIndustries.length} industries selected`
+                      : "Select your industries..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search industries..." />
+                    <CommandEmpty>No industry found.</CommandEmpty>
+                    <CommandGroup className="max-h-64 overflow-auto">
+                      {industries.map((industry) => (
+                        <CommandItem
+                          key={industry}
+                          value={industry}
+                          onSelect={() => handleIndustrySelect(industry)}
+                        >
+                          <Check
+                            className={`mr-2 h-4 w-4 ${
+                              selectedIndustries.includes(industry) ? "opacity-100" : "opacity-0"
+                            }`}
+                          />
+                          {industry}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+
+              {selectedIndustries.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {selectedIndustries.map((industry) => (
+                    <Badge key={industry} variant="secondary">
+                      {industry}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -163,9 +240,17 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Primary Platform</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select platform" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="instagram">Instagram</SelectItem>
+                        <SelectItem value="tiktok">TikTok</SelectItem>
+                        <SelectItem value="youtube">YouTube</SelectItem>
+                        <SelectItem value="twitter">Twitter</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -177,9 +262,17 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Content Type</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select content type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="video">Video</SelectItem>
+                        <SelectItem value="photo">Photo</SelectItem>
+                        <SelectItem value="blog">Blog</SelectItem>
+                        <SelectItem value="review">Review</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -191,9 +284,17 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Target Audience</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select audience" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="gen-z">Gen Z</SelectItem>
+                        <SelectItem value="millennials">Millennials</SelectItem>
+                        <SelectItem value="gen-x">Gen X</SelectItem>
+                        <SelectItem value="boomers">Boomers</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

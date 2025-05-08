@@ -30,6 +30,8 @@ const CreatorSearch = () => {
     setFilterLocation,
     filterSkills,
     setFilterSkills,
+    filterIndustries,
+    setFilterIndustries,
     isFilterSheetOpen,
     setIsFilterSheetOpen,
     selectedCreators,
@@ -85,6 +87,8 @@ const CreatorSearch = () => {
               onLocationChange={setFilterLocation}
               filterSkills={filterSkills}
               onSkillsChange={setFilterSkills}
+              filterIndustries={filterIndustries}
+              onIndustriesChange={setFilterIndustries}
               isFilterSheetOpen={isFilterSheetOpen}
               setIsFilterSheetOpen={setIsFilterSheetOpen}
               resetFilters={resetFilters}

@@ -37,4 +37,6 @@ export type Creator = {
       percentage: number;
     }[];
   };
+  // New industry field
+  industries?: string[];
 };

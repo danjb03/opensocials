@@ -1,0 +1,28 @@
+
+// List of industries for creators and brands to select from
+export const industries = [
+  "Arts & Crafts",
+  "Automotive",
+  "Beauty",
+  "Books & Literature",
+  "Business",
+  "Education",
+  "Entertainment",
+  "Fashion",
+  "Finance",
+  "Fitness",
+  "Food & Beverage",
+  "Gaming",
+  "Health & Wellness",
+  "Home & Garden",
+  "Luxury",
+  "Music",
+  "Parenting",
+  "Pets",
+  "Photography",
+  "Real Estate",
+  "Science & Technology",
+  "Sports",
+  "Travel & Tourism",
+  "Tech & Electronics",
+];

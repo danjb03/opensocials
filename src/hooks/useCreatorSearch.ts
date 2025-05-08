@@ -16,10 +16,21 @@ export const useCreatorSearch = () => {
   const [filterContentType, setFilterContentType] = useState(searchParams.get('contentType') || 'all');
   const [filterLocation, setFilterLocation] = useState(searchParams.get('location') || 'all');
   const [filterSkills, setFilterSkills] = useState<string[]>([]);
+  const [filterIndustries, setFilterIndustries] = useState<string[]>([]);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [availableCampaigns, setAvailableCampaigns] = useState<{id: string, title: string}[]>([]);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Initialize filterSkills and filterIndustries from URL params
+  useEffect(() => {
+    if (searchParams.get('skills')) {
+      setFilterSkills(searchParams.get('skills')!.split(','));
+    }
+    if (searchParams.get('industries')) {
+      setFilterIndustries(searchParams.get('industries')!.split(','));
+    }
+  }, []);
 
   // Fetch available campaigns
   useEffect(() => {
@@ -78,17 +89,25 @@ export const useCreatorSearch = () => {
       filterSkills.includes(skill)
     );
     
-    return matchesSearch && matchesPlatform && matchesAudience && matchesContentType && matchesLocation && matchesSkills;
+    // Industries filter (new)
+    const matchesIndustries = filterIndustries.length === 0 || 
+      (creator.industries && creator.industries.some(industry => 
+        filterIndustries.includes(industry)
+      ));
+    
+    return matchesSearch && matchesPlatform && matchesAudience && matchesContentType && 
+           matchesLocation && matchesSkills && matchesIndustries;
   }).map(creator => {
     // Calculate match score if we have filters applied
     if (filterPlatform !== 'all' || filterAudience !== 'all' || filterContentType !== 'all' || 
-        filterLocation !== 'all' || filterSkills.length > 0) {
+        filterLocation !== 'all' || filterSkills.length > 0 || filterIndustries.length > 0) {
       const requirements = {
         platforms: filterPlatform !== 'all' ? [filterPlatform] : undefined,
         audience: filterAudience !== 'all' ? filterAudience : undefined,
         contentTypes: filterContentType !== 'all' ? [filterContentType] : undefined,
         location: filterLocation !== 'all' ? filterLocation : undefined,
-        skills: filterSkills.length > 0 ? filterSkills : undefined
+        skills: filterSkills.length > 0 ? filterSkills : undefined,
+        industries: filterIndustries.length > 0 ? filterIndustries : undefined
       };
       return {
         ...creator,
@@ -105,8 +124,9 @@ export const useCreatorSearch = () => {
     if (filterContentType && filterContentType !== 'all') params.set('contentType', filterContentType);
     if (filterLocation && filterLocation !== 'all') params.set('location', filterLocation);
     if (filterSkills.length > 0) params.set('skills', filterSkills.join(','));
+    if (filterIndustries.length > 0) params.set('industries', filterIndustries.join(','));
     setSearchParams(params);
-  }, [filterPlatform, filterAudience, filterContentType, filterLocation, filterSkills, setSearchParams]);
+  }, [filterPlatform, filterAudience, filterContentType, filterLocation, filterSkills, filterIndustries, setSearchParams]);
 
   const handleToggleCreator = (creatorId: number) => {
     setSelectedCreators(prev => 
@@ -162,6 +182,7 @@ export const useCreatorSearch = () => {
     setFilterContentType('all');
     setFilterLocation('all');
     setFilterSkills([]);
+    setFilterIndustries([]);
     setSearchTerm('');
   };
 
@@ -172,6 +193,7 @@ export const useCreatorSearch = () => {
     if (filterContentType !== 'all') count++;
     if (filterLocation !== 'all') count++;
     if (filterSkills.length > 0) count++;
+    if (filterIndustries.length > 0) count++;
     return count;
   };
 
@@ -188,6 +210,8 @@ export const useCreatorSearch = () => {
     setFilterLocation,
     filterSkills,
     setFilterSkills,
+    filterIndustries,
+    setFilterIndustries,
     isFilterSheetOpen,
     setIsFilterSheetOpen,
     selectedCreators,

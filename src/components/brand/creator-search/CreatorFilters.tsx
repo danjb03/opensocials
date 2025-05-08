@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Filter, Globe } from 'lucide-react';
 import { SkillsFilter } from '@/components/brand/filters';
+import { IndustryFilter } from '@/components/brand/filters/IndustryFilter';
 
 type CreatorFiltersProps = {
   searchTerm: string;
@@ -20,6 +21,8 @@ type CreatorFiltersProps = {
   onLocationChange?: (value: string) => void;
   filterSkills: string[];
   onSkillsChange: (skills: string[]) => void;
+  filterIndustries: string[];
+  onIndustriesChange: (industries: string[]) => void;
   isFilterSheetOpen: boolean;
   setIsFilterSheetOpen: (isOpen: boolean) => void;
   resetFilters: () => void;
@@ -39,6 +42,8 @@ export const CreatorFilters = ({
   onLocationChange = () => {},
   filterSkills,
   onSkillsChange,
+  filterIndustries,
+  onIndustriesChange,
   isFilterSheetOpen,
   setIsFilterSheetOpen,
   resetFilters,
@@ -136,6 +141,11 @@ export const CreatorFilters = ({
                     <SelectItem value="global">Global Audience</SelectItem>
                   </SelectContent>
                 </Select>
+                
+                <IndustryFilter 
+                  industries={filterIndustries}
+                  onIndustriesChange={onIndustriesChange}
+                />
                 
                 <SkillsFilter 
                   skills={filterSkills}

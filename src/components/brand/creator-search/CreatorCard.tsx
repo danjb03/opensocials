@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { PlusCircle, Info, Check } from 'lucide-react';
+import { PlusCircle, Info, Check, Briefcase } from 'lucide-react';
 
 type CreatorCardProps = {
   creator: {
@@ -20,6 +20,7 @@ type CreatorCardProps = {
     matchScore?: number;
     about?: string;
     bannerImageUrl?: string;
+    industries?: string[];
     socialLinks?: {
       tiktok?: string;
       instagram?: string;
@@ -92,14 +93,24 @@ export const CreatorCard = ({ creator, isSelected, onToggleSelect, onViewProfile
         </div>
         
         <div className="flex flex-wrap gap-1 mt-1 mb-2">
-          {creator.skills.slice(0, 2).map(skill => (
+          {creator.industries && creator.industries.length > 0 && (
+            <span className="flex items-center bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded-full mr-1">
+              <Briefcase className="h-2 w-2 mr-0.5" />
+              {creator.industries[0]}
+            </span>
+          )}
+          
+          {creator.skills.slice(0, creator.industries && creator.industries.length > 0 ? 1 : 2).map(skill => (
             <span key={skill} className="bg-gray-100 text-gray-800 text-[10px] px-1.5 py-0.5 rounded-full">
               {skill}
             </span>
           ))}
-          {creator.skills.length > 2 && (
+          
+          {(creator.skills.length > (creator.industries && creator.industries.length > 0 ? 1 : 2) || 
+           (creator.industries && creator.industries.length > 1)) && (
             <span className="text-[10px] px-1 py-0.5 text-muted-foreground">
-              +{creator.skills.length - 2}
+              +{(creator.skills.length - (creator.industries && creator.industries.length > 0 ? 1 : 2)) + 
+                 (creator.industries ? creator.industries.length - 1 : 0)}
             </span>
           )}
         </div>
