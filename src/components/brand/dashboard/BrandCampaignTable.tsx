@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -9,7 +10,7 @@ import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 import { toast } from '@/components/ui/sonner'
-import { CalendarRange, Wallet, FileEdit, Clock, ChevronRight, PlusCircle } from 'lucide-react'
+import { CalendarRange, Wallet, FileEdit, Clock, ChevronRight } from 'lucide-react'
 
 type CampaignRow = {
   project_id: string
@@ -102,10 +103,6 @@ export default function BrandCampaignTable() {
     navigate(`/brand/orders?projectId=${projectId}`);
   };
 
-  const handleCreateProject = () => {
-    navigate('/brand/projects?newProject=true');
-  };
-
   const getStatusColor = (status: string) => {
     switch(status.toLowerCase()) {
       case 'live':
@@ -179,15 +176,8 @@ export default function BrandCampaignTable() {
   return (
     <Card className="shadow-md rounded-xl overflow-hidden">
       <CardHeader className="pb-2 border-b border-slate-100">
-        <CardTitle className="text-xl font-bold flex justify-between items-center">
-          <span>Your Campaigns</span>
-          <Button 
-            onClick={handleCreateProject}
-            size="sm"
-            className="text-xs"
-          >
-            <PlusCircle className="h-4 w-4 mr-1" /> New Campaign
-          </Button>
+        <CardTitle className="text-xl font-bold">
+          Your Campaigns
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
@@ -200,12 +190,6 @@ export default function BrandCampaignTable() {
             <p className="text-center text-slate-500 mb-6 max-w-md">
               Create your first marketing campaign to start working with creators
             </p>
-            <Button 
-              onClick={handleCreateProject}
-              size="sm"
-            >
-              <PlusCircle className="h-4 w-4 mr-1" /> Create First Campaign
-            </Button>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
