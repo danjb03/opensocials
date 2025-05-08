@@ -39,4 +39,6 @@ export type Creator = {
   };
   // Content categories/industries that the creator specializes in
   industries?: string[];
+  // Creator type classification
+  creatorType?: string;
 };
