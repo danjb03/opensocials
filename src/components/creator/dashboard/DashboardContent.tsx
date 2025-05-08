@@ -6,6 +6,7 @@ import AudienceLocation from '@/components/creator/AudienceLocation';
 import DashboardStats from './DashboardStats';
 import SocialAnalytics from './SocialAnalytics';
 import EarningsChart from './EarningsChart';
+import { CreatorProfile } from '@/hooks/useCreatorProfile';
 
 interface DashboardContentProps {
   profile: any;
@@ -28,7 +29,7 @@ interface DashboardContentProps {
     tiktok?: { followers: string; engagement: string; growth: string };
     youtube?: { followers: string; engagement: string; growth: string };
   };
-  onProfileSubmit: (values: any) => void;
+  onProfileSubmit: (values: Partial<CreatorProfile>) => Promise<void>;
   onCancelEdit: () => void;
   onStartProfileSetup: () => void;
   onAvatarChange: (file: File) => void;

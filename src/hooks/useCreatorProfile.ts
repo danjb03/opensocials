@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,6 +38,9 @@ export interface CreatorProfile {
     secondary?: string[];
     countries?: { name: string; percentage: number }[];
   };
+  // Add the new fields
+  industries?: string[];
+  creatorType?: string;
 }
 
 // Define an extended profile type that includes the custom fields we'll be using
@@ -67,6 +71,8 @@ interface ExtendedProfile {
   created_at: string | null;
   updated_at: string | null;
   company_name: string | null;
+  industries?: string[] | null;
+  creator_type?: string | null;
 }
 
 export const useCreatorProfile = () => {
@@ -150,7 +156,9 @@ export const useCreatorProfile = () => {
                 { name: 'Australia', percentage: 10 },
                 { name: 'Others', percentage: 25 }
               ]
-            }
+            },
+            industries: profileData.industries || [],
+            creatorType: profileData.creator_type || ''
           };
           setProfile(transformedProfile);
         }
@@ -212,7 +220,9 @@ export const useCreatorProfile = () => {
               audienceLocation: data.audience_location || {
                 primary: 'Global',
                 countries: []
-              }
+              },
+              industries: data.industries || [],
+              creatorType: data.creator_type || ''
             };
             setProfile(updatedProfile);
           }
@@ -282,6 +292,15 @@ export const useCreatorProfile = () => {
       // Handle audience location specifically to ensure proper JSON storage
       if (updatedData.audienceLocation) {
         dbUpdateData.audience_location = updatedData.audienceLocation;
+      }
+
+      // Add the new fields to the database update
+      if (updatedData.industries !== undefined) {
+        dbUpdateData.industries = updatedData.industries;
+      }
+
+      if (updatedData.creatorType !== undefined) {
+        dbUpdateData.creator_type = updatedData.creatorType;
       }
 
       console.log('Updating profile with data:', dbUpdateData);

@@ -16,12 +16,12 @@ export function CreatorIndustrySelector({
   maxSelections = 3 
 }: CreatorIndustrySelectorProps) {
   const toggle = (tag: string) => {
-    setSelected(prev =>
-      prev.includes(tag)
-        ? prev.filter(t => t !== tag)
-        : prev.length < maxSelections
-        ? [...prev, tag]
-        : prev
+    setSelected(
+      selected.includes(tag)
+        ? selected.filter(t => t !== tag)
+        : selected.length < maxSelections
+        ? [...selected, tag]
+        : selected
     );
   };
 
