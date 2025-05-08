@@ -9,8 +9,11 @@ interface TodoItem {
   id: string;
   title: string;
   description: string;
-  type: 'review' | 'confirm' | 'signoff';
+  type: 'review' | 'confirm' | 'signoff' | 'next_stage';
   projectId: string;
+  projectName: string;
+  currentStage: string;
+  nextStage: string;
 }
 
 interface TodoPanelProps {
@@ -21,7 +24,7 @@ const TodoPanel: React.FC<TodoPanelProps> = ({ items }) => {
   const navigate = useNavigate();
 
   const handleActionClick = (projectId: string) => {
-    navigate(`/brand/projects/${projectId}`);
+    navigate(`/brand/orders?projectId=${projectId}`);
   };
 
   if (items.length === 0) {
@@ -53,12 +56,17 @@ const TodoPanel: React.FC<TodoPanelProps> = ({ items }) => {
           <div key={item.id} className="flex items-start justify-between border-l-4 border-primary pl-4 py-2">
             <div>
               <h4 className="font-medium">{item.title}</h4>
-              <p className="text-sm text-muted-foreground">{item.description}</p>
+              <p className="text-sm text-muted-foreground">
+                {item.description} 
+                {item.type === 'next_stage' && (
+                  <span> - Move from <span className="font-medium">{item.currentStage}</span> to <span className="font-medium">{item.nextStage}</span></span>
+                )}
+              </p>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs flex items-center gap-1">
                 <Clock className="h-3 w-3" />
-                Due soon
+                Action required
               </span>
               <Button 
                 size="sm"

@@ -1,21 +1,12 @@
-
 import { OrderStage, Order, Creator, ContentItem } from '@/types/orders';
-import { Project } from '@/types/projects';
 
-// Helper function to calculate progress percentage based on stage
-export const getStageProgress = (stage: OrderStage): number => {
-  const stages: OrderStage[] = ['campaign_setup', 'creator_selection', 'contract_payment', 'planning_creation', 'content_performance'];
-  const currentIndex = stages.indexOf(stage);
-  return Math.round(((currentIndex + 1) / stages.length) * 100);
-};
-
-// Map project status to order stage - this function is crucial for database integration
+// Map project status to order stage
 export const mapProjectStatusToOrderStage = (status: string): OrderStage => {
-  switch(status) {
+  switch (status) {
     case 'new':
+    case 'draft':
       return 'campaign_setup';
     case 'under_review':
-    case 'awaiting_approval':
       return 'creator_selection';
     case 'creators_assigned':
       return 'contract_payment';
@@ -28,84 +19,85 @@ export const mapProjectStatusToOrderStage = (status: string): OrderStage => {
   }
 };
 
-// Generate mock creators and content for demo purposes
-// In a real implementation, these would come from the database
-export const generateMockCreators = (projectId: string): Creator[] => {
-  // For demonstration, we'll generate creators based on project ID
-  if (projectId.includes('2') || projectId.includes('3')) {
-    return [
-      { 
-        id: 'creator1', 
-        name: 'Alex Morgan', 
-        platform: 'Instagram', 
-        imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-        status: 'accepted' 
-      },
-      { 
-        id: 'creator2', 
-        name: 'Sam Rivera', 
-        platform: 'TikTok', 
-        imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-        status: 'invited' 
-      }
-    ];
-  } else if (projectId.includes('4')) {
-    return [
-      { 
-        id: 'creator4', 
-        name: 'Taylor Singh', 
-        platform: 'Instagram', 
-        imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-        status: 'completed' 
-      }
-    ];
+// Calculate stage progress percentage
+export const getStageProgress = (stage: OrderStage): number => {
+  switch (stage) {
+    case 'campaign_setup':
+      return 20;
+    case 'creator_selection':
+      return 40;
+    case 'contract_payment':
+      return 60;
+    case 'planning_creation':
+      return 80;
+    case 'content_performance':
+      return 100;
+    default:
+      return 0;
   }
-  
-  return [];
 };
 
-export const generateMockContentItems = (projectId: string): ContentItem[] => {
-  if (projectId.includes('4')) {
-    return [
-      {
-        id: 'content1',
-        creatorId: 'creator4',
-        creatorName: 'Taylor Singh',
-        platform: 'Instagram',
-        type: 'post',
-        status: 'published',
-        submittedAt: '2023-05-15T10:30:00Z',
-        publishedAt: '2023-05-17T14:20:00Z'
-      }
-    ];
-  }
+// Generate mock creators for testing
+export const generateMockCreators = (count: number = 3): Creator[] => {
+  const platforms = ['Instagram', 'TikTok', 'YouTube'];
+  const statuses: ('invited' | 'accepted' | 'declined' | 'completed')[] = ['invited', 'accepted', 'declined', 'completed'];
   
-  return [];
+  return Array.from({ length: count }, (_, i) => ({
+    id: `creator-${i + 1}`,
+    name: `Creator ${i + 1}`,
+    platform: platforms[i % platforms.length],
+    imageUrl: 'https://i.pravatar.cc/150?img=' + (i + 10),
+    status: statuses[i % statuses.length],
+  }));
 };
 
-// Map a project from database to Order interface for the UI
-export const projectToOrder = (project: Project): Order => {
-  // Map project status to order stage
-  const stage: OrderStage = mapProjectStatusToOrderStage(project.status || 'new');
+// Generate mock content items for testing
+export const generateMockContentItems = (creatorCount: number = 3): ContentItem[] => {
+  const types: ('video' | 'post' | 'story')[] = ['video', 'post', 'story'];
+  const statuses: ('draft' | 'submitted' | 'approved' | 'published')[] = ['draft', 'submitted', 'approved', 'published'];
+  const platforms = ['Instagram', 'TikTok', 'YouTube'];
   
-  // Generate mock creators and content items for demo purposes
-  // In a real implementation, these would be fetched from the database
-  const creators = generateMockCreators(project.id);
-  const contentItems = generateMockContentItems(project.id);
+  return Array.from({ length: creatorCount * 2 }, (_, i) => {
+    const creatorIndex = Math.floor(i / 2);
+    return {
+      id: `content-${i + 1}`,
+      creatorId: `creator-${creatorIndex + 1}`,
+      creatorName: `Creator ${creatorIndex + 1}`,
+      platform: platforms[creatorIndex % platforms.length],
+      type: types[i % types.length],
+      status: statuses[i % statuses.length],
+      submittedAt: i % 2 === 0 ? new Date().toISOString() : undefined,
+      publishedAt: i % 4 === 0 ? new Date().toISOString() : undefined,
+    };
+  });
+};
+
+// Function to convert a project to an order
+export const projectToOrder = (project: any): Order => {
+  const stage = mapProjectStatusToOrderStage(project.status);
   
-  // Map project to order
+  // Generate mock creators for this project
+  const creatorCount = Math.floor(Math.random() * 4) + 1; // 1 to 4 creators
+  const mockCreators = generateMockCreators(creatorCount);
+  
+  // Generate mock content items
+  const mockContentItems = generateMockContentItems(creatorCount);
+  
+  // Get platforms from project or use defaults
+  const platforms = project.platforms || ['Instagram', 'TikTok'];
+  
   return {
     id: project.id,
     title: project.name,
-    description: '', // Default empty string since description is optional
-    createdAt: new Date().toISOString(), // Default to current date since created_at might not exist
-    stage: stage,
+    description: project.description || '',
+    createdAt: project.created_at || new Date().toISOString(),
+    stage,
     progress: getStageProgress(stage),
     budget: project.budget || 0,
     currency: project.currency || 'USD',
-    dueDate: project.end_date,
-    creators: creators,
-    platformsList: project.platforms || [],
-    contentItems: contentItems
+    dueDate: project.submission_deadline || project.end_date,
+    creators: mockCreators,
+    platformsList: platforms,
+    contentItems: mockContentItems,
   };
 };

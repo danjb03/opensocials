@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { toast } from '@/components/ui/sonner';
+import { orderStageLabels, OrderStage } from '@/types/orders';
+import { mapProjectStatusToOrderStage } from '@/utils/orderUtils';
 
 export const useBrandDashboard = () => {
   const { user } = useAuth();
@@ -30,22 +32,78 @@ export const useBrandDashboard = () => {
         // Set projects data
         setProjects(projectsData || []);
         
-        // 2. Generate todo items based on projects with draft/pending status
-        const pendingProjects = projectsData?.filter(p => 
-          p.status === 'draft' || p.status === 'pending' || p.status === 'awaiting_approval'
-        ) || [];
+        // 2. Generate todo items based on projects and their current stages
+        const allTodos = [];
         
-        const todos = pendingProjects.map(project => ({
-          id: `todo-${project.id}`,
-          projectId: project.id,
-          title: project.status === 'draft' 
-            ? 'Complete project setup' 
-            : 'Review pending approval',
-          description: project.name,
-          type: project.status === 'draft' ? 'complete' : 'review'
-        }));
+        // Map of stages and what the next stage would be
+        const stageProgression: Record<OrderStage, { next: OrderStage, action: string }> = {
+          'campaign_setup': { 
+            next: 'creator_selection', 
+            action: 'Complete campaign setup'
+          },
+          'creator_selection': { 
+            next: 'contract_payment', 
+            action: 'Select creators'
+          },
+          'contract_payment': { 
+            next: 'planning_creation', 
+            action: 'Complete contract & payment'
+          },
+          'planning_creation': { 
+            next: 'content_performance', 
+            action: 'Finalize planning'
+          },
+          'content_performance': { 
+            next: null, 
+            action: 'Review performance'
+          },
+        };
         
-        setTodoItems(todos);
+        projectsData?.forEach(project => {
+          // Convert project status to order stage
+          const currentStage = mapProjectStatusToOrderStage(project.status);
+          const nextStageInfo = stageProgression[currentStage];
+          
+          if (nextStageInfo && nextStageInfo.next) {
+            allTodos.push({
+              id: `todo-stage-${project.id}`,
+              projectId: project.id,
+              projectName: project.name,
+              title: nextStageInfo.action,
+              description: `For campaign: ${project.name}`,
+              type: 'next_stage',
+              currentStage: orderStageLabels[currentStage],
+              nextStage: orderStageLabels[nextStageInfo.next]
+            });
+          }
+          
+          // Add additional todos based on project status
+          if (project.status === 'draft') {
+            allTodos.push({
+              id: `todo-draft-${project.id}`,
+              projectId: project.id,
+              projectName: project.name,
+              title: 'Complete project setup',
+              description: `Draft campaign: ${project.name}`,
+              type: 'confirm',
+              currentStage: 'Draft',
+              nextStage: 'Campaign Setup'
+            });
+          } else if (project.status === 'awaiting_approval') {
+            allTodos.push({
+              id: `todo-approval-${project.id}`,
+              projectId: project.id,
+              projectName: project.name, 
+              title: 'Review pending approval',
+              description: `Campaign: ${project.name}`,
+              type: 'review',
+              currentStage: 'Review',
+              nextStage: 'Approval'
+            });
+          }
+        });
+        
+        setTodoItems(allTodos);
         
         // 3. For MVP, we'll use mock creators data
         // In a future version, we could fetch from brand_creator_connections
