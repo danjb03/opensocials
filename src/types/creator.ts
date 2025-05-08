@@ -37,6 +37,6 @@ export type Creator = {
       percentage: number;
     }[];
   };
-  // New industry field
+  // Content categories/industries that the creator specializes in
   industries?: string[];
 };

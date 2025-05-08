@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Filter, Globe } from 'lucide-react';
+import { Filter } from 'lucide-react';
 import { SkillsFilter } from '@/components/brand/filters';
 import { IndustryFilter } from '@/components/brand/filters/IndustryFilter';
 
@@ -111,6 +111,15 @@ export const CreatorFilters = ({
               </SheetHeader>
               
               <div className="mt-6 space-y-6">
+                {/* Industry filter - prominent placement */}
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold mb-2">Content Categories</h3>
+                  <IndustryFilter 
+                    industries={filterIndustries}
+                    onIndustriesChange={onIndustriesChange}
+                  />
+                </div>
+                
                 <Select value={filterContentType} onValueChange={onContentTypeChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Content Type" />
@@ -142,11 +151,6 @@ export const CreatorFilters = ({
                   </SelectContent>
                 </Select>
                 
-                <IndustryFilter 
-                  industries={filterIndustries}
-                  onIndustriesChange={onIndustriesChange}
-                />
-                
                 <SkillsFilter 
                   skills={filterSkills}
                   onSkillsChange={onSkillsChange}
@@ -174,4 +178,4 @@ export const CreatorFilters = ({
       </div>
     </>
   );
-};
+}

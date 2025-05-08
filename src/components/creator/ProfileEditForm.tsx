@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/form';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { industries } from '@/data/industries';
+import { industries, industryCategories } from '@/data/industries';
 import {
   Select,
   SelectContent,
@@ -25,9 +25,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command';
+import { Check, ChevronsUpDown, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, { message: 'First name is required' }),
@@ -37,7 +38,7 @@ const profileFormSchema = z.object({
   contentType: z.string().min(1, { message: 'Content type is required' }),
   audience: z.string().min(1, { message: 'Target audience is required' }),
   location: z.string().min(1, { message: 'Location is required' }),
-  industries: z.array(z.string()).optional(),
+  industries: z.array(z.string()).max(3, { message: 'Maximum 3 industries can be selected' }),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -62,6 +63,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [selectedIndustries, setSelectedIndustries] = React.useState<string[]>(initialValues.industries || []);
   const [open, setOpen] = React.useState(false);
+  const MAX_INDUSTRIES = 3;
   
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -96,11 +98,26 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
   };
 
   const handleIndustrySelect = (industry: string) => {
-    setSelectedIndustries(current => 
-      current.includes(industry) 
-        ? current.filter(i => i !== industry)
-        : [...current, industry]
-    );
+    setSelectedIndustries(current => {
+      if (current.includes(industry)) {
+        return current.filter(i => i !== industry);
+      } else {
+        if (current.length >= MAX_INDUSTRIES) {
+          // Replace the oldest selection
+          return [...current.slice(1), industry];
+        } else {
+          return [...current, industry];
+        }
+      }
+    });
+    
+    // Update form value
+    form.setValue('industries', selectedIndustries);
+  };
+
+  const handleIndustryRemove = (industry: string) => {
+    setSelectedIndustries(current => current.filter(i => i !== industry));
+    form.setValue('industries', selectedIndustries.filter(i => i !== industry));
   };
 
   return (
@@ -182,56 +199,112 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
               )}
             />
 
-            <div>
-              <FormLabel>Industries</FormLabel>
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={open}
-                    className="w-full justify-between text-start font-normal"
-                  >
-                    {selectedIndustries.length > 0
-                      ? `${selectedIndustries.length} industries selected`
-                      : "Select your industries..."}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0" align="start">
-                  <Command>
-                    <CommandInput placeholder="Search industries..." />
-                    <CommandEmpty>No industry found.</CommandEmpty>
-                    <CommandGroup className="max-h-64 overflow-auto">
-                      {industries.map((industry) => (
-                        <CommandItem
-                          key={industry}
-                          value={industry}
-                          onSelect={() => handleIndustrySelect(industry)}
+            <FormField
+              control={form.control}
+              name="industries"
+              render={() => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>What kind of content do you create?</FormLabel>
+                  <FormControl>
+                    <Popover open={open} onOpenChange={setOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={open}
+                          className="w-full justify-between text-start font-normal"
                         >
-                          <Check
-                            className={`mr-2 h-4 w-4 ${
-                              selectedIndustries.includes(industry) ? "opacity-100" : "opacity-0"
-                            }`}
-                          />
-                          {industry}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+                          {selectedIndustries.length > 0
+                            ? `${selectedIndustries.length} categories selected`
+                            : "Choose up to 3 categories that best describe your niche"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search categories..." />
+                          <CommandEmpty>No category found.</CommandEmpty>
+                          <CommandList className="max-h-[300px]">
+                            {selectedIndustries.length > 0 && (
+                              <>
+                                <CommandGroup heading="Selected">
+                                  {selectedIndustries.map((industry) => (
+                                    <CommandItem
+                                      key={`selected-${industry}`}
+                                      value={`selected-${industry}`}
+                                      onSelect={() => handleIndustrySelect(industry)}
+                                      className="justify-between"
+                                    >
+                                      {industry}
+                                      <Check className="h-4 w-4 opacity-100" />
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                                <CommandSeparator />
+                              </>
+                            )}
+                            
+                            {industryCategories.map((category) => (
+                              <CommandGroup key={category.name} heading={category.name}>
+                                {category.industries.map((industry) => {
+                                  const isSelected = selectedIndustries.includes(industry);
+                                  return (
+                                    <CommandItem
+                                      key={industry}
+                                      value={industry}
+                                      onSelect={() => handleIndustrySelect(industry)}
+                                      disabled={selectedIndustries.length >= MAX_INDUSTRIES && !isSelected}
+                                      className={cn(
+                                        isSelected && "bg-accent"
+                                      )}
+                                    >
+                                      <Check
+                                        className={`mr-2 h-4 w-4 ${
+                                          isSelected ? "opacity-100" : "opacity-0"
+                                        }`}
+                                      />
+                                      {industry}
+                                    </CommandItem>
+                                  );
+                                })}
+                              </CommandGroup>
+                            ))}
+                            
+                            {selectedIndustries.length >= MAX_INDUSTRIES && (
+                              <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                                Maximum 3 categories can be selected
+                              </div>
+                            )}
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </FormControl>
+                  <FormMessage />
 
-              {selectedIndustries.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {selectedIndustries.map((industry) => (
-                    <Badge key={industry} variant="secondary">
-                      {industry}
-                    </Badge>
-                  ))}
-                </div>
+                  {selectedIndustries.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {selectedIndustries.map((industry) => (
+                        <Badge 
+                          key={industry} 
+                          variant="secondary"
+                          className="px-3 py-1 flex items-center gap-1.5"
+                        >
+                          {industry}
+                          <button
+                            type="button"
+                            onClick={() => handleIndustryRemove(industry)}
+                            className="rounded-full hover:bg-muted/60 p-0.5"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </FormItem>
               )}
-            </div>
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField

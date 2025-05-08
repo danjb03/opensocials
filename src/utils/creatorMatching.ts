@@ -39,12 +39,13 @@ export const calculateMatchScore = (creator: Creator, requirements: ProjectRequi
     score += matchingSkills.length * 5; // 5 points per matching skill (up to 20 points)
   }
   
-  // Industry match - award points for each matching industry (new)
+  // Industry match - award points for each matching industry
   if (requirements.industries && requirements.industries.length > 0 && creator.industries) {
     const matchingIndustries = creator.industries.filter(industry => 
       requirements.industries?.includes(industry)
     );
-    score += matchingIndustries.length * 7; // 7 points per matching industry (up to 21 points)
+    // Industries are now a primary matching factor, so we give them more weight
+    score += matchingIndustries.length * 10; // 10 points per matching industry (up to 30 points)
   }
   
   // Location match

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, X, ChevronsUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,6 +8,8 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
+  CommandSeparator,
 } from '@/components/ui/command';
 import {
   Popover,
@@ -15,21 +17,31 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
-import { industries } from '@/data/industries';
+import { industries, industryCategories } from '@/data/industries';
 
 interface IndustryFilterProps {
   industries: string[];
   onIndustriesChange: (industries: string[]) => void;
+  maxSelections?: number;
 }
 
-export function IndustryFilter({ industries: selectedIndustries, onIndustriesChange }: IndustryFilterProps) {
+export function IndustryFilter({ 
+  industries: selectedIndustries, 
+  onIndustriesChange,
+  maxSelections = 5 
+}: IndustryFilterProps) {
   const [open, setOpen] = useState(false);
 
   const handleSelect = (industry: string) => {
     if (selectedIndustries.includes(industry)) {
       onIndustriesChange(selectedIndustries.filter((i) => i !== industry));
     } else {
-      onIndustriesChange([...selectedIndustries, industry]);
+      if (selectedIndustries.length >= maxSelections) {
+        // If already at max, replace the first selected industry
+        onIndustriesChange([...selectedIndustries.slice(1), industry]);
+      } else {
+        onIndustriesChange([...selectedIndustries, industry]);
+      }
     }
   };
 
@@ -58,22 +70,57 @@ export function IndustryFilter({ industries: selectedIndustries, onIndustriesCha
           <Command>
             <CommandInput placeholder="Search industries..." />
             <CommandEmpty>No industry found.</CommandEmpty>
-            <CommandGroup className="max-h-64 overflow-auto">
-              {industries.map((industry) => (
-                <CommandItem
-                  key={industry}
-                  value={industry}
-                  onSelect={() => handleSelect(industry)}
-                >
-                  <Check
-                    className={`mr-2 h-4 w-4 ${
-                      selectedIndustries.includes(industry) ? "opacity-100" : "opacity-0"
-                    }`}
-                  />
-                  {industry}
-                </CommandItem>
+            <CommandList className="max-h-[300px]">
+              {selectedIndustries.length > 0 && (
+                <>
+                  <CommandGroup heading="Selected">
+                    {selectedIndustries.map((industry) => (
+                      <CommandItem
+                        key={`selected-${industry}`}
+                        value={`selected-${industry}`}
+                        onSelect={() => handleSelect(industry)}
+                        className="justify-between"
+                      >
+                        {industry}
+                        <Check className="h-4 w-4 opacity-100" />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                  <CommandSeparator />
+                </>
+              )}
+              
+              {industryCategories.map((category) => (
+                <CommandGroup key={category.name} heading={category.name}>
+                  {category.industries.map((industry) => {
+                    const isSelected = selectedIndustries.includes(industry);
+                    return (
+                      <CommandItem
+                        key={industry}
+                        value={industry}
+                        onSelect={() => handleSelect(industry)}
+                        disabled={selectedIndustries.length >= maxSelections && !isSelected}
+                      >
+                        <div className="flex items-center">
+                          <Check
+                            className={`mr-2 h-4 w-4 ${
+                              isSelected ? "opacity-100" : "opacity-0"
+                            }`}
+                          />
+                          {industry}
+                        </div>
+                      </CommandItem>
+                    );
+                  })}
+                </CommandGroup>
               ))}
-            </CommandGroup>
+              
+              {selectedIndustries.length >= maxSelections && (
+                <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                  Maximum {maxSelections} industries can be selected
+                </div>
+              )}
+            </CommandList>
           </Command>
         </PopoverContent>
       </Popover>
@@ -86,6 +133,8 @@ export function IndustryFilter({ industries: selectedIndustries, onIndustriesCha
               <button
                 className="ml-1 rounded-full outline-none"
                 onClick={() => handleRemove(industry)}
+                type="button"
+                aria-label={`Remove ${industry}`}
               >
                 <X className="h-3 w-3" />
               </button>
