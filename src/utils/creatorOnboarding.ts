@@ -63,8 +63,9 @@ export async function submitCreatorProfile({
       throw new Error("Failed to update industry tags");
     }
 
+    // Use a type guard to ensure each row has a valid id property
     const inserts = industryRows
-      .filter((row): row is { id: string } => row?.id !== undefined)
+      .filter((row): row is typeof row => row?.id !== undefined)
       .map(row => ({
         creator_id: userId,
         industry_id: row.id
