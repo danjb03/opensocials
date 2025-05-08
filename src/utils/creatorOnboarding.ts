@@ -27,10 +27,14 @@ export async function submitCreatorProfile({
       throw new Error("Failed to fetch creator type");
     }
 
-    // Make sure we have a valid creator type ID
-    const creatorTypeId = typeRow?.id;
-    if (!creatorTypeId) {
+    // Safely check and extract the creator type ID
+    if (!typeRow || typeof typeRow !== 'object') {
       throw new Error(`Creator type "${creatorType}" not found`);
+    }
+
+    const creatorTypeId = typeRow.id;
+    if (!creatorTypeId) {
+      throw new Error(`Creator type "${creatorType}" has no ID`);
     }
 
     // Update the profile with the creator type ID
@@ -58,7 +62,7 @@ export async function submitCreatorProfile({
       throw new Error("Failed to fetch industries");
     }
 
-    if (!industryRows || industryRows.length === 0) {
+    if (!industryRows || !Array.isArray(industryRows) || industryRows.length === 0) {
       console.warn("No matching industries found for:", industries);
       // Continue without adding industries, but don't throw error
     }
@@ -75,12 +79,18 @@ export async function submitCreatorProfile({
     }
 
     // Only proceed with inserts if we have valid industry rows
-    if (industryRows && industryRows.length > 0) {
+    if (industryRows && Array.isArray(industryRows) && industryRows.length > 0) {
       // Prepare the insert data for creator-industry connections
-      const inserts = industryRows.map(row => ({
-        creator_id: userId,
-        industry_id: row.id
-      }));
+      const inserts = industryRows.map(row => {
+        if (!row || typeof row !== 'object' || !row.id) {
+          console.warn("Skipping industry row with missing ID:", row);
+          return null;
+        }
+        return {
+          creator_id: userId,
+          industry_id: row.id
+        };
+      }).filter(item => item !== null);
 
       // Insert the new industry connections
       if (inserts && inserts.length > 0) {
