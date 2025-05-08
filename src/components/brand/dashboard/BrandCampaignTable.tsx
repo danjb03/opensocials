@@ -43,13 +43,22 @@ type CampaignRow = {
 export default function BrandCampaignTable() {
   const [data, setData] = useState<CampaignRow[] | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const navigate = useNavigate();
 
   const fetchData = async () => {
     try {
+      setLoading(true);
+      setError(null);
+      
       // Get the session
-      const { data: sessionData } = await supabase.auth.getSession();
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        throw new Error(`Session error: ${sessionError.message}`);
+      }
+      
       const accessToken = sessionData.session?.access_token;
 
       if (!accessToken) {
@@ -57,20 +66,28 @@ export default function BrandCampaignTable() {
         return;
       }
 
-      const res = await fetch('/functions/v1/get-brand-projects', {
+      // Build the complete URL for the edge function
+      const url = `${window.location.origin}/functions/v1/get-brand-projects`;
+      console.log(`Fetching campaigns from: ${url}`);
+      
+      const res = await fetch(url, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
 
       if (!res.ok) {
-        throw new Error('Failed to fetch campaign data');
+        const errorText = await res.text();
+        console.error("API response error:", errorText);
+        throw new Error(`Failed to fetch campaign data: ${res.status} ${res.statusText}`);
       }
 
       const json = await res.json();
+      console.log("Campaigns fetched successfully:", json);
       setData(json);
     } catch (error) {
       console.error("Error fetching campaign data:", error);
+      setError(error.message);
       toast.error("Failed to load campaigns");
     } finally {
       setLoading(false);
@@ -114,6 +131,25 @@ export default function BrandCampaignTable() {
           <Skeleton key={i} className="h-16 w-full rounded-md" />
         ))}
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="text-xl font-bold">Your Campaigns</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="p-4 border border-red-200 bg-red-50 rounded-md text-red-700">
+            <h3 className="font-medium">Error loading campaigns</h3>
+            <p className="text-sm mt-1">{error}</p>
+            <Button variant="outline" className="mt-2" onClick={fetchData}>
+              Try Again
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 

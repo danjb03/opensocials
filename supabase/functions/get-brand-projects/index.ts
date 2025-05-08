@@ -2,6 +2,13 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
+// Define CORS headers to ensure proper API access
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Content-Type': 'application/json'
+}
+
 interface CampaignRow {
   project_id: string;
   project_name: string;
@@ -20,13 +27,21 @@ interface CampaignRow {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { 
+      status: 204, 
+      headers: corsHeaders 
+    });
+  }
+  
   try {
     // Create a Supabase client with the Auth context of the logged in user
     const authorization = req.headers.get('Authorization')
     if (!authorization) {
       return new Response(
         JSON.stringify({ error: 'Missing Authorization header' }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
+        { status: 401, headers: corsHeaders }
       )
     }
 
@@ -47,11 +62,14 @@ serve(async (req) => {
     } = await supabaseClient.auth.getUser(token)
 
     if (userError || !user) {
+      console.error('Auth error:', userError)
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
+        { status: 401, headers: corsHeaders }
       )
     }
+
+    console.log(`Fetching projects for user: ${user.id}`)
 
     // Get brand projects (basic data)
     const { data: projects, error: projectsError } = await supabaseClient
@@ -63,10 +81,12 @@ serve(async (req) => {
     if (projectsError) {
       console.error('Error fetching projects:', projectsError)
       return new Response(
-        JSON.stringify({ error: 'Failed to fetch projects' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Failed to fetch projects', details: projectsError }),
+        { status: 500, headers: corsHeaders }
       )
     }
+    
+    console.log(`Found ${projects?.length || 0} projects`)
 
     // Get deals related to these projects
     // In a real implementation, you'd have a project_id in the deals table
@@ -90,13 +110,13 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify(campaignData),
-      { headers: { 'Content-Type': 'application/json' } }
+      { headers: corsHeaders }
     )
   } catch (error) {
     console.error('Unexpected error:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal Server Error' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: 'Internal Server Error', details: error.message }),
+      { status: 500, headers: corsHeaders }
     )
   }
 })
