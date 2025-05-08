@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,6 +7,7 @@ import CreatorProfileHeader from '@/components/creator/CreatorProfileHeader';
 import VisibilityControls from '@/components/creator/VisibilityControls';
 import DashboardContent from '@/components/creator/dashboard/DashboardContent';
 import { useCreatorProfile } from '@/hooks/useCreatorProfile';
+import { CreatorProfile } from '@/hooks/useCreatorProfile';
 
 const CreatorDashboard = () => {
   const { user } = useAuth();

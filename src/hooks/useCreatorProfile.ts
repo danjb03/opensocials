@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
 import { checkOAuthRedirect, fetchPlatformAnalytics } from '@/lib/oauth';
+import { submitCreatorProfile } from '@/utils/creatorOnboarding';
 
 export interface CreatorProfile {
   id: string;
@@ -294,15 +295,6 @@ export const useCreatorProfile = () => {
         dbUpdateData.audience_location = updatedData.audienceLocation;
       }
 
-      // Add the new fields to the database update
-      if (updatedData.industries !== undefined) {
-        dbUpdateData.industries = updatedData.industries;
-      }
-
-      if (updatedData.creatorType !== undefined) {
-        dbUpdateData.creator_type = updatedData.creatorType;
-      }
-
       console.log('Updating profile with data:', dbUpdateData);
 
       const { error } = await supabase
@@ -313,6 +305,22 @@ export const useCreatorProfile = () => {
       if (error) {
         console.error('Supabase error updating profile:', error);
         throw error;
+      }
+
+      // If we have industries and creatorType, save those using the specialized function
+      if (updatedData.industries && updatedData.industries.length > 0 && updatedData.creatorType) {
+        try {
+          await submitCreatorProfile({
+            userId: user.id,
+            industries: updatedData.industries,
+            creatorType: updatedData.creatorType
+          });
+        } catch (error) {
+          console.error('Error saving industry and creator type data:', error);
+          toast.error('Your profile was updated but we had trouble saving your industry selections', {
+            description: 'Please try again or contact support.'
+          });
+        }
       }
 
       // Show success message
