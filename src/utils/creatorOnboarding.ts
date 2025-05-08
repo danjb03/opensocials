@@ -17,31 +17,21 @@ export async function submitCreatorProfile({
   try {
     // First, get the creator type ID based on the selected type name
     const { data: typeRow, error: typeError } = await supabase
-      .from("creator_types" as any)
-      .select("id")
+      .from("creator_types")
+      .select("*")
       .eq("type_name", creatorType)
-      .single();
+      .maybeSingle();
 
-    if (typeError) {
+    if (typeError || !typeRow?.id) {
       console.error("Error fetching creator type:", typeError);
-      throw new Error("Failed to fetch creator type");
-    }
-
-    // Safely check and extract the creator type ID
-    if (!typeRow || typeof typeRow !== 'object') {
-      throw new Error(`Creator type "${creatorType}" not found`);
-    }
-
-    const creatorTypeId = typeRow.id;
-    if (!creatorTypeId) {
-      throw new Error(`Creator type "${creatorType}" has no ID`);
+      throw new Error("Creator type not found");
     }
 
     // Update the profile with the creator type ID
     const { error: profileError } = await supabase
       .from("profiles")
       .update({ 
-        creator_type_id: creatorTypeId,
+        creator_type_id: typeRow.id,
         is_profile_complete: true
       })
       .eq("id", userId);
@@ -53,23 +43,18 @@ export async function submitCreatorProfile({
 
     // Get the industry IDs based on the selected industry names
     const { data: industryRows, error: industryError } = await supabase
-      .from("creator_industries" as any)
-      .select("id, name")
+      .from("creator_industries")
+      .select("*")
       .in("name", industries);
 
-    if (industryError) {
+    if (industryError || !industryRows?.length) {
       console.error("Error fetching industry IDs:", industryError);
-      throw new Error("Failed to fetch industries");
-    }
-
-    if (!industryRows || !Array.isArray(industryRows) || industryRows.length === 0) {
-      console.warn("No matching industries found for:", industries);
-      // Continue without adding industries, but don't throw error
+      throw new Error("Industry tags not found");
     }
 
     // First, remove any existing industry tags for this user to avoid duplicates
     const { error: deleteError } = await supabase
-      .from("creator_industry_tags" as any)
+      .from("creator_industry_tags")
       .delete()
       .eq("creator_id", userId);
 
@@ -78,30 +63,21 @@ export async function submitCreatorProfile({
       throw new Error("Failed to update industry tags");
     }
 
-    // Only proceed with inserts if we have valid industry rows
-    if (industryRows && Array.isArray(industryRows) && industryRows.length > 0) {
-      // Prepare the insert data for creator-industry connections
-      const inserts = industryRows.map(row => {
-        if (!row || typeof row !== 'object' || !row.id) {
-          console.warn("Skipping industry row with missing ID:", row);
-          return null;
-        }
-        return {
-          creator_id: userId,
-          industry_id: row.id
-        };
-      }).filter(item => item !== null);
+    // Prepare the insert data for creator-industry connections
+    const inserts = industryRows.map((row: any) => ({
+      creator_id: userId,
+      industry_id: row.id
+    }));
 
-      // Insert the new industry connections
-      if (inserts && inserts.length > 0) {
-        const { error: tagError } = await supabase
-          .from("creator_industry_tags" as any)
-          .insert(inserts as any);
+    // Insert the new industry connections
+    if (inserts.length > 0) {
+      const { error: tagError } = await supabase
+        .from("creator_industry_tags")
+        .insert(inserts);
 
-        if (tagError) {
-          console.error("Error inserting industry tags:", tagError);
-          throw new Error("Failed to save industry selections");
-        }
+      if (tagError) {
+        console.error("Error inserting industry tags:", tagError);
+        throw new Error("Failed to save industry selections");
       }
     }
 
