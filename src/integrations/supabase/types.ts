@@ -36,6 +36,78 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_industries: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      creator_industry_tags: {
+        Row: {
+          creator_id: string | null
+          id: string
+          industry_id: string | null
+        }
+        Insert: {
+          creator_id?: string | null
+          id?: string
+          industry_id?: string | null
+        }
+        Update: {
+          creator_id?: string | null
+          id?: string
+          industry_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_industry_tags_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_industry_tags_industry_id_fkey"
+            columns: ["industry_id"]
+            isOneToOne: false
+            referencedRelation: "creator_industries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_types: {
+        Row: {
+          description: string | null
+          id: string
+          slug: string
+          type_name: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          slug: string
+          type_name: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          slug?: string
+          type_name?: string
+        }
+        Relationships: []
+      }
       deal_earnings: {
         Row: {
           amount: number

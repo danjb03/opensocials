@@ -17,7 +17,7 @@ export async function submitCreatorProfile({
   try {
     // First, get the creator type ID based on the selected type name
     const { data: typeRow, error: typeError } = await supabase
-      .from("creator_types")
+      .from("creator_types" as any)
       .select("id")
       .eq("type_name", creatorType)
       .single();
@@ -43,7 +43,7 @@ export async function submitCreatorProfile({
 
     // Get the industry IDs based on the selected industry names
     const { data: industryRows, error: industryError } = await supabase
-      .from("creator_industries")
+      .from("creator_industries" as any)
       .select("id, name")
       .in("name", industries);
 
@@ -54,7 +54,7 @@ export async function submitCreatorProfile({
 
     // First, remove any existing industry tags for this user to avoid duplicates
     const { error: deleteError } = await supabase
-      .from("creator_industry_tags")
+      .from("creator_industry_tags" as any)
       .delete()
       .eq("creator_id", userId);
 
@@ -72,8 +72,8 @@ export async function submitCreatorProfile({
     // Insert the new industry connections
     if (inserts && inserts.length > 0) {
       const { error: tagError } = await supabase
-        .from("creator_industry_tags")
-        .insert(inserts);
+        .from("creator_industry_tags" as any)
+        .insert(inserts as any);
 
       if (tagError) {
         console.error("Error inserting industry tags:", tagError);
