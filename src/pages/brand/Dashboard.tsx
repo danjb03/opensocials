@@ -13,7 +13,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const navigate = useNavigate();
   const { 
     isLoading,
@@ -26,19 +26,26 @@ const Dashboard = () => {
     navigate('/super-admin');
   };
 
+  // Check if user has super_admin role
+  const isSuperAdmin = role === 'super_admin';
+
   return (
     <BrandLayout>
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Brand Dashboard</h1>
-          <Button 
-            variant="outline" 
-            onClick={handleBackToSuperAdmin} 
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Super Admin
-          </Button>
+          
+          {/* Only show the back button for super admins */}
+          {isSuperAdmin && (
+            <Button 
+              variant="outline" 
+              onClick={handleBackToSuperAdmin} 
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Super Admin
+            </Button>
+          )}
         </div>
         
         {isLoading ? (
