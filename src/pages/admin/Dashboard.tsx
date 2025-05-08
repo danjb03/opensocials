@@ -4,18 +4,34 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserCheck, Package, ChartBar, Briefcase, PieChart, TrendingDown, TrendingUp } from 'lucide-react';
+import { UserCheck, Package, ChartBar, Briefcase, PieChart, TrendingDown, TrendingUp, ArrowLeft } from 'lucide-react';
 import SignOutButton from '@/components/SignOutButton';
 import { ChartContainer } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from '@/components/ui/sonner';
+import AdminLayout from '@/components/layouts/AdminLayout';
 
 const AdminDashboard = () => {
-  const { user } = useAuth();
-  const { role } = useUserRole(user?.id);
+  const { user, role } = useAuth();
+  const { role: userRole } = useUserRole(user?.id);
   const navigate = useNavigate();
   const [userFilter, setUserFilter] = useState('all');
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  // Check if this is being accessed from super admin or directly
+  useEffect(() => {
+    // Check if we're on a super admin route
+    const isSuperAdminRoute = window.location.pathname.includes('/super-admin');
+    setIsStandalone(!isSuperAdminRoute);
+    
+    // Check if user is a super admin
+    if (role === 'super_admin' || userRole === 'super_admin') {
+      setIsSuperAdmin(true);
+    }
+  }, [role, userRole, window.location.pathname]);
 
   // Mock data for the revenue chart
   const revenueData = [
@@ -29,19 +45,28 @@ const AdminDashboard = () => {
 
   const handleBackToSuperAdmin = () => {
     navigate('/super-admin');
+    toast({
+      title: 'Navigating back',
+      description: 'Returning to Super Admin dashboard',
+    });
   };
 
-  return (
+  // If it's standalone mode, render with AdminLayout
+  // If accessed from super admin, render just the dashboard content
+  const renderDashboardContent = () => (
     <div className="container mx-auto py-8 px-4">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-        <Button 
-          variant="outline" 
-          onClick={handleBackToSuperAdmin} 
-          className="flex items-center gap-2 bg-white text-black border-black"
-        >
-          Back to Super Admin
-        </Button>
+        {isSuperAdmin && (
+          <Button 
+            variant="outline" 
+            onClick={handleBackToSuperAdmin} 
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Super Admin
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -101,12 +126,14 @@ const AdminDashboard = () => {
           <CardContent>
             <div className="h-[300px]">
               <ChartContainer config={{}} className="mt-4">
-                <BarChart data={revenueData}>
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="revenue" fill="#000000" />
-                </BarChart>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={revenueData}>
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="revenue" fill="#000000" />
+                  </BarChart>
+                </ResponsiveContainer>
               </ChartContainer>
             </div>
           </CardContent>
@@ -123,7 +150,7 @@ const AdminDashboard = () => {
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <Select value={userFilter} onValueChange={setUserFilter}>
-                  <SelectTrigger className="w-[180px] bg-white text-black border-black">
+                  <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Filter by user type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -157,6 +184,12 @@ const AdminDashboard = () => {
       </div>
     </div>
   );
+
+  if (isStandalone) {
+    return <AdminLayout>{renderDashboardContent()}</AdminLayout>;
+  }
+
+  return renderDashboardContent();
 };
 
 export default AdminDashboard;
