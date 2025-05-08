@@ -66,25 +66,38 @@ export default function BrandCampaignTable() {
         return;
       }
 
-      // Build the complete URL for the edge function
-      const url = `${window.location.origin}/functions/v1/get-brand-projects`;
-      console.log(`Fetching campaigns from: ${url}`);
-      
-      const res = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      // Using direct Supabase query instead of Edge Function
+      const { data: projectsData, error: projectsError } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('brand_id', sessionData.session?.user.id)
+        .order('created_at', { ascending: false });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("API response error:", errorText);
-        throw new Error(`Failed to fetch campaign data: ${res.status} ${res.statusText}`);
+      if (projectsError) {
+        console.error("Projects query error:", projectsError);
+        throw new Error(`Failed to fetch projects: ${projectsError.message}`);
       }
 
-      const json = await res.json();
-      console.log("Campaigns fetched successfully:", json);
-      setData(json);
+      // Transform the data to match the expected format
+      const campaignRows: CampaignRow[] = projectsData.map(project => ({
+        project_id: project.id,
+        project_name: project.name,
+        project_status: project.status || 'draft',
+        start_date: project.start_date,
+        end_date: project.end_date,
+        budget: project.budget || 0,
+        currency: project.currency || 'USD',
+        deal_id: null,
+        deal_status: null,
+        deal_value: null,
+        creator_name: null,
+        avatar_url: null,
+        engagement_rate: null,
+        primary_platform: null
+      }));
+
+      console.log("Campaigns fetched successfully:", campaignRows);
+      setData(campaignRows);
     } catch (error) {
       console.error("Error fetching campaign data:", error);
       setError(error.message);

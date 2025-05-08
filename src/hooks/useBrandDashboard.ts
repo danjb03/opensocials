@@ -21,7 +21,7 @@ export const useBrandDashboard = () => {
       setIsLoading(true);
       
       try {
-        // 1. Fetch projects for this brand
+        // 1. Fetch projects for this brand directly from Supabase
         const { data: projectsData, error: projectsError } = await supabase
           .from('projects')
           .select('*')
