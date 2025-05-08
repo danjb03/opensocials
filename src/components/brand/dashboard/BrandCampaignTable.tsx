@@ -10,7 +10,7 @@ import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 import { toast } from '@/components/ui/sonner'
-import { Trash2 } from 'lucide-react'
+import { Trash2, CalendarRange, Wallet, FileEdit, Clock, ChevronRight, PlusCircle } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -115,6 +115,10 @@ export default function BrandCampaignTable() {
     navigate(`/brand/orders?projectId=${projectId}`);
   };
 
+  const handleCreateProject = () => {
+    navigate('/brand/projects?newProject=true');
+  };
+
   const handleDeleteProject = async (projectId: string) => {
     setDeletingId(projectId);
     try {
@@ -137,28 +141,69 @@ export default function BrandCampaignTable() {
     }
   };
 
+  const getStatusColor = (status: string) => {
+    switch(status.toLowerCase()) {
+      case 'live':
+        return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+      case 'draft':
+        return 'bg-slate-100 text-slate-700 border-slate-200';
+      case 'active':
+      case 'in_progress':
+        return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'completed':
+        return 'bg-purple-100 text-purple-700 border-purple-200';
+      case 'paused':
+        return 'bg-amber-100 text-amber-700 border-amber-200';
+      default:
+        return 'bg-gray-100 text-gray-700 border-gray-200';
+    }
+  };
+
+  const getCurrencySymbol = (currency: string) => {
+    return currency === 'GBP' ? '£' : '$';
+  };
+
   if (loading) {
     return (
-      <div className="space-y-4">
-        {[...Array(4)].map((_, i) => (
-          <Skeleton key={i} className="h-16 w-full rounded-md" />
-        ))}
-      </div>
+      <Card className="border-0 shadow-md rounded-xl overflow-hidden">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-xl font-bold flex justify-between items-center">
+            <span>Your Campaigns</span>
+            <Skeleton className="h-9 w-28 rounded-md" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4 pt-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex flex-col md:flex-row justify-between gap-4 p-4 border border-slate-100 rounded-lg">
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-48" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+                <div className="flex flex-col md:flex-row gap-2">
+                  <Skeleton className="h-9 w-24 rounded-md" />
+                  <Skeleton className="h-9 w-20 rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   if (error) {
     return (
-      <Card className="w-full">
+      <Card className="border-0 shadow-md rounded-xl overflow-hidden">
         <CardHeader>
           <CardTitle className="text-xl font-bold">Your Campaigns</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="p-4 border border-red-200 bg-red-50 rounded-md text-red-700">
-            <h3 className="font-medium">Error loading campaigns</h3>
-            <p className="text-sm mt-1">{error}</p>
-            <Button variant="outline" className="mt-2" onClick={fetchData}>
-              Try Again
+          <div className="p-6 border border-red-200 bg-red-50 rounded-lg text-red-700">
+            <h3 className="font-medium text-lg">Error loading campaigns</h3>
+            <p className="text-sm mt-2">{error}</p>
+            <Button variant="outline" className="mt-4 border-red-300" onClick={fetchData}>
+              <Clock className="mr-2 h-4 w-4" /> Try Again
             </Button>
           </div>
         </CardContent>
@@ -166,92 +211,131 @@ export default function BrandCampaignTable() {
     );
   }
 
-  if (!data || data.length === 0) {
-    return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-xl font-bold">Your Campaigns</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-6 text-muted-foreground">
-            No active campaigns found.
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-xl font-bold">Your Campaigns</CardTitle>
+    <Card className="border-0 shadow-md rounded-xl overflow-hidden">
+      <CardHeader className="pb-2 border-b border-slate-100">
+        <CardTitle className="text-xl font-bold flex justify-between items-center">
+          <span>Your Campaigns</span>
+          <Button 
+            onClick={handleCreateProject}
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+          >
+            <PlusCircle className="h-4 w-4 mr-2" /> New Campaign
+          </Button>
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 divide-y">
-          {data.map((item) => (
-            <div key={item.project_id} className="py-4 flex flex-col md:flex-row justify-between gap-4">
-              <div>
-                <h3 className="font-semibold text-lg">{item.project_name}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {item.start_date ? format(new Date(item.start_date), 'MMM d') : '—'} → {item.end_date ? format(new Date(item.end_date), 'MMM d') : '—'}
-                </p>
-              </div>
-              <div className="text-sm flex flex-col items-start md:items-end">
-                <Badge variant={item.project_status === 'live' ? 'default' : 'outline'} className="mb-1 capitalize">
-                  {item.project_status}
-                </Badge>
-                {item.creator_name ? (
-                  <p>
-                    <span className="font-medium">{item.creator_name}</span> — {item.engagement_rate ?? '—'} ER
-                  </p>
-                ) : (
-                  <span className="text-muted-foreground">No creator yet</span>
-                )}
-                <p className="text-muted-foreground">{item.currency === 'GBP' ? '£' : '$'}{item.budget} total</p>
-                {item.deal_status && <p className="text-xs mt-1 text-muted-foreground">Deal: {item.deal_status}</p>}
-              </div>
-              <div className="flex self-center gap-2">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
+      <CardContent className="p-0">
+        {!data || data.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 px-4">
+            <div className="rounded-full bg-slate-100 p-4 mb-4">
+              <FileEdit className="h-8 w-8 text-slate-400" />
+            </div>
+            <h3 className="text-lg font-medium text-slate-800 mb-2">No campaigns yet</h3>
+            <p className="text-center text-slate-500 mb-6 max-w-md">
+              Create your first marketing campaign to start working with creators
+            </p>
+            <Button 
+              onClick={handleCreateProject}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+            >
+              <PlusCircle className="h-4 w-4 mr-2" /> Create First Campaign
+            </Button>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {data.map((item) => (
+              <div key={item.project_id} className="p-4 hover:bg-slate-50 transition-colors">
+                <div className="flex flex-col md:flex-row justify-between gap-4">
+                  <div>
+                    <div className="flex items-center mb-1">
+                      <h3 className="font-semibold text-lg text-slate-800">{item.project_name}</h3>
+                      <Badge 
+                        variant="outline" 
+                        className={`ml-2 capitalize text-xs font-medium ${getStatusColor(item.project_status)}`}
+                      >
+                        {item.project_status.replace(/_/g, ' ')}
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-x-4 gap-y-2 mt-2">
+                      <div className="flex items-center text-sm text-slate-500">
+                        <CalendarRange className="h-4 w-4 mr-1.5 text-slate-400" />
+                        <span>
+                          {item.start_date ? format(new Date(item.start_date), 'MMM d') : '—'} → {item.end_date ? format(new Date(item.end_date), 'MMM d, yyyy') : '—'}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center text-sm text-slate-500">
+                        <Wallet className="h-4 w-4 mr-1.5 text-slate-400" />
+                        <span>{getCurrencySymbol(item.currency)}{item.budget.toLocaleString()}</span>
+                      </div>
+                      
+                      {item.creator_name && (
+                        <div className="flex items-center text-sm text-slate-500">
+                          <span className="flex items-center">
+                            {item.avatar_url ? (
+                              <img 
+                                src={item.avatar_url} 
+                                alt={item.creator_name} 
+                                className="h-5 w-5 rounded-full mr-1.5"
+                              />
+                            ) : (
+                              <div className="h-5 w-5 rounded-full bg-slate-200 mr-1.5"></div>
+                            )}
+                            {item.creator_name}
+                            {item.engagement_rate && <span className="ml-1 text-xs text-slate-400">({item.engagement_rate} ER)</span>}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 self-start md:self-center">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                          size="sm"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="border-0 shadow-lg">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Campaign</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete "{item.project_name}"? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => handleDeleteProject(item.project_id)} 
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                            disabled={deletingId === item.project_id}
+                          >
+                            {deletingId === item.project_id ? "Deleting..." : "Delete Campaign"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                    
                     <Button 
-                      variant="outline" 
-                      className="border-red-200 text-red-600 hover:bg-red-50"
+                      onClick={() => handleViewProject(item.project_id)}
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
                       size="sm"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      View Details
+                      <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Campaign</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to delete "{item.project_name}"? This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction 
-                        onClick={() => handleDeleteProject(item.project_id)} 
-                        className="bg-red-600 hover:bg-red-700 text-white"
-                        disabled={deletingId === item.project_id}
-                      >
-                        {deletingId === item.project_id ? "Deleting..." : "Delete Campaign"}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-                
-                <Button 
-                  variant="secondary" 
-                  onClick={() => handleViewProject(item.project_id)}
-                >
-                  View
-                </Button>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
-  )
+  );
 }
