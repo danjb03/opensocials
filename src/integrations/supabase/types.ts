@@ -447,6 +447,10 @@ export type Database = {
         Args: { user_id: string; role_type: string }
         Returns: undefined
       }
+      current_user_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       duplicate_project: {
         Args:
           | Record<PropertyKey, never>

@@ -165,7 +165,7 @@ export default function BrandCampaignTable() {
 
   if (loading) {
     return (
-      <Card className="border-0 shadow-md rounded-xl overflow-hidden">
+      <Card className="shadow-md rounded-xl overflow-hidden">
         <CardHeader className="pb-0">
           <CardTitle className="text-xl font-bold flex justify-between items-center">
             <span>Your Campaigns</span>
@@ -194,7 +194,7 @@ export default function BrandCampaignTable() {
 
   if (error) {
     return (
-      <Card className="border-0 shadow-md rounded-xl overflow-hidden">
+      <Card className="shadow-md rounded-xl overflow-hidden">
         <CardHeader>
           <CardTitle className="text-xl font-bold">Your Campaigns</CardTitle>
         </CardHeader>
@@ -212,15 +212,16 @@ export default function BrandCampaignTable() {
   }
 
   return (
-    <Card className="border-0 shadow-md rounded-xl overflow-hidden">
+    <Card className="shadow-md rounded-xl overflow-hidden">
       <CardHeader className="pb-2 border-b border-slate-100">
         <CardTitle className="text-xl font-bold flex justify-between items-center">
           <span>Your Campaigns</span>
           <Button 
             onClick={handleCreateProject}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+            size="sm"
+            className="text-xs"
           >
-            <PlusCircle className="h-4 w-4 mr-2" /> New Campaign
+            <PlusCircle className="h-4 w-4 mr-1" /> New Campaign
           </Button>
         </CardTitle>
       </CardHeader>
@@ -236,9 +237,9 @@ export default function BrandCampaignTable() {
             </p>
             <Button 
               onClick={handleCreateProject}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+              size="sm"
             >
-              <PlusCircle className="h-4 w-4 mr-2" /> Create First Campaign
+              <PlusCircle className="h-4 w-4 mr-1" /> Create First Campaign
             </Button>
           </div>
         ) : (
@@ -298,7 +299,7 @@ export default function BrandCampaignTable() {
                           className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
                           size="sm"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent className="border-0 shadow-lg">
@@ -323,11 +324,11 @@ export default function BrandCampaignTable() {
                     
                     <Button 
                       onClick={() => handleViewProject(item.project_id)}
-                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
                       size="sm"
+                      className="text-xs"
                     >
-                      View Details
-                      <ChevronRight className="h-4 w-4 ml-1" />
+                      View
+                      <ChevronRight className="h-3.5 w-3.5 ml-0.5" />
                     </Button>
                   </div>
                 </div>
