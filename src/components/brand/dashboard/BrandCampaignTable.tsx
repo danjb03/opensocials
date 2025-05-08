@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -10,18 +9,7 @@ import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 import { toast } from '@/components/ui/sonner'
-import { Trash2, CalendarRange, Wallet, FileEdit, Clock, ChevronRight, PlusCircle } from 'lucide-react'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
+import { CalendarRange, Wallet, FileEdit, Clock, ChevronRight, PlusCircle } from 'lucide-react'
 
 type CampaignRow = {
   project_id: string
@@ -44,7 +32,6 @@ export default function BrandCampaignTable() {
   const [data, setData] = useState<CampaignRow[] | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
   const navigate = useNavigate();
 
   const fetchData = async () => {
@@ -117,28 +104,6 @@ export default function BrandCampaignTable() {
 
   const handleCreateProject = () => {
     navigate('/brand/projects?newProject=true');
-  };
-
-  const handleDeleteProject = async (projectId: string) => {
-    setDeletingId(projectId);
-    try {
-      const { error } = await supabase
-        .from('projects')
-        .delete()
-        .eq('id', projectId);
-
-      if (error) throw error;
-      
-      toast.success("Campaign successfully deleted");
-      
-      // Remove the deleted item from the state
-      setData(data => data ? data.filter(item => item.project_id !== projectId) : null);
-    } catch (error) {
-      console.error("Error deleting campaign:", error);
-      toast.error("Failed to delete campaign");
-    } finally {
-      setDeletingId(null);
-    }
   };
 
   const getStatusColor = (status: string) => {
@@ -292,36 +257,6 @@ export default function BrandCampaignTable() {
                   </div>
                   
                   <div className="flex items-center gap-2 self-start md:self-center">
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                          size="sm"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="border-0 shadow-lg">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Campaign</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete "{item.project_name}"? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction 
-                            onClick={() => handleDeleteProject(item.project_id)} 
-                            className="bg-red-600 hover:bg-red-700 text-white"
-                            disabled={deletingId === item.project_id}
-                          >
-                            {deletingId === item.project_id ? "Deleting..." : "Delete Campaign"}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                    
                     <Button 
                       onClick={() => handleViewProject(item.project_id)}
                       size="sm"
