@@ -27,11 +27,17 @@ export async function submitCreatorProfile({
       throw new Error("Failed to fetch creator type");
     }
 
+    // Make sure we have a valid creator type ID
+    const creatorTypeId = typeRow?.id;
+    if (!creatorTypeId) {
+      throw new Error(`Creator type "${creatorType}" not found`);
+    }
+
     // Update the profile with the creator type ID
     const { error: profileError } = await supabase
       .from("profiles")
       .update({ 
-        creator_type_id: typeRow?.id,
+        creator_type_id: creatorTypeId,
         is_profile_complete: true
       })
       .eq("id", userId);
@@ -52,6 +58,11 @@ export async function submitCreatorProfile({
       throw new Error("Failed to fetch industries");
     }
 
+    if (!industryRows || industryRows.length === 0) {
+      console.warn("No matching industries found for:", industries);
+      // Continue without adding industries, but don't throw error
+    }
+
     // First, remove any existing industry tags for this user to avoid duplicates
     const { error: deleteError } = await supabase
       .from("creator_industry_tags" as any)
@@ -63,21 +74,24 @@ export async function submitCreatorProfile({
       throw new Error("Failed to update industry tags");
     }
 
-    // Prepare the insert data for creator-industry connections
-    const inserts = industryRows?.map(row => ({
-      creator_id: userId,
-      industry_id: row.id
-    }));
+    // Only proceed with inserts if we have valid industry rows
+    if (industryRows && industryRows.length > 0) {
+      // Prepare the insert data for creator-industry connections
+      const inserts = industryRows.map(row => ({
+        creator_id: userId,
+        industry_id: row.id
+      }));
 
-    // Insert the new industry connections
-    if (inserts && inserts.length > 0) {
-      const { error: tagError } = await supabase
-        .from("creator_industry_tags" as any)
-        .insert(inserts as any);
+      // Insert the new industry connections
+      if (inserts && inserts.length > 0) {
+        const { error: tagError } = await supabase
+          .from("creator_industry_tags" as any)
+          .insert(inserts as any);
 
-      if (tagError) {
-        console.error("Error inserting industry tags:", tagError);
-        throw new Error("Failed to save industry selections");
+        if (tagError) {
+          console.error("Error inserting industry tags:", tagError);
+          throw new Error("Failed to save industry selections");
+        }
       }
     }
 
