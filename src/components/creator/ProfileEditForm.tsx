@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { CreatorIndustrySelector } from '@/components/creator/setup/CreatorIndustrySelector';
 import { CreatorTypeSelector } from '@/components/creator/setup/CreatorTypeSelector';
 
-interface ProfileEditFormProps {
+export interface ProfileEditFormProps {
   profile: CreatorProfile;
   isLoading: boolean;
   onSubmit: (updatedProfile: Partial<CreatorProfile>) => Promise<void>;

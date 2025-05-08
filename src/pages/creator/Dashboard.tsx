@@ -84,16 +84,16 @@ const CreatorDashboard = () => {
     amount: earning.amount,
   })) || [];
 
-  const handleProfileSubmit = (values: any) => {
-    updateProfile({
+  const handleProfileSubmit = async (values: Partial<CreatorProfile>) => {
+    await updateProfile({
       firstName: values.firstName,
       lastName: values.lastName,
       bio: values.bio,
       primaryPlatform: values.primaryPlatform,
       contentType: values.contentType,
-      audienceType: values.audience,
+      audienceType: values.audienceType,
       audienceLocation: {
-        primary: values.location,
+        primary: values.audienceLocation?.primary || profile?.audienceLocation?.primary || '',
         secondary: profile?.audienceLocation?.secondary || [],
         countries: profile?.audienceLocation?.countries || [
           { name: 'United States', percentage: 30 },
@@ -103,6 +103,8 @@ const CreatorDashboard = () => {
           { name: 'Others', percentage: 25 }
         ]
       },
+      industries: values.industries || [],
+      creatorType: values.creatorType || '',
       isProfileComplete: true
     });
     setIsEditing(false);

@@ -66,19 +66,10 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   if (isEditing) {
     return (
       <ProfileEditForm 
-        initialValues={{
-          firstName: profile?.firstName || '',
-          lastName: profile?.lastName || '',
-          bio: profile?.bio || '',
-          primaryPlatform: profile?.primaryPlatform || '',
-          contentType: profile?.contentType || '',
-          audience: profile?.audienceType || '',
-          location: profile?.audienceLocation?.primary || ''
-        }}
-        avatarUrl={profile?.avatarUrl || undefined}
+        profile={profile}
+        isLoading={isLoading}
         onSubmit={onProfileSubmit}
         onCancel={onCancelEdit}
-        onAvatarChange={onAvatarChange}
       />
     );
   }
