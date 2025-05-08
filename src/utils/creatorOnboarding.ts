@@ -15,24 +15,24 @@ export async function submitCreatorProfile({
   creatorType: string;
 }) {
   try {
-    // First, get the creator type ID based on the selected type name
+    // Fetch creator type ID safely
     const { data: typeRow, error: typeError } = await supabase
       .from("creator_types")
       .select("*")
       .eq("type_name", creatorType)
       .maybeSingle();
 
-    if (typeError || !typeRow?.id) {
+    if (typeError || !typeRow || !typeRow.id) {
       console.error("Error fetching creator type:", typeError);
       throw new Error("Creator type not found");
     }
 
-    // Update the profile with the creator type ID
+    // Update profile with creator_type_id
     const { error: profileError } = await supabase
       .from("profiles")
       .update({ 
         creator_type_id: typeRow.id,
-        is_profile_complete: true
+        is_profile_complete: true 
       })
       .eq("id", userId);
 
@@ -41,13 +41,13 @@ export async function submitCreatorProfile({
       throw new Error("Failed to update profile");
     }
 
-    // Get the industry IDs based on the selected industry names
+    // Fetch industry IDs
     const { data: industryRows, error: industryError } = await supabase
       .from("creator_industries")
       .select("*")
       .in("name", industries);
 
-    if (industryError || !industryRows?.length) {
+    if (industryError || !industryRows || industryRows.length === 0) {
       console.error("Error fetching industry IDs:", industryError);
       throw new Error("Industry tags not found");
     }
@@ -63,11 +63,12 @@ export async function submitCreatorProfile({
       throw new Error("Failed to update industry tags");
     }
 
-    // Prepare the insert data for creator-industry connections
-    const inserts = industryRows.map((row: any) => ({
-      creator_id: userId,
-      industry_id: row.id
-    }));
+    const inserts = industryRows
+      .filter((row): row is { id: string } => row?.id !== undefined)
+      .map(row => ({
+        creator_id: userId,
+        industry_id: row.id
+      }));
 
     // Insert the new industry connections
     if (inserts.length > 0) {
