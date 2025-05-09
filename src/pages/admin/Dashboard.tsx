@@ -45,10 +45,7 @@ const AdminDashboard = () => {
 
   const handleBackToSuperAdmin = () => {
     navigate('/super-admin');
-    toast({
-      title: 'Navigating back',
-      description: 'Returning to Super Admin dashboard',
-    });
+    toast.success('Returning to Super Admin dashboard');
   };
 
   // If it's standalone mode, render with AdminLayout
