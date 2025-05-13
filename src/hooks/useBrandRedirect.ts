@@ -57,8 +57,13 @@ export const useBrandRedirect = () => {
         // Only redirect if is_complete is explicitly false
         // If is_complete is true or null/undefined, don't redirect
         if (brandProfile?.is_complete === false) {
+          console.log('🚨 Profile marked as incomplete, redirecting to setup');
           navigate('/brand/setup-profile');
+          return;
         }
+
+        console.log('✅ Profile is complete, allowing access to dashboard');
+        setIsChecking(false);
       } catch (err) {
         console.error('Error checking brand profile:', err);
       } finally {

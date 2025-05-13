@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AuthContext, type UserRole } from '@/lib/auth';
@@ -57,6 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log("Fetching role for user:", userId);
       
+      // IMPORTANT: Check for super_admin role first and give it highest priority
       // First, check if we can get the role from user metadata
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -65,9 +65,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setRole('super_admin');
         setIsLoading(false);
         return;
-      } else if (user?.user_metadata?.role) {
-        console.log("Found role in user metadata:", user.user_metadata.role);
-        setRole(user.user_metadata.role as UserRole);
       }
       
       // Next check the user_roles table specifically for super_admin role
@@ -84,6 +81,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setRole('super_admin');
         setIsLoading(false);
         return;
+      }
+      
+      // If user is not a super_admin, continue with normal role checks...
+      // If not found in user_roles, check profiles table as fallback
+      
+      if (user?.user_metadata?.role) {
+        console.log("Found role in user metadata:", user.user_metadata.role);
+        setRole(user.user_metadata.role as UserRole);
       }
       
       // Check other roles in user_roles table
