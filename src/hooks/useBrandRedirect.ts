@@ -12,33 +12,48 @@ export const useBrandRedirect = () => {
 
   useEffect(() => {
     const checkBrandProfile = async () => {
-      // Wait for auth to complete
-      if (authLoading || !user) {
+      // Don't do anything while auth is still loading
+      if (authLoading) {
+        return;
+      }
+
+      console.log('🧠 useBrandRedirect - Auth state:', { 
+        userId: user?.id,
+        role,
+        authLoading,
+        path: location.pathname
+      });
+      
+      // Skip all checks for super_admin users
+      if (role === 'super_admin') {
+        console.log('✅ Super admin detected, skipping brand redirect checks');
         setIsChecking(false);
         return;
       }
-      
-      // Skip check for super_admin users - prevent redirection for super admins
-      if (role === 'super_admin') {
-        console.log('Super admin detected, skipping brand profile check');
+
+      // If no user, we can't check profile (should be handled by auth guards anyway)
+      if (!user) {
         setIsChecking(false);
         return;
       }
       
       // Only check for brand users
       if (role !== 'brand') {
+        console.log('⏩ Non-brand user detected, skipping brand profile check');
         setIsChecking(false);
         return;
       }
 
       // Skip check if we're already on the setup page
       if (location.pathname === '/brand/setup-profile') {
+        console.log('✅ Already on setup page, skipping redirect check');
         setIsChecking(false);
         return;
       }
 
-      // Check if we're on a super admin route
+      // Skip check if we're on a super admin route
       if (location.pathname.startsWith('/super-admin')) {
+        console.log('✅ On super-admin route, skipping brand profile check');
         setIsChecking(false);
         return;
       }
@@ -52,21 +67,19 @@ export const useBrandRedirect = () => {
           .eq('role', 'brand')
           .maybeSingle();
 
-        console.log('Brand profile check:', brandProfile);
+        console.log('📊 Brand profile check:', brandProfile);
 
         // Only redirect if is_complete is explicitly false
-        // If is_complete is true or null/undefined, don't redirect
         if (brandProfile?.is_complete === false) {
           console.log('🚨 Profile marked as incomplete, redirecting to setup');
-          navigate('/brand/setup-profile');
+          navigate('/brand/setup-profile', { replace: true });
           return;
         }
 
-        console.log('✅ Profile is complete, allowing access to dashboard');
+        console.log('✅ Profile is complete or not found, allowing access');
         setIsChecking(false);
       } catch (err) {
-        console.error('Error checking brand profile:', err);
-      } finally {
+        console.error('❌ Error checking brand profile:', err);
         setIsChecking(false);
       }
     };

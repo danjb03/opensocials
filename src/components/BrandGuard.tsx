@@ -20,8 +20,11 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
     const checkBrandAccess = async () => {
       console.log('👁️‍🗨️ BrandGuard running');
       console.log('🧾 Auth state:', { user: user?.id, role, authLoading });
-      console.log('📍 Path:', window.location.pathname);
+      console.log('📍 Path:', location.pathname);
 
+      // Don't do anything if auth is still loading
+      if (authLoading) return;
+      
       // Allow super_admin to bypass immediately
       if (role === 'super_admin') {
         console.log('✅ User is super_admin, bypassing brand guard check');
@@ -44,22 +47,20 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
         return;
       }
 
-      if (authLoading) return;
-
       if (!user) {
         console.log('🚫 User not logged in, redirecting to auth');
-        navigate('/auth');
+        navigate('/auth', { replace: true });
         return;
       }
 
       if (role !== 'brand') {
         console.log('🚫 User is not brand, redirecting');
         toast.error('You do not have brand access');
-        navigate(redirectTo);
+        navigate(redirectTo, { replace: true });
         return;
       }
 
-      const isSetupPage = window.location.pathname === '/brand/setup-profile';
+      const isSetupPage = location.pathname === '/brand/setup-profile';
       if (isSetupPage) {
         console.log('✅ Already on setup page, allowing access');
         setIsChecking(false);
@@ -76,7 +77,7 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
 
         if (profileError || !profile) {
           console.error('❌ Error fetching brand profile:', profileError);
-          navigate('/auth');
+          navigate('/auth', { replace: true });
           return;
         }
 
@@ -86,7 +87,7 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
         // Only redirect if profile is explicitly not complete
         if (profile.is_complete !== true) {
           console.log('🚨 Profile marked as incomplete, redirecting to setup');
-          navigate('/brand/setup-profile');
+          navigate('/brand/setup-profile', { replace: true });
           return;
         }
 
@@ -94,7 +95,7 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
         setIsChecking(false);
       } catch (err) {
         console.error('❌ Error in guard logic:', err);
-        navigate('/auth');
+        navigate('/auth', { replace: true });
       }
     };
 

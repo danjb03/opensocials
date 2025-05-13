@@ -6,12 +6,13 @@ import { useAuth } from '@/lib/auth';
 import { useLocation } from 'react-router-dom';
 
 const BrandOnboardingGuard = ({ children, redirectTo = '/auth' }) => {
-  const { user, role } = useAuth();
+  const { user, role, isLoading } = useAuth();
   const location = useLocation();
 
   useEffect(() => {
     const logUserData = async () => {
-      if (!user) return;
+      // Don't do anything if auth is still loading or no user
+      if (isLoading || !user) return;
       
       console.log('👁️‍🗨️ BrandOnboardingGuard running for user:', user.id);
       console.log('📊 User role:', role);
@@ -45,7 +46,7 @@ const BrandOnboardingGuard = ({ children, redirectTo = '/auth' }) => {
     };
 
     logUserData();
-  }, [user, role, location.pathname]);
+  }, [user, role, isLoading, location.pathname]);
 
   return <BrandGuard redirectTo={redirectTo}>{children}</BrandGuard>;
 };
