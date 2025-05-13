@@ -1,8 +1,7 @@
-
 import { useState, useRef } from 'react';
-import { UploadCloud, File, X } from 'lucide-react';
+import { UploadCloud } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 
 interface ContentUploaderProps {
   onFilesSelected: (files: File[]) => void;

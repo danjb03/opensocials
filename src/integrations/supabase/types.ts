@@ -36,6 +36,97 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_content: {
+        Row: {
+          campaign_id: string
+          content_type: string
+          created_at: string | null
+          creator_id: string
+          description: string | null
+          feedback: string | null
+          id: string
+          platform: string
+          status: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          campaign_id: string
+          content_type: string
+          created_at?: string | null
+          creator_id: string
+          description?: string | null
+          feedback?: string | null
+          id?: string
+          platform: string
+          status?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          content_type?: string
+          created_at?: string | null
+          creator_id?: string
+          description?: string | null
+          feedback?: string | null
+          id?: string
+          platform?: string
+          status?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_content_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_content_files: {
+        Row: {
+          content_id: string
+          created_at: string | null
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          file_url: string
+          id: string
+        }
+        Insert: {
+          content_id: string
+          created_at?: string | null
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          file_url: string
+          id?: string
+        }
+        Update: {
+          content_id?: string
+          created_at?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          file_url?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_content_files_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creator_industries: {
         Row: {
           id: string

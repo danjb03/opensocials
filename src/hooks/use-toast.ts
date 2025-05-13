@@ -1,53 +1,54 @@
 
 import * as React from "react";
-import { toast } from "sonner";
+import { toast as sonnerToast } from "sonner";
 
-type ToastProps = React.ComponentProps<typeof toast> & {
+// Re-export the direct toast function for simplified usage
+export const toast = sonnerToast;
+
+export type ToastProps = React.ComponentProps<typeof sonnerToast> & {
   title?: React.ReactNode;
   description?: React.ReactNode;
   variant?: "default" | "destructive";
 };
 
-// Re-export toast methods with proper typing support
+// Create a custom hook for backward compatibility with shadcn/ui toast pattern
 export const useToast = () => {
-  return {
-    toast: {
-      // Standard toast methods
-      success: (title: string, options?: { description?: string }) => {
-        return toast.success(title, {
-          description: options?.description,
-        });
-      },
-      error: (title: string, options?: { description?: string }) => {
-        return toast.error(title, {
-          description: options?.description,
-        });
-      },
-      warning: (title: string, options?: { description?: string }) => {
-        return toast.warning(title, {
-          description: options?.description,
-        });
-      },
-      info: (title: string, options?: { description?: string }) => {
-        return toast.info(title, {
-          description: options?.description,
-        });
-      },
-      // Legacy format for backward compatibility
-      // Allows calling toast({ title: "...", description: "..." })
-      ...(props?: ToastProps) => {
-        if (!props) return toast;
-        
-        if (props.variant === "destructive") {
-          return toast.error(props.title as string, {
-            description: props.description as string,
-          });
-        }
-        
-        return toast(props.title as string, {
+  const toast = {
+    // Standard toast methods using sonner
+    success: (message: string, options?: { description?: string }) => {
+      return sonnerToast.success(message, {
+        description: options?.description,
+      });
+    },
+    error: (message: string, options?: { description?: string }) => {
+      return sonnerToast.error(message, {
+        description: options?.description,
+      });
+    },
+    warning: (message: string, options?: { description?: string }) => {
+      return sonnerToast.warning(message, {
+        description: options?.description,
+      });
+    },
+    info: (message: string, options?: { description?: string }) => {
+      return sonnerToast.info(message, {
+        description: options?.description,
+      });
+    },
+    // Legacy shadcn/ui style toast function
+    // This allows calling toast({ title: "...", description: "..." })
+    toast: (props: ToastProps) => {
+      if (props.variant === "destructive") {
+        return sonnerToast.error(props.title as string, {
           description: props.description as string,
         });
-      },
-    },
+      }
+      
+      return sonnerToast(props.title as string, {
+        description: props.description as string,
+      });
+    }
   };
+
+  return toast;
 };
