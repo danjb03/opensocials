@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, Search, ExternalLink, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from '@/components/ui/sonner';
+import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface Creator {
@@ -21,6 +21,7 @@ interface CreatorListProps {
 
 const CreatorList: React.FC<CreatorListProps> = ({ creators }) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const goToCreatorSearch = () => {
     navigate('/brand/creators');
@@ -28,7 +29,10 @@ const CreatorList: React.FC<CreatorListProps> = ({ creators }) => {
 
   const handleLikeCreator = (creatorId: string) => {
     // This will be implemented in the future to store liked creators
-    toast.success("Creator added to your favorites");
+    toast({
+      title: "Creator added to your favorites",
+      variant: "success",
+    });
     // Future implementation: Store this in Supabase
   };
 

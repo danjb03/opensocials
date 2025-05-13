@@ -32,8 +32,8 @@ export const CreatorListItem = ({ creator, isSelected, onToggleSelect, onViewPro
     <div 
       className="group rounded-md border border-gray-100 hover:border-primary/30 shadow-sm hover:shadow transition-all duration-300 overflow-hidden bg-white w-full"
     >
+      {/* Creator image */}
       <div className="flex items-center p-3">
-        {/* Creator image */}
         <div className="relative h-16 w-16 overflow-hidden rounded-md mr-4 flex-shrink-0">
           <img 
             src={creator.imageUrl} 

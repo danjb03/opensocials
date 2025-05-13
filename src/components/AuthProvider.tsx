@@ -1,7 +1,8 @@
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AuthContext, type UserRole } from '@/lib/auth';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -142,7 +143,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         toast({
           title: 'No Role Assigned',
           description: 'Your account does not have a role assigned. Please contact an administrator.',
-          duration: 5000,
         });
       }
       
