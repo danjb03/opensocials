@@ -17,7 +17,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { industries, industryCategories } from '@/data/industries';
 
 interface IndustryFilterProps {
@@ -71,7 +70,7 @@ export function IndustryFilter({
           <Command>
             <CommandInput placeholder="Search industries..." />
             <CommandEmpty>No industry found.</CommandEmpty>
-            <ScrollArea className="h-[300px]">
+            <div className="max-h-[300px] overflow-y-auto">
               <CommandList>
                 {selectedIndustries.length > 0 && (
                   <>
@@ -123,7 +122,7 @@ export function IndustryFilter({
                   </div>
                 )}
               </CommandList>
-            </ScrollArea>
+            </div>
           </Command>
         </PopoverContent>
       </Popover>
