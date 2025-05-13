@@ -89,11 +89,13 @@ export const useCreatorSearch = () => {
       filterSkills.includes(skill)
     );
     
-    // Industries filter (new)
+    // Industries filter - updated to correctly handle arrays
     const matchesIndustries = filterIndustries.length === 0 || 
-      (creator.industries && creator.industries.some(industry => 
-        filterIndustries.includes(industry)
-      ));
+      (creator.industries && 
+       Array.isArray(creator.industries) && 
+       creator.industries.some(industry => 
+         filterIndustries.includes(industry)
+       ));
     
     return matchesSearch && matchesPlatform && matchesAudience && matchesContentType && 
            matchesLocation && matchesSkills && matchesIndustries;
