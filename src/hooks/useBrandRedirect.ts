@@ -18,6 +18,12 @@ export const useBrandRedirect = () => {
         return;
       }
       
+      // Skip check for super_admin users
+      if (role === 'super_admin') {
+        setIsChecking(false);
+        return;
+      }
+      
       // Only check for brand users
       if (role !== 'brand') {
         setIsChecking(false);
