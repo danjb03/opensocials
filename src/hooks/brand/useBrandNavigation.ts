@@ -20,7 +20,7 @@ export const useBrandNavigation = () => {
     }
     
     // Force a full page reload to ensure fresh data
-    window.location.href = role === 'super_admin' ? '/super-admin' : '/brand';
+    window.location.href = role === 'admin' ? '/admin' : '/brand';
   };
 
   return { redirectToDashboard };

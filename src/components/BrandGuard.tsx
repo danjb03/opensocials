@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { toast } from '@/components/ui/sonner';
@@ -14,6 +14,7 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
   const { user, role, isLoading: authLoading } = useAuth();
   const [isChecking, setIsChecking] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const checkBrandAccess = async () => {
@@ -24,6 +25,13 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
       // Allow super_admin to bypass immediately
       if (role === 'super_admin') {
         console.log('✅ User is super_admin, bypassing brand guard check');
+        setIsChecking(false);
+        return;
+      }
+
+      // Check if current location is a super-admin route
+      if (location.pathname.startsWith('/super-admin')) {
+        console.log('✅ On super-admin route, allowing access');
         setIsChecking(false);
         return;
       }
@@ -91,7 +99,7 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
     };
 
     checkBrandAccess();
-  }, [user, role, authLoading, navigate, redirectTo]);
+  }, [user, role, authLoading, navigate, redirectTo, location.pathname]);
 
   if (authLoading || isChecking) {
     return (

@@ -18,8 +18,9 @@ export const useBrandRedirect = () => {
         return;
       }
       
-      // Skip check for super_admin users
+      // Skip check for super_admin users - prevent redirection for super admins
       if (role === 'super_admin') {
+        console.log('Super admin detected, skipping brand profile check');
         setIsChecking(false);
         return;
       }
@@ -32,6 +33,12 @@ export const useBrandRedirect = () => {
 
       // Skip check if we're already on the setup page
       if (location.pathname === '/brand/setup-profile') {
+        setIsChecking(false);
+        return;
+      }
+
+      // Check if we're on a super admin route
+      if (location.pathname.startsWith('/super-admin')) {
         setIsChecking(false);
         return;
       }
