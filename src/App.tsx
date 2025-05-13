@@ -1,5 +1,5 @@
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster as Sonner } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -23,6 +23,9 @@ import BrandGuard from "./components/BrandGuard";
 import AdminLayout from "./components/layouts/AdminLayout";
 import CreatorDashboard from "./pages/creator/Dashboard";
 import CreatorDeals from "./pages/creator/Deals";
+import CreatorCampaigns from "./pages/creator/Campaigns";
+import CampaignDetail from "./pages/creator/CampaignDetail";
+import ContentUpload from "./pages/creator/ContentUpload";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import DataDeletion from "./pages/DataDeletion";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -104,6 +107,31 @@ function App() {
                 element={
                   <ProtectedRoute requiredRole="creator">
                     <CreatorDeals />
+                  </ProtectedRoute>
+                } 
+              />
+              {/* New Creator Campaign Routes */}
+              <Route 
+                path="/creator/campaigns" 
+                element={
+                  <ProtectedRoute requiredRole="creator">
+                    <CreatorCampaigns />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/creator/campaigns/:id" 
+                element={
+                  <ProtectedRoute requiredRole="creator">
+                    <CampaignDetail />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/creator/campaigns/:id/upload" 
+                element={
+                  <ProtectedRoute requiredRole="creator">
+                    <ContentUpload />
                   </ProtectedRoute>
                 } 
               />

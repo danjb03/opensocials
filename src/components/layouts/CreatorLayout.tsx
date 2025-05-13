@@ -5,8 +5,8 @@ import Logo from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { ChartLine, DollarSign, User } from 'lucide-react';
+import { toast } from 'sonner';
+import { ChartLine, DollarSign, FileText, User } from 'lucide-react';
 import SidebarToggle from './SidebarToggle';
 import Footer from './Footer';
 
@@ -18,7 +18,6 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -27,17 +26,10 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
       setIsLoggingOut(true);
       await supabase.auth.signOut();
       navigate('/');
-      toast({
-        title: "Signed out",
-        description: "You have been signed out successfully.",
-      });
+      toast.success("Signed out successfully");
     } catch (error) {
       console.error('Error signing out:', error);
-      toast({
-        title: "Error",
-        description: "There was an error signing out. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("There was an error signing out. Please try again.");
     } finally {
       setIsLoggingOut(false);
     }
@@ -95,6 +87,19 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
               <Link to="/creator/deals" className="flex items-center gap-2">
                 <DollarSign className="h-5 w-5" />
                 {!isSidebarCollapsed && <span>Deals</span>}
+              </Link>
+            </Button>
+
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent ${
+                location.pathname.startsWith('/creator/campaigns') ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
+              }`}
+              asChild
+            >
+              <Link to="/creator/campaigns" className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Campaigns</span>}
               </Link>
             </Button>
           </nav>
