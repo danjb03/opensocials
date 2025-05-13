@@ -1,57 +1,59 @@
 
 import * as React from "react";
 import { toast as sonnerToast } from "sonner";
-import type { ToastProps } from "@/components/ui/toast";
 
-type ToasterToast = ToastProps & {
-  id: string;
+type ToastProps = {
   title?: React.ReactNode;
   description?: React.ReactNode;
   action?: React.ReactNode;
+  variant?: "default" | "destructive";
 };
 
-export type SonnerToastProps = {
-  title?: string;
-  description?: string;
-  variant?: "default" | "destructive" | "success";
-  duration?: number;
-};
-
-// This is needed for compatibility with the old toast system
-const TOAST_LIMIT = 1;
-const TOAST_REMOVE_DELAY = 1000000;
-
-export function useToast() {
-  // For backward compatibility with components expecting the old toast API
-  const [toasts, setToasts] = React.useState<ToasterToast[]>([]);
-
-  // Simplified toast function that uses Sonner
-  const toast = ({ title, description, variant = "default", duration }: SonnerToastProps) => {
-    if (variant === "destructive") {
-      return sonnerToast.error(title, {
-        description,
-        duration,
-      });
-    }
-    
-    if (variant === "success") {
-      return sonnerToast.success(title, {
-        description,
-        duration,
-      });
-    }
-    
-    return sonnerToast(title, {
-      description,
-      duration,
+// This format matches the sonner toast function
+export const toast = {
+  // Standard toast with modern options
+  success: (message: string, options?: { description?: string }) => {
+    return sonnerToast.success(message, {
+      description: options?.description,
     });
-  };
+  },
+  error: (message: string, options?: { description?: string }) => {
+    return sonnerToast.error(message, {
+      description: options?.description,
+    });
+  },
+  warning: (message: string, options?: { description?: string }) => {
+    return sonnerToast.warning(message, {
+      description: options?.description,
+    });
+  },
+  info: (message: string, options?: { description?: string }) => {
+    return sonnerToast.info(message, {
+      description: options?.description,
+    });
+  },
+  // Legacy toast format for backward compatibility
+  // Allows passing in a ToastProps object
+  ...((props?: ToastProps) => {
+    if (!props) {
+      return sonnerToast;
+    }
+    
+    if (props.variant === "destructive") {
+      return sonnerToast.error(props.title as string, {
+        description: props.description as string,
+      });
+    }
+    
+    return sonnerToast(props.title as string, {
+      description: props.description as string,
+    });
+  }),
+};
 
-  return { 
-    toast,
-    toasts, // Return empty array for compatibility
-    dismiss: () => {}, // No-op function for compatibility
+// Hook for components that need to display toast messages
+export const useToast = () => {
+  return {
+    toast
   };
-}
-
-export { sonnerToast as toast };
+};
