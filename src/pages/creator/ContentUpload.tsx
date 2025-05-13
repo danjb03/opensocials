@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -14,6 +13,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, FileUp, Loader2, Upload, X } from 'lucide-react';
 import ContentUploader from '@/components/creator/campaigns/ContentUploader';
+
+interface Campaign {
+  id: string;
+  title: string;
+  contentRequirements: Record<string, any>;
+  brandId: string;
+  platforms: string[];
+  dealId: string;
+  brandName: string;
+}
 
 const ContentUpload = () => {
   const { id } = useParams<{ id: string }>();
@@ -45,25 +54,28 @@ const ContentUpload = () => {
           throw new Error('Campaign not found');
         }
 
-        const campaign = {
+        const campaignData: Campaign = {
           id: deal.projects?.id || deal.id,
           title: deal.projects?.name || deal.title,
           contentRequirements: deal.projects?.content_requirements || {},
           brandId: deal.projects?.brand_id || deal.brand_id,
           platforms: deal.projects?.platforms || [],
           dealId: deal.id,
+          brandName: ''
         };
 
         // Get brand info
         const { data: brandData } = await supabase
           .from('profiles')
           .select('company_name, logo_url')
-          .eq('id', campaign.brandId)
+          .eq('id', campaignData.brandId)
           .single();
         
-        campaign.brandName = brandData?.company_name || 'Unknown Brand';
+        if (brandData) {
+          campaignData.brandName = brandData?.company_name || 'Unknown Brand';
+        }
         
-        return campaign;
+        return campaignData;
       } catch (error) {
         console.error('Error fetching campaign:', error);
         toast.error('Failed to load campaign details');

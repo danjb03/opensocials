@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -12,8 +11,27 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/utils/project';
-import { ArrowLeft, Calendar, Clock, Upload, FileText, Eye, Instagram, TikTok, Youtube, CheckCircle, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Upload, FileText, Eye, Instagram, Youtube, CheckCircle, AlertCircle } from 'lucide-react';
+import { TikTokIcon } from '@/components/icons/TikTokIcon';
 import { format, isAfter, isBefore, parseISO } from 'date-fns';
+
+interface Campaign {
+  id: string;
+  title: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  contentRequirements: Record<string, any>;
+  brandId: string;
+  platforms: string[];
+  dealId: string;
+  value: number;
+  deadline: string;
+  brandName: string;
+  brandLogo: string | null;
+  uploads: any[];
+}
 
 const CampaignDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -40,7 +58,7 @@ const CampaignDetail = () => {
           throw new Error('Campaign not found');
         }
 
-        const campaign = {
+        const campaignData: Campaign = {
           id: deal.projects?.id || deal.id,
           title: deal.projects?.name || deal.title,
           description: deal.description || deal.projects?.description || '',
@@ -53,28 +71,33 @@ const CampaignDetail = () => {
           dealId: deal.id,
           value: deal.value || 0,
           deadline: deal.projects?.submission_deadline || deal.projects?.end_date,
+          brandName: '',
+          brandLogo: null,
+          uploads: []
         };
 
         // Get brand info
         const { data: brandData } = await supabase
           .from('profiles')
           .select('company_name, logo_url')
-          .eq('id', campaign.brandId)
+          .eq('id', campaignData.brandId)
           .single();
         
-        campaign.brandName = brandData?.company_name || 'Unknown Brand';
-        campaign.brandLogo = brandData?.logo_url || null;
+        if (brandData) {
+          campaignData.brandName = brandData.company_name || 'Unknown Brand';
+          campaignData.brandLogo = brandData.logo_url;
+        }
         
         // Get upload history
         const { data: contentData } = await supabase
           .from('campaign_content')
           .select('*')
-          .eq('campaign_id', campaign.id)
+          .eq('campaign_id', campaignData.id)
           .eq('creator_id', user?.id);
         
-        campaign.uploads = contentData || [];
+        campaignData.uploads = contentData || [];
         
-        return campaign;
+        return campaignData;
       } catch (error) {
         console.error('Error fetching campaign:', error);
         toast.error('Failed to load campaign details');
@@ -161,7 +184,7 @@ const CampaignDetail = () => {
       case 'instagram':
         return <Instagram className="h-4 w-4" />;
       case 'tiktok':
-        return <TikTok className="h-4 w-4" />;
+        return <TikTokIcon className="h-4 w-4" />;
       case 'youtube':
         return <Youtube className="h-4 w-4" />;
       default:
@@ -259,7 +282,7 @@ const CampaignDetail = () => {
                           <div className="font-medium text-sm text-muted-foreground mb-1">Content Pieces</div>
                           <div className="font-medium">
                             {Object.entries(campaign.contentRequirements || {}).reduce(
-                              (total, [_, value]: any) => total + (value?.quantity || 0), 
+                              (total, [_, value]: [string, any]) => total + (value?.quantity || 0), 
                               0
                             ) || 'Not specified'}
                           </div>
@@ -294,6 +317,7 @@ const CampaignDetail = () => {
                     </div>
                   </TabsContent>
 
+                  
                   <TabsContent value="uploads" className="space-y-4">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-medium">Your Uploads</h3>
