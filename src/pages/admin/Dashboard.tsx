@@ -182,8 +182,13 @@ const AdminDashboard = () => {
     </div>
   );
 
+  // Fixed the error by properly handling the children prop in AdminLayout
   if (isStandalone) {
-    return <AdminLayout>{renderDashboardContent()}</AdminLayout>;
+    return (
+      <AdminLayout>
+        {renderDashboardContent()}
+      </AdminLayout>
+    );
   }
 
   return renderDashboardContent();
