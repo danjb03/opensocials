@@ -1,9 +1,9 @@
 
-import { Toaster } from 'sonner';
+import { Toaster as SonnerToaster } from 'sonner';
 
 export function Toaster() {
   return (
-    <Toaster 
+    <SonnerToaster 
       position="bottom-right"
       toastOptions={{
         className: 'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg',

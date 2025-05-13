@@ -1,13 +1,13 @@
 
 import * as React from "react";
 import { toast as sonnerToast } from "sonner";
-import type { ToastActionElement, ToastProps } from "@/components/ui/toast";
+import type { ToastProps } from "@/components/ui/toast";
 
 type ToasterToast = ToastProps & {
   id: string;
   title?: React.ReactNode;
   description?: React.ReactNode;
-  action?: ToastActionElement;
+  action?: React.ReactNode;
 };
 
 export type SonnerToastProps = {
@@ -17,7 +17,7 @@ export type SonnerToastProps = {
   duration?: number;
 };
 
-// This is needed for compatibility with the Toaster component
+// This is needed for compatibility with the old toast system
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
 
