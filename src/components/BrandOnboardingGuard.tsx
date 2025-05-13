@@ -5,13 +5,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 
 const BrandOnboardingGuard = ({ children, redirectTo = '/auth' }) => {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
 
   useEffect(() => {
     const logUserData = async () => {
       if (!user) return;
       
       console.log('👁️‍🗨️ BrandOnboardingGuard running for user:', user.id);
+      console.log('📊 User role:', role);
+      
+      // For super_admins, we don't need to fetch brand profile data
+      if (role === 'super_admin') {
+        console.log('✅ User is super_admin, skipping profile check');
+        return;
+      }
       
       const { data, error } = await supabase
         .from('profiles')
@@ -30,7 +37,7 @@ const BrandOnboardingGuard = ({ children, redirectTo = '/auth' }) => {
     };
 
     logUserData();
-  }, [user]);
+  }, [user, role]);
 
   return <BrandGuard redirectTo={redirectTo}>{children}</BrandGuard>;
 };

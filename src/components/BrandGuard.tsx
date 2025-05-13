@@ -3,8 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
-
-const REQUIRED_BRAND_FIELDS = ['company_name', 'website', 'logo_url', 'industry'];
+import { toast } from '@/components/ui/sonner';
 
 interface BrandGuardProps {
   children: React.ReactNode;
@@ -22,6 +21,13 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
       console.log('🧾 Auth state:', { user: user?.id, role, authLoading });
       console.log('📍 Path:', window.location.pathname);
 
+      // Allow super_admin to bypass immediately
+      if (role === 'super_admin') {
+        console.log('✅ User is super_admin, bypassing brand guard check');
+        setIsChecking(false);
+        return;
+      }
+
       const bypassCheck = localStorage.getItem('bypass_brand_check');
       if (bypassCheck) {
         console.log('✅ Bypassing brand guard check due to bypass flag');
@@ -38,15 +44,10 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
         return;
       }
 
-      if (role !== 'brand' && role !== 'super_admin') {
-        console.log('🚫 User is not brand or super_admin, redirecting');
+      if (role !== 'brand') {
+        console.log('🚫 User is not brand, redirecting');
+        toast.error('You do not have brand access');
         navigate(redirectTo);
-        return;
-      }
-
-      if (role === 'super_admin') {
-        console.log('✅ User is super_admin, allowing access');
-        setIsChecking(false);
         return;
       }
 
