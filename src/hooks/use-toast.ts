@@ -1,54 +1,60 @@
 
 import * as React from "react";
-import { toast as sonnerToast } from "sonner";
+import { toast as sonnerToast, type ToastT } from "sonner";
 
-// Re-export the direct toast function for simplified usage
 export const toast = sonnerToast;
 
-export type ToastProps = React.ComponentProps<typeof sonnerToast> & {
+export type ToastProps = {
   title?: React.ReactNode;
   description?: React.ReactNode;
-  variant?: "default" | "destructive";
+  variant?: "default" | "destructive" | "success";
+  [key: string]: any;
 };
 
-// Create a custom hook for backward compatibility with shadcn/ui toast pattern
 export const useToast = () => {
-  const toast = {
-    // Standard toast methods using sonner
-    success: (message: string, options?: { description?: string }) => {
-      return sonnerToast.success(message, {
-        description: options?.description,
-      });
-    },
-    error: (message: string, options?: { description?: string }) => {
-      return sonnerToast.error(message, {
-        description: options?.description,
-      });
-    },
-    warning: (message: string, options?: { description?: string }) => {
-      return sonnerToast.warning(message, {
-        description: options?.description,
-      });
-    },
-    info: (message: string, options?: { description?: string }) => {
-      return sonnerToast.info(message, {
-        description: options?.description,
-      });
-    },
-    // Legacy shadcn/ui style toast function
-    // This allows calling toast({ title: "...", description: "..." })
-    toast: (props: ToastProps) => {
-      if (props.variant === "destructive") {
-        return sonnerToast.error(props.title as string, {
-          description: props.description as string,
+  return {
+    toast: ({ title, description, variant, ...props }: ToastProps) => {
+      if (variant === "destructive") {
+        return sonnerToast.error(title as string, {
+          description: description as string,
+          ...props
+        });
+      } else if (variant === "success") {
+        return sonnerToast.success(title as string, {
+          description: description as string,
+          ...props
+        });
+      } else {
+        return sonnerToast(title as string, {
+          description: description as string,
+          ...props
         });
       }
-      
-      return sonnerToast(props.title as string, {
-        description: props.description as string,
+    },
+    // Add direct methods for convenience
+    success: (title: string, { description, ...props }: Omit<ToastProps, "title" | "variant"> = {}) => {
+      return sonnerToast.success(title, {
+        description,
+        ...props
+      });
+    },
+    error: (title: string, { description, ...props }: Omit<ToastProps, "title" | "variant"> = {}) => {
+      return sonnerToast.error(title, {
+        description,
+        ...props
+      });
+    },
+    warning: (title: string, { description, ...props }: Omit<ToastProps, "title" | "variant"> = {}) => {
+      return sonnerToast.warning(title, {
+        description,
+        ...props
+      });
+    },
+    info: (title: string, { description, ...props }: Omit<ToastProps, "title" | "variant"> = {}) => {
+      return sonnerToast.info(title, {
+        description,
+        ...props
       });
     }
   };
-
-  return toast;
 };
