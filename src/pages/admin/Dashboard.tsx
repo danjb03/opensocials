@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/lib/auth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,6 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 import { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/components/ui/sonner';
-import AdminLayout from '@/components/layouts/AdminLayout';
 
 const AdminDashboard = () => {
   const { user, role } = useAuth();
@@ -21,19 +19,15 @@ const AdminDashboard = () => {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
 
-  // Check if this is being accessed from super admin or directly
   useEffect(() => {
-    // Check if we're on a super admin route
     const isSuperAdminRoute = window.location.pathname.includes('/super-admin');
     setIsStandalone(!isSuperAdminRoute);
-    
-    // Check if user is a super admin
+
     if (role === 'super_admin' || userRole === 'super_admin') {
       setIsSuperAdmin(true);
     }
   }, [role, userRole, window.location.pathname]);
 
-  // Mock data for the revenue chart
   const revenueData = [
     { month: 'Jan', revenue: 4000 },
     { month: 'Feb', revenue: 3000 },
@@ -48,8 +42,6 @@ const AdminDashboard = () => {
     toast.success('Returning to Super Admin dashboard');
   };
 
-  // If it's standalone mode, render with AdminLayout
-  // If accessed from super admin, render just the dashboard content
   const renderDashboardContent = () => (
     <div className="container mx-auto py-8 px-4">
       <div className="flex items-center justify-between mb-6">
@@ -182,13 +174,8 @@ const AdminDashboard = () => {
     </div>
   );
 
-  // Fixed the error by properly handling the children prop in AdminLayout
   if (isStandalone) {
-    return (
-      <AdminLayout>
-        {renderDashboardContent()}
-      </AdminLayout>
-    );
+    return renderDashboardContent();
   }
 
   return renderDashboardContent();
