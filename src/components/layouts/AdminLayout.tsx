@@ -1,8 +1,8 @@
-
+import { ReactNode } from "react"
 import { useAuth } from '@/lib/auth';
 import Logo from "@/components/ui/logo";
 import { useToast } from '@/hooks/use-toast';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { UserCircle, Users, PackageOpen, LayoutDashboard, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '../ui/button';
@@ -10,7 +10,11 @@ import { useState } from 'react';
 import SidebarToggle from './SidebarToggle';
 import Footer from './Footer';
 
-const AdminLayout = () => {
+type AdminLayoutProps = {
+  children: ReactNode
+}
+
+const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { user, role } = useAuth();
   const { toast } = useToast();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -88,7 +92,7 @@ const AdminLayout = () => {
       
       <main className="flex-1 bg-background overflow-auto flex flex-col">
         <div className="flex-1">
-          <Outlet />
+          {children}
         </div>
         <Footer />
       </main>
@@ -97,3 +101,4 @@ const AdminLayout = () => {
 };
 
 export default AdminLayout;
+
