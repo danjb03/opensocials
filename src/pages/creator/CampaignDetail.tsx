@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -43,21 +44,33 @@ const CampaignDetail = () => {
     queryKey: ['campaign', id],
     queryFn: async () => {
       try {
+        if (!user?.id) throw new Error('User not authenticated');
+        
         // Get deal first to identify campaign the creator is involved in
         const { data: deals, error: dealsError } = await supabase
           .from('deals')
-          .select('*, projects:brand_id(*)')
-          .eq('creator_id', user?.id)
+          .select('*, projects(*)')
+          .eq('creator_id', user.id)
           .eq('status', 'accepted');
         
         if (dealsError) throw dealsError;
+        
+        if (!deals || deals.length === 0) {
+          throw new Error('No deals found');
+        }
 
-        const deal = deals.find(d => d.projects?.id === id || d.id === id);
+        const deal = deals.find(d => {
+          if (d.projects) {
+            return d.projects.id === id || d.id === id;
+          }
+          return d.id === id;
+        });
         
         if (!deal) {
           throw new Error('Campaign not found');
         }
 
+        // Initialize campaign with deal data, handling potentially missing project data
         const campaignData: Campaign = {
           id: deal.projects?.id || deal.id,
           title: deal.projects?.name || deal.title,
@@ -70,32 +83,36 @@ const CampaignDetail = () => {
           platforms: deal.projects?.platforms || [],
           dealId: deal.id,
           value: deal.value || 0,
-          deadline: deal.projects?.submission_deadline || deal.projects?.end_date,
+          deadline: deal.projects?.submission_deadline || deal.projects?.end_date || new Date().toISOString(),
           brandName: '',
           brandLogo: null,
           uploads: []
         };
 
         // Get brand info
-        const { data: brandData } = await supabase
-          .from('profiles')
-          .select('company_name, logo_url')
-          .eq('id', campaignData.brandId)
-          .single();
-        
-        if (brandData) {
-          campaignData.brandName = brandData.company_name || 'Unknown Brand';
-          campaignData.brandLogo = brandData.logo_url;
+        if (campaignData.brandId) {
+          const { data: brandData } = await supabase
+            .from('profiles')
+            .select('company_name, logo_url')
+            .eq('id', campaignData.brandId)
+            .single();
+          
+          if (brandData) {
+            campaignData.brandName = brandData.company_name || 'Unknown Brand';
+            campaignData.brandLogo = brandData.logo_url;
+          }
         }
         
         // Get upload history
-        const { data: contentData } = await supabase
-          .from('campaign_content')
-          .select('*')
-          .eq('campaign_id', campaignData.id)
-          .eq('creator_id', user?.id);
-        
-        campaignData.uploads = contentData || [];
+        if (id) {
+          const { data: contentData } = await supabase
+            .from('campaign_content')
+            .select('*')
+            .eq('campaign_id', campaignData.id)
+            .eq('creator_id', user.id);
+          
+          campaignData.uploads = contentData || [];
+        }
         
         return campaignData;
       } catch (error) {

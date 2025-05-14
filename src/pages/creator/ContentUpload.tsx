@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -39,16 +40,27 @@ const ContentUpload = () => {
     queryKey: ['campaign-upload', id],
     queryFn: async () => {
       try {
+        if (!user?.id) throw new Error('User not authenticated');
+        
         // Get deal first to identify campaign the creator is involved in
         const { data: deals, error: dealsError } = await supabase
           .from('deals')
-          .select('*, projects:brand_id(*)')
-          .eq('creator_id', user?.id)
+          .select('*, projects(*)')
+          .eq('creator_id', user.id)
           .eq('status', 'accepted');
         
         if (dealsError) throw dealsError;
+        
+        if (!deals || deals.length === 0) {
+          throw new Error('No deals found');
+        }
 
-        const deal = deals.find(d => d.projects?.id === id || d.id === id);
+        const deal = deals.find(d => {
+          if (d.projects) {
+            return d.projects.id === id || d.id === id;
+          }
+          return d.id === id;
+        });
         
         if (!deal) {
           throw new Error('Campaign not found');
@@ -65,14 +77,16 @@ const ContentUpload = () => {
         };
 
         // Get brand info
-        const { data: brandData } = await supabase
-          .from('profiles')
-          .select('company_name, logo_url')
-          .eq('id', campaignData.brandId)
-          .single();
-        
-        if (brandData) {
-          campaignData.brandName = brandData?.company_name || 'Unknown Brand';
+        if (campaignData.brandId) {
+          const { data: brandData } = await supabase
+            .from('profiles')
+            .select('company_name, logo_url')
+            .eq('id', campaignData.brandId)
+            .single();
+          
+          if (brandData) {
+            campaignData.brandName = brandData?.company_name || 'Unknown Brand';
+          }
         }
         
         return campaignData;
