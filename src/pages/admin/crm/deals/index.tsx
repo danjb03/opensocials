@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Loader } from 'lucide-react';
 import AdminCRMLayout from '@/components/layouts/AdminCRMLayout';
+import { supabase } from '@/integrations/supabase/client';
 
 type DealPipelineItem = {
   id: string;
