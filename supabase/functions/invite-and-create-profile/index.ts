@@ -24,7 +24,7 @@ interface InviteRequest {
 }
 
 serve(async (req) => {
-  // 💣 PREVENT OPTIONS FAILURE
+  // 💣 PREVENT OPTIONS FAILURE - Handle OPTIONS request before any other logic
   if (req.method === "OPTIONS") {
     return new Response(null, {
       headers: corsHeaders,
@@ -61,8 +61,21 @@ serve(async (req) => {
       });
     }
 
-    // Get invite data from request
-    const { email, role, first_name, last_name }: InviteRequest = await req.json();
+    // Get invite data from request - Add try/catch to prevent crash on malformed JSON
+    let inviteData: InviteRequest;
+    try {
+      inviteData = await req.json();
+    } catch (jsonError) {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Invalid JSON in request body"
+      }), {
+        status: 400,
+        headers: corsHeaders
+      });
+    }
+    
+    const { email, role, first_name, last_name } = inviteData;
 
     if (!email || !role) {
       return new Response(JSON.stringify({ success: false, error: "Email and role are required" }), {
@@ -147,25 +160,31 @@ serve(async (req) => {
     
     // Send email via Resend if API key is available
     if (resendApiKey) {
-      const resend = new Resend(resendApiKey);
-      emailResponse = await resend.emails.send({
-        from: "team@opensocials.net",
-        to: email,
-        subject: `You've been invited to OpenSocials as a ${role}!`,
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1>Welcome to OpenSocials!</h1>
-            <p>You've been invited to join OpenSocials as a ${role}.</p>
-            <p>To get started, click the button below to set up your account:</p>
-            <a href="${signInLink}" style="display: inline-block; background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 16px 0;">
-              Accept Invitation
-            </a>
-            <p>This link will expire in 24 hours.</p>
-            <p>If you did not expect this invitation, you can safely ignore this email.</p>
-            <p>Best regards,<br>The OpenSocials Team</p>
-          </div>
-        `,
-      });
+      try {
+        const resend = new Resend(resendApiKey);
+        emailResponse = await resend.emails.send({
+          from: "team@opensocials.net",
+          to: email,
+          subject: `You've been invited to OpenSocials as a ${role}!`,
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1>Welcome to OpenSocials!</h1>
+              <p>You've been invited to join OpenSocials as a ${role}.</p>
+              <p>To get started, click the button below to set up your account:</p>
+              <a href="${signInLink}" style="display: inline-block; background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 16px 0;">
+                Accept Invitation
+              </a>
+              <p>This link will expire in 24 hours.</p>
+              <p>If you did not expect this invitation, you can safely ignore this email.</p>
+              <p>Best regards,<br>The OpenSocials Team</p>
+            </div>
+          `,
+        });
+      } catch (emailError) {
+        console.error("Failed to send email:", emailError);
+        emailResponse = { id: "email-failed", message: emailError.message };
+        // Continue execution - don't throw an error that would break the function
+      }
     } else {
       console.warn("RESEND_API_KEY not configured, email notification skipped");
       emailResponse = { id: "email-skipped", message: "RESEND_API_KEY not configured" };
@@ -183,7 +202,10 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error in invite-and-create-profile:", error);
 
-    return new Response(JSON.stringify({ success: false, error: error.message || "Failed to process invitation" }), {
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: error.message || "Failed to process invitation" 
+    }), {
       status: 500,
       headers: corsHeaders,
     });
