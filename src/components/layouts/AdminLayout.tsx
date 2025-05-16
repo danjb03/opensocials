@@ -80,6 +80,13 @@ const AdminLayout = ({ children }: { children?: React.ReactNode }) => {
                 {!isSidebarCollapsed && <span>Brand CRM</span>}
               </Link>
             </Button>
+
+            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
+              <Link to="/admin/crm/creators" className="flex items-center gap-2">
+                <UserCircle className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Creator CRM</span>}
+              </Link>
+            </Button>
           </nav>
           
           <div className="mt-auto pt-4 border-t border-sidebar-border">

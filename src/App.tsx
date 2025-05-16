@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -39,6 +38,7 @@ import CampaignAnalytics from './pages/brand/CampaignAnalytics';
 import CampaignAnalyticsList from './pages/brand/CampaignAnalyticsList';
 import BrandsCRM from './pages/admin/crm/brands/index';
 import BrandDetailPage from './pages/admin/crm/brands/[brand_id]';
+import CreatorsCRM from './pages/admin/crm/creators/index';
 
 const ProtectedRoute = ({ children, requiredRole }: { 
   children: React.ReactNode, 
@@ -169,6 +169,14 @@ function App() {
                 element={
                   <ProtectedRoute requiredRole="admin">
                     <BrandDetailPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/crm/creators" 
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <CreatorsCRM />
                   </ProtectedRoute>
                 } 
               />
