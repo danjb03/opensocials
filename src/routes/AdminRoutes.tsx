@@ -23,18 +23,18 @@ export const AdminRoutes = () => {
           <Route path="users" element={<UserManagement />} />
           <Route path="orders" element={<OrderManagement />} />
           <Route path="projects" element={<ProjectManagement />} />
+          
+          {/* CRM Routes */}
+          <Route path="crm/brands" element={<BrandsCRM />} />
+          <Route path="crm/brands/:brand_id" element={<BrandDetailPage />} />
+          <Route path="crm/creators" element={<CreatorsCRM />} />
+          <Route path="crm/creators/:id" element={<CreatorDetailPage />} />
+          <Route path="crm/creators/leaderboard" element={<CreatorLeaderboardPage />} />
+          <Route path="crm/deals" element={<DealPipelinePage />} />
+          
+          {/* Redirect from the old creator management URL to the new CRM URL */}
+          <Route path="creators" element={<Navigate to="/admin/crm/creators" replace />} />
         </Route>
-        
-        {/* CRM Routes - Direct components with AdminLayout already included */}
-        <Route path="crm/brands" element={<BrandsCRM />} />
-        <Route path="crm/brands/:brand_id" element={<BrandDetailPage />} />
-        <Route path="crm/creators" element={<CreatorsCRM />} />
-        <Route path="crm/creators/:id" element={<CreatorDetailPage />} />
-        <Route path="crm/creators/leaderboard" element={<CreatorLeaderboardPage />} />
-        <Route path="crm/deals" element={<DealPipelinePage />} />
-        
-        {/* Redirect from the old creator management URL to the new CRM URL */}
-        <Route path="creators" element={<Navigate to="/admin/crm/creators" replace />} />
       </Routes>
     </ProtectedRoute>
   );

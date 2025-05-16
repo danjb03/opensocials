@@ -4,7 +4,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader } from 'lucide-react';
-import AdminLayout from '@/components/layouts/AdminLayout';
 
 type LeaderboardItem = {
   id: string;
@@ -36,54 +35,52 @@ export default function CreatorLeaderboardPage() {
   const creators: LeaderboardItem[] = data?.data || [];
 
   return (
-    <AdminLayout>
-      <div className="container mx-auto py-8 px-4">
-        <h1 className="text-2xl font-bold mb-6">Top 50 Earning Creators</h1>
+    <div className="container mx-auto py-8 px-4">
+      <h1 className="text-2xl font-bold mb-6">Top 50 Earning Creators</h1>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Leaderboard</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center py-10">
-                <Loader className="animate-spin h-6 w-6" />
-              </div>
-            ) : isError ? (
-              <p className="text-red-500 text-center">Failed to load leaderboard.</p>
-            ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>#</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Platform</TableHead>
-                      <TableHead className="text-right">Earnings</TableHead>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Leaderboard</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex justify-center py-10">
+              <Loader className="animate-spin h-6 w-6" />
+            </div>
+          ) : isError ? (
+            <p className="text-red-500 text-center">Failed to load leaderboard.</p>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>#</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Platform</TableHead>
+                    <TableHead className="text-right">Earnings</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {creators.map((creator, i) => (
+                    <TableRow key={creator.id}>
+                      <TableCell>{i + 1}</TableCell>
+                      <TableCell>{creator.name}</TableCell>
+                      <TableCell>{creator.email}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{creator.platform}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        £{Number(creator.total_earnings).toLocaleString()}
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {creators.map((creator, i) => (
-                      <TableRow key={creator.id}>
-                        <TableCell>{i + 1}</TableCell>
-                        <TableCell>{creator.name}</TableCell>
-                        <TableCell>{creator.email}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">{creator.platform}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          £{Number(creator.total_earnings).toLocaleString()}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </AdminLayout>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
