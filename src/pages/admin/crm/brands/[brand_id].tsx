@@ -73,8 +73,8 @@ const BrandDetailPage = () => {
   const StatusBadge = ({ status }: { status: string | null }) => {
     if (!status) return null;
     
-    const statusMap: Record<string, { variant: "default" | "outline" | "secondary" | "destructive" | "success"; label: string }> = {
-      active: { variant: "success", label: "Active" },
+    const statusMap: Record<string, { variant: "default" | "outline" | "secondary" | "destructive"; label: string }> = {
+      active: { variant: "default", label: "Active" },
       pending: { variant: "secondary", label: "Pending" },
       suspended: { variant: "destructive", label: "Suspended" },
       inactive: { variant: "outline", label: "Inactive" }
@@ -83,7 +83,7 @@ const BrandDetailPage = () => {
     const { variant, label } = statusMap[status.toLowerCase()] || { variant: "default", label: status };
     
     return (
-      <Badge variant={variant}>{label}</Badge>
+      <Badge variant={variant} className={status.toLowerCase() === 'active' ? 'bg-green-600 hover:bg-green-700' : ''}>{label}</Badge>
     );
   };
   

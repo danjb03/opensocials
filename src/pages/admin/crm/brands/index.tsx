@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -33,6 +32,18 @@ interface Brand {
   status: string | null;
 }
 
+// Response interface for the API
+interface BrandCRMResponse {
+  success: boolean;
+  data: Brand[];
+  pagination: {
+    total: number;
+    page: number;
+    pageSize: number;
+    pageCount: number;
+  };
+}
+
 // Pagination metadata interface
 interface PaginationMeta {
   total: number;
@@ -57,7 +68,7 @@ const BrandsCRM = () => {
   const [search, setSearch] = useState(searchTerm);
   
   // Fetch brands data from the edge function
-  const fetchBrands = async () => {
+  const fetchBrands = async (): Promise<BrandCRMResponse> => {
     const token = (await supabase.auth.getSession()).data.session?.access_token;
     
     if (!token) {
@@ -95,11 +106,11 @@ const BrandsCRM = () => {
     return await response.json();
   };
   
-  // Query hook for data fetching
-  const { data, error, isLoading, isFetching } = useQuery({
+  // Query hook for data fetching with proper type
+  const { data, error, isLoading, isFetching } = useQuery<BrandCRMResponse, Error>({
     queryKey: ['adminBrands', page, pageSize, searchTerm, statusFilter, orderBy, orderDirection],
     queryFn: fetchBrands,
-    keepPreviousData: true,
+    // Removed keepPreviousData as it's not supported in this version
     staleTime: 30000
   });
   
