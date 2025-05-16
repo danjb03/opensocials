@@ -3,9 +3,9 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+const resendApiKey = Deno.env.get("RESEND_API_KEY");
 
 // Full CORS headers
 const corsHeaders = {
@@ -143,27 +143,40 @@ serve(async (req) => {
 
     const signInLink = signInData.properties.action_link;
     
-    // Send email via Resend
-    const emailResponse = await resend.emails.send({
-      from: "team@opensocials.net",
-      to: email,
-      subject: `You've been invited to OpenSocials as a ${role}!`,
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1>Welcome to OpenSocials!</h1>
-          <p>You've been invited to join OpenSocials as a ${role}.</p>
-          <p>To get started, click the button below to set up your account:</p>
-          <a href="${signInLink}" style="display: inline-block; background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 16px 0;">
-            Accept Invitation
-          </a>
-          <p>This link will expire in 24 hours.</p>
-          <p>If you did not expect this invitation, you can safely ignore this email.</p>
-          <p>Best regards,<br>The OpenSocials Team</p>
-        </div>
-      `,
-    });
+    let emailResponse = null;
+    
+    // Send email via Resend if API key is available
+    if (resendApiKey) {
+      const resend = new Resend(resendApiKey);
+      emailResponse = await resend.emails.send({
+        from: "team@opensocials.net",
+        to: email,
+        subject: `You've been invited to OpenSocials as a ${role}!`,
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1>Welcome to OpenSocials!</h1>
+            <p>You've been invited to join OpenSocials as a ${role}.</p>
+            <p>To get started, click the button below to set up your account:</p>
+            <a href="${signInLink}" style="display: inline-block; background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 16px 0;">
+              Accept Invitation
+            </a>
+            <p>This link will expire in 24 hours.</p>
+            <p>If you did not expect this invitation, you can safely ignore this email.</p>
+            <p>Best regards,<br>The OpenSocials Team</p>
+          </div>
+        `,
+      });
+    } else {
+      console.warn("RESEND_API_KEY not configured, email notification skipped");
+      emailResponse = { id: "email-skipped", message: "RESEND_API_KEY not configured" };
+    }
 
-    return new Response(JSON.stringify({ success: true, data: emailResponse }), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      data: emailResponse,
+      userCreated: true,
+      signInLink: signInLink
+    }), {
       headers: corsHeaders,
       status: 200,
     });
