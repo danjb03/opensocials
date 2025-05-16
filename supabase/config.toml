@@ -97,3 +97,4 @@ http = true
 
 [functions]
 get-creator-leaderboard = {}
+seed-mock-data = {}
