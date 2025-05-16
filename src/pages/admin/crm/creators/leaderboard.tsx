@@ -1,11 +1,12 @@
 
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader, Award, DollarSign } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import AdminLayout from '@/components/layouts/AdminLayout';
+import { DataTable } from '@/components/ui/data-table';
 
 type LeaderboardItem = {
   id: string;
@@ -16,6 +17,7 @@ type LeaderboardItem = {
 };
 
 export default function CreatorLeaderboardPage() {
+  const navigate = useNavigate();
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['creator-leaderboard'],
     queryFn: async () => {
@@ -58,6 +60,63 @@ export default function CreatorLeaderboardPage() {
     }
   };
 
+  const handleCreatorClick = (creator: LeaderboardItem) => {
+    navigate(`/admin/crm/creators/${creator.id}`);
+  };
+
+  const columns = [
+    {
+      accessorKey: 'index',
+      header: '#',
+      cell: ({ row }: { row: any }) => {
+        return (
+          <span className={`font-bold ${getMedalColor(row.index)}`}>
+            {row.index + 1}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: 'name',
+      header: 'Creator',
+      cell: ({ row }: { row: any }) => {
+        const creator = row.original;
+        return (
+          <div>
+            <div className="font-medium">{creator.name || 'Unknown Creator'}</div>
+            <div className="text-sm text-muted-foreground">{creator.email}</div>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: 'platform',
+      header: 'Platform',
+      cell: ({ row }: { row: any }) => {
+        const platform = row.original.platform;
+        return platform && platform !== 'N/A' ? (
+          <Badge className={`${getPlatformBadgeColor(platform)} text-white`}>
+            {platform}
+          </Badge>
+        ) : (
+          <Badge variant="outline">Unknown</Badge>
+        );
+      },
+    },
+    {
+      accessorKey: 'total_earnings',
+      header: () => <div className="text-right">Earnings</div>,
+      cell: ({ row }: { row: any }) => {
+        return (
+          <div className="flex items-center justify-end">
+            <DollarSign className="h-4 w-4 mr-1 text-green-600" />
+            {Number(row.original.total_earnings).toLocaleString()}
+          </div>
+        );
+      },
+    }
+  ];
+
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex items-center mb-6">
@@ -80,54 +139,11 @@ export default function CreatorLeaderboardPage() {
               <p className="text-sm text-muted-foreground mt-2">{error instanceof Error ? error.message : 'Unknown error occurred'}</p>
             </div>
           ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>#</TableHead>
-                    <TableHead>Creator</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Platform</TableHead>
-                    <TableHead className="text-right">Earnings</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {creators.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
-                        No earnings data available yet. Add deals with earnings to see creators here.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    creators.map((creator, i) => (
-                      <TableRow key={creator.id}>
-                        <TableCell>
-                          <span className={`font-bold ${getMedalColor(i)}`}>{i + 1}</span>
-                        </TableCell>
-                        <TableCell>{creator.name || 'Unknown Creator'}</TableCell>
-                        <TableCell>{creator.email}</TableCell>
-                        <TableCell>
-                          <Badge 
-                            className={creator.platform && creator.platform !== 'N/A' 
-                              ? getPlatformBadgeColor(creator.platform)
-                              : undefined
-                            }
-                          >
-                            {creator.platform || 'Unknown'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          <div className="flex items-center justify-end">
-                            <DollarSign className="h-4 w-4 mr-1 text-green-600" />
-                            {Number(creator.total_earnings).toLocaleString()}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+            <DataTable
+              columns={columns}
+              data={creators}
+              onRowClick={handleCreatorClick}
+            />
           )}
         </CardContent>
       </Card>

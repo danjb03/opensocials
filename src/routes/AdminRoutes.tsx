@@ -28,7 +28,7 @@ const AdminRoutes = () => {
         <Route path="crm/brands/:brandId" element={<BrandDetail />} />
         <Route path="crm/brands/leaderboard" element={<BrandLeaderboard />} />
         <Route path="crm/creators" element={<CreatorCRM />} />
-        <Route path="crm/creators/:creatorId" element={<CreatorDetail />} />
+        <Route path="crm/creators/:id" element={<CreatorDetail />} />
         <Route path="crm/creators/leaderboard" element={<CreatorLeaderboard />} />
         <Route path="crm/deals" element={<DealsPipeline />} />
       </Route>
