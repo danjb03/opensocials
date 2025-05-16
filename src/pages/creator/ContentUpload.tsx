@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -51,10 +50,10 @@ const ContentUpload = () => {
       try {
         if (!user?.id) throw new Error('User not authenticated');
         
-        // Get deal first to identify campaign the creator is involved in
+        // Get deals first to identify campaign the creator is involved in
         const { data: deals, error: dealsError } = await supabase
           .from('deals')
-          .select('*, projects(*)')
+          .select('*')
           .eq('creator_id', user.id)
           .eq('status', 'accepted');
         
@@ -65,29 +64,29 @@ const ContentUpload = () => {
         }
 
         // Find the deal that matches the campaign id
-        const deal = deals.find(d => {
-          // Check if projects property exists on the deal and is not null
-          if (d.projects) {
-            return d.projects.id === id || d.id === id;
-          }
-          return d.id === id;
-        });
+        const deal = deals.find(d => d.id === id);
         
         if (!deal) {
           throw new Error('Campaign not found');
         }
 
-        // Check if deal.projects is a SelectQueryError - if so, handle it as empty object
-        const projectData: ProjectData = (deal.projects && typeof deal.projects === 'object' && !('error' in deal.projects)) 
-          ? deal.projects as ProjectData
-          : {};
+        // Now fetch the project associated with this deal/id
+        const { data: project, error: projectError } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (projectError) {
+          console.warn('Could not find project, using deal data instead:', projectError);
+        }
 
         const campaignData: Campaign = {
-          id: projectData.id || deal.id || '',
-          title: projectData.name || deal.title || 'Untitled Campaign',
-          contentRequirements: projectData.content_requirements || {},
-          brandId: projectData.brand_id || deal.brand_id || '',
-          platforms: projectData.platforms || [],
+          id: (project?.id || deal.id || ''),
+          title: (project?.name || deal.title || 'Untitled Campaign'),
+          contentRequirements: (project?.content_requirements || {}),
+          brandId: (project?.brand_id || deal.brand_id || ''),
+          platforms: (project?.platforms || []),
           dealId: deal.id,
           brandName: ''
         };

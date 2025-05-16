@@ -63,7 +63,7 @@ const CampaignDetail = () => {
         // Get deal first to identify campaign the creator is involved in
         const { data: deals, error: dealsError } = await supabase
           .from('deals')
-          .select('*, projects(*)')
+          .select('*')
           .eq('creator_id', user.id)
           .eq('status', 'accepted');
         
@@ -73,38 +73,38 @@ const CampaignDetail = () => {
           throw new Error('No deals found');
         }
 
-        // Find the relevant deal/project
-        const deal = deals.find(d => {
-          // Check if projects property exists on the deal and is not null
-          if (d.projects) {
-            return d.projects.id === id || d.id === id;
-          }
-          return d.id === id;
-        });
+        // Find the relevant deal
+        const deal = deals.find(d => d.id === id);
         
         if (!deal) {
           throw new Error('Campaign not found');
         }
 
-        // Check if deal.projects is a SelectQueryError - if so, handle it as empty object
-        const projectData: ProjectData = (deal.projects && typeof deal.projects === 'object' && !('error' in deal.projects)) 
-          ? deal.projects as ProjectData
-          : {};
+        // Now fetch the project associated with this deal
+        const { data: project, error: projectError } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', id)
+          .single();
 
-        // Initialize campaign with deal data, handling potentially missing project data
+        if (projectError) {
+          console.warn('Could not find project, using deal data instead:', projectError);
+        }
+
+        // Initialize campaign with combined data
         const campaignData: Campaign = {
-          id: projectData.id || deal.id || '',
-          title: projectData.name || deal.title || 'Untitled Campaign',
-          description: projectData.description || deal.description || '',
-          startDate: projectData.start_date || new Date().toISOString(),
-          endDate: projectData.end_date || new Date().toISOString(),
-          status: projectData.status || 'in_progress',
-          contentRequirements: projectData.content_requirements || {},
-          brandId: projectData.brand_id || deal.brand_id || '',
-          platforms: projectData.platforms || [],
+          id: (project?.id || deal.id || ''),
+          title: (project?.name || deal.title || 'Untitled Campaign'),
+          description: (project?.description || deal.description || ''),
+          startDate: (project?.start_date || new Date().toISOString()),
+          endDate: (project?.end_date || new Date().toISOString()),
+          status: (project?.status || 'in_progress'),
+          contentRequirements: (project?.content_requirements || {}),
+          brandId: (project?.brand_id || deal.brand_id || ''),
+          platforms: (project?.platforms || []),
           dealId: deal.id,
           value: deal.value || 0,
-          deadline: projectData.submission_deadline || projectData.end_date || new Date().toISOString(),
+          deadline: (project?.submission_deadline || project?.end_date || new Date().toISOString()),
           brandName: '',
           brandLogo: null,
           uploads: []
