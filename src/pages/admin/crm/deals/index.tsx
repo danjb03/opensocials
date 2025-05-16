@@ -20,6 +20,7 @@ type DealPipelineItem = {
   updated_at: string;
   brand_name: string;
   creator_name: string;
+  is_stuck: boolean;
 };
 
 export default function DealPipelinePage() {
@@ -126,8 +127,18 @@ export default function DealPipelinePage() {
               </TableHeader>
               <TableBody>
                 {filtered.map((deal) => (
-                  <TableRow key={deal.id}>
-                    <TableCell>{deal.title}</TableCell>
+                  <TableRow 
+                    key={deal.id} 
+                    className={deal.is_stuck ? 'bg-red-50 border-l-4 border-red-500' : ''}
+                  >
+                    <TableCell>
+                      {deal.title}
+                      {deal.is_stuck && (
+                        <Badge variant="destructive" className="ml-2">
+                          Stuck
+                        </Badge>
+                      )}
+                    </TableCell>
                     <TableCell>{deal.brand_name}</TableCell>
                     <TableCell>{deal.creator_name}</TableCell>
                     <TableCell>
