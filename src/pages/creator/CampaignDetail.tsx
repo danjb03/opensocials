@@ -86,8 +86,10 @@ const CampaignDetail = () => {
           throw new Error('Campaign not found');
         }
 
-        // Safely access properties with type checking
-        const projectData: ProjectData = deal.projects || {};
+        // Check if deal.projects is a SelectQueryError - if so, handle it as empty object
+        const projectData: ProjectData = (deal.projects && typeof deal.projects === 'object' && !('error' in deal.projects)) 
+          ? deal.projects as ProjectData
+          : {};
 
         // Initialize campaign with deal data, handling potentially missing project data
         const campaignData: Campaign = {

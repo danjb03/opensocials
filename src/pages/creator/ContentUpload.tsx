@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -76,8 +77,10 @@ const ContentUpload = () => {
           throw new Error('Campaign not found');
         }
 
-        // Safely access projects data with null checks
-        const projectData: ProjectData = deal.projects || {};
+        // Check if deal.projects is a SelectQueryError - if so, handle it as empty object
+        const projectData: ProjectData = (deal.projects && typeof deal.projects === 'object' && !('error' in deal.projects)) 
+          ? deal.projects as ProjectData
+          : {};
 
         const campaignData: Campaign = {
           id: projectData.id || deal.id || '',
