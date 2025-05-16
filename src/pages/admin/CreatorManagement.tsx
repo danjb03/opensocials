@@ -1,46 +1,57 @@
 
-import { useState } from 'react';
-import { 
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
+import { Check } from 'lucide-react';
 import { 
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetClose 
-} from '@/components/ui/sheet';
-import { Label } from '@/components/ui/label';
-import { Check, Edit, Upload } from 'lucide-react';
+  Pagination, PaginationContent, PaginationItem, 
+  PaginationLink, PaginationNext, PaginationPrevious 
+} from '@/components/ui/pagination';
 
-type Creator = {
-  id: string;
-  name: string;
-  category: string;
-  followers: number;
-  status: 'active' | 'pending' | 'inactive';
+const fetchCreators = async ({ page, pageSize, search, status, platform }) => {
+  const { data, error } = await supabase.functions.invoke('get-admin-creator-crm', {
+    body: { page, pageSize, search, status, platform }
+  });
+  
+  if (error) throw new Error(error.message);
+  return data;
 };
 
-const mockCreators: Creator[] = [
-  { id: '1', name: 'Emma Johnson', category: 'Lifestyle', followers: 125000, status: 'active' },
-  { id: '2', name: 'Michael Smith', category: 'Tech', followers: 98000, status: 'active' },
-  { id: '3', name: 'Sophia Williams', category: 'Fashion', followers: 240000, status: 'pending' },
-  { id: '4', name: 'James Brown', category: 'Fitness', followers: 87000, status: 'inactive' },
-  { id: '5', name: 'Olivia Davis', category: 'Food', followers: 156000, status: 'active' },
-];
-
 const CreatorManagement = () => {
-  const [creators] = useState<Creator[]>(mockCreators);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentCreator, setCurrentCreator] = useState<Creator | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [status, setStatus] = useState(searchParams.get('status') || 'all');
+  const [platform, setPlatform] = useState(searchParams.get('platform') || 'all');
+  const page = parseInt(searchParams.get('page') || '1');
+  const pageSize = 10;
 
-  const filteredCreators = creators.filter(creator => 
-    creator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    creator.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['creators', { page, pageSize, search, status, platform }],
+    queryFn: () => fetchCreators({ page, pageSize, search, status, platform })
+  });
 
-  const handleEdit = (creator: Creator) => {
-    setCurrentCreator(creator);
-    setIsEditing(true);
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (search) params.set('search', search);
+    if (status) params.set('status', status);
+    if (platform) params.set('platform', platform);
+    params.set('page', String(page));
+    setSearchParams(params);
+  }, [search, status, platform, page]);
+
+  const handlePageChange = (newPage) => {
+    setSearchParams(prev => {
+      const updated = new URLSearchParams(prev);
+      updated.set('page', String(newPage));
+      return updated;
+    });
   };
 
   return (
@@ -48,105 +59,140 @@ const CreatorManagement = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Creator Management</h1>
         <Button>
-          <Upload className="mr-2 h-4 w-4" /> Upload New Creator
+          Add New Creator
         </Button>
       </div>
       
-      <div className="mb-4">
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
         <Input
-          placeholder="Search creators..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
+          placeholder="Search name or email..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full md:w-64"
         />
+        <Select value={status} onValueChange={setStatus}>
+          <SelectTrigger className="w-full md:w-36">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="inactive">Inactive</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={platform} onValueChange={setPlatform}>
+          <SelectTrigger className="w-full md:w-36">
+            <SelectValue placeholder="Platform" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Platforms</SelectItem>
+            <SelectItem value="instagram">Instagram</SelectItem>
+            <SelectItem value="tiktok">TikTok</SelectItem>
+            <SelectItem value="youtube">YouTube</SelectItem>
+            <SelectItem value="linkedin">LinkedIn</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead className="text-right">Followers</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredCreators.map((creator) => (
-              <TableRow key={creator.id}>
-                <TableCell className="font-medium">{creator.name}</TableCell>
-                <TableCell>{creator.category}</TableCell>
-                <TableCell className="text-right">{creator.followers.toLocaleString()}</TableCell>
-                <TableCell>
-                  <div className={`flex items-center justify-center w-24 rounded-full px-2 py-1 text-xs font-medium ${
-                    creator.status === 'active' ? 'bg-green-100 text-green-800' :
-                    creator.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {creator.status === 'active' && <Check className="mr-1 h-3 w-3" />}
-                    {creator.status.charAt(0).toUpperCase() + creator.status.slice(1)}
-                  </div>
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button variant="outline" size="sm" onClick={() => handleEdit(creator)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-      
-      {/* Edit Creator Sheet */}
-      <Sheet open={isEditing} onOpenChange={setIsEditing}>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>Edit Creator Profile</SheetTitle>
-          </SheetHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Name
-              </Label>
-              <Input
-                id="name"
-                value={currentCreator?.name || ''}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="category" className="text-right">
-                Category
-              </Label>
-              <Input
-                id="category"
-                value={currentCreator?.category || ''}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="followers" className="text-right">
-                Followers
-              </Label>
-              <Input
-                id="followers"
-                type="number"
-                value={currentCreator?.followers || 0}
-                className="col-span-3"
-              />
-            </div>
+      {isLoading ? (
+        <div className="flex justify-center p-8">
+          <p>Loading creators...</p>
+        </div>
+      ) : isError ? (
+        <div className="rounded-md border border-red-200 bg-red-50 p-4">
+          <p className="text-red-700">Error loading creators. Please try again later.</p>
+        </div>
+      ) : data && data.data && data.data.length > 0 ? (
+        <>
+          <div className="rounded-md border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Platform</TableHead>
+                  <TableHead>Followers</TableHead>
+                  <TableHead>Engagement</TableHead>
+                  <TableHead>Deals</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.data.map((creator) => (
+                  <TableRow key={creator.creator_id}>
+                    <TableCell className="font-medium">
+                      {creator.first_name} {creator.last_name}
+                    </TableCell>
+                    <TableCell>{creator.email}</TableCell>
+                    <TableCell>{creator.primary_platform || 'N/A'}</TableCell>
+                    <TableCell>{creator.follower_count || '0'}</TableCell>
+                    <TableCell>{creator.engagement_rate || '0%'}</TableCell>
+                    <TableCell>{creator.total_deals || '0'}</TableCell>
+                    <TableCell>
+                      <div className={`flex items-center justify-center w-24 rounded-full px-2 py-1 text-xs font-medium ${
+                        creator.status === 'active' ? 'bg-green-100 text-green-800' :
+                        creator.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {creator.status === 'active' && <Check className="mr-1 h-3 w-3" />}
+                        {creator.status?.charAt(0).toUpperCase() + creator.status?.slice(1) || 'Unknown'}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
-          
-          <SheetFooter>
-            <SheetClose asChild>
-              <Button type="submit">Save changes</Button>
-            </SheetClose>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+
+          {/* Pagination */}
+          {data.pagination && data.pagination.pageCount > 1 && (
+            <Pagination className="mt-4">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => handlePageChange(Math.max(1, page - 1))}
+                    className={page <= 1 ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+                {Array.from({ length: data.pagination.pageCount }, (_, i) => i + 1)
+                  .filter(p => Math.abs(p - page) < 3 || p === 1 || p === data.pagination.pageCount)
+                  .map((p, i, arr) => {
+                    // Add ellipsis
+                    if (i > 0 && p > arr[i-1] + 1) {
+                      return (
+                        <PaginationItem key={`ellipsis-${p}`}>
+                          <span className="flex h-9 w-9 items-center justify-center">...</span>
+                        </PaginationItem>
+                      );
+                    }
+                    
+                    return (
+                      <PaginationItem key={p}>
+                        <PaginationLink 
+                          isActive={page === p} 
+                          onClick={() => handlePageChange(p)}
+                        >
+                          {p}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  })}
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => handlePageChange(Math.min(data.pagination.pageCount, page + 1))}
+                    className={page >= data.pagination.pageCount ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
+        </>
+      ) : (
+        <div className="rounded-md border border-gray-200 bg-gray-50 p-8 text-center">
+          <p className="text-gray-500">No creators found. Try adjusting your filters.</p>
+        </div>
+      )}
     </div>
   );
 };
