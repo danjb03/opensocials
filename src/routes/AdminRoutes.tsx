@@ -1,37 +1,39 @@
-import { Routes, Route } from "react-router-dom";
-import { ProtectedRoute } from "./index";
-import AdminLayout from "@/components/layouts/AdminLayout";
-import AdminDashboard from "@/pages/admin/Dashboard";
-import UserManagement from "@/pages/admin/UserManagement";
-import OrderManagement from "@/pages/admin/OrderManagement";
-import ProjectManagement from "@/pages/admin/ProjectManagement";
-import BrandsCRM from "@/pages/admin/crm/brands/index";
-import BrandDetailPage from "@/pages/admin/crm/brands/[brand_id]";
-import CreatorsCRM from "@/pages/admin/crm/creators/index";
-import CreatorDetailPage from "@/pages/admin/crm/creators/[id]";
-import CreatorLeaderboardPage from "@/pages/admin/crm/creators/leaderboard";
-import DealPipelinePage from "@/pages/admin/crm/deals/index";
 
-export const AdminRoutes = () => {
+import React from 'react';
+import { Route, Routes } from 'react-router-dom';
+import AdminLayout from '@/components/layouts/AdminLayout';
+import AdminDashboard from '@/pages/admin/Dashboard';
+import ProjectManagement from '@/pages/admin/ProjectManagement';
+import OrderManagement from '@/pages/admin/OrderManagement';
+import BrandCRM from '@/pages/admin/crm/brands';
+import BrandDetail from '@/pages/admin/crm/brands/[brand_id]';
+import CreatorCRM from '@/pages/admin/crm/creators';
+import CreatorDetail from '@/pages/admin/crm/creators/[id]';
+import DealsPipeline from '@/pages/admin/crm/deals';
+import UserManagement from '@/pages/admin/UserManagement';
+import CreatorLeaderboard from '@/pages/admin/crm/creators/leaderboard';
+import BrandLeaderboard from '@/pages/admin/crm/brands/leaderboard';
+import InviteUsers from '@/pages/admin/InviteUsers';
+
+const AdminRoutes = () => {
   return (
-    <ProtectedRoute requiredRole="admin">
-      <Routes>
-        {/* Admin Main Routes with Layout */}
-        <Route path="/" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="users" element={<UserManagement />} />
-          <Route path="orders" element={<OrderManagement />} />
-          <Route path="projects" element={<ProjectManagement />} />
-          
-          {/* CRM Routes */}
-          <Route path="crm/brands" element={<BrandsCRM />} />
-          <Route path="crm/brands/:brand_id" element={<BrandDetailPage />} />
-          <Route path="crm/creators" element={<CreatorsCRM />} />
-          <Route path="crm/creators/leaderboard" element={<CreatorLeaderboardPage />} />
-          <Route path="crm/creators/:id" element={<CreatorDetailPage />} />
-          <Route path="crm/deals" element={<DealPipelinePage />} />
-        </Route>
-      </Routes>
-    </ProtectedRoute>
+    <Routes>
+      <Route element={<AdminLayout />}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="users" element={<UserManagement />} />
+        <Route path="invite" element={<InviteUsers />} />
+        <Route path="projects" element={<ProjectManagement />} />
+        <Route path="orders" element={<OrderManagement />} />
+        <Route path="crm/brands" element={<BrandCRM />} />
+        <Route path="crm/brands/:brandId" element={<BrandDetail />} />
+        <Route path="crm/brands/leaderboard" element={<BrandLeaderboard />} />
+        <Route path="crm/creators" element={<CreatorCRM />} />
+        <Route path="crm/creators/:creatorId" element={<CreatorDetail />} />
+        <Route path="crm/creators/leaderboard" element={<CreatorLeaderboard />} />
+        <Route path="crm/deals" element={<DealsPipeline />} />
+      </Route>
+    </Routes>
   );
 };
+
+export default AdminRoutes;

@@ -3,7 +3,7 @@ import { useAuth } from '@/lib/auth';
 import Logo from "@/components/ui/logo";
 import { useToast } from '@/hooks/use-toast';
 import { Navigate, Outlet, Link } from 'react-router-dom';
-import { UserCircle, Users, PackageOpen, LayoutDashboard, FileText, Briefcase, BarChart } from 'lucide-react';
+import { UserCircle, Users, PackageOpen, LayoutDashboard, FileText, Briefcase, BarChart, UserPlus } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useState } from 'react';
 import SidebarToggle from './SidebarToggle';
@@ -50,6 +50,13 @@ const AdminLayout = ({ children }: { children?: React.ReactNode }) => {
               <Link to="/admin/users" className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
                 {!isSidebarCollapsed && <span>User Management</span>}
+              </Link>
+            </Button>
+            
+            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
+              <Link to="/admin/invite" className="flex items-center gap-2">
+                <UserPlus className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Invite Users</span>}
               </Link>
             </Button>
             
