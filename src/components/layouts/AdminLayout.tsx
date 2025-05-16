@@ -3,7 +3,7 @@ import { useAuth } from '@/lib/auth';
 import Logo from "@/components/ui/logo";
 import { useToast } from '@/hooks/use-toast';
 import { Navigate, Outlet, Link } from 'react-router-dom';
-import { UserCircle, Users, PackageOpen, LayoutDashboard, FileText, Briefcase } from 'lucide-react';
+import { UserCircle, Users, PackageOpen, LayoutDashboard, FileText, Briefcase, BarChart } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useState } from 'react';
 import SidebarToggle from './SidebarToggle';
@@ -73,7 +73,7 @@ const AdminLayout = ({ children }: { children?: React.ReactNode }) => {
                 {!isSidebarCollapsed && <span>Brand CRM</span>}
               </Link>
             </Button>
-
+            
             <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
               <Link to="/admin/crm/creators" className="flex items-center gap-2">
                 <UserCircle className="h-5 w-5" />
@@ -81,10 +81,21 @@ const AdminLayout = ({ children }: { children?: React.ReactNode }) => {
               </Link>
             </Button>
 
+            {!isSidebarCollapsed && (
+              <div className="px-4 py-2 text-xs text-muted-foreground uppercase mt-4">Insights</div>
+            )}
+
             <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
               <Link to="/admin/crm/creators/leaderboard" className="flex items-center gap-2">
-                <UserCircle className="h-5 w-5" />
-                {!isSidebarCollapsed && <span>Leaderboard</span>}
+                <BarChart className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Creator Leaderboard</span>}
+              </Link>
+            </Button>
+
+            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
+              <Link to="/admin/crm/brands/leaderboard" className="flex items-center gap-2">
+                <Briefcase className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Brand Leaderboard</span>}
               </Link>
             </Button>
 
