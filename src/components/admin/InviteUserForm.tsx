@@ -44,8 +44,13 @@ const InviteUserForm = () => {
         throw new Error("You must be logged in to send invites");
       }
 
-      const { data, error } = await supabase.functions.invoke('send-invite-email', {
-        body: values,
+      const { data, error } = await supabase.functions.invoke('invite-and-create-profile', {
+        body: {
+          email: values.email,
+          role: values.role,
+          first_name: values.firstName,
+          last_name: values.lastName
+        },
         headers: {
           Authorization: `Bearer ${sessionData.session.access_token}`,
         },
@@ -58,10 +63,10 @@ const InviteUserForm = () => {
       if (data && data.success) {
         toast.success('Invitation sent successfully!');
         form.reset();
-      } else if (data && data.message === "User already invited or exists") {
+      } else if (data && data.error === "User already invited") {
         toast.info('User has already been invited or already exists');
       } else {
-        throw new Error("Unexpected response from server");
+        throw new Error(data?.error || "Unexpected response from server");
       }
     } catch (error) {
       console.error('Error sending invite:', error);
