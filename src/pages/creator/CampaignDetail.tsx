@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -31,6 +32,20 @@ interface Campaign {
   brandName: string;
   brandLogo: string | null;
   uploads: any[];
+}
+
+// Interface for Supabase project data
+interface ProjectData {
+  id?: string;
+  name?: string;
+  description?: string;
+  start_date?: string;
+  end_date?: string;
+  status?: string;
+  content_requirements?: Record<string, any>;
+  brand_id?: string;
+  platforms?: string[];
+  submission_deadline?: string;
 }
 
 const CampaignDetail = () => {
@@ -72,11 +87,11 @@ const CampaignDetail = () => {
         }
 
         // Safely access properties with type checking
-        const projectData = deal.projects || {};
+        const projectData: ProjectData = deal.projects || {};
 
         // Initialize campaign with deal data, handling potentially missing project data
         const campaignData: Campaign = {
-          id: projectData.id || deal.id,
+          id: projectData.id || deal.id || '',
           title: projectData.name || deal.title || 'Untitled Campaign',
           description: projectData.description || deal.description || '',
           startDate: projectData.start_date || new Date().toISOString(),
@@ -102,8 +117,8 @@ const CampaignDetail = () => {
             .single();
           
           if (brandData) {
-            campaignData.brandName = brandData.company_name || 'Unknown Brand';
-            campaignData.brandLogo = brandData.logo_url;
+            campaignData.brandName = brandData?.company_name || 'Unknown Brand';
+            campaignData.brandLogo = brandData?.logo_url;
           }
         }
         

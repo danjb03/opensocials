@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -23,6 +22,15 @@ interface Campaign {
   platforms: string[];
   dealId: string;
   brandName: string;
+}
+
+// Interface for Supabase project data
+interface ProjectData {
+  id?: string;
+  name?: string;
+  content_requirements?: Record<string, any>;
+  brand_id?: string;
+  platforms?: string[];
 }
 
 const ContentUpload = () => {
@@ -69,10 +77,10 @@ const ContentUpload = () => {
         }
 
         // Safely access projects data with null checks
-        const projectData = deal.projects || {};
+        const projectData: ProjectData = deal.projects || {};
 
         const campaignData: Campaign = {
-          id: projectData.id || deal.id,
+          id: projectData.id || deal.id || '',
           title: projectData.name || deal.title || 'Untitled Campaign',
           contentRequirements: projectData.content_requirements || {},
           brandId: projectData.brand_id || deal.brand_id || '',
