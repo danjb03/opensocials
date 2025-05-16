@@ -49,11 +49,11 @@ export const AppRoutes = () => {
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/tos" element={<TermsOfService />} />
       
-      {/* Role-based routes - using the wildcard pattern to properly nest routes */}
-      <Route path="/admin/*" element={<AdminRoutes />} />
-      <Route path="/brand/*" element={<BrandRoutes />} />
-      <Route path="/creator/*" element={<CreatorRoutes />} />
-      <Route path="/super-admin/*" element={<SuperAdminRoutes />} />
+      {/* Role-based routes */}
+      <Route path="/admin/*" element={<ProtectedRoute requiredRole="admin"><AdminRoutes /></ProtectedRoute>} />
+      <Route path="/brand/*" element={<ProtectedRoute requiredRole="brand"><BrandRoutes /></ProtectedRoute>} />
+      <Route path="/creator/*" element={<ProtectedRoute requiredRole="creator"><CreatorRoutes /></ProtectedRoute>} />
+      <Route path="/super-admin/*" element={<ProtectedRoute requiredRole="super_admin"><SuperAdminRoutes /></ProtectedRoute>} />
       
       {/* Catch all */}
       <Route path="*" element={<NotFound />} />
