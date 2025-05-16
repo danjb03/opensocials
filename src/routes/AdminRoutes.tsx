@@ -10,6 +10,7 @@ import BrandsCRM from "@/pages/admin/crm/brands/index";
 import BrandDetailPage from "@/pages/admin/crm/brands/[brand_id]";
 import CreatorsCRM from "@/pages/admin/crm/creators/index";
 import CreatorDetailPage from "@/pages/admin/crm/creators/[id]";
+import DealPipelinePage from "@/pages/admin/crm/deals/index";
 
 export const AdminRoutes = () => {
   return (
@@ -65,6 +66,15 @@ export const AdminRoutes = () => {
         element={
           <ProtectedRoute requiredRole="admin">
             <CreatorDetailPage />
+          </ProtectedRoute>
+        } 
+      />
+      {/* Deal Pipeline Route */}
+      <Route 
+        path="/admin/crm/deals" 
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <DealPipelinePage />
           </ProtectedRoute>
         } 
       />
