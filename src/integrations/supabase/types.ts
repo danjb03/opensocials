@@ -399,6 +399,36 @@ export type Database = {
         }
         Relationships: []
       }
+      invite_logs: {
+        Row: {
+          email: string
+          error_message: string | null
+          id: string
+          role: string
+          sent_at: string | null
+          status: string
+          triggered_by: string | null
+        }
+        Insert: {
+          email: string
+          error_message?: string | null
+          id?: string
+          role: string
+          sent_at?: string | null
+          status?: string
+          triggered_by?: string | null
+        }
+        Update: {
+          email?: string
+          error_message?: string | null
+          id?: string
+          role?: string
+          sent_at?: string | null
+          status?: string
+          triggered_by?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           audience_location: Json | null

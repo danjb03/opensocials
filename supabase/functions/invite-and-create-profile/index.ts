@@ -84,6 +84,21 @@ serve(async (req) => {
       });
     }
 
+    // Log the invitation attempt
+    const { error: logError } = await supabase
+      .from("invite_logs")
+      .insert({
+        email,
+        role,
+        status: "pending",
+        triggered_by: adminUser.id
+      });
+
+    if (logError) {
+      console.error("Error logging invitation:", logError);
+      // Continue with the invitation process even if logging fails
+    }
+
     // Check if user already exists
     const { data: existingUsers, error: fetchError } = await supabase
       .from('profiles')
@@ -92,10 +107,34 @@ serve(async (req) => {
       .limit(1);
       
     if (fetchError) {
+      // Update invitation log with error
+      await supabase
+        .from("invite_logs")
+        .update({
+          status: "failed",
+          error_message: `Error checking for existing user: ${fetchError.message}`
+        })
+        .eq("email", email)
+        .eq("triggered_by", adminUser.id)
+        .order("sent_at", { ascending: false })
+        .limit(1);
+        
       throw new Error(`Error checking for existing user: ${fetchError.message}`);
     }
     
     if (existingUsers && existingUsers.length > 0) {
+      // Update invitation log with duplicate status
+      await supabase
+        .from("invite_logs")
+        .update({
+          status: "duplicate",
+          error_message: "User already invited"
+        })
+        .eq("email", email)
+        .eq("triggered_by", adminUser.id)
+        .order("sent_at", { ascending: false })
+        .limit(1);
+        
       return new Response(JSON.stringify({ success: false, error: "User already invited" }), {
         status: 409,
         headers: corsHeaders
@@ -116,10 +155,34 @@ serve(async (req) => {
     });
 
     if (userError) {
+      // Update invitation log with error
+      await supabase
+        .from("invite_logs")
+        .update({
+          status: "failed",
+          error_message: `Failed to create user: ${userError.message}`
+        })
+        .eq("email", email)
+        .eq("triggered_by", adminUser.id)
+        .order("sent_at", { ascending: false })
+        .limit(1);
+        
       throw new Error(`Failed to create user: ${userError.message}`);
     }
 
     if (!userData.user) {
+      // Update invitation log with error
+      await supabase
+        .from("invite_logs")
+        .update({
+          status: "failed",
+          error_message: "User creation returned no user data"
+        })
+        .eq("email", email)
+        .eq("triggered_by", adminUser.id)
+        .order("sent_at", { ascending: false })
+        .limit(1);
+        
       throw new Error('User creation returned no user data');
     }
 
@@ -138,6 +201,18 @@ serve(async (req) => {
       });
       
     if (profileError) {
+      // Update invitation log with error
+      await supabase
+        .from("invite_logs")
+        .update({
+          status: "failed",
+          error_message: `Failed to create profile: ${profileError.message}`
+        })
+        .eq("email", email)
+        .eq("triggered_by", adminUser.id)
+        .order("sent_at", { ascending: false })
+        .limit(1);
+        
       throw new Error(`Failed to create profile: ${profileError.message}`);
     }
     
@@ -151,6 +226,18 @@ serve(async (req) => {
     });
 
     if (linkError || !signInData || !signInData.properties?.action_link) {
+      // Update invitation log with error
+      await supabase
+        .from("invite_logs")
+        .update({
+          status: "failed",
+          error_message: "Failed to generate sign-in link"
+        })
+        .eq("email", email)
+        .eq("triggered_by", adminUser.id)
+        .order("sent_at", { ascending: false })
+        .limit(1);
+        
       throw new Error("Failed to generate sign-in link");
     }
 
@@ -180,14 +267,51 @@ serve(async (req) => {
             </div>
           `,
         });
+        
+        // Update invitation log with success status
+        await supabase
+          .from("invite_logs")
+          .update({
+            status: "sent",
+            sent_at: new Date().toISOString()
+          })
+          .eq("email", email)
+          .eq("triggered_by", adminUser.id)
+          .order("sent_at", { ascending: false })
+          .limit(1);
+          
       } catch (emailError) {
         console.error("Failed to send email:", emailError);
         emailResponse = { id: "email-failed", message: emailError.message };
+        
+        // Update invitation log with email failure
+        await supabase
+          .from("invite_logs")
+          .update({
+            status: "email_failed",
+            error_message: emailError.message
+          })
+          .eq("email", email)
+          .eq("triggered_by", adminUser.id)
+          .order("sent_at", { ascending: false })
+          .limit(1);
         // Continue execution - don't throw an error that would break the function
       }
     } else {
       console.warn("RESEND_API_KEY not configured, email notification skipped");
       emailResponse = { id: "email-skipped", message: "RESEND_API_KEY not configured" };
+      
+      // Update invitation log with skipped status
+      await supabase
+        .from("invite_logs")
+        .update({
+          status: "email_skipped",
+          error_message: "RESEND_API_KEY not configured"
+        })
+        .eq("email", email)
+        .eq("triggered_by", adminUser.id)
+        .order("sent_at", { ascending: false })
+        .limit(1);
     }
 
     return new Response(JSON.stringify({ 
