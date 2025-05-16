@@ -53,8 +53,6 @@ const AdminLayout = ({ children }: { children?: React.ReactNode }) => {
               </Link>
             </Button>
             
-            {/* Removed the Creator Management link as it's redundant with Creator CRM */}
-            
             <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
               <Link to="/admin/projects" className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
