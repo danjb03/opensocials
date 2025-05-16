@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -36,6 +37,8 @@ import EditCampaign from './pages/brand/EditCampaign';
 import ManageBudget from './pages/brand/ManageBudget';
 import CampaignAnalytics from './pages/brand/CampaignAnalytics';
 import CampaignAnalyticsList from './pages/brand/CampaignAnalyticsList';
+import BrandsCRM from './pages/admin/crm/brands/index';
+import BrandDetailPage from './pages/admin/crm/brands/[brand_id]';
 
 const ProtectedRoute = ({ children, requiredRole }: { 
   children: React.ReactNode, 
@@ -151,6 +154,24 @@ function App() {
                 <Route path="orders" element={<OrderManagement />} />
                 <Route path="projects" element={<ProjectManagement />} />
               </Route>
+
+              {/* Admin CRM Routes */}
+              <Route 
+                path="/admin/crm/brands" 
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <BrandsCRM />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/crm/brands/:brand_id" 
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <BrandDetailPage />
+                  </ProtectedRoute>
+                } 
+              />
               
               {/* Brand Dashboard Routes */}
               <Route 

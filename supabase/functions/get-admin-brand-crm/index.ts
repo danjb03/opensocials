@@ -29,8 +29,8 @@ async function validateSuperAdmin(supabase, token) {
       return { isValid: false, status: 500, message: "Failed to fetch user profile" };
     }
     
-    if (!profile || profile.role !== "super_admin") {
-      return { isValid: false, status: 403, message: "Unauthorized: Super Admin access required" };
+    if (!profile || (profile.role !== "super_admin" && profile.role !== "admin")) {
+      return { isValid: false, status: 403, message: "Unauthorized: Admin access required" };
     }
     
     return { isValid: true, userId: user.id };
@@ -56,7 +56,7 @@ serve(async (req) => {
     const authHeader = req.headers.get("authorization") || "";
     const token = authHeader.replace("Bearer ", "");
 
-    // Validate user has super_admin role
+    // Validate user has admin or super_admin role
     const validation = await validateSuperAdmin(supabase, token);
     if (!validation.isValid) {
       return new Response(
@@ -71,13 +71,14 @@ serve(async (req) => {
       );
     }
 
-    // Extract pagination parameters from URL or request body
+    // Extract pagination parameters and filters from URL
     const url = new URL(req.url);
     const page = parseInt(url.searchParams.get("page") || "1");
     const pageSize = parseInt(url.searchParams.get("pageSize") || "10");
     const orderBy = url.searchParams.get("orderBy") || "last_active_at";
     const orderDirection = url.searchParams.get("orderDirection") === "asc" ? true : false;
     const statusFilter = url.searchParams.get("status") || null;
+    const searchTerm = url.searchParams.get("search") || null;
     
     // Calculate pagination values
     const from = (page - 1) * pageSize;
@@ -88,7 +89,12 @@ serve(async (req) => {
       .from("admin_crm_brands_view")
       .select("*", { count: "exact" });
     
-    // Apply filters if specified
+    // Apply search filter if provided
+    if (searchTerm) {
+      query = query.or(`company_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
+    }
+    
+    // Apply status filter if specified
     if (statusFilter) {
       query = query.eq("status", statusFilter);
     }

@@ -1,15 +1,15 @@
+
 import { useAuth } from '@/lib/auth';
 import Logo from "@/components/ui/logo";
 import { useToast } from '@/hooks/use-toast';
-import { Navigate, Outlet } from 'react-router-dom';
-import { UserCircle, Users, PackageOpen, LayoutDashboard, FileText } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Navigate, Outlet, Link } from 'react-router-dom';
+import { UserCircle, Users, PackageOpen, LayoutDashboard, FileText, Briefcase } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useState } from 'react';
 import SidebarToggle from './SidebarToggle';
 import Footer from './Footer';
 
-const AdminLayout = () => {
+const AdminLayout = ({ children }: { children?: React.ReactNode }) => {
   const { user, role } = useAuth();
   const { toast } = useToast();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -73,6 +73,13 @@ const AdminLayout = () => {
                 {!isSidebarCollapsed && <span>Order Management</span>}
               </Link>
             </Button>
+            
+            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
+              <Link to="/admin/crm/brands" className="flex items-center gap-2">
+                <Briefcase className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Brand CRM</span>}
+              </Link>
+            </Button>
           </nav>
           
           <div className="mt-auto pt-4 border-t border-sidebar-border">
@@ -87,7 +94,7 @@ const AdminLayout = () => {
       
       <main className="flex-1 bg-background overflow-auto flex flex-col">
         <div className="flex-1">
-          <Outlet />
+          {children || <Outlet />}
         </div>
         <Footer />
       </main>
@@ -96,4 +103,3 @@ const AdminLayout = () => {
 };
 
 export default AdminLayout;
-

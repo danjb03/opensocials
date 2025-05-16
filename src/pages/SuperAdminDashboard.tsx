@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserRoleFixer from '@/components/admin/UserRoleFixer';
-import { Users, LayoutDashboard, User, Settings } from 'lucide-react';
+import { Users, LayoutDashboard, User, Settings, Briefcase } from 'lucide-react';
 
 const SuperAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -39,7 +39,7 @@ const SuperAdminDashboard = () => {
                 <CardDescription>Manage brand accounts</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" className="w-full">View All Brands</Button>
+                <Button variant="outline" onClick={() => navigate('/admin/crm/brands')} className="w-full">View All Brands</Button>
               </CardContent>
             </Card>
             
@@ -56,7 +56,7 @@ const SuperAdminDashboard = () => {
           
           {/* New dashboard navigation cards */}
           <h2 className="text-xl font-semibold mt-10 mb-4">Dashboard Access</h2>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <Card className="border-l-4 border-l-violet-500">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -107,6 +107,24 @@ const SuperAdminDashboard = () => {
                   className="w-full bg-green-500 hover:bg-green-600"
                 >
                   Go to Admin Dashboard
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-l-4 border-l-amber-500">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Brand CRM</CardTitle>
+                  <Briefcase className="h-5 w-5 text-amber-500" />
+                </div>
+                <CardDescription>Access brand CRM system</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  onClick={() => navigate('/admin/crm/brands')} 
+                  className="w-full bg-amber-500 hover:bg-amber-600"
+                >
+                  Go to Brand CRM
                 </Button>
               </CardContent>
             </Card>
