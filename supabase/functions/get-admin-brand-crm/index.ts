@@ -95,7 +95,7 @@ serve(async (req) => {
     }
     
     // Apply status filter if specified
-    if (statusFilter) {
+    if (statusFilter && statusFilter !== "all") {
       query = query.eq("status", statusFilter);
     }
     

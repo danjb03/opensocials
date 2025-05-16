@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -60,7 +61,7 @@ const BrandsCRM = () => {
   const page = parseInt(searchParams.get('page') || '1');
   const pageSize = parseInt(searchParams.get('pageSize') || '10');
   const searchTerm = searchParams.get('search') || '';
-  const statusFilter = searchParams.get('status') || '';
+  const statusFilter = searchParams.get('status') || 'all';
   const orderBy = searchParams.get('orderBy') || 'last_active_at';
   const orderDirection = searchParams.get('orderDirection') || 'desc';
   
@@ -86,7 +87,7 @@ const BrandsCRM = () => {
       url.searchParams.append('search', searchTerm);
     }
     
-    if (statusFilter) {
+    if (statusFilter && statusFilter !== 'all') {
       url.searchParams.append('status', statusFilter);
     }
     
@@ -202,7 +203,7 @@ const BrandsCRM = () => {
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Statuses</SelectItem>
+                  <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="suspended">Suspended</SelectItem>
