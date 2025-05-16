@@ -8,22 +8,34 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowLeft, Mail, Building, DollarSign, Briefcase, Clock, Calendar } from 'lucide-react';
 import AdminCRMLayout from '@/components/layouts/AdminCRMLayout';
 import { formatDistanceToNow, format } from 'date-fns';
 
-// Brand data interface
-interface Brand {
-  brand_id: string;
-  company_name: string | null;
-  email: string | null;
-  industry: string | null;
-  budget_range: string | null;
-  total_deals: number | null;
-  active_deals: number | null;
-  last_active_at: string | null;
-  status: string | null;
-  created_at: string | null;
+interface Deal {
+  id: string;
+  title: string;
+  creator_id: string;
+  status: string;
+  stage: string;
+  value: number;
+  updated_at: string;
+  creator_name: string;
+}
+
+interface BrandDetailsResponse {
+  success: boolean;
+  profile: {
+    id: string;
+    company_name: string | null;
+    email: string | null;
+    industry: string | null;
+    budget_range: string | null;
+    created_at: string | null;
+  };
+  deals: Deal[];
+  totalSpend: number;
 }
 
 const BrandDetailPage = () => {
@@ -31,31 +43,39 @@ const BrandDetailPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Fetch brand details from the database directly
+  // Fetch brand details using the edge function
   const fetchBrandDetails = async () => {
-    const { data: session } = await supabase.auth.getSession();
-    
-    if (!session.session) {
-      throw new Error('Authentication required');
-    }
-    
-    // Fetch the brand data
-    const { data, error } = await supabase
-      .from('admin_crm_brands_view')
-      .select('*')
-      .eq('brand_id', brand_id)
-      .single();
+    try {
+      const { data: session } = await supabase.auth.getSession();
       
-    if (error) {
+      if (!session.session) {
+        throw new Error('Authentication required');
+      }
+      
+      const response = await fetch(
+        `${supabase.supabaseUrl}/functions/v1/get-brand-details-by-id?brand_id=${brand_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.session.access_token}`,
+          },
+        }
+      );
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch brand details');
+      }
+      
+      const data = await response.json();
+      return data as BrandDetailsResponse;
+    } catch (error) {
       console.error('Error fetching brand details:', error);
-      throw new Error(error.message);
+      throw error;
     }
-    
-    return data as Brand;
   };
   
   // Query hook for data fetching
-  const { data: brand, error, isLoading } = useQuery({
+  const { data, error, isLoading } = useQuery({
     queryKey: ['adminBrandDetail', brand_id],
     queryFn: fetchBrandDetails,
     enabled: !!brand_id,
@@ -137,15 +157,12 @@ const BrandDetailPage = () => {
             ))}
           </CardContent>
         </Card>
-      ) : brand ? (
+      ) : data && data.profile ? (
         <>
           <Card className="mb-6">
             <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between">
               <div>
-                <CardTitle className="text-2xl">{brand.company_name || 'Unnamed Brand'}</CardTitle>
-                <div className="mt-2 flex items-center space-x-2">
-                  <StatusBadge status={brand.status} />
-                </div>
+                <CardTitle className="text-2xl">{data.profile.company_name || 'Unnamed Brand'}</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
@@ -156,7 +173,7 @@ const BrandDetailPage = () => {
                       <Mail className="mr-2 h-4 w-4" />
                       Email
                     </h3>
-                    <p>{brand.email || 'Not provided'}</p>
+                    <p>{data.profile.email || 'Not provided'}</p>
                   </div>
                   
                   <div>
@@ -164,7 +181,7 @@ const BrandDetailPage = () => {
                       <Building className="mr-2 h-4 w-4" />
                       Industry
                     </h3>
-                    <p>{brand.industry || 'Not specified'}</p>
+                    <p>{data.profile.industry || 'Not specified'}</p>
                   </div>
                   
                   <div>
@@ -172,7 +189,7 @@ const BrandDetailPage = () => {
                       <DollarSign className="mr-2 h-4 w-4" />
                       Budget Range
                     </h3>
-                    <p>{brand.budget_range || 'Not specified'}</p>
+                    <p>{data.profile.budget_range || 'Not specified'}</p>
                   </div>
                 </div>
                 
@@ -183,17 +200,9 @@ const BrandDetailPage = () => {
                       Deal Statistics
                     </h3>
                     <p>
-                      <span className="font-medium">{brand.active_deals || 0}</span> active deals
-                      {' '}(<span className="font-medium">{brand.total_deals || 0}</span> total)
+                      <span className="font-medium">{data.deals.filter(d => d.status === 'active').length || 0}</span> active deals
+                      {' '}(<span className="font-medium">{data.deals.length || 0}</span> total)
                     </p>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-1 flex items-center">
-                      <Clock className="mr-2 h-4 w-4" />
-                      Last Active
-                    </h3>
-                    <p>{formatRelativeTime(brand.last_active_at)}</p>
                   </div>
                   
                   <div>
@@ -201,37 +210,64 @@ const BrandDetailPage = () => {
                       <Calendar className="mr-2 h-4 w-4" />
                       Created At
                     </h3>
-                    <p>{formatDate(brand.created_at)}</p>
+                    <p>{formatDate(data.profile.created_at)}</p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1 flex items-center">
+                      <DollarSign className="mr-2 h-4 w-4" />
+                      Total Spend
+                    </h3>
+                    <p className="font-bold">£{data.totalSpend.toLocaleString()}</p>
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
           
-          <div className="grid gap-6 md:grid-cols-2">
-            {/* We can add more sections here like recent activity, projects, etc. */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  No recent activity available.
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Projects</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  No projects available.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Deals</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {data.deals && data.deals.length > 0 ? (
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Deal</TableHead>
+                        <TableHead>Creator</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Stage</TableHead>
+                        <TableHead>Value</TableHead>
+                        <TableHead>Last Updated</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {data.deals.map((deal) => (
+                        <TableRow key={deal.id}>
+                          <TableCell>{deal.title}</TableCell>
+                          <TableCell>{deal.creator_name}</TableCell>
+                          <TableCell>
+                            <Badge variant={deal.status === 'active' ? 'default' : 'outline'}>
+                              {deal.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">{deal.stage}</Badge>
+                          </TableCell>
+                          <TableCell>£{Number(deal.value).toLocaleString()}</TableCell>
+                          <TableCell>{new Date(deal.updated_at).toLocaleDateString()}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <p className="text-muted-foreground">No active deals found for this brand.</p>
+              )}
+            </CardContent>
+          </Card>
         </>
       ) : (
         <Card>
