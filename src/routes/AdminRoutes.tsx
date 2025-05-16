@@ -1,5 +1,5 @@
 
-import { Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "./index";
 import AdminLayout from "@/components/layouts/AdminLayout";
 import AdminDashboard from "@/pages/admin/Dashboard";
@@ -14,70 +14,26 @@ import DealPipelinePage from "@/pages/admin/crm/deals/index";
 
 export const AdminRoutes = () => {
   return (
-    <>
-      {/* Admin Main Routes with Layout */}
-      <Route 
-        path="/admin" 
-        element={
-          <ProtectedRoute requiredRole="admin">
-            <AdminLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<AdminDashboard />} />
-        <Route path="users" element={<UserManagement />} />
-        <Route path="orders" element={<OrderManagement />} />
-        <Route path="projects" element={<ProjectManagement />} />
-      </Route>
-
-      {/* Redirect from the old creator management URL to the new CRM URL */}
-      <Route 
-        path="/admin/creators" 
-        element={<Navigate to="/admin/crm/creators" replace />} 
-      />
-      
-      {/* Admin CRM Routes */}
-      <Route 
-        path="/admin/crm/brands" 
-        element={
-          <ProtectedRoute requiredRole="admin">
-            <BrandsCRM />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/admin/crm/brands/:brand_id" 
-        element={
-          <ProtectedRoute requiredRole="admin">
-            <BrandDetailPage />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/admin/crm/creators" 
-        element={
-          <ProtectedRoute requiredRole="admin">
-            <CreatorsCRM />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/admin/crm/creators/:id" 
-        element={
-          <ProtectedRoute requiredRole="admin">
-            <CreatorDetailPage />
-          </ProtectedRoute>
-        } 
-      />
-      {/* Deal Pipeline Route */}
-      <Route 
-        path="/admin/crm/deals" 
-        element={
-          <ProtectedRoute requiredRole="admin">
-            <DealPipelinePage />
-          </ProtectedRoute>
-        } 
-      />
-    </>
+    <ProtectedRoute requiredRole="admin">
+      <Routes>
+        {/* Admin Main Routes with Layout */}
+        <Route element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="orders" element={<OrderManagement />} />
+          <Route path="projects" element={<ProjectManagement />} />
+          
+          {/* CRM Routes */}
+          <Route path="crm/brands" element={<BrandsCRM />} />
+          <Route path="crm/brands/:brand_id" element={<BrandDetailPage />} />
+          <Route path="crm/creators" element={<CreatorsCRM />} />
+          <Route path="crm/creators/:id" element={<CreatorDetailPage />} />
+          <Route path="crm/deals" element={<DealPipelinePage />} />
+        </Route>
+        
+        {/* Redirect from the old creator management URL to the new CRM URL */}
+        <Route path="creators" element={<Navigate to="/admin/crm/creators" replace />} />
+      </Routes>
+    </ProtectedRoute>
   );
 };
