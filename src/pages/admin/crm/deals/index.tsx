@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Loader } from 'lucide-react';
 import AdminCRMLayout from '@/components/layouts/AdminCRMLayout';
 import { supabase } from '@/integrations/supabase/client';
-import qs from 'query-string';
 
 type DealPipelineItem = {
   id: string;
@@ -64,6 +63,10 @@ export default function DealPipelinePage() {
     return matchSearch && matchStage && matchStatus;
   });
 
+  // Function to handle clearing a filter
+  const clearStage = () => setStage('');
+  const clearStatus = () => setStatus('');
+
   return (
     <AdminCRMLayout>
       <div className="container mx-auto py-8 px-4">
@@ -79,10 +82,10 @@ export default function DealPipelinePage() {
 
           <Select value={stage} onValueChange={setStage}>
             <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Stage" />
+              <SelectValue placeholder="All Stages" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Stages</SelectItem>
+              {/* Removed empty value item and using placeholder instead */}
               <SelectItem value="briefed">Briefed</SelectItem>
               <SelectItem value="content">Content</SelectItem>
               <SelectItem value="review">Review</SelectItem>
@@ -92,10 +95,10 @@ export default function DealPipelinePage() {
 
           <Select value={status} onValueChange={setStatus}>
             <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Status</SelectItem>
+              {/* Removed empty value item and using placeholder instead */}
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="inactive">Inactive</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
