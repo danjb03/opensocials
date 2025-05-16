@@ -82,6 +82,13 @@ const AdminLayout = ({ children }: { children?: React.ReactNode }) => {
             </Button>
 
             <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
+              <Link to="/admin/crm/creators/leaderboard" className="flex items-center gap-2">
+                <UserCircle className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Leaderboard</span>}
+              </Link>
+            </Button>
+
+            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
               <Link to="/admin/crm/deals" className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
                 {!isSidebarCollapsed && <span>Deal Pipeline</span>}
