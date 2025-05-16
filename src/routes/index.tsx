@@ -8,7 +8,7 @@ import DataDeletion from "@/pages/DataDeletion";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import NotFound from "@/pages/NotFound";
-import { AdminRoutes } from "./AdminRoutes";
+import AdminRoutes from "./AdminRoutes";
 import { BrandRoutes } from "./BrandRoutes";
 import { CreatorRoutes } from "./CreatorRoutes";
 import { SuperAdminRoutes } from "./SuperAdminRoutes";
