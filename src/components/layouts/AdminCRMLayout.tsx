@@ -3,7 +3,6 @@ import { ReactNode } from 'react';
 import { useAuth } from '@/lib/auth';
 import { Navigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import AdminLayout from './AdminLayout';
 
 interface AdminCRMLayoutProps {
   children: ReactNode;
@@ -24,11 +23,11 @@ const AdminCRMLayout = ({ children }: AdminCRMLayoutProps) => {
   }
 
   return (
-    <AdminLayout>
-      <div className="container mx-auto py-8">
-        {children}
-      </div>
-    </AdminLayout>
+    // Removed the AdminLayout wrapper since it's now redundant
+    // This prevents duplicate menus from showing
+    <div className="container mx-auto py-8">
+      {children}
+    </div>
   );
 };
 

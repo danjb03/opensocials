@@ -1,6 +1,6 @@
 
 import { Loader } from 'lucide-react';
-import AdminCRMLayout from '@/components/layouts/AdminCRMLayout';
+import AdminLayout from '@/components/layouts/AdminLayout';
 import { CreatorCRMTable } from '@/components/admin/crm/creators/CreatorCRMTable';
 import { CreatorCRMSearch } from '@/components/admin/crm/creators/CreatorCRMSearch';
 import { useCreatorCRM } from '@/hooks/admin/useCreatorCRM';
@@ -9,7 +9,7 @@ export default function CreatorsCRM() {
   const { creators, isLoading, isError, searchQuery, handleSearch } = useCreatorCRM();
 
   return (
-    <AdminCRMLayout>
+    <AdminLayout>
       <div className="container mx-auto py-8 px-4">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Creator CRM</h1>
@@ -26,6 +26,6 @@ export default function CreatorsCRM() {
 
         {!isLoading && <CreatorCRMTable creators={creators} />}
       </div>
-    </AdminCRMLayout>
+    </AdminLayout>
   );
 }
