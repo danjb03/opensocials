@@ -178,6 +178,80 @@ export type Database = {
           },
         ]
       }
+      creator_profiles: {
+        Row: {
+          access_token: string | null
+          account_id: string
+          bio: string | null
+          connected_at: string | null
+          created_at: string | null
+          email: string | null
+          engagement_metrics: Json | null
+          expires_in: number | null
+          id: string
+          metadata: Json | null
+          name: string | null
+          platform: string | null
+          profile_id: string | null
+          refresh_token: string | null
+          stats: Json | null
+          status: string | null
+          token_expires_at: string | null
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          access_token?: string | null
+          account_id: string
+          bio?: string | null
+          connected_at?: string | null
+          created_at?: string | null
+          email?: string | null
+          engagement_metrics?: Json | null
+          expires_in?: number | null
+          id?: string
+          metadata?: Json | null
+          name?: string | null
+          platform?: string | null
+          profile_id?: string | null
+          refresh_token?: string | null
+          stats?: Json | null
+          status?: string | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          access_token?: string | null
+          account_id?: string
+          bio?: string | null
+          connected_at?: string | null
+          created_at?: string | null
+          email?: string | null
+          engagement_metrics?: Json | null
+          expires_in?: number | null
+          id?: string
+          metadata?: Json | null
+          name?: string | null
+          platform?: string | null
+          profile_id?: string | null
+          refresh_token?: string | null
+          stats?: Json | null
+          status?: string | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_accounts_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creator_types: {
         Row: {
           description: string | null
@@ -498,56 +572,6 @@ export type Database = {
         }
         Relationships: []
       }
-      social_accounts: {
-        Row: {
-          access_token: string | null
-          account_id: string
-          connected_at: string | null
-          expires_in: number | null
-          id: string
-          metadata: Json | null
-          platform: string | null
-          profile_id: string | null
-          refresh_token: string | null
-          token_expires_at: string | null
-          username: string | null
-        }
-        Insert: {
-          access_token?: string | null
-          account_id: string
-          connected_at?: string | null
-          expires_in?: number | null
-          id?: string
-          metadata?: Json | null
-          platform?: string | null
-          profile_id?: string | null
-          refresh_token?: string | null
-          token_expires_at?: string | null
-          username?: string | null
-        }
-        Update: {
-          access_token?: string | null
-          account_id?: string
-          connected_at?: string | null
-          expires_in?: number | null
-          id?: string
-          metadata?: Json | null
-          platform?: string | null
-          profile_id?: string | null
-          refresh_token?: string | null
-          token_expires_at?: string | null
-          username?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "social_accounts_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       social_metrics: {
         Row: {
           data: Json
@@ -572,7 +596,7 @@ export type Database = {
             foreignKeyName: "social_metrics_social_account_id_fkey"
             columns: ["social_account_id"]
             isOneToOne: false
-            referencedRelation: "social_accounts"
+            referencedRelation: "creator_profiles"
             referencedColumns: ["id"]
           },
         ]
