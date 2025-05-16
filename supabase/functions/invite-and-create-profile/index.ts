@@ -7,6 +7,7 @@ const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 
+// Full CORS headers
 const corsHeaders = {
   "Content-Type": "application/json",
   "Access-Control-Allow-Origin": "*",
@@ -23,9 +24,12 @@ interface InviteRequest {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight request
+  // 💣 PREVENT OPTIONS FAILURE
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders, status: 204 });
+    return new Response(null, {
+      headers: corsHeaders,
+      status: 204
+    });
   }
 
   try {
