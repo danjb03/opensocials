@@ -56,13 +56,16 @@ const InviteUserForm = () => {
         },
       });
 
-      if (error) {
-        throw new Error(error.message || "Failed to send invite");
+      if (error || (data && !data.success)) {
+        throw new Error(error?.message || data?.error || "Failed to send invite");
       }
       
       if (data && data.success) {
         toast.success('Invitation sent successfully!');
         form.reset();
+        
+        // Log more information about the response for debugging
+        console.log("Invite success response:", data);
       } else if (data && data.error === "User already invited") {
         toast.info('User has already been invited or already exists');
       } else {
