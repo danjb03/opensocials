@@ -1,6 +1,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
 
 type CreatorCRMItem = {
   creator_id: string;
@@ -21,7 +22,7 @@ interface CreatorCRMTableProps {
 }
 
 export function CreatorCRMTable({ creators }: CreatorCRMTableProps) {
-  if (creators.length === 0) {
+  if (!creators || creators.length === 0) {
     return <p className="text-gray-500 text-center py-8">No creators found.</p>;
   }
 
@@ -43,7 +44,9 @@ export function CreatorCRMTable({ creators }: CreatorCRMTableProps) {
           {creators.map((creator) => (
             <TableRow key={creator.creator_id}>
               <TableCell>
-                {creator.first_name} {creator.last_name}
+                <Link to={`/admin/crm/creators/${creator.creator_id}`} className="hover:underline text-blue-600">
+                  {creator.first_name} {creator.last_name}
+                </Link>
               </TableCell>
               <TableCell>{creator.email}</TableCell>
               <TableCell>{creator.primary_platform}</TableCell>

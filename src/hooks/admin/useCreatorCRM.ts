@@ -31,12 +31,25 @@ export function useCreatorCRM() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['creators', query],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('get-admin-creator-crm', {
+      console.log('Fetching creators with query:', query);
+      
+      const response = await supabase.functions.invoke('get-admin-creator-crm', {
         body: query
       });
       
-      if (error) throw new Error(error.message);
-      return data;
+      console.log('Creator CRM API response:', response);
+      
+      if (response.error) {
+        console.error('Creator CRM API error:', response.error);
+        throw new Error(response.error.message || 'Failed to fetch creators');
+      }
+      
+      if (!response.data || !response.data.success) {
+        console.error('Creator CRM API invalid response format:', response);
+        throw new Error('Invalid response from server');
+      }
+      
+      return response.data;
     },
   });
 

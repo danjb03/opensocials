@@ -46,6 +46,8 @@ serve(async (req) => {
   }
   
   try {
+    console.log("Edge function invoked: get-admin-creator-crm");
+    
     // Initialize Supabase client
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -59,6 +61,7 @@ serve(async (req) => {
     // Validate user has admin or super_admin role
     const validation = await validateSuperAdmin(supabase, token);
     if (!validation.isValid) {
+      console.error(`Authentication failed: ${validation.message}`);
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -79,9 +82,12 @@ serve(async (req) => {
       try {
         requestParams = await req.json();
       } catch (e) {
+        console.error("Failed to parse JSON body:", e);
         // If JSON parsing fails, continue with URL params
       }
     }
+    
+    console.log("Request parameters:", requestParams);
 
     // Extract pagination parameters and filters from URL or request body
     const page = parseInt(requestParams.page || "1");
@@ -125,6 +131,8 @@ serve(async (req) => {
     // Execute query
     const { data, error, count } = await query;
 
+    console.log("Query executed, data count:", data?.length, "error:", error);
+
     if (error) {
       console.error("Database query error:", error);
       return new Response(
@@ -139,11 +147,11 @@ serve(async (req) => {
       );
     }
 
-    // Return paginated results with metadata
+    // Return successful response even if no data is found (empty array)
     return new Response(
       JSON.stringify({
         success: true,
-        data,
+        data: data || [],
         pagination: {
           total: count || 0,
           page,
