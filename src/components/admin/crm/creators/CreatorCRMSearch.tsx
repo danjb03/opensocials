@@ -9,14 +9,25 @@ interface CreatorCRMSearchProps {
 
 export function CreatorCRMSearch({ onSearch, initialValue = '' }: CreatorCRMSearchProps) {
   const [search, setSearch] = useState(initialValue);
+  const [debouncedValue, setDebouncedValue] = useState(initialValue);
 
+  // Update local state when initialValue changes
+  useEffect(() => {
+    setSearch(initialValue);
+    setDebouncedValue(initialValue);
+  }, [initialValue]);
+
+  // Debounce effect
   useEffect(() => {
     const timeout = setTimeout(() => {
-      onSearch(search);
+      if (search !== debouncedValue) {
+        setDebouncedValue(search);
+        onSearch(search);
+      }
     }, 400);
     
     return () => clearTimeout(timeout);
-  }, [search, onSearch]);
+  }, [search, debouncedValue, onSearch]);
 
   return (
     <Input

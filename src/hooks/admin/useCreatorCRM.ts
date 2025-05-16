@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,7 +28,7 @@ export function useCreatorCRM() {
     search: searchQuery,
   };
 
-  const { data, isLoading, isError, refetch } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['creators', query],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('get-admin-creator-crm', {
@@ -41,8 +41,10 @@ export function useCreatorCRM() {
   });
 
   const handleSearch = (search: string) => {
+    // Don't update if the search term is the same
+    if (search === searchQuery) return;
+    
     setSearchParams({ search, page: '1' });
-    refetch();
   };
 
   return {
