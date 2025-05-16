@@ -91,3 +91,6 @@ public = true
 [functions.get-admin-deals-pipeline]
 verify_jwt = true
 
+# Configure the get-brand-details-by-id edge function
+[functions.get-brand-details-by-id]
+verify_jwt = true
