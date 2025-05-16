@@ -44,21 +44,21 @@ const InviteUserForm = () => {
         throw new Error("You must be logged in to send invites");
       }
 
-      const response = await supabase.functions.invoke('send-invite-email', {
+      const { data, error } = await supabase.functions.invoke('send-invite-email', {
         body: values,
         headers: {
           Authorization: `Bearer ${sessionData.session.access_token}`,
         },
       });
 
-      if (response.error) {
-        throw new Error(response.error.message || "Failed to send invite");
+      if (error) {
+        throw new Error(error.message || "Failed to send invite");
       }
       
-      if (response.data && response.data.success) {
+      if (data && data.success) {
         toast.success('Invitation sent successfully!');
         form.reset();
-      } else if (response.status === 409) {
+      } else if (data && data.message === "User already invited or exists") {
         toast.info('User has already been invited or already exists');
       } else {
         throw new Error("Unexpected response from server");
