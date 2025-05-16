@@ -18,7 +18,7 @@ export const AdminRoutes = () => {
     <ProtectedRoute requiredRole="admin">
       <Routes>
         {/* Admin Main Routes with Layout */}
-        <Route element={<AdminLayout />}>
+        <Route path="/" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="orders" element={<OrderManagement />} />

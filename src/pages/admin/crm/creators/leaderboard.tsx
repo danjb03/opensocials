@@ -59,80 +59,78 @@ export default function CreatorLeaderboardPage() {
   };
 
   return (
-    <AdminLayout>
-      <div className="container mx-auto py-8 px-4">
-        <div className="flex items-center mb-6">
-          <Award className="mr-2 h-6 w-6 text-amber-500" />
-          <h1 className="text-2xl font-bold">Top 50 Earning Creators</h1>
-        </div>
+    <div className="container mx-auto py-8 px-4">
+      <div className="flex items-center mb-6">
+        <Award className="mr-2 h-6 w-6 text-amber-500" />
+        <h1 className="text-2xl font-bold">Top 50 Earning Creators</h1>
+      </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Earnings Leaderboard</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center py-10">
-                <Loader className="animate-spin h-6 w-6" />
-              </div>
-            ) : isError ? (
-              <div className="p-4 text-center">
-                <p className="text-red-500">Failed to load leaderboard data.</p>
-                <p className="text-sm text-muted-foreground mt-2">{error instanceof Error ? error.message : 'Unknown error occurred'}</p>
-              </div>
-            ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Earnings Leaderboard</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex justify-center py-10">
+              <Loader className="animate-spin h-6 w-6" />
+            </div>
+          ) : isError ? (
+            <div className="p-4 text-center">
+              <p className="text-red-500">Failed to load leaderboard data.</p>
+              <p className="text-sm text-muted-foreground mt-2">{error instanceof Error ? error.message : 'Unknown error occurred'}</p>
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>#</TableHead>
+                    <TableHead>Creator</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Platform</TableHead>
+                    <TableHead className="text-right">Earnings</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {creators.length === 0 ? (
                     <TableRow>
-                      <TableHead>#</TableHead>
-                      <TableHead>Creator</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Platform</TableHead>
-                      <TableHead className="text-right">Earnings</TableHead>
+                      <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                        No earnings data available yet. Add deals with earnings to see creators here.
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {creators.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
-                          No earnings data available yet. Add deals with earnings to see creators here.
+                  ) : (
+                    creators.map((creator, i) => (
+                      <TableRow key={creator.id}>
+                        <TableCell>
+                          <span className={`font-bold ${getMedalColor(i)}`}>{i + 1}</span>
+                        </TableCell>
+                        <TableCell>{creator.name || 'Unknown Creator'}</TableCell>
+                        <TableCell>{creator.email}</TableCell>
+                        <TableCell>
+                          <Badge 
+                            className={creator.platform && creator.platform !== 'N/A' 
+                              ? getPlatformBadgeColor(creator.platform)
+                              : undefined
+                            }
+                          >
+                            {creator.platform || 'Unknown'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          <div className="flex items-center justify-end">
+                            <DollarSign className="h-4 w-4 mr-1 text-green-600" />
+                            {Number(creator.total_earnings).toLocaleString()}
+                          </div>
                         </TableCell>
                       </TableRow>
-                    ) : (
-                      creators.map((creator, i) => (
-                        <TableRow key={creator.id}>
-                          <TableCell>
-                            <span className={`font-bold ${getMedalColor(i)}`}>{i + 1}</span>
-                          </TableCell>
-                          <TableCell>{creator.name || 'Unknown Creator'}</TableCell>
-                          <TableCell>{creator.email}</TableCell>
-                          <TableCell>
-                            <Badge 
-                              className={creator.platform && creator.platform !== 'N/A' 
-                                ? getPlatformBadgeColor(creator.platform)
-                                : undefined
-                              }
-                            >
-                              {creator.platform || 'Unknown'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right font-medium">
-                            <div className="flex items-center justify-end">
-                              <DollarSign className="h-4 w-4 mr-1 text-green-600" />
-                              {Number(creator.total_earnings).toLocaleString()}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </AdminLayout>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
