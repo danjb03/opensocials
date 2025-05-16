@@ -52,8 +52,11 @@ const BrandDetailPage = () => {
         throw new Error('Authentication required');
       }
       
+      // Use environment variable or hardcoded URL for Supabase URL
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://pcnrnciwgdrukzciwexi.supabase.co";
+      
       const response = await fetch(
-        `${supabase.supabaseUrl}/functions/v1/get-brand-details-by-id?brand_id=${brand_id}`,
+        `${supabaseUrl}/functions/v1/get-brand-details-by-id?brand_id=${brand_id}`,
         {
           headers: {
             Authorization: `Bearer ${session.session.access_token}`,
