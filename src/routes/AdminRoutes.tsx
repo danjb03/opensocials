@@ -10,6 +10,7 @@ import BrandsCRM from "@/pages/admin/crm/brands/index";
 import BrandDetailPage from "@/pages/admin/crm/brands/[brand_id]";
 import CreatorsCRM from "@/pages/admin/crm/creators/index";
 import CreatorDetailPage from "@/pages/admin/crm/creators/[id]";
+import CreatorLeaderboardPage from "@/pages/admin/crm/creators/leaderboard";
 import DealPipelinePage from "@/pages/admin/crm/deals/index";
 
 export const AdminRoutes = () => {
@@ -29,6 +30,7 @@ export const AdminRoutes = () => {
         <Route path="crm/brands/:brand_id" element={<BrandDetailPage />} />
         <Route path="crm/creators" element={<CreatorsCRM />} />
         <Route path="crm/creators/:id" element={<CreatorDetailPage />} />
+        <Route path="crm/creators/leaderboard" element={<CreatorLeaderboardPage />} />
         <Route path="crm/deals" element={<DealPipelinePage />} />
         
         {/* Redirect from the old creator management URL to the new CRM URL */}
