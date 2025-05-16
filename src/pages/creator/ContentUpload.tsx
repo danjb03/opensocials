@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -77,19 +78,28 @@ const ContentUpload = () => {
           .eq('id', id)
           .single();
 
-        if (projectError) {
-          console.warn('Could not find project, using deal data instead:', projectError);
-        }
-
+        // Initialize campaign with data
         const campaignData: Campaign = {
           id: (project?.id || deal.id || ''),
           title: (project?.name || deal.title || 'Untitled Campaign'),
-          contentRequirements: (project?.content_requirements || {}),
+          contentRequirements: {},
           brandId: (project?.brand_id || deal.brand_id || ''),
-          platforms: (project?.platforms || []),
+          platforms: [],
           dealId: deal.id,
           brandName: ''
         };
+        
+        // Safe assign content_requirements if it's an object
+        if (project?.content_requirements && 
+            typeof project.content_requirements === 'object' && 
+            !Array.isArray(project.content_requirements)) {
+          campaignData.contentRequirements = project.content_requirements as Record<string, any>;
+        }
+        
+        // Safe assign platforms if it's an array
+        if (project?.platforms && Array.isArray(project.platforms)) {
+          campaignData.platforms = project.platforms;
+        }
 
         // Get brand info
         if (campaignData.brandId) {

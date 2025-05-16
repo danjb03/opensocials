@@ -87,10 +87,6 @@ const CampaignDetail = () => {
           .eq('id', id)
           .single();
 
-        if (projectError) {
-          console.warn('Could not find project, using deal data instead:', projectError);
-        }
-
         // Initialize campaign with combined data
         const campaignData: Campaign = {
           id: (project?.id || deal.id || ''),
@@ -99,9 +95,9 @@ const CampaignDetail = () => {
           startDate: (project?.start_date || new Date().toISOString()),
           endDate: (project?.end_date || new Date().toISOString()),
           status: (project?.status || 'in_progress'),
-          contentRequirements: (project?.content_requirements || {}),
+          contentRequirements: {},
           brandId: (project?.brand_id || deal.brand_id || ''),
-          platforms: (project?.platforms || []),
+          platforms: [],
           dealId: deal.id,
           value: deal.value || 0,
           deadline: (project?.submission_deadline || project?.end_date || new Date().toISOString()),
@@ -109,6 +105,18 @@ const CampaignDetail = () => {
           brandLogo: null,
           uploads: []
         };
+        
+        // Safe assign content_requirements if it's an object
+        if (project?.content_requirements && 
+            typeof project.content_requirements === 'object' && 
+            !Array.isArray(project.content_requirements)) {
+          campaignData.contentRequirements = project.content_requirements as Record<string, any>;
+        }
+        
+        // Safe assign platforms if it's an array
+        if (project?.platforms && Array.isArray(project.platforms)) {
+          campaignData.platforms = project.platforms;
+        }
 
         // Get brand info if brandId is available
         if (campaignData.brandId) {
