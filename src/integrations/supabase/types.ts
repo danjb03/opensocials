@@ -166,6 +166,13 @@ export type Database = {
             foreignKeyName: "creator_industry_tags_creator_id_fkey"
             columns: ["creator_id"]
             isOneToOne: false
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "creator_industry_tags_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -243,6 +250,13 @@ export type Database = {
           username?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "social_accounts_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
+          },
           {
             foreignKeyName: "social_accounts_profile_id_fkey"
             columns: ["profile_id"]
@@ -627,7 +641,21 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_crm_brands_view: {
+        Row: {
+          active_deals: number | null
+          brand_id: string | null
+          budget_range: string | null
+          company_name: string | null
+          created_at: string | null
+          email: string | null
+          industry: string | null
+          last_active_at: string | null
+          status: string | null
+          total_deals: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_user_role: {
