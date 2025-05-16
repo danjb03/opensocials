@@ -1,5 +1,4 @@
-
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "./index";
 import AdminLayout from "@/components/layouts/AdminLayout";
 import AdminDashboard from "@/pages/admin/Dashboard";
@@ -28,15 +27,11 @@ export const AdminRoutes = () => {
           <Route path="crm/brands" element={<BrandsCRM />} />
           <Route path="crm/brands/:brand_id" element={<BrandDetailPage />} />
           <Route path="crm/creators" element={<CreatorsCRM />} />
-          {/* Important: Specific route placed BEFORE dynamic route */}
           <Route path="crm/creators/leaderboard" element={<CreatorLeaderboardPage />} />
           <Route path="crm/creators/:id" element={<CreatorDetailPage />} />
           <Route path="crm/deals" element={<DealPipelinePage />} />
-          
-          {/* Redirect from the old creator management URL to the new CRM URL */}
-          <Route path="creators" element={<Navigate to="/admin/crm/creators" replace />} />
         </Route>
       </Routes>
     </ProtectedRoute>
   );
-}
+};
