@@ -28,8 +28,9 @@ export const AdminRoutes = () => {
           <Route path="crm/brands" element={<BrandsCRM />} />
           <Route path="crm/brands/:brand_id" element={<BrandDetailPage />} />
           <Route path="crm/creators" element={<CreatorsCRM />} />
-          <Route path="crm/creators/:id" element={<CreatorDetailPage />} />
+          {/* Important: Specific route placed BEFORE dynamic route */}
           <Route path="crm/creators/leaderboard" element={<CreatorLeaderboardPage />} />
+          <Route path="crm/creators/:id" element={<CreatorDetailPage />} />
           <Route path="crm/deals" element={<DealPipelinePage />} />
           
           {/* Redirect from the old creator management URL to the new CRM URL */}

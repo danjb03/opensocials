@@ -17,7 +17,7 @@ export default function CreatorLeaderboardPage() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['creator-leaderboard'],
     queryFn: async () => {
-      // Use Supabase client with proper URL construction
+      // Use the full Supabase edge function URL
       const res = await fetch('https://pcnrnciwgdrukzciwexi.supabase.co/functions/v1/get-creator-leaderboard', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
