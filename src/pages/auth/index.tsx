@@ -4,7 +4,7 @@ import { useAuthPage } from '@/hooks/useAuthPage';
 import Logo from '@/components/ui/logo';
 import { AuthForms } from '@/components/auth/AuthForms';
 import { useEffect } from 'react';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
 const AuthPage = () => {
@@ -12,18 +12,21 @@ const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   
-  // Check if the URL contains a confirmation parameter and switch to login view
+  // Check if this is an invite link or confirmation link
   useEffect(() => {
+    const isInvite = searchParams.get('setup') === 'true';
     const isConfirmation = searchParams.get('confirmation') === 'true' || window.location.hash.includes('#access_token=');
     
-    if (isConfirmation) {
-      console.log('Confirmation link detected, switching to login view');
-      // If this is a confirmation link, ensure we're in login mode
+    if (isInvite || isConfirmation) {
+      console.log('Invite or confirmation link detected, switching to login view');
+      // If this is a confirmation or invite link, ensure we're in login mode
       if (isSignUp) {
         toggleAuthMode();
       }
       
-      if (window.location.hash.includes('#access_token=')) {
+      if (isInvite) {
+        toast.info('Please set your password to complete your account setup.');
+      } else if (window.location.hash.includes('#access_token=')) {
         toast.info('Processing your email confirmation...');
       } else {
         toast.info('Please log in with your credentials.');

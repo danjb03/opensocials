@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AuthContext, type UserRole } from '@/lib/auth';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -10,7 +10,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState<UserRole | null>(null);
   const [emailConfirmed, setEmailConfirmed] = useState<boolean | null>(null);
-  const { toast } = useToast();
 
   useEffect(() => {
     // Set up auth state listener first
@@ -119,11 +118,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         if (error) {
           console.error('Error fetching user role from profiles:', error);
-          toast({
-            title: 'Error',
-            description: 'Failed to fetch user role: ' + error.message,
-            variant: 'destructive',
-          });
+          toast.error('Failed to fetch user role: ' + error.message);
           setIsLoading(false);
           return;
         }
@@ -140,20 +135,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!role && !user?.user_metadata?.role && !roleData?.role) {
         console.log("No role found, setting to null");
         
-        toast({
-          title: 'No Role Assigned',
-          description: 'Your account does not have a role assigned. Please contact an administrator.',
-        });
+        toast.error('Your account does not have a role assigned. Please contact an administrator.');
       }
       
       setIsLoading(false);
     } catch (error) {
       console.error('Failed to fetch user role:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch user role',
-        variant: 'destructive',
-      });
+      toast.error('Failed to fetch user role');
       setIsLoading(false);
     }
   };

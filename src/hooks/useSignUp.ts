@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 import type { UserRole } from '@/lib/auth';
 
 interface SignUpParams {
@@ -46,6 +46,27 @@ export function useSignUp() {
       if (data.user) {
         console.log('✅ Signup complete:', data.user.id);
         
+        // Create a profile entry if one doesn't exist yet
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert({
+            id: data.user.id,
+            email,
+            role,
+            first_name: firstName,
+            last_name: lastName,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            status: 'pending'
+          })
+          .select()
+          .single();
+        
+        if (profileError) {
+          // If there's an error because the profile already exists, this is normal for admin-invited users
+          console.log('Profile may already exist:', profileError.message);
+        }
+
         // Check if email was confirmed immediately (if email confirmation is disabled in Supabase)
         if (data.user.email_confirmed_at) {
           toast.success('Account created! You can now log in.');

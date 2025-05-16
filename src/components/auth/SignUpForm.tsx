@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { UserRole } from '@/lib/auth';
+import { Loader } from 'lucide-react';
 
 interface SignUpFormProps {
   firstName: string;
@@ -101,7 +102,14 @@ export const SignUpForm = ({
         </Button>
       </div>
       <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? 'Loading...' : 'Sign Up'}
+        {isLoading ? (
+          <>
+            <Loader className="mr-2 h-4 w-4 animate-spin" />
+            Signing up...
+          </>
+        ) : (
+          'Sign Up'
+        )}
       </Button>
     </form>
   );

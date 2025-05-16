@@ -1,125 +1,56 @@
 
 import { useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/sonner';
-import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export function useEmailConfirmation() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const checkConfirmation = async () => {
-      // Check if this is a confirmation link from email
-      const url = new URL(window.location.href);
-      const isConfirmation = url.hash.includes('#access_token=') || url.searchParams.get('confirmation') === 'true';
-      
-      if (isConfirmation) {
-        try {
-          console.log('Detected confirmation link');
-          
-          // Get the session from the hash fragment if present
-          if (url.hash.includes('#access_token=')) {
-            // This means the user clicked on the email confirmation link
-            // The session is created automatically by Supabase
-            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    // Process hash parameters which could contain access_token, etc.
+    const handleEmailConfirmation = async () => {
+      // Check if we have a hash in the URL (indicates email confirmation)
+      if (window.location.hash && window.location.hash.includes('access_token')) {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        const type = hashParams.get('type');
+
+        if (accessToken && type) {
+          try {
+            // Set the session from the hash params
+            const { data, error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken || '',
+            });
             
-            if (sessionError) {
-              console.error('Error getting session:', sessionError);
-              toast.error('Error confirming email. Please try logging in.');
-              navigate('/auth');
-              return;
-            }
+            if (error) throw error;
             
-            if (!session) {
-              console.error('No session found after confirmation');
-              toast.error('Email confirmation failed. Please try logging in directly.');
-              navigate('/auth');
-              return;
-            }
-            
-            console.log('Session found after confirmation:', session);
-            
-            // User is now authenticated after clicking the confirmation link
-            const userId = session.user.id;
-            
-            // Update user_roles status to approved
-            const { error: roleError } = await supabase
-              .from('user_roles')
-              .update({ status: 'approved' })
-              .eq('user_id', userId);
+            if (data?.user) {
+              // Clear the hash from URL
+              window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
               
-            if (roleError) {
-              console.error('Error updating role status:', roleError);
-              toast.error('Error updating account status. Your account is confirmed but you may need to contact support.');
+              toast.success('Email confirmed successfully! You are now logged in.');
+              navigate('/'); // Redirect to home or dashboard
             }
-            
-            // Get user role from profiles and user metadata
-            let userRole = session.user.user_metadata?.role;
-            
-            if (!userRole) {
-              const { data: userData, error: userError } = await supabase
-                .from('profiles')
-                .select('role')
-                .eq('id', userId)
-                .single();
-                
-              if (userError) {
-                console.error('Error fetching user role:', userError);
-              } else if (userData) {
-                userRole = userData.role;
-              }
-            }
-            
-            console.log('User role:', userRole);
-            
-            // Special handling for brand accounts
-            if (userRole === 'brand') {
-              console.log('Confirming brand account');
-              // Check if the profile is already marked as complete
-              const { data: brandProfile, error: brandCheckError } = await supabase
-                .from('profiles')
-                .select('is_complete, company_name')
-                .eq('id', userId)
-                .eq('role', 'brand')
-                .maybeSingle();
-                
-              if (brandCheckError) {
-                console.error('Error checking brand profile:', brandCheckError);
-              }
-              
-              // If is_complete is not true, update the profile
-              if (brandProfile && !brandProfile.is_complete) {
-                console.log('Updating brand profile for confirmed user');
-                const { error: updateError } = await supabase
-                  .from('profiles')
-                  .update({
-                    company_name: brandProfile.company_name || 'My Brand',
-                    is_complete: false
-                  })
-                  .eq('id', userId);
-                
-                if (updateError) {
-                  console.error('Failed to update brand profile:', updateError);
-                }
-              }
-            }
-            
-            // Sign out the user so they can login with their confirmed credentials
-            await supabase.auth.signOut();
-            
-            toast.success('Email confirmed successfully! You can now log in with your credentials.');
-            
-            // Redirect to auth page for login
-            navigate('/auth');
+          } catch (err: any) {
+            console.error('Error handling email confirmation:', err);
+            toast.error('Failed to confirm email: ' + (err.message || 'Unknown error'));
           }
-        } catch (error) {
-          console.error('Error handling confirmation:', error);
-          toast.error('Failed to process email confirmation. Please try logging in or contact support.');
-          navigate('/auth');
         }
       }
+
+      // Handle explicit confirmation param
+      const isConfirmation = searchParams.get('confirmation') === 'true';
+      if (isConfirmation) {
+        toast.info('Please sign in to continue.');
+      }
     };
-    
-    checkConfirmation();
-  }, [navigate]);
+
+    handleEmailConfirmation();
+  }, [navigate, searchParams]);
+
+  return null;
 }
