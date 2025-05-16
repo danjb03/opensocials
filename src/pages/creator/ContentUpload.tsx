@@ -55,7 +55,9 @@ const ContentUpload = () => {
           throw new Error('No deals found');
         }
 
+        // Find the deal that matches the campaign id
         const deal = deals.find(d => {
+          // Check if projects property exists on the deal and is not null
           if (d.projects) {
             return d.projects.id === id || d.id === id;
           }
@@ -66,12 +68,15 @@ const ContentUpload = () => {
           throw new Error('Campaign not found');
         }
 
+        // Safely access projects data with null checks
+        const projectData = deal.projects || {};
+
         const campaignData: Campaign = {
-          id: deal.projects?.id || deal.id,
-          title: deal.projects?.name || deal.title,
-          contentRequirements: deal.projects?.content_requirements || {},
-          brandId: deal.projects?.brand_id || deal.brand_id,
-          platforms: deal.projects?.platforms || [],
+          id: projectData.id || deal.id,
+          title: projectData.name || deal.title || 'Untitled Campaign',
+          contentRequirements: projectData.content_requirements || {},
+          brandId: projectData.brand_id || deal.brand_id || '',
+          platforms: projectData.platforms || [],
           dealId: deal.id,
           brandName: ''
         };

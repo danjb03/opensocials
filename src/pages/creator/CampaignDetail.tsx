@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -59,7 +58,9 @@ const CampaignDetail = () => {
           throw new Error('No deals found');
         }
 
+        // Find the relevant deal/project
         const deal = deals.find(d => {
+          // Check if projects property exists on the deal and is not null
           if (d.projects) {
             return d.projects.id === id || d.id === id;
           }
@@ -70,26 +71,29 @@ const CampaignDetail = () => {
           throw new Error('Campaign not found');
         }
 
+        // Safely access properties with type checking
+        const projectData = deal.projects || {};
+
         // Initialize campaign with deal data, handling potentially missing project data
         const campaignData: Campaign = {
-          id: deal.projects?.id || deal.id,
-          title: deal.projects?.name || deal.title,
-          description: deal.description || deal.projects?.description || '',
-          startDate: deal.projects?.start_date || new Date().toISOString(),
-          endDate: deal.projects?.end_date || new Date().toISOString(),
-          status: deal.projects?.status || 'in_progress',
-          contentRequirements: deal.projects?.content_requirements || {},
-          brandId: deal.projects?.brand_id || deal.brand_id,
-          platforms: deal.projects?.platforms || [],
+          id: projectData.id || deal.id,
+          title: projectData.name || deal.title || 'Untitled Campaign',
+          description: projectData.description || deal.description || '',
+          startDate: projectData.start_date || new Date().toISOString(),
+          endDate: projectData.end_date || new Date().toISOString(),
+          status: projectData.status || 'in_progress',
+          contentRequirements: projectData.content_requirements || {},
+          brandId: projectData.brand_id || deal.brand_id || '',
+          platforms: projectData.platforms || [],
           dealId: deal.id,
           value: deal.value || 0,
-          deadline: deal.projects?.submission_deadline || deal.projects?.end_date || new Date().toISOString(),
+          deadline: projectData.submission_deadline || projectData.end_date || new Date().toISOString(),
           brandName: '',
           brandLogo: null,
           uploads: []
         };
 
-        // Get brand info
+        // Get brand info if brandId is available
         if (campaignData.brandId) {
           const { data: brandData } = await supabase
             .from('profiles')
@@ -334,7 +338,6 @@ const CampaignDetail = () => {
                     </div>
                   </TabsContent>
 
-                  
                   <TabsContent value="uploads" className="space-y-4">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-medium">Your Uploads</h3>
