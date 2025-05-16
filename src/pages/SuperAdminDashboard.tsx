@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserRoleFixer from '@/components/admin/UserRoleFixer';
-import { Users, LayoutDashboard, User, Settings, Briefcase } from 'lucide-react';
+import { CreatorLeaderboard } from '@/components/admin/CreatorLeaderboard';
+import { Users, LayoutDashboard, User, Settings, Briefcase, Award } from 'lucide-react';
 
 const SuperAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -18,6 +19,7 @@ const SuperAdminDashboard = () => {
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="leaderboard">Creator Earnings</TabsTrigger>
           <TabsTrigger value="tools">Admin Tools</TabsTrigger>
         </TabsList>
         
@@ -128,6 +130,12 @@ const SuperAdminDashboard = () => {
                 </Button>
               </CardContent>
             </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="leaderboard">
+          <div className="grid gap-6">
+            <CreatorLeaderboard />
           </div>
         </TabsContent>
         
