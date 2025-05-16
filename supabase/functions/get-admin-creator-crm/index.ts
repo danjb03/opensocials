@@ -71,15 +71,26 @@ serve(async (req) => {
       );
     }
 
-    // Extract pagination parameters and filters from URL
-    const url = new URL(req.url);
-    const page = parseInt(url.searchParams.get("page") || "1");
-    const pageSize = parseInt(url.searchParams.get("pageSize") || "10");
-    const orderBy = url.searchParams.get("orderBy") || "last_active_at";
-    const orderDirection = url.searchParams.get("orderDirection") === "asc" ? true : false;
-    const statusFilter = url.searchParams.get("status") || null;
-    const platformFilter = url.searchParams.get("platform") || null;
-    const searchTerm = url.searchParams.get("search") || null;
+    // Extract request parameters 
+    // First parse request body if available
+    let requestParams = {};
+    const contentType = req.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      try {
+        requestParams = await req.json();
+      } catch (e) {
+        // If JSON parsing fails, continue with URL params
+      }
+    }
+
+    // Extract pagination parameters and filters from URL or request body
+    const page = parseInt(requestParams.page || "1");
+    const pageSize = parseInt(requestParams.pageSize || "10");
+    const orderBy = requestParams.orderBy || "last_active_at";
+    const orderDirection = requestParams.orderDirection === "asc" ? true : false;
+    const statusFilter = requestParams.status || null;
+    const platformFilter = requestParams.platform || null;
+    const searchTerm = requestParams.search || null;
     
     // Calculate pagination values
     const from = (page - 1) * pageSize;

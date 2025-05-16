@@ -29,7 +29,7 @@ const CreatorManagement = () => {
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [status, setStatus] = useState(searchParams.get('status') || 'all');
   const [platform, setPlatform] = useState(searchParams.get('platform') || 'all');
-  const page = parseInt(searchParams.get('page') || '1');
+  const [page, setPage] = useState(parseInt(searchParams.get('page') || '1'));
   const pageSize = 10;
 
   const { data, isLoading, isError } = useQuery({
@@ -37,21 +37,26 @@ const CreatorManagement = () => {
     queryFn: () => fetchCreators({ page, pageSize, search, status, platform })
   });
 
+  // Update URL params when filters change, but don't trigger on every render
   useEffect(() => {
     const params = new URLSearchParams();
     if (search) params.set('search', search);
-    if (status) params.set('status', status);
-    if (platform) params.set('platform', platform);
-    params.set('page', String(page));
-    setSearchParams(params);
+    if (status !== 'all') params.set('status', status);
+    if (platform !== 'all') params.set('platform', platform);
+    if (page !== 1) params.set('page', String(page));
+    
+    // Update URL params only if they've changed
+    const currentParams = new URLSearchParams(searchParams);
+    const newParamsString = params.toString();
+    const currentParamsString = currentParams.toString();
+    
+    if (newParamsString !== currentParamsString) {
+      setSearchParams(params, { replace: true });
+    }
   }, [search, status, platform, page]);
 
   const handlePageChange = (newPage) => {
-    setSearchParams(prev => {
-      const updated = new URLSearchParams(prev);
-      updated.set('page', String(newPage));
-      return updated;
-    });
+    setPage(newPage);
   };
 
   return (
@@ -70,7 +75,13 @@ const CreatorManagement = () => {
           onChange={(e) => setSearch(e.target.value)}
           className="w-full md:w-64"
         />
-        <Select value={status} onValueChange={setStatus}>
+        <Select 
+          value={status} 
+          onValueChange={(value) => {
+            setStatus(value);
+            setPage(1); // Reset to first page when filter changes
+          }}
+        >
           <SelectTrigger className="w-full md:w-36">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -81,7 +92,13 @@ const CreatorManagement = () => {
             <SelectItem value="pending">Pending</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={platform} onValueChange={setPlatform}>
+        <Select 
+          value={platform} 
+          onValueChange={(value) => {
+            setPlatform(value);
+            setPage(1); // Reset to first page when filter changes
+          }}
+        >
           <SelectTrigger className="w-full md:w-36">
             <SelectValue placeholder="Platform" />
           </SelectTrigger>
