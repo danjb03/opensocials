@@ -1,5 +1,5 @@
 
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Loader, ArrowLeft, DollarSign, User, Calendar, Percent } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
 
 export default function CreatorDetailPage() {
   const { id: creatorId } = useParams<{ id: string }>();
@@ -16,6 +15,8 @@ export default function CreatorDetailPage() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['creator-details', creatorId],
     queryFn: async () => {
+      if (!creatorId) throw new Error("Creator ID is required");
+      
       const { data, error } = await supabase.functions.invoke('get-creator-details-by-id', {
         body: { creator_id: creatorId }
       });
@@ -36,12 +37,7 @@ export default function CreatorDetailPage() {
   };
 
   const handleBack = () => {
-    const referrer = document.referrer;
-    if (referrer.includes('leaderboard')) {
-      navigate('/admin/crm/creators/leaderboard');
-    } else {
-      navigate('/admin/crm/creators');
-    }
+    navigate(-1);
   };
 
   return (
@@ -139,11 +135,11 @@ export default function CreatorDetailPage() {
                   <div className="space-y-4">
                     <div>
                       <p className="text-sm text-muted-foreground">Followers</p>
-                      <p className="text-lg font-medium">{profile.follower_count || 'No data'}</p>
+                      <p className="text-lg font-medium">{profile.follower_count ? profile.follower_count.toLocaleString() : 'No data'}</p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Engagement Rate</p>
-                      <p className="text-lg font-medium">{profile.engagement_rate || 'No data'}</p>
+                      <p className="text-lg font-medium">{profile.engagement_rate ? profile.engagement_rate + '%' : 'No data'}</p>
                     </div>
                   </div>
                 </CardContent>
