@@ -1,5 +1,5 @@
 
-import { Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "./index";
 import CreatorDashboard from "@/pages/creator/Dashboard";
 import CreatorDeals from "@/pages/creator/Deals";
@@ -9,10 +9,10 @@ import ContentUpload from "@/pages/creator/ContentUpload";
 
 export const CreatorRoutes = () => {
   return (
-    <>
+    <Routes>
       {/* Creator Dashboard Routes */}
       <Route 
-        path="/creator" 
+        path="" 
         element={
           <ProtectedRoute requiredRole="creator">
             <CreatorDashboard />
@@ -20,7 +20,7 @@ export const CreatorRoutes = () => {
         } 
       />
       <Route 
-        path="/creator/analytics" 
+        path="analytics" 
         element={
           <ProtectedRoute requiredRole="creator">
             <CreatorDashboard />
@@ -28,7 +28,7 @@ export const CreatorRoutes = () => {
         } 
       />
       <Route 
-        path="/creator/deals" 
+        path="deals" 
         element={
           <ProtectedRoute requiredRole="creator">
             <CreatorDeals />
@@ -38,7 +38,7 @@ export const CreatorRoutes = () => {
       
       {/* Creator Campaign Routes */}
       <Route 
-        path="/creator/campaigns" 
+        path="campaigns" 
         element={
           <ProtectedRoute requiredRole="creator">
             <CreatorCampaigns />
@@ -46,7 +46,7 @@ export const CreatorRoutes = () => {
         } 
       />
       <Route 
-        path="/creator/campaigns/:id" 
+        path="campaigns/:id" 
         element={
           <ProtectedRoute requiredRole="creator">
             <CampaignDetail />
@@ -54,13 +54,13 @@ export const CreatorRoutes = () => {
         } 
       />
       <Route 
-        path="/creator/campaigns/:id/upload" 
+        path="campaigns/:id/upload" 
         element={
           <ProtectedRoute requiredRole="creator">
             <ContentUpload />
           </ProtectedRoute>
         } 
       />
-    </>
+    </Routes>
   );
 };

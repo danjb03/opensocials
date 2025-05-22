@@ -1,5 +1,5 @@
 
-import { Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "./index";
 import BrandGuard from "@/components/BrandGuard";
 import BrandOnboardingGuard from "@/components/BrandOnboardingGuard";
@@ -16,10 +16,10 @@ import CampaignAnalyticsList from '@/pages/brand/CampaignAnalyticsList';
 
 export const BrandRoutes = () => {
   return (
-    <>
+    <Routes>
       {/* Brand Setup Route */}
       <Route 
-        path="/brand/setup-profile" 
+        path="setup-profile" 
         element={
           <ProtectedRoute requiredRole="brand">
             <SetupProfile />
@@ -29,7 +29,7 @@ export const BrandRoutes = () => {
       
       {/* Brand Dashboard Routes with Onboarding Guard */}
       <Route 
-        path="/brand" 
+        path="" 
         element={
           <BrandOnboardingGuard>
             <BrandDashboard />
@@ -37,7 +37,7 @@ export const BrandRoutes = () => {
         } 
       />
       <Route 
-        path="/brand/projects" 
+        path="projects" 
         element={
           <BrandOnboardingGuard>
             <Projects />
@@ -45,7 +45,7 @@ export const BrandRoutes = () => {
         } 
       />
       <Route 
-        path="/brand/creators" 
+        path="creators" 
         element={
           <BrandOnboardingGuard>
             <CreatorSearch />
@@ -53,7 +53,7 @@ export const BrandRoutes = () => {
         } 
       />
       <Route 
-        path="/brand/orders" 
+        path="orders" 
         element={
           <BrandOnboardingGuard>
             <BrandOrders />
@@ -63,7 +63,7 @@ export const BrandRoutes = () => {
       
       {/* Brand Project Routes with Regular Brand Guard */}
       <Route 
-        path="/brand/projects/:id" 
+        path="projects/:id" 
         element={
           <BrandGuard>
             <ProjectView />
@@ -71,7 +71,7 @@ export const BrandRoutes = () => {
         } 
       />
       <Route 
-        path="/brand/projects/edit/:id" 
+        path="projects/edit/:id" 
         element={
           <BrandGuard>
             <EditCampaign />
@@ -79,7 +79,7 @@ export const BrandRoutes = () => {
         } 
       />
       <Route 
-        path="/brand/projects/budget/:id" 
+        path="projects/budget/:id" 
         element={
           <BrandGuard>
             <ManageBudget />
@@ -87,7 +87,7 @@ export const BrandRoutes = () => {
         } 
       />
       <Route 
-        path="/brand/projects/analytics/:id" 
+        path="projects/analytics/:id" 
         element={
           <BrandGuard>
             <CampaignAnalytics />
@@ -95,13 +95,13 @@ export const BrandRoutes = () => {
         } 
       />
       <Route 
-        path="/brand/analytics" 
+        path="analytics" 
         element={
           <BrandGuard>
             <CampaignAnalyticsList />
           </BrandGuard>
         } 
       />
-    </>
+    </Routes>
   );
 };
