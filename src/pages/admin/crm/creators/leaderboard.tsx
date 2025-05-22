@@ -60,7 +60,9 @@ export default function CreatorLeaderboardPage() {
   };
 
   const handleCreatorClick = (creator: LeaderboardItem) => {
-    navigate(`/admin/crm/creators/${creator.id}`);
+    if (creator && creator.id) {
+      navigate(`/admin/crm/creators/${creator.id}`);
+    }
   };
 
   const columns = [

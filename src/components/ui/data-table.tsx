@@ -59,6 +59,13 @@ export function DataTable<TData, TValue>({
     );
   }
 
+  // Handle row click with proper type safety
+  const handleRowClick = (row: TData) => {
+    if (onRowClick && typeof onRowClick === 'function') {
+      onRowClick(row);
+    }
+  };
+
   return (
     <div>
       <div className="rounded-md border">
@@ -87,7 +94,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  onClick={() => onRowClick && onRowClick(row.original)}
+                  onClick={() => onRowClick && handleRowClick(row.original)}
                   className={onRowClick ? "cursor-pointer hover:bg-muted" : undefined}
                 >
                   {row.getVisibleCells().map((cell) => (
