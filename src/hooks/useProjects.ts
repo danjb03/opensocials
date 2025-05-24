@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Project } from '@/types/projects';
 import { useAuth } from '@/lib/auth';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export type ProjectFilters = {
   campaignTypes: string[];
@@ -14,9 +14,8 @@ export type ProjectFilters = {
 
 export const useProjects = () => {
   const { user } = useAuth();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Define filters state
   const [filters, setFilters] = useState<ProjectFilters>({
@@ -28,13 +27,12 @@ export const useProjects = () => {
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Fetch projects with filters
-  const fetchProjects = async () => {
-    if (!user) return;
-    
-    setIsLoading(true);
-    
-    try {
+  // Fetch projects with React Query for better synchronization
+  const { data: projects = [], isLoading, error } = useQuery({
+    queryKey: ['projects', user?.id, filters],
+    queryFn: async () => {
+      if (!user) return [];
+      
       let query = supabase
         .from('projects')
         .select('*')
@@ -67,36 +65,64 @@ export const useProjects = () => {
                       : `${year}-${String(parseInt(month) + 1).padStart(2, '0')}-01`);
       }
       
-      const { data, error } = await query;
+      const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) {
         throw error;
       }
       
-      setProjects(data as Project[]);
-    } catch (error) {
+      return data as Project[];
+    },
+    enabled: !!user,
+    staleTime: 30000, // Consider data stale after 30 seconds
+  });
+
+  // Set up real-time subscription for projects changes
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('projects-changes')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'projects',
+        filter: `brand_id=eq.${user.id}`
+      }, (payload) => {
+        console.log('Project change detected:', payload);
+        // Invalidate and refetch projects data
+        queryClient.invalidateQueries({ queryKey: ['projects', user.id] });
+        // Also invalidate campaigns data to keep both views in sync
+        queryClient.invalidateQueries({ queryKey: ['campaigns'] });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, queryClient]);
+
+  // Handle error
+  useEffect(() => {
+    if (error) {
       console.error('Error fetching projects:', error);
       toast({
         title: "Error",
         description: "Failed to load projects. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
-  };
-
-  // Fetch projects when filters change or on component mount
-  useEffect(() => {
-    fetchProjects();
-  }, [filters, user]);
+  }, [error, toast]);
 
   const handleFiltersChange = (newFilters: ProjectFilters) => {
     setFilters(newFilters);
   };
 
   const handleProjectCreated = (newProject: any) => {
-    fetchProjects(); // Refresh projects from the database
+    // Invalidate queries to refresh data
+    queryClient.invalidateQueries({ queryKey: ['projects', user?.id] });
+    queryClient.invalidateQueries({ queryKey: ['campaigns'] });
+    
     setIsDialogOpen(false);
     
     toast({
