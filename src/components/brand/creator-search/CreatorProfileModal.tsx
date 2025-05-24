@@ -68,12 +68,12 @@ export const CreatorProfileModal = ({
             <div className="space-y-6">
               <CreatorMetrics creator={creator} />
               <CreatorAbout creator={creator} />
-              <CreatorSkills creator={creator} />
+              <CreatorSkills skills={creator.skills} />
             </div>
             
             <div className="space-y-6">
-              <CreatorSocialLinks creator={creator} />
-              <CreatorAudienceLocation creator={creator} />
+              <CreatorSocialLinks socialLinks={creator.socialLinks} />
+              <CreatorAudienceLocation audienceLocation={creator.audienceLocation} />
             </div>
           </div>
           
