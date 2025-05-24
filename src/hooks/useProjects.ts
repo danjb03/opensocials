@@ -31,7 +31,13 @@ export const useProjects = () => {
   const { data: projects = [], isLoading, error } = useQuery({
     queryKey: ['projects', user?.id, filters],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user) {
+        console.log('🚫 No user found, returning empty array');
+        return [];
+      }
+      
+      console.log('🔍 Fetching projects for user:', user.id);
+      console.log('🔍 Applied filters:', filters);
       
       let query = supabase
         .from('projects')
@@ -68,18 +74,25 @@ export const useProjects = () => {
       const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) {
+        console.error('❌ Error fetching projects:', error);
         throw error;
       }
+      
+      console.log('📊 Fetched projects:', data?.length || 0, 'projects');
+      console.log('📋 Project details:', data?.map(p => ({ id: p.id, name: p.name, status: p.status })));
       
       return data as Project[];
     },
     enabled: !!user,
-    staleTime: 30000, // Consider data stale after 30 seconds
+    staleTime: 5000, // Consider data stale after 5 seconds for more frequent updates
+    refetchOnWindowFocus: true, // Refetch when window gains focus
   });
 
   // Set up real-time subscription for projects changes
   useEffect(() => {
     if (!user) return;
+
+    console.log('🔔 Setting up real-time subscription for projects');
 
     const channel = supabase
       .channel('projects-changes')
@@ -89,7 +102,11 @@ export const useProjects = () => {
         table: 'projects',
         filter: `brand_id=eq.${user.id}`
       }, (payload) => {
-        console.log('Project change detected:', payload);
+        console.log('🔔 Project change detected:', payload);
+        console.log('🔔 Event type:', payload.eventType);
+        console.log('🔔 New record:', payload.new);
+        console.log('🔔 Old record:', payload.old);
+        
         // Invalidate ALL related queries to keep both views in sync
         queryClient.invalidateQueries({ queryKey: ['projects'] });
         queryClient.invalidateQueries({ queryKey: ['campaigns'] });
@@ -97,6 +114,7 @@ export const useProjects = () => {
       .subscribe();
 
     return () => {
+      console.log('🔔 Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
   }, [user, queryClient]);
@@ -104,7 +122,7 @@ export const useProjects = () => {
   // Handle error
   useEffect(() => {
     if (error) {
-      console.error('Error fetching projects:', error);
+      console.error('❌ Error in useProjects:', error);
       toast({
         title: "Error",
         description: "Failed to load projects. Please try again.",
@@ -114,10 +132,13 @@ export const useProjects = () => {
   }, [error, toast]);
 
   const handleFiltersChange = (newFilters: ProjectFilters) => {
+    console.log('🔧 Filters changed:', newFilters);
     setFilters(newFilters);
   };
 
   const handleProjectCreated = (newProject: any) => {
+    console.log('🎉 Project created callback triggered:', newProject);
+    
     // Invalidate ALL related queries to refresh data everywhere
     queryClient.invalidateQueries({ queryKey: ['projects'] });
     queryClient.invalidateQueries({ queryKey: ['campaigns'] });
@@ -128,6 +149,13 @@ export const useProjects = () => {
       title: "Project created",
       description: `${newProject.name} has been successfully created.`,
     });
+
+    // Force a manual refetch to ensure we see the new project immediately
+    setTimeout(() => {
+      console.log('🔄 Force refetching projects after creation');
+      queryClient.refetchQueries({ queryKey: ['projects'] });
+      queryClient.refetchQueries({ queryKey: ['campaigns'] });
+    }, 1000);
   };
 
   return {
