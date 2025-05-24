@@ -14,6 +14,8 @@ export function useCampaigns() {
     queryKey: ['campaigns', user?.id],
     queryFn: async () => {
       try {
+        console.log('Fetching campaigns for user:', user?.id);
+        
         // Get the session
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
@@ -40,23 +42,28 @@ export function useCampaigns() {
           throw new Error(`Failed to fetch projects: ${projectsError.message}`);
         }
 
+        console.log('Raw projects data from database:', projectsData);
+
         // Transform the data to match the expected format
-        const campaignRows: CampaignRow[] = projectsData.map(project => ({
-          project_id: project.id,
-          project_name: project.name,
-          project_status: project.status || 'draft',
-          start_date: project.start_date,
-          end_date: project.end_date,
-          budget: project.budget || 0,
-          currency: project.currency || 'USD',
-          deal_id: null,
-          deal_status: null,
-          deal_value: null,
-          creator_name: null,
-          avatar_url: null,
-          engagement_rate: null,
-          primary_platform: null
-        }));
+        const campaignRows: CampaignRow[] = projectsData.map(project => {
+          console.log('Transforming project:', project);
+          return {
+            project_id: project.id,
+            project_name: project.name,
+            project_status: project.status || 'draft',
+            start_date: project.start_date,
+            end_date: project.end_date,
+            budget: project.budget || 0,
+            currency: project.currency || 'USD',
+            deal_id: null,
+            deal_status: null,
+            deal_value: null,
+            creator_name: null,
+            avatar_url: null,
+            engagement_rate: null,
+            primary_platform: null
+          };
+        });
 
         console.log("Campaigns fetched successfully:", campaignRows);
         return campaignRows;
@@ -95,9 +102,12 @@ export function useCampaigns() {
   }, [user, queryClient]);
 
   const fetchData = () => {
+    console.log('Manual refresh triggered');
     queryClient.invalidateQueries({ queryKey: ['campaigns'] });
     queryClient.invalidateQueries({ queryKey: ['projects'] });
   };
+
+  console.log('useCampaigns hook returning:', { data, loading, error: error?.message || null });
 
   return {
     data,

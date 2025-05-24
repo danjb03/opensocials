@@ -13,7 +13,10 @@ export default function BrandCampaignTable() {
   const { data, loading, error, fetchData } = useCampaigns();
   const navigate = useNavigate();
 
+  console.log('BrandCampaignTable state:', { data, loading, error });
+
   const handleViewProject = (projectId: string) => {
+    console.log('Navigating to project:', projectId);
     navigate(`/brand/orders?projectId=${projectId}`);
   };
 
@@ -45,11 +48,13 @@ export default function BrandCampaignTable() {
     );
   }
 
+  console.log('About to render campaigns. Data:', data, 'Length:', data?.length);
+
   return (
     <Card className="shadow-md rounded-xl overflow-hidden">
       <CardHeader className="pb-2 border-b border-slate-100">
         <CardTitle className="text-xl font-bold">
-          Your Campaigns
+          Your Campaigns ({data?.length || 0})
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
