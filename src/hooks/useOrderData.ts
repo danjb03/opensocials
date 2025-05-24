@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Order } from '@/types/orders';
 import { useToast } from '@/hooks/use-toast';
@@ -11,9 +12,9 @@ export const useOrderData = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
-  // Fetch orders from Supabase using React Query with the same key structure as projects
+  // Fetch orders from Supabase using React Query with consistent query key
   const { data: orders = [], isLoading, error } = useQuery({
-    queryKey: ['campaigns'],
+    queryKey: ['campaigns', user?.id],
     queryFn: async () => {
       try {
         const { data: projects, error } = await supabase
@@ -57,7 +58,7 @@ export const useOrderData = () => {
         console.log('Campaign change detected:', payload);
         // Invalidate both campaigns and projects queries to keep them in sync
         queryClient.invalidateQueries({ queryKey: ['campaigns'] });
-        queryClient.invalidateQueries({ queryKey: ['projects', user.id] });
+        queryClient.invalidateQueries({ queryKey: ['projects'] });
       })
       .subscribe();
 
@@ -69,7 +70,7 @@ export const useOrderData = () => {
   // Function to refresh orders data
   const refreshOrders = () => {
     queryClient.invalidateQueries({ queryKey: ['campaigns'] });
-    queryClient.invalidateQueries({ queryKey: ['projects', user?.id] });
+    queryClient.invalidateQueries({ queryKey: ['projects'] });
   };
 
   // This function is returned for backward compatibility

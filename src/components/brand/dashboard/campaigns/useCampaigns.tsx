@@ -11,7 +11,7 @@ export function useCampaigns() {
   const queryClient = useQueryClient();
 
   const { data, isLoading: loading, error } = useQuery({
-    queryKey: ['campaigns'],
+    queryKey: ['campaigns', user?.id],
     queryFn: async () => {
       try {
         // Get the session
@@ -85,7 +85,7 @@ export function useCampaigns() {
         console.log('Dashboard campaign change detected:', payload);
         // Invalidate all related queries
         queryClient.invalidateQueries({ queryKey: ['campaigns'] });
-        queryClient.invalidateQueries({ queryKey: ['projects', user.id] });
+        queryClient.invalidateQueries({ queryKey: ['projects'] });
       })
       .subscribe();
 
@@ -96,6 +96,7 @@ export function useCampaigns() {
 
   const fetchData = () => {
     queryClient.invalidateQueries({ queryKey: ['campaigns'] });
+    queryClient.invalidateQueries({ queryKey: ['projects'] });
   };
 
   return {

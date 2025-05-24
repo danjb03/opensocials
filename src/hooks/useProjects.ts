@@ -90,9 +90,8 @@ export const useProjects = () => {
         filter: `brand_id=eq.${user.id}`
       }, (payload) => {
         console.log('Project change detected:', payload);
-        // Invalidate and refetch projects data
-        queryClient.invalidateQueries({ queryKey: ['projects', user.id] });
-        // Also invalidate campaigns data to keep both views in sync
+        // Invalidate ALL related queries to keep both views in sync
+        queryClient.invalidateQueries({ queryKey: ['projects'] });
         queryClient.invalidateQueries({ queryKey: ['campaigns'] });
       })
       .subscribe();
@@ -119,8 +118,8 @@ export const useProjects = () => {
   };
 
   const handleProjectCreated = (newProject: any) => {
-    // Invalidate queries to refresh data
-    queryClient.invalidateQueries({ queryKey: ['projects', user?.id] });
+    // Invalidate ALL related queries to refresh data everywhere
+    queryClient.invalidateQueries({ queryKey: ['projects'] });
     queryClient.invalidateQueries({ queryKey: ['campaigns'] });
     
     setIsDialogOpen(false);
