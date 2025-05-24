@@ -55,6 +55,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchUserRole = async (userId: string) => {
     try {
       console.log("Fetching role for user:", userId);
+      let resolvedRole: UserRole | null = null;
       
       // IMPORTANT: Check for super_admin role first and give it highest priority
       // First, check if we can get the role from user metadata
@@ -88,7 +89,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (user?.user_metadata?.role) {
         console.log("Found role in user metadata:", user.user_metadata.role);
-        setRole(user.user_metadata.role as UserRole);
+        resolvedRole = user.user_metadata.role as UserRole;
       }
       
       // Check other roles in user_roles table
@@ -103,7 +104,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.error('Error fetching user role status:', roleError);
       } else if (roleData) {
         console.log("Role data from user_roles:", roleData);
-        setRole(roleData.role as UserRole);
+        resolvedRole = roleData.role as UserRole;
+        setRole(resolvedRole);
         setIsLoading(false);
         return;
       }
@@ -127,15 +129,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         if (data?.role) {
           console.log("Setting role from profiles table:", data.role);
-          setRole(data.role as UserRole);
+          resolvedRole = data.role as UserRole;
         }
       }
-      
+
       // If still no role found, show error
-      if (!role && !user?.user_metadata?.role && !roleData?.role) {
+      if (!resolvedRole && !user?.user_metadata?.role && !roleData?.role) {
         console.log("No role found, setting to null");
-        
         toast.error('Your account does not have a role assigned. Please contact an administrator.');
+        setRole(null);
+      } else if (resolvedRole) {
+        setRole(resolvedRole);
       }
       
       setIsLoading(false);
