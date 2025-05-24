@@ -26,9 +26,9 @@ const BrandOrders = () => {
   
   const [searchTerm, setSearchTerm] = useState('');
   
-  // Filter orders by search term
+  // Filter orders by search term with proper null checks
   const filteredOrders = orders.filter(order => 
-    order.title.toLowerCase().includes(searchTerm.toLowerCase())
+    order?.title?.toLowerCase?.()?.includes(searchTerm.toLowerCase()) || false
   );
 
   // Handle direct navigation to a specific campaign
