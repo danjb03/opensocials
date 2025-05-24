@@ -21,6 +21,7 @@ export const CreatorListItem = ({ creator, isSelected, onToggleSelect, onViewPro
 
   const handleInvite = (e: React.MouseEvent) => {
     e.stopPropagation();
+    // Convert number to string for the invitation hook
     handleInviteCreator(creator.id.toString(), creator.name);
     toast({
       title: "Creator invited",

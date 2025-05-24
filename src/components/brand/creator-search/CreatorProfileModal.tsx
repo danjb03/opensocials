@@ -1,103 +1,88 @@
 
 import React from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Creator } from '@/types/creator';
-import { useCreatorInvitations } from '@/hooks/useCreatorInvitations';
-import { useToast } from '@/hooks/use-toast';
 import { CreatorHeader } from './creator-profile-modal/CreatorHeader';
-import { CreatorAbout } from './creator-profile-modal/CreatorAbout';
-import { CreatorAudienceLocation } from './creator-profile-modal/CreatorAudienceLocation';
-import { CreatorSkills } from './creator-profile-modal/CreatorSkills';
 import { CreatorMetrics } from './creator-profile-modal/CreatorMetrics';
-import { CreatorCampaignsTab } from './creator-profile-modal/CreatorCampaignsTab';
+import { CreatorAbout } from './creator-profile-modal/CreatorAbout';
+import { CreatorSkills } from './creator-profile-modal/CreatorSkills';
+import { CreatorSocialLinks } from './creator-profile-modal/CreatorSocialLinks';
+import { CreatorAudienceLocation } from './creator-profile-modal/CreatorAudienceLocation';
 import { CreatorActionButtons } from './creator-profile-modal/CreatorActionButtons';
 import { CreatorProfileLoading } from './creator-profile-modal/CreatorProfileLoading';
+import { useCreatorInvitations } from '@/hooks/useCreatorInvitations';
+import { useSearchParams } from 'react-router-dom';
 
-type CreatorProfileModalProps = {
+interface CreatorProfileModalProps {
   creator: Creator | null;
   isOpen: boolean;
   onClose: () => void;
-  isLoading?: boolean;
-};
+  isLoading: boolean;
+}
 
-export const CreatorProfileModal = ({
-  creator,
-  isOpen,
-  onClose,
-  isLoading = false
+export const CreatorProfileModal = ({ 
+  creator, 
+  isOpen, 
+  onClose, 
+  isLoading 
 }: CreatorProfileModalProps) => {
   const { handleInviteCreator, isLoading: inviteLoading } = useCreatorInvitations();
-  const { toast } = useToast();
-  
-  if (!creator && !isLoading) return null;
-  
-  const inviteCreator = () => {
-    if (!creator) return;
-    
-    handleInviteCreator(creator.id.toString(), creator.name);
-    toast({
-      title: "Creator invited",
-      description: `${creator.name} has been invited to collaborate.`,
-    });
+  const [searchParams] = useSearchParams();
+  const campaignId = searchParams.get('campaign');
+
+  const handleInvite = (creatorId: number) => {
+    if (creator) {
+      // Convert number to string and include campaign ID if available
+      handleInviteCreator(creatorId.toString(), creator.name, campaignId || undefined);
+    }
   };
-  
-  const renderContent = () => {
-    if (isLoading) return <CreatorProfileLoading />;
-    if (!creator) return null;
-    
+
+  if (isLoading) {
     return (
-      <>
-        <CreatorHeader creator={creator} />
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <CreatorProfileLoading />
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (!creator) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="sr-only">Creator Profile</DialogTitle>
+        </DialogHeader>
         
-        <div className="px-3 pb-3">
-          <Tabs defaultValue="about" className="mt-3">
-            <TabsList className="grid grid-cols-3 mb-3 h-8">
-              <TabsTrigger value="about" className="text-[10px]">About</TabsTrigger>
-              <TabsTrigger value="metrics" className="text-[10px]">Metrics</TabsTrigger>
-              <TabsTrigger value="campaigns" className="text-[10px]">Campaigns</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="about" className="space-y-2">
-              <CreatorAbout creator={creator} />
-              
-              <Separator className="my-2" />
-              
-              <CreatorAudienceLocation audienceLocation={creator.audienceLocation} />
-              
-              <Separator className="my-2" />
-              
-              <CreatorSkills skills={creator.skills} />
-            </TabsContent>
-            
-            <TabsContent value="metrics" className="space-y-2">
+        <div className="space-y-6">
+          <CreatorHeader creator={creator} />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-6">
               <CreatorMetrics creator={creator} />
-            </TabsContent>
+              <CreatorAbout creator={creator} />
+              <CreatorSkills creator={creator} />
+            </div>
             
-            <TabsContent value="campaigns">
-              <CreatorCampaignsTab 
-                creator={creator}
-                onInvite={inviteCreator}
-                isLoading={inviteLoading}
-              />
-            </TabsContent>
-          </Tabs>
+            <div className="space-y-6">
+              <CreatorSocialLinks creator={creator} />
+              <CreatorAudienceLocation creator={creator} />
+            </div>
+          </div>
           
           <CreatorActionButtons 
-            creator={creator}
-            onInvite={inviteCreator}
+            creator={creator} 
+            onInvite={handleInvite}
             isLoading={inviteLoading}
           />
         </div>
-      </>
-    );
-  };
-  
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden max-h-[80vh] overflow-y-auto">
-        {renderContent()}
       </DialogContent>
     </Dialog>
   );
