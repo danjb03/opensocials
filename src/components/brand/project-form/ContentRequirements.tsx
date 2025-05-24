@@ -10,9 +10,9 @@ export interface ContentRequirement {
 
 interface ContentRequirementsProps {
   requirements: {
-    videos: { quantity: number };
-    stories: { quantity: number };
-    posts: { quantity: number };
+    videos?: { quantity: number };
+    stories?: { quantity: number };
+    posts?: { quantity: number };
   };
   onAdd: (type: 'videos' | 'stories' | 'posts') => void;
   onChange: (type: 'videos' | 'stories' | 'posts', quantity: number) => void;
@@ -30,7 +30,7 @@ export const ContentRequirements: React.FC<ContentRequirementsProps> = ({
     <div>
       <p className="font-medium mb-2">Content Requirements</p>
       {contentTypes.map((type) => (
-        requirements[type].quantity > 0 && (
+        requirements[type] && requirements[type]!.quantity > 0 && (
           <div key={type} className="flex gap-2 mb-2">
             <select 
               value={type} 
@@ -41,7 +41,7 @@ export const ContentRequirements: React.FC<ContentRequirementsProps> = ({
             </select>
             <Input 
               type="number" 
-              value={requirements[type].quantity} 
+              value={requirements[type]!.quantity} 
               min={1} 
               onChange={(e) => onChange(type, parseInt(e.target.value) || 0)} 
               className="w-24" 
@@ -51,7 +51,7 @@ export const ContentRequirements: React.FC<ContentRequirementsProps> = ({
       ))}
       <div className="flex flex-wrap gap-2">
         {contentTypes.map((type) => (
-          requirements[type].quantity === 0 && (
+          (!requirements[type] || requirements[type]!.quantity === 0) && (
             <Button key={type} type="button" variant="outline" onClick={() => onAdd(type)}>
               + Add {type.charAt(0).toUpperCase() + type.slice(1)}
             </Button>

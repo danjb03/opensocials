@@ -119,7 +119,7 @@ const CreateProjectForm = ({ onSuccess, userId }: { onSuccess: (newProject: any)
           />
 
           <BudgetSection 
-            budget={formData.budget} 
+            budget={formData.budget.toString()} 
             onChange={handleChange}
           />
 

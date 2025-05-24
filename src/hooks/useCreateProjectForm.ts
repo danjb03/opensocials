@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-export type CampaignType = 'single' | 'weekly' | 'monthly' | 'retainer';
+export type CampaignType = 'single' | 'weekly' | 'monthly' | 'retainer' | '12-Month Retainer' | 'evergreen';
 
 export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userId: string) => {
   const { toast } = useToast();
@@ -15,7 +14,11 @@ export const useCreateProjectForm = (onSuccess: (newProject: any) => void, userI
     end_date: '',
     budget: 0,
     currency: 'USD',
-    content_requirements: {},
+    content_requirements: {
+      videos: { quantity: 0 },
+      stories: { quantity: 0 },
+      posts: { quantity: 0 }
+    },
     platforms: [] as string[],
     whitelisting: false,
     exclusivity: '',
