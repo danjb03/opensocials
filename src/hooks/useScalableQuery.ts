@@ -24,8 +24,20 @@ export function useScalableQuery<T = any>({
 }: ScalableQueryOptions<T>) {
   const { user } = useAuth();
 
+  // Create a safe query key that doesn't call userDataStore when no user
+  const queryKey = user?.id 
+    ? (() => {
+        try {
+          return userDataStore.getUserQueryKey(baseKey);
+        } catch (error) {
+          console.warn('⚠️ Failed to get user query key, falling back to no-user key:', error);
+          return ['no-user', ...baseKey];
+        }
+      })()
+    : ['no-user', ...baseKey];
+
   return useQuery({
-    queryKey: user?.id ? userDataStore.getUserQueryKey(baseKey) : ['no-user', ...baseKey],
+    queryKey,
     queryFn: async () => {
       if (!user?.id) {
         console.log('🚫 No authenticated user, returning empty result');
