@@ -66,12 +66,13 @@ export const useProjects = () => {
         
         for (const item of projectsData) {
           // Check if item is a valid object with required Project properties
-          if (item && 
+          if (item !== null && 
+              item !== undefined &&
               typeof item === 'object' && 
               typeof item.id === 'string' &&
               typeof item.name === 'string' &&
               typeof item.campaign_type === 'string' &&
-              !item.error) { // Exclude any error objects
+              !(item as any).error) { // Exclude any error objects
             
             // Cast to Project after validation
             validProjects.push(item as Project);
