@@ -25,10 +25,11 @@ export function useScalableQuery<T = any>({
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: user?.id ? userDataStore.getUserQueryKey(baseKey) : ['no-user'],
+    queryKey: user?.id ? userDataStore.getUserQueryKey(baseKey) : ['no-user', ...baseKey],
     queryFn: async () => {
       if (!user?.id) {
-        throw new Error('User not authenticated');
+        console.log('🚫 No authenticated user, returning empty result');
+        return [] as T;
       }
 
       if (customQueryFn) {
