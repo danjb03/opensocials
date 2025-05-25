@@ -28,7 +28,7 @@ export const useProjects = () => {
 
   // Fetch projects with scalable query system
   const { data: projects = [], isLoading, error, refetch } = useScalableQuery<Project[]>({
-    baseKey: ['projects', JSON.stringify(filters)],
+    baseKey: ['projects', filters],
     customQueryFn: async () => {
       if (!user?.id) {
         console.log('🚫 No user found, returning empty array');
@@ -43,38 +43,48 @@ export const useProjects = () => {
           userDataStore.executeUserQuery('projects', '*', {})
         );
 
-        // Check if the response is an error
-        if (!projectsData || typeof projectsData === 'string' || (projectsData as any)?.error) {
+        // Validate the response structure
+        if (!projectsData || typeof projectsData === 'string') {
+          console.error('❌ Invalid projects data:', projectsData);
+          return [];
+        }
+
+        // Check if it's an error response
+        if ((projectsData as any)?.error) {
           console.error('❌ Error in projects data:', projectsData);
           return [];
         }
 
-        // Ensure projectsData is an array and has proper structure
+        // Ensure projectsData is an array
         if (!Array.isArray(projectsData)) {
           console.error('❌ Projects data is not an array:', projectsData);
           return [];
         }
 
-        // Apply client-side filtering for complex filters
-        let filteredProjects = projectsData.filter((project: any) => {
-          // Basic validation - ensure project has required fields
-          return project && 
-                 typeof project === 'object' && 
-                 project.id && 
-                 project.name &&
-                 !project.error; // Filter out any error objects
+        // Filter out any invalid entries and validate project structure
+        const validProjects = projectsData.filter((item: any): item is Project => {
+          // Check if item is a valid object with required Project properties
+          return item && 
+                 typeof item === 'object' && 
+                 typeof item.id === 'string' &&
+                 typeof item.name === 'string' &&
+                 typeof item.campaign_type === 'string' &&
+                 !item.error; // Exclude any error objects
         });
+
+        // Apply client-side filtering for complex filters
+        let filteredProjects = validProjects;
 
         // Apply campaign type filter
         if (filters.campaignTypes.length > 0) {
-          filteredProjects = filteredProjects.filter((project: any) => 
+          filteredProjects = filteredProjects.filter((project) => 
             project.campaign_type && filters.campaignTypes.includes(project.campaign_type)
           );
         }
         
         // Apply platforms filter
         if (filters.platforms.length > 0) {
-          filteredProjects = filteredProjects.filter((project: any) => 
+          filteredProjects = filteredProjects.filter((project) => 
             project.platforms && Array.isArray(project.platforms) && 
             filters.platforms.some(platform => project.platforms.includes(platform))
           );
@@ -82,7 +92,7 @@ export const useProjects = () => {
         
         // Apply campaign name filter
         if (filters.campaignName) {
-          filteredProjects = filteredProjects.filter((project: any) =>
+          filteredProjects = filteredProjects.filter((project) =>
             project.name && project.name.toLowerCase().includes(filters.campaignName.toLowerCase())
           );
         }
@@ -90,7 +100,7 @@ export const useProjects = () => {
         // Apply start month filter
         if (filters.startMonth) {
           const [year, month] = filters.startMonth.split('-');
-          filteredProjects = filteredProjects.filter((project: any) => {
+          filteredProjects = filteredProjects.filter((project) => {
             if (!project.start_date) return false;
             const projectDate = new Date(project.start_date);
             return projectDate.getFullYear() === parseInt(year) && 
@@ -100,8 +110,7 @@ export const useProjects = () => {
         
         console.log('📊 Filtered projects:', filteredProjects.length, 'projects');
         
-        // Safe cast to Project[] after validation
-        return filteredProjects as Project[];
+        return filteredProjects;
       } catch (error) {
         console.error('❌ Error fetching projects:', error);
         return [];
