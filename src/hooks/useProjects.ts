@@ -70,8 +70,8 @@ export const useProjects = () => {
             continue;
           }
 
-          // Skip error objects - add explicit null check
-          if (item !== null && 'error' in item) {
+          // Skip error objects - use typeof check for better type safety
+          if (typeof item === 'object' && item !== null && 'error' in item) {
             continue;
           }
 
