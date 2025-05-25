@@ -1,5 +1,4 @@
 
-import { useState, useEffect } from 'react';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import BrandDashboardStats from '@/components/brand/dashboard/BrandDashboardStats';
 import TodoPanel from '@/components/brand/dashboard/TodoPanel';
@@ -7,17 +6,22 @@ import CreatorList from '@/components/brand/dashboard/CreatorList';
 import QuickActions from '@/components/brand/dashboard/QuickActions';
 import BrandCampaignTable from '@/components/brand/dashboard/BrandCampaignTable';
 import { useBrandDashboard } from '@/hooks/useBrandDashboard';
+import { useUserDataSync } from '@/hooks/useUserDataSync';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/sonner';
+import { useState, useEffect } from 'react';
 
 const Dashboard = () => {
   const { user, role } = useAuth();
   const navigate = useNavigate();
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  
+  // Initialize user data synchronization
+  const { refreshUserData } = useUserDataSync();
+  
   const { 
     isLoading,
     projectStats,
@@ -41,7 +45,7 @@ const Dashboard = () => {
           .maybeSingle();
           
         if (roleData) {
-          console.log('Found super_admin role in user_roles table');
+          console.log('✅ Found super_admin role in user_roles table');
           setIsSuperAdmin(true);
           return;
         }
@@ -49,7 +53,7 @@ const Dashboard = () => {
         // Fallback: check user metadata
         const { data: userData } = await supabase.auth.getUser();
         if (userData?.user?.user_metadata?.role === 'super_admin') {
-          console.log('Found super_admin role in user metadata');
+          console.log('✅ Found super_admin role in user metadata');
           setIsSuperAdmin(true);
           return;
         }
@@ -62,15 +66,15 @@ const Dashboard = () => {
           .maybeSingle();
           
         if (profileData?.role === 'super_admin') {
-          console.log('Found super_admin role in profiles table');
+          console.log('✅ Found super_admin role in profiles table');
           setIsSuperAdmin(true);
           return;
         }
         
-        console.log('User is not a super_admin');
+        console.log('ℹ️ User is not a super_admin');
         setIsSuperAdmin(false);
       } catch (error) {
-        console.error('Error checking super admin status:', error);
+        console.error('❌ Error checking super admin status:', error);
         setIsSuperAdmin(false);
       }
     };
@@ -84,8 +88,8 @@ const Dashboard = () => {
 
   // For debugging
   useEffect(() => {
-    console.log('Role from context:', role);
-    console.log('Is super admin state:', isSuperAdmin);
+    console.log('🔐 Role from context:', role);
+    console.log('👑 Is super admin state:', isSuperAdmin);
   }, [role, isSuperAdmin]);
 
   return (

@@ -1,52 +1,33 @@
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/lib/auth';
 import { toast } from '@/components/ui/sonner';
 import { CampaignRow } from './CampaignRow';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/lib/auth';
+import { useScalableQuery } from '@/hooks/useScalableQuery';
+import { projectToOrder } from '@/utils/orderUtils';
 
 export function useCampaigns() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
 
-  const { data, isLoading: loading, error } = useQuery({
-    queryKey: ['campaigns', user?.id],
-    queryFn: async () => {
+  const { data, isLoading: loading, error, refetch } = useScalableQuery<CampaignRow[]>({
+    baseKey: ['campaigns'],
+    customQueryFn: async () => {
       try {
-        console.log('Fetching campaigns for user:', user?.id);
+        console.log('🔍 Fetching campaigns for user:', user?.id);
         
-        // Get the session
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          throw new Error(`Session error: ${sessionError.message}`);
-        }
-        
-        const accessToken = sessionData.session?.access_token;
-
-        if (!accessToken) {
-          toast.error("Authentication error. Please sign in again.");
-          return [];
+        if (!user?.id) {
+          throw new Error('User not authenticated');
         }
 
-        // Using direct Supabase query
-        const { data: projectsData, error: projectsError } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('brand_id', sessionData.session?.user.id)
-          .order('created_at', { ascending: false });
+        // Use the userDataStore for consistent user-scoped queries
+        const projectsData = await import('@/lib/userDataStore').then(({ userDataStore }) => 
+          userDataStore.executeUserQuery('projects', '*', {})
+        );
 
-        if (projectsError) {
-          console.error("Projects query error:", projectsError);
-          throw new Error(`Failed to fetch projects: ${projectsError.message}`);
-        }
-
-        console.log('Raw projects data from database:', projectsData);
+        console.log('📊 Raw projects data from database:', projectsData);
 
         // Transform the data to match the expected format
         const campaignRows: CampaignRow[] = projectsData.map(project => {
-          console.log('Transforming project:', project);
+          console.log('🔄 Transforming project:', project);
           return {
             project_id: project.id,
             project_name: project.name,
@@ -65,52 +46,30 @@ export function useCampaigns() {
           };
         });
 
-        console.log("Campaigns fetched successfully:", campaignRows);
+        console.log("✅ Campaigns transformed successfully:", campaignRows);
         return campaignRows;
       } catch (error) {
-        console.error("Error fetching campaign data:", error);
+        console.error("❌ Error fetching campaign data:", error);
         toast.error("Failed to load campaigns");
         throw error;
       }
     },
-    enabled: !!user,
     staleTime: 30000,
   });
 
-  // Set up real-time subscription
-  useEffect(() => {
-    if (!user) return;
-
-    const channel = supabase
-      .channel('dashboard-campaigns-changes')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'projects',
-        filter: `brand_id=eq.${user.id}`
-      }, (payload) => {
-        console.log('Dashboard campaign change detected:', payload);
-        // Invalidate all related queries
-        queryClient.invalidateQueries({ queryKey: ['campaigns'] });
-        queryClient.invalidateQueries({ queryKey: ['projects'] });
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, queryClient]);
-
   const fetchData = () => {
-    console.log('Manual refresh triggered');
-    queryClient.invalidateQueries({ queryKey: ['campaigns'] });
-    queryClient.invalidateQueries({ queryKey: ['projects'] });
+    console.log('🔄 Manual refresh triggered');
+    refetch();
   };
 
-  console.log('useCampaigns hook returning:', { data, loading, error: error?.message || null });
+  console.log('📋 useCampaigns hook returning:', { 
+    data: data || [], 
+    loading, 
+    error: error?.message || null 
+  });
 
   return {
-    data,
+    data: data || [],
     loading,
     error: error?.message || null,
     fetchData,

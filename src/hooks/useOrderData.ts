@@ -1,76 +1,45 @@
 
-import { useState, useEffect } from 'react';
-import { Order } from '@/types/orders';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { projectToOrder } from '@/utils/orderUtils';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth';
+import { useToast } from '@/hooks/use-toast';
+import { Order } from '@/types/orders';
+import { projectToOrder } from '@/utils/orderUtils';
+import { useScalableQuery } from '@/hooks/useScalableQuery';
 
 export const useOrderData = () => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const { user } = useAuth();
 
-  // Fetch orders from Supabase using React Query with consistent query key
-  const { data: orders = [], isLoading, error } = useQuery({
-    queryKey: ['campaigns', user?.id],
-    queryFn: async () => {
+  // Fetch orders from Supabase using scalable query system
+  const { data: orders = [], isLoading, error, refetch } = useScalableQuery<Order[]>({
+    baseKey: ['orders'],
+    customQueryFn: async () => {
       try {
-        const { data: projects, error } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('brand_id', user?.id)
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          throw error;
+        if (!user?.id) {
+          throw new Error('User not authenticated');
         }
 
+        const projectsData = await import('@/lib/userDataStore').then(({ userDataStore }) => 
+          userDataStore.executeUserQuery('projects', '*', {})
+        );
+
         // Map projects to orders
-        return projects.map(project => projectToOrder(project));
+        return projectsData.map(project => projectToOrder(project));
       } catch (error) {
-        console.error('Error fetching campaigns:', error);
+        console.error('❌ Error fetching orders:', error);
         toast({
           title: 'Error',
-          description: 'Failed to load campaigns',
+          description: 'Failed to load orders',
           variant: 'destructive',
         });
         return [];
       }
     },
-    enabled: !!user,
-    staleTime: 30000, // 30 seconds
+    staleTime: 30000,
   });
-
-  // Set up real-time subscription for campaigns/orders
-  useEffect(() => {
-    if (!user) return;
-
-    const channel = supabase
-      .channel('campaigns-changes')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'projects',
-        filter: `brand_id=eq.${user.id}`
-      }, (payload) => {
-        console.log('Campaign change detected:', payload);
-        // Invalidate both campaigns and projects queries to keep them in sync
-        queryClient.invalidateQueries({ queryKey: ['campaigns'] });
-        queryClient.invalidateQueries({ queryKey: ['projects'] });
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, queryClient]);
 
   // Function to refresh orders data
   const refreshOrders = () => {
-    queryClient.invalidateQueries({ queryKey: ['campaigns'] });
-    queryClient.invalidateQueries({ queryKey: ['projects'] });
+    refetch();
   };
 
   // This function is returned for backward compatibility

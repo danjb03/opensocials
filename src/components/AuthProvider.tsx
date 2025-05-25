@@ -14,7 +14,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        console.log('🔐 Auth state change:', event, session?.user?.id);
+        
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -30,12 +32,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setRole(null);
           setEmailConfirmed(null);
           setIsLoading(false);
+          
+          // Clean up user data store when user logs out
+          import('@/lib/userDataStore').then(({ userDataStore }) => {
+            userDataStore.cleanup();
+          });
         }
       }
     );
 
     // Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('🔐 Initial session check:', session?.user?.id);
+      
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -54,7 +63,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchUserRole = async (userId: string) => {
     try {
-      console.log("Fetching role for user:", userId);
+      console.log("🔍 Fetching role for user:", userId);
       let resolvedRole: UserRole | null = null;
       
       // IMPORTANT: Check for super_admin role first and give it highest priority
@@ -62,7 +71,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (user?.user_metadata?.role === 'super_admin') {
-        console.log("Found super_admin role in user metadata");
+        console.log("✅ Found super_admin role in user metadata");
         setRole('super_admin');
         setIsLoading(false);
         return;
@@ -78,7 +87,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .maybeSingle();
       
       if (superAdminRole) {
-        console.log("Found super_admin role in user_roles table");
+        console.log("✅ Found super_admin role in user_roles table");
         setRole('super_admin');
         setIsLoading(false);
         return;
@@ -88,7 +97,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // If not found in user_roles, check profiles table as fallback
       
       if (user?.user_metadata?.role) {
-        console.log("Found role in user metadata:", user.user_metadata.role);
+        console.log("✅ Found role in user metadata:", user.user_metadata.role);
         resolvedRole = user.user_metadata.role as UserRole;
       }
       
@@ -101,9 +110,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .maybeSingle();
       
       if (roleError) {
-        console.error('Error fetching user role status:', roleError);
+        console.error('❌ Error fetching user role status:', roleError);
       } else if (roleData) {
-        console.log("Role data from user_roles:", roleData);
+        console.log("✅ Role data from user_roles:", roleData);
         resolvedRole = roleData.role as UserRole;
         setRole(resolvedRole);
         setIsLoading(false);
@@ -119,23 +128,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           .maybeSingle();
 
         if (error) {
-          console.error('Error fetching user role from profiles:', error);
+          console.error('❌ Error fetching user role from profiles:', error);
           toast.error('Failed to fetch user role: ' + error.message);
           setIsLoading(false);
           return;
         }
 
-        console.log("User role data from profiles:", data);
+        console.log("📋 User role data from profiles:", data);
         
         if (data?.role) {
-          console.log("Setting role from profiles table:", data.role);
+          console.log("✅ Setting role from profiles table:", data.role);
           resolvedRole = data.role as UserRole;
         }
       }
 
       // If still no role found, show error
       if (!resolvedRole && !user?.user_metadata?.role && !roleData?.role) {
-        console.log("No role found, setting to null");
+        console.log("❌ No role found, setting to null");
         toast.error('Your account does not have a role assigned. Please contact an administrator.');
         setRole(null);
       } else if (resolvedRole) {
@@ -144,7 +153,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       setIsLoading(false);
     } catch (error) {
-      console.error('Failed to fetch user role:', error);
+      console.error('❌ Failed to fetch user role:', error);
       toast.error('Failed to fetch user role');
       setIsLoading(false);
     }
