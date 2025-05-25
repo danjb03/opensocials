@@ -65,23 +65,25 @@ export const useProjects = () => {
         const validProjects: Project[] = [];
         
         for (const item of projectsData) {
-          // First check if item exists and is not null/undefined
+          // Skip null, undefined, or non-object items
           if (!item || typeof item !== 'object') {
             continue;
           }
 
-          // Check if it's an error object
-          if ((item as any).error) {
+          // Skip error objects
+          if ('error' in item) {
             continue;
           }
 
-          // Now TypeScript knows item is a valid object, check required Project properties
-          if (typeof item.id === 'string' &&
-              typeof item.name === 'string' &&
-              typeof item.campaign_type === 'string') {
+          // Type-safe validation - now TypeScript knows item is a valid object
+          const projectItem = item as Record<string, any>;
+          
+          if (typeof projectItem.id === 'string' &&
+              typeof projectItem.name === 'string' &&
+              typeof projectItem.campaign_type === 'string') {
             
             // Cast to Project after validation
-            validProjects.push(item as Project);
+            validProjects.push(projectItem as Project);
           }
         }
 
