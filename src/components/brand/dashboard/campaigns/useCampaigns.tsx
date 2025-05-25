@@ -3,7 +3,6 @@ import { useAuth } from '@/lib/auth';
 import { toast } from '@/components/ui/sonner';
 import { CampaignRow } from './CampaignRow';
 import { useScalableQuery } from '@/hooks/useScalableQuery';
-import { projectToOrder } from '@/utils/orderUtils';
 
 export function useCampaigns() {
   const { user } = useAuth();
@@ -25,16 +24,22 @@ export function useCampaigns() {
 
         console.log('📊 Raw projects data from database:', projectsData);
 
+        // Ensure projectsData is an array and has proper structure
+        if (!Array.isArray(projectsData)) {
+          console.error('❌ Projects data is not an array:', projectsData);
+          return [];
+        }
+
         // Transform the data to match the expected format
-        const campaignRows: CampaignRow[] = projectsData.map(project => {
+        const campaignRows: CampaignRow[] = projectsData.map((project: any) => {
           console.log('🔄 Transforming project:', project);
           return {
-            project_id: project.id,
-            project_name: project.name,
+            project_id: project.id || '',
+            project_name: project.name || 'Untitled Project',
             project_status: project.status || 'draft',
-            start_date: project.start_date,
-            end_date: project.end_date,
-            budget: project.budget || 0,
+            start_date: project.start_date || null,
+            end_date: project.end_date || null,
+            budget: Number(project.budget) || 0,
             currency: project.currency || 'USD',
             deal_id: null,
             deal_status: null,

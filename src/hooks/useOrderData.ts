@@ -22,8 +22,14 @@ export const useOrderData = () => {
           userDataStore.executeUserQuery('projects', '*', {})
         );
 
+        // Ensure projectsData is an array
+        if (!Array.isArray(projectsData)) {
+          console.error('❌ Projects data is not an array:', projectsData);
+          return [];
+        }
+
         // Map projects to orders
-        return projectsData.map(project => projectToOrder(project));
+        return projectsData.map((project: any) => projectToOrder(project));
       } catch (error) {
         console.error('❌ Error fetching orders:', error);
         toast({

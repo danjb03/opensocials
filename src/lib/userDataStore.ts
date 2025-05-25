@@ -38,9 +38,9 @@ export class UserDataStore {
   /**
    * Get user-scoped query key - ensures cache isolation
    */
-  getUserQueryKey(baseKey: string[]): string[] {
+  getUserQueryKey(baseKey: (string | any)[]): string[] {
     if (!this.userId) throw new Error('User not authenticated');
-    return ['user', this.userId, ...baseKey];
+    return ['user', this.userId, ...baseKey.map(k => typeof k === 'object' ? JSON.stringify(k) : String(k))];
   }
 
   /**
@@ -50,7 +50,7 @@ export class UserDataStore {
     if (!this.userId) throw new Error('User not authenticated');
 
     let query = supabase
-      .from(tableName)
+      .from(tableName as any)
       .select(selectColumns);
 
     // Apply user filter based on table structure
@@ -77,7 +77,7 @@ export class UserDataStore {
       throw error;
     }
 
-    return data;
+    return data || [];
   }
 
   /**

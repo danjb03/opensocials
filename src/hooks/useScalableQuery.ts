@@ -7,7 +7,7 @@ import { userDataStore } from '@/lib/userDataStore';
  * Scalable query hook with automatic user isolation
  */
 interface ScalableQueryOptions<T> extends Omit<UseQueryOptions<T>, 'queryKey' | 'queryFn'> {
-  baseKey: string[];
+  baseKey: (string | any)[];
   tableName?: string;
   selectColumns?: string;
   additionalFilters?: Record<string, any>;
@@ -39,7 +39,8 @@ export function useScalableQuery<T = any>({
         throw new Error('Either tableName or customQueryFn must be provided');
       }
 
-      return userDataStore.executeUserQuery(tableName, selectColumns, additionalFilters);
+      const result = await userDataStore.executeUserQuery(tableName, selectColumns, additionalFilters);
+      return result as T;
     },
     enabled: !!user?.id && (options.enabled !== false),
     staleTime: 30000, // 30 seconds

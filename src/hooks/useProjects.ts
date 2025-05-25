@@ -42,36 +42,41 @@ export const useProjects = () => {
         userDataStore.executeUserQuery('projects', '*', {})
       );
 
+      // Ensure projectsData is an array and has proper structure
+      if (!Array.isArray(projectsData)) {
+        console.error('❌ Projects data is not an array:', projectsData);
+        return [];
+      }
+
       // Apply client-side filtering for complex filters
       let filteredProjects = projectsData;
 
       // Apply campaign type filter
       if (filters.campaignTypes.length > 0) {
-        filteredProjects = filteredProjects.filter(project => 
-          filters.campaignTypes.includes(project.campaign_type)
+        filteredProjects = filteredProjects.filter((project: any) => 
+          project.campaign_type && filters.campaignTypes.includes(project.campaign_type)
         );
       }
       
       // Apply platforms filter
       if (filters.platforms.length > 0) {
-        filteredProjects = filteredProjects.filter(project => 
-          project.platforms && filters.platforms.some(platform => 
-            project.platforms.includes(platform)
-          )
+        filteredProjects = filteredProjects.filter((project: any) => 
+          project.platforms && Array.isArray(project.platforms) && 
+          filters.platforms.some(platform => project.platforms.includes(platform))
         );
       }
       
       // Apply campaign name filter
       if (filters.campaignName) {
-        filteredProjects = filteredProjects.filter(project =>
-          project.name.toLowerCase().includes(filters.campaignName.toLowerCase())
+        filteredProjects = filteredProjects.filter((project: any) =>
+          project.name && project.name.toLowerCase().includes(filters.campaignName.toLowerCase())
         );
       }
       
       // Apply start month filter
       if (filters.startMonth) {
         const [year, month] = filters.startMonth.split('-');
-        filteredProjects = filteredProjects.filter(project => {
+        filteredProjects = filteredProjects.filter((project: any) => {
           if (!project.start_date) return false;
           const projectDate = new Date(project.start_date);
           return projectDate.getFullYear() === parseInt(year) && 
