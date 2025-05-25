@@ -70,8 +70,8 @@ export const useProjects = () => {
             continue;
           }
 
-          // Skip error objects
-          if ('error' in item) {
+          // Skip error objects - add explicit null check
+          if (item !== null && 'error' in item) {
             continue;
           }
 
