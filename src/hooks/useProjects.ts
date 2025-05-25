@@ -28,7 +28,7 @@ export const useProjects = () => {
 
   // Fetch projects with scalable query system
   const { data: projects = [], isLoading, error, refetch } = useScalableQuery<Project[]>({
-    baseKey: ['projects', filters],
+    baseKey: ['projects', JSON.stringify(filters)],
     customQueryFn: async () => {
       if (!user?.id) {
         console.log('🚫 No user found, returning empty array');
@@ -38,55 +38,74 @@ export const useProjects = () => {
       console.log('🔍 Fetching projects for user:', user.id);
       console.log('🔍 Applied filters:', filters);
       
-      const projectsData = await import('@/lib/userDataStore').then(({ userDataStore }) => 
-        userDataStore.executeUserQuery('projects', '*', {})
-      );
+      try {
+        const projectsData = await import('@/lib/userDataStore').then(({ userDataStore }) => 
+          userDataStore.executeUserQuery('projects', '*', {})
+        );
 
-      // Ensure projectsData is an array and has proper structure
-      if (!Array.isArray(projectsData)) {
-        console.error('❌ Projects data is not an array:', projectsData);
+        // Check if the response is an error
+        if (!projectsData || typeof projectsData === 'string' || (projectsData as any)?.error) {
+          console.error('❌ Error in projects data:', projectsData);
+          return [];
+        }
+
+        // Ensure projectsData is an array and has proper structure
+        if (!Array.isArray(projectsData)) {
+          console.error('❌ Projects data is not an array:', projectsData);
+          return [];
+        }
+
+        // Apply client-side filtering for complex filters
+        let filteredProjects = projectsData.filter((project: any) => {
+          // Basic validation - ensure project has required fields
+          return project && 
+                 typeof project === 'object' && 
+                 project.id && 
+                 project.name &&
+                 !project.error; // Filter out any error objects
+        });
+
+        // Apply campaign type filter
+        if (filters.campaignTypes.length > 0) {
+          filteredProjects = filteredProjects.filter((project: any) => 
+            project.campaign_type && filters.campaignTypes.includes(project.campaign_type)
+          );
+        }
+        
+        // Apply platforms filter
+        if (filters.platforms.length > 0) {
+          filteredProjects = filteredProjects.filter((project: any) => 
+            project.platforms && Array.isArray(project.platforms) && 
+            filters.platforms.some(platform => project.platforms.includes(platform))
+          );
+        }
+        
+        // Apply campaign name filter
+        if (filters.campaignName) {
+          filteredProjects = filteredProjects.filter((project: any) =>
+            project.name && project.name.toLowerCase().includes(filters.campaignName.toLowerCase())
+          );
+        }
+        
+        // Apply start month filter
+        if (filters.startMonth) {
+          const [year, month] = filters.startMonth.split('-');
+          filteredProjects = filteredProjects.filter((project: any) => {
+            if (!project.start_date) return false;
+            const projectDate = new Date(project.start_date);
+            return projectDate.getFullYear() === parseInt(year) && 
+                   (projectDate.getMonth() + 1) === parseInt(month);
+          });
+        }
+        
+        console.log('📊 Filtered projects:', filteredProjects.length, 'projects');
+        
+        // Safe cast to Project[] after validation
+        return filteredProjects as Project[];
+      } catch (error) {
+        console.error('❌ Error fetching projects:', error);
         return [];
       }
-
-      // Apply client-side filtering for complex filters
-      let filteredProjects = projectsData;
-
-      // Apply campaign type filter
-      if (filters.campaignTypes.length > 0) {
-        filteredProjects = filteredProjects.filter((project: any) => 
-          project.campaign_type && filters.campaignTypes.includes(project.campaign_type)
-        );
-      }
-      
-      // Apply platforms filter
-      if (filters.platforms.length > 0) {
-        filteredProjects = filteredProjects.filter((project: any) => 
-          project.platforms && Array.isArray(project.platforms) && 
-          filters.platforms.some(platform => project.platforms.includes(platform))
-        );
-      }
-      
-      // Apply campaign name filter
-      if (filters.campaignName) {
-        filteredProjects = filteredProjects.filter((project: any) =>
-          project.name && project.name.toLowerCase().includes(filters.campaignName.toLowerCase())
-        );
-      }
-      
-      // Apply start month filter
-      if (filters.startMonth) {
-        const [year, month] = filters.startMonth.split('-');
-        filteredProjects = filteredProjects.filter((project: any) => {
-          if (!project.start_date) return false;
-          const projectDate = new Date(project.start_date);
-          return projectDate.getFullYear() === parseInt(year) && 
-                 (projectDate.getMonth() + 1) === parseInt(month);
-        });
-      }
-      
-      console.log('📊 Filtered projects:', filteredProjects.length, 'projects');
-      
-      return filteredProjects as Project[];
     },
     staleTime: 5000,
     refetchOnWindowFocus: true,
