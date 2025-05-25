@@ -29,7 +29,7 @@ export const useProjects = () => {
   // Fetch projects with scalable query system
   const { data: projects = [], isLoading, error, refetch } = useScalableQuery<Project[]>({
     baseKey: ['projects', filters],
-    customQueryFn: async () => {
+    customQueryFn: async (): Promise<Project[]> => {
       if (!user?.id) {
         console.log('🚫 No user found, returning empty array');
         return [];
@@ -62,15 +62,21 @@ export const useProjects = () => {
         }
 
         // Filter out any invalid entries and validate project structure
-        const validProjects = projectsData.filter((item: any): item is Project => {
+        const validProjects: Project[] = [];
+        
+        for (const item of projectsData) {
           // Check if item is a valid object with required Project properties
-          return item && 
-                 typeof item === 'object' && 
-                 typeof item.id === 'string' &&
-                 typeof item.name === 'string' &&
-                 typeof item.campaign_type === 'string' &&
-                 !item.error; // Exclude any error objects
-        });
+          if (item && 
+              typeof item === 'object' && 
+              typeof item.id === 'string' &&
+              typeof item.name === 'string' &&
+              typeof item.campaign_type === 'string' &&
+              !item.error) { // Exclude any error objects
+            
+            // Cast to Project after validation
+            validProjects.push(item as Project);
+          }
+        }
 
         // Apply client-side filtering for complex filters
         let filteredProjects = validProjects;
