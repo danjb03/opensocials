@@ -26,6 +26,8 @@ const CreatorDashboard = () => {
 
   const handleProfileSubmit = async (values: any) => {
     try {
+      console.log('Submitting profile with values:', values);
+      
       await updateProfile({
         firstName: values.firstName,
         lastName: values.lastName,
@@ -48,6 +50,8 @@ const CreatorDashboard = () => {
         creatorType: values.creatorType || '',
         isProfileComplete: true
       });
+      
+      console.log('Profile submitted successfully, setting editing to false');
       setIsEditing(false);
     } catch (error) {
       console.error('Failed to update profile:', error);
@@ -56,10 +60,12 @@ const CreatorDashboard = () => {
   };
 
   const handleStartProfileSetup = () => {
+    console.log('Starting profile setup');
     setIsEditing(true);
   };
 
   const handleEditProfile = () => {
+    console.log('Editing profile');
     setIsEditing(true);
     setIsPreviewMode(false);
   };
@@ -79,6 +85,8 @@ const CreatorDashboard = () => {
     }
   };
 
+  console.log('Dashboard render - profile:', profile, 'isLoading:', isLoading, 'isEditing:', isEditing);
+
   if (isLoading) {
     return (
       <CreatorLayout>
@@ -97,7 +105,7 @@ const CreatorDashboard = () => {
   return (
     <CreatorLayout>
       <div className="container mx-auto p-6 space-y-6">
-        {profile && profile.isProfileComplete && (
+        {profile && profile.isProfileComplete && !isEditing && (
           <CreatorProfileHeader 
             name={`${profile.firstName} ${profile.lastName}`}
             imageUrl={profile?.avatarUrl || undefined}
@@ -139,7 +147,7 @@ const CreatorDashboard = () => {
           </div>
           
           <div className="lg:col-span-1">
-            {profile && profile.isProfileComplete && (
+            {profile && profile.isProfileComplete && !isEditing && (
               <VisibilityControls 
                 visibilitySettings={profile?.visibilitySettings || {
                   showInstagram: true,

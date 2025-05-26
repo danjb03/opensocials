@@ -20,23 +20,58 @@ export const useCreatorProfile = () => {
   const { updateProfile, toggleVisibilitySetting } = useCreatorProfileActions(profile, setProfile);
 
   const uploadAvatar = async (file: File) => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      toast({
+        description: 'Please log in to upload an avatar',
+        variant: 'destructive'
+      });
+      return;
+    }
 
     setIsUploading(true);
     try {
+      console.log('Starting avatar upload for file:', file.name);
+      
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}-avatar-${Date.now()}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
 
+      // First, ensure the bucket exists or create it
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const bucketExists = buckets?.some(bucket => bucket.name === 'creator-assets');
+      
+      if (!bucketExists) {
+        console.log('Creating creator-assets bucket...');
+        const { error: bucketError } = await supabase.storage.createBucket('creator-assets', {
+          public: true,
+          allowedMimeTypes: ['image/*'],
+          fileSizeLimit: 5242880 // 5MB
+        });
+        
+        if (bucketError) {
+          console.error('Error creating bucket:', bucketError);
+          throw new Error('Failed to create storage bucket');
+        }
+      }
+
+      console.log('Uploading file to:', filePath);
       const { error: uploadError } = await supabase.storage
         .from('creator-assets')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          upsert: true
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
 
+      console.log('File uploaded successfully, getting public URL...');
       const { data } = supabase.storage
         .from('creator-assets')
         .getPublicUrl(filePath);
+
+      console.log('Public URL obtained:', data.publicUrl);
 
       const { error: updateError } = await supabase
         .from('profiles')
@@ -45,17 +80,22 @@ export const useCreatorProfile = () => {
         })
         .eq('id', user.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Database update error:', updateError);
+        throw updateError;
+      }
+
+      console.log('Avatar URL updated in database');
 
       setProfile((prev) => prev ? { ...prev, avatarUrl: data.publicUrl } : null);
 
       toast({
-        description: 'Your profile picture has been updated',
+        description: 'Your profile picture has been updated successfully!',
       });
     } catch (error) {
       console.error('Error uploading avatar:', error);
       toast({
-        description: 'Failed to upload profile picture',
+        description: 'Failed to upload profile picture. Please try again.',
         variant: 'destructive'
       });
     } finally {
@@ -67,6 +107,8 @@ export const useCreatorProfile = () => {
     if (!user?.id || !profile) return;
 
     try {
+      console.log(`Connecting ${platform} for user:`, user.id);
+      
       const platformKey = `${platform}_connected`;
       const isCurrentlyConnected = profile.socialConnections[platform as keyof typeof profile.socialConnections];
 

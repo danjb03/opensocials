@@ -39,6 +39,8 @@ export const useCreatorProfileActions = (
         primary_platform: updatedData.primaryPlatform || profile.primaryPlatform || '',
         content_type: updatedData.contentType || profile.contentType || '',
         audience_type: updatedData.audienceType || profile.audienceType || '',
+        industries: updatedData.industries || profile.industries || [],
+        creator_type: updatedData.creatorType || profile.creatorType || '',
         is_profile_complete: true, // Always mark as complete when updating
         updated_at: new Date().toISOString()
       };
@@ -62,6 +64,8 @@ export const useCreatorProfileActions = (
         throw error;
       }
 
+      console.log('Profile updated in database successfully');
+
       // Save industry and creator type data if provided
       if (updatedData.industries && updatedData.industries.length > 0 && updatedData.creatorType) {
         try {
@@ -80,14 +84,16 @@ export const useCreatorProfileActions = (
         }
       }
 
-      // Update local state
+      // Update local state - merge with existing profile data
       setProfile(prev => {
         if (!prev) return null;
-        return { 
+        const updatedProfile = { 
           ...prev, 
           ...updatedData,
           isProfileComplete: true
         };
+        console.log('Local profile state updated:', updatedProfile);
+        return updatedProfile;
       });
 
       toast.success('Profile updated successfully!', {

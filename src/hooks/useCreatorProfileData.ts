@@ -75,6 +75,27 @@ export const useCreatorProfileData = () => {
   const { toast } = useToast();
 
   const transformProfile = (data: ExtendedProfile): CreatorProfile => {
+    console.log('Transforming profile data:', data);
+    
+    // Check if profile is complete based on required fields
+    const hasBasicInfo = Boolean(data.first_name && data.last_name);
+    const hasPlatform = Boolean(data.primary_platform && data.primary_platform.trim());
+    const hasContentType = Boolean(data.content_type && data.content_type.trim());
+    const hasIndustries = Boolean(data.industries && data.industries.length > 0);
+    const hasCreatorType = Boolean(data.creator_type && data.creator_type.trim());
+    
+    const isComplete = hasBasicInfo && hasPlatform && hasContentType && hasIndustries && hasCreatorType;
+    
+    console.log('Profile completion check:', {
+      hasBasicInfo,
+      hasPlatform,
+      hasContentType,
+      hasIndustries,
+      hasCreatorType,
+      isComplete,
+      dbComplete: data.is_profile_complete
+    });
+
     return {
       id: data.id,
       firstName: data.first_name || '',
@@ -87,7 +108,7 @@ export const useCreatorProfileData = () => {
       audienceType: data.audience_type || '',
       followerCount: data.follower_count || '0',
       engagementRate: data.engagement_rate || '0%',
-      isProfileComplete: Boolean(data.is_profile_complete),
+      isProfileComplete: isComplete, // Use calculated value instead of just DB value
       socialConnections: {
         instagram: Boolean(data.instagram_connected),
         tiktok: Boolean(data.tiktok_connected),
@@ -126,6 +147,8 @@ export const useCreatorProfileData = () => {
 
     const fetchProfile = async () => {
       try {
+        console.log('Fetching profile for user:', user.id);
+        
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
@@ -134,15 +157,48 @@ export const useCreatorProfileData = () => {
 
         if (error) {
           console.error('Error fetching profile:', error);
-          toast({
-            description: 'Failed to load creator profile',
-            variant: 'destructive'
-          });
+          
+          // If no profile exists, create a basic one
+          if (error.code === 'PGRST116') {
+            console.log('No profile found, creating basic profile...');
+            const { data: newProfile, error: createError } = await supabase
+              .from('profiles')
+              .insert({
+                id: user.id,
+                first_name: '',
+                last_name: '',
+                bio: '',
+                is_profile_complete: false
+              })
+              .select()
+              .single();
+              
+            if (createError) {
+              console.error('Error creating profile:', createError);
+              toast({
+                description: 'Failed to create creator profile',
+                variant: 'destructive'
+              });
+              return;
+            }
+            
+            if (newProfile) {
+              const transformedProfile = transformProfile(newProfile as unknown as ExtendedProfile);
+              setProfile(transformedProfile);
+            }
+          } else {
+            toast({
+              description: 'Failed to load creator profile',
+              variant: 'destructive'
+            });
+          }
           return;
         }
 
         if (data) {
+          console.log('Profile data received:', data);
           const transformedProfile = transformProfile(data as unknown as ExtendedProfile);
+          console.log('Transformed profile:', transformedProfile);
           setProfile(transformedProfile);
         }
       } catch (error) {
