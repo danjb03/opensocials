@@ -169,6 +169,33 @@ export type Database = {
           },
         ]
       }
+      connected_accounts: {
+        Row: {
+          account_id: string
+          connected_at: string | null
+          id: string
+          platform: string
+          user_id: string | null
+          workplatform_id: string
+        }
+        Insert: {
+          account_id: string
+          connected_at?: string | null
+          id?: string
+          platform: string
+          user_id?: string | null
+          workplatform_id: string
+        }
+        Update: {
+          account_id?: string
+          connected_at?: string | null
+          id?: string
+          platform?: string
+          user_id?: string | null
+          workplatform_id?: string
+        }
+        Relationships: []
+      }
       creator_industries: {
         Row: {
           id: string
