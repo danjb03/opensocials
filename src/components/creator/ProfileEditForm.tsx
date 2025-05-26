@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,7 +31,7 @@ const contentTypeOptions = [
   'IGTV',
   'YouTube Shorts',
   'TikTok Videos',
-  'Twitter Threads',
+  'X Threads',
   'LinkedIn Articles',
   'Newsletter',
   'Webinars',
@@ -45,16 +44,12 @@ const platformOptions = [
   'TikTok',
   'Instagram', 
   'YouTube',
-  'Twitter',
+  'X',
   'Twitch',
   'LinkedIn',
   'Facebook',
   'Snapchat',
-  'Pinterest',
-  'Discord',
-  'Clubhouse',
-  'Substack',
-  'Medium'
+  'Pinterest'
 ];
 
 const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEditFormProps) => {
@@ -72,13 +67,32 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>(profile.industries || []);
   const [customIndustry, setCustomIndustry] = useState('');
   const [creatorType, setCreatorType] = useState(profile.creatorType || '');
+  const [customPlatform, setCustomPlatform] = useState('');
+  const [showOtherPlatform, setShowOtherPlatform] = useState(false);
 
   const handlePlatformToggle = (platform: string) => {
+    if (platform === 'Other') {
+      setShowOtherPlatform(!showOtherPlatform);
+      if (showOtherPlatform) {
+        // Remove any custom platforms when hiding Other
+        setPrimaryPlatforms(prev => prev.filter(p => platformOptions.includes(p)));
+        setCustomPlatform('');
+      }
+      return;
+    }
+
     setPrimaryPlatforms(prev => 
       prev.includes(platform) 
         ? prev.filter(p => p !== platform)
         : [...prev, platform]
     );
+  };
+
+  const handleCustomPlatformAdd = () => {
+    if (customPlatform.trim() && !primaryPlatforms.includes(customPlatform.trim())) {
+      setPrimaryPlatforms(prev => [...prev, customPlatform.trim()]);
+      setCustomPlatform('');
+    }
   };
 
   const handleContentTypeToggle = (contentType: string) => {
@@ -104,6 +118,10 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
 
   const removeIndustry = (industry: string) => {
     setSelectedIndustries(prev => prev.filter(i => i !== industry));
+  };
+
+  const removePlatform = (platform: string) => {
+    setPrimaryPlatforms(prev => prev.filter(p => p !== platform));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -252,7 +270,64 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
                     </Label>
                   </div>
                 ))}
+                
+                {/* Other Platform Option */}
+                <div className="flex items-center space-x-2 p-2 border rounded-md hover:bg-gray-50">
+                  <Checkbox 
+                    id="platform-other"
+                    checked={showOtherPlatform}
+                    onCheckedChange={() => handlePlatformToggle('Other')}
+                  />
+                  <Label 
+                    htmlFor="platform-other"
+                    className="cursor-pointer flex-grow text-sm"
+                  >
+                    Other
+                  </Label>
+                </div>
               </div>
+
+              {showOtherPlatform && (
+                <div className="flex gap-2">
+                  <Input
+                    value={customPlatform}
+                    onChange={(e) => setCustomPlatform(e.target.value)}
+                    placeholder="Enter custom platform name..."
+                    className="flex-1"
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={handleCustomPlatformAdd}
+                    disabled={!customPlatform.trim()}
+                  >
+                    Add
+                  </Button>
+                </div>
+              )}
+
+              {/* Selected Platforms Display */}
+              {primaryPlatforms.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {primaryPlatforms.map((platform) => (
+                    <div 
+                      key={platform}
+                      className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm"
+                    >
+                      {platform}
+                      <button
+                        type="button"
+                        onClick={() => removePlatform(platform)}
+                        className="ml-1 rounded-full hover:bg-blue-200"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M18 6L6 18M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Content Type Selection */}
