@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -75,10 +74,12 @@ export const useCreatorProfileActions = (
           console.log('Industry and creator type data saved successfully');
         } catch (error) {
           console.error('Error saving industry and creator type data:', error);
-          // Don't fail the entire update for this
+          // Show the specific error to the user but don't fail the entire update
           toast.error('Profile updated but industry data failed to save', {
             description: 'Please try updating your industries again.'
           });
+          // Re-throw to prevent success message
+          throw error;
         }
       }
 
