@@ -55,22 +55,23 @@ const platformOptions = [
 ];
 
 const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEditFormProps) => {
-  const [firstName, setFirstName] = useState(profile.firstName);
-  const [lastName, setLastName] = useState(profile.lastName);
-  const [bio, setBio] = useState(profile.bio);
+  const [firstName, setFirstName] = useState(profile.firstName || '');
+  const [lastName, setLastName] = useState(profile.lastName || '');
+  const [bio, setBio] = useState(profile.bio || '');
   const [primaryPlatforms, setPrimaryPlatforms] = useState<string[]>(
-    profile.primaryPlatform ? profile.primaryPlatform.split(', ') : []
+    profile.primaryPlatform ? profile.primaryPlatform.split(', ').filter(p => p.trim()) : []
   );
   const [contentTypes, setContentTypes] = useState<string[]>(
-    profile.contentType ? profile.contentType.split(', ') : []
+    profile.contentType ? profile.contentType.split(', ').filter(c => c.trim()) : []
   );
-  const [audienceType, setAudienceType] = useState(profile.audienceType);
-  const [audienceLocation, setAudienceLocation] = useState(profile.audienceLocation.primary);
+  const [audienceType, setAudienceType] = useState(profile.audienceType || '');
+  const [audienceLocation, setAudienceLocation] = useState(profile.audienceLocation?.primary || 'Global');
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>(profile.industries || []);
   const [customIndustry, setCustomIndustry] = useState('');
   const [creatorType, setCreatorType] = useState(profile.creatorType || '');
   const [customPlatform, setCustomPlatform] = useState('');
   const [showOtherPlatform, setShowOtherPlatform] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handlePlatformToggle = (platform: string) => {
     if (platform === 'Other') {
@@ -128,34 +129,56 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
     // Validate required fields
     if (!firstName.trim() || !lastName.trim()) {
       alert('Please fill in your first and last name');
+      setIsSubmitting(false);
       return;
     }
 
     if (selectedIndustries.length === 0) {
       alert('Please select at least one industry');
+      setIsSubmitting(false);
       return;
     }
 
     if (primaryPlatforms.length === 0) {
       alert('Please select at least one platform');
+      setIsSubmitting(false);
       return;
     }
 
     if (contentTypes.length === 0) {
       alert('Please select at least one content format');
+      setIsSubmitting(false);
       return;
     }
 
     if (!creatorType) {
       alert('Please select your creator type');
+      setIsSubmitting(false);
       return;
     }
 
     try {
+      console.log('Form submission data:', {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        bio: bio.trim(),
+        primaryPlatform: primaryPlatforms.join(', '),
+        contentType: contentTypes.join(', '),
+        audienceType,
+        audienceLocation: {
+          ...profile.audienceLocation,
+          primary: audienceLocation
+        },
+        industries: selectedIndustries,
+        creatorType,
+        isProfileComplete: true
+      });
+
       await onSubmit({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
@@ -174,6 +197,8 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
     } catch (error) {
       console.error('Error saving profile:', error);
       alert('Failed to save profile. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -438,15 +463,15 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
           type="button" 
           variant="outline" 
           onClick={onCancel}
-          disabled={isLoading}
+          disabled={isSubmitting}
         >
           Cancel
         </Button>
         <Button 
           type="submit"
-          disabled={isLoading}
+          disabled={isSubmitting || isLoading}
         >
-          {isLoading ? 'Saving...' : 'Complete Profile & Get Ready for Brands!'}
+          {isSubmitting ? 'Saving...' : 'Complete Profile & Get Ready for Brands!'}
         </Button>
       </div>
     </form>

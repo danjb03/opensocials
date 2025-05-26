@@ -78,7 +78,7 @@ export const useCreatorProfileData = () => {
     console.log('Transforming profile data:', data);
     
     // Check if profile is complete based on required fields
-    const hasBasicInfo = Boolean(data.first_name && data.last_name);
+    const hasBasicInfo = Boolean(data.first_name && data.last_name && data.first_name.trim() && data.last_name.trim());
     const hasPlatform = Boolean(data.primary_platform && data.primary_platform.trim());
     const hasContentType = Boolean(data.content_type && data.content_type.trim());
     const hasIndustries = Boolean(data.industries && data.industries.length > 0);
@@ -108,7 +108,7 @@ export const useCreatorProfileData = () => {
       audienceType: data.audience_type || '',
       followerCount: data.follower_count || '0',
       engagementRate: data.engagement_rate || '0%',
-      isProfileComplete: isComplete, // Use calculated value instead of just DB value
+      isProfileComplete: isComplete,
       socialConnections: {
         instagram: Boolean(data.instagram_connected),
         tiktok: Boolean(data.tiktok_connected),

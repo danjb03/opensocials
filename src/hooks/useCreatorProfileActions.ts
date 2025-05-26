@@ -21,47 +21,44 @@ export const useCreatorProfileActions = (
       return;
     }
 
-    if (!profile) {
-      toast.error('Profile not found', {
-        description: 'Unable to find your profile to update.'
-      });
-      return;
-    }
+    console.log('Starting profile update with data:', updatedData);
 
     try {
-      console.log('Profile update requested with data:', updatedData);
-      
       // Prepare database update with all required fields
       const dbUpdateData: Record<string, any> = {
-        first_name: updatedData.firstName || profile.firstName,
-        last_name: updatedData.lastName || profile.lastName,
-        bio: updatedData.bio || profile.bio || '',
-        primary_platform: updatedData.primaryPlatform || profile.primaryPlatform || '',
-        content_type: updatedData.contentType || profile.contentType || '',
-        audience_type: updatedData.audienceType || profile.audienceType || '',
-        industries: updatedData.industries || profile.industries || [],
-        creator_type: updatedData.creatorType || profile.creatorType || '',
-        is_profile_complete: true, // Always mark as complete when updating
+        first_name: updatedData.firstName || '',
+        last_name: updatedData.lastName || '',
+        bio: updatedData.bio || '',
+        primary_platform: updatedData.primaryPlatform || '',
+        content_type: updatedData.contentType || '',
+        audience_type: updatedData.audienceType || '',
+        audience_location: updatedData.audienceLocation || {
+          primary: 'Global',
+          secondary: [],
+          countries: [
+            { name: 'United States', percentage: 30 },
+            { name: 'United Kingdom', percentage: 20 },
+            { name: 'Canada', percentage: 15 },
+            { name: 'Australia', percentage: 10 },
+            { name: 'Others', percentage: 25 }
+          ]
+        },
+        industries: updatedData.industries || [],
+        creator_type: updatedData.creatorType || '',
+        is_profile_complete: true,
         updated_at: new Date().toISOString()
       };
 
-      // Handle audience location
-      if (updatedData.audienceLocation) {
-        dbUpdateData.audience_location = updatedData.audienceLocation;
-      } else if (profile.audienceLocation) {
-        dbUpdateData.audience_location = profile.audienceLocation;
-      }
-
       console.log('Updating profile with data:', dbUpdateData);
 
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('profiles')
         .update(dbUpdateData)
         .eq('id', user.id);
 
-      if (error) {
-        console.error('Supabase error updating profile:', error);
-        throw error;
+      if (updateError) {
+        console.error('Supabase error updating profile:', updateError);
+        throw new Error(`Database update failed: ${updateError.message}`);
       }
 
       console.log('Profile updated in database successfully');
@@ -69,6 +66,7 @@ export const useCreatorProfileActions = (
       // Save industry and creator type data if provided
       if (updatedData.industries && updatedData.industries.length > 0 && updatedData.creatorType) {
         try {
+          console.log('Saving industry and creator type data...');
           await submitCreatorProfile({
             userId: user.id,
             industries: updatedData.industries,
@@ -103,10 +101,11 @@ export const useCreatorProfileActions = (
       console.log('Profile update completed successfully');
     } catch (error) {
       console.error('Error updating profile:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error('Failed to update profile', {
-        description: 'Please check your internet connection and try again.'
+        description: errorMessage
       });
-      throw error; // Re-throw to handle in component
+      throw error;
     }
   };
 
