@@ -16,6 +16,7 @@ const CreatorDashboard = () => {
     setIsEditing,
     isPreviewMode,
     setIsPreviewMode,
+    isUploading,
     updateProfile,
     uploadAvatar,
     toggleVisibilitySetting,
@@ -53,6 +54,18 @@ const CreatorDashboard = () => {
     setIsEditing(true);
   };
 
+  const handleEditProfile = () => {
+    setIsEditing(true);
+    setIsPreviewMode(false);
+  };
+
+  const handleTogglePreview = () => {
+    setIsPreviewMode(!isPreviewMode);
+    if (!isPreviewMode) {
+      setIsEditing(false);
+    }
+  };
+
   const handleOAuthConnect = async (platform: string) => {
     try {
       await connectSocialPlatform(platform);
@@ -87,9 +100,11 @@ const CreatorDashboard = () => {
           platform={profile?.primaryPlatform}
           followers={profile?.followerCount}
           isEditable={true}
-          onEditProfile={() => setIsEditing(true)}
-          onTogglePreview={() => setIsPreviewMode(!isPreviewMode)}
+          onEditProfile={handleEditProfile}
+          onTogglePreview={handleTogglePreview}
           isPreviewMode={isPreviewMode}
+          onAvatarChange={uploadAvatar}
+          isUploading={isUploading}
         />
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

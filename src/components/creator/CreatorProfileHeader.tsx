@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Edit, Eye } from 'lucide-react';
+import { Edit, Eye, EyeOff, Camera } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface CreatorProfileHeaderProps {
   name: string;
@@ -15,6 +15,8 @@ interface CreatorProfileHeaderProps {
   onEditProfile?: () => void;
   onTogglePreview?: () => void;
   isPreviewMode?: boolean;
+  onAvatarChange?: (file: File) => void;
+  isUploading?: boolean;
 }
 
 const CreatorProfileHeader: React.FC<CreatorProfileHeaderProps> = ({
@@ -27,64 +29,135 @@ const CreatorProfileHeader: React.FC<CreatorProfileHeaderProps> = ({
   isEditable = false,
   onEditProfile,
   onTogglePreview,
-  isPreviewMode = false
+  isPreviewMode = false,
+  onAvatarChange,
+  isUploading = false
 }) => {
+  const handleAvatarClick = () => {
+    if (!onAvatarChange) return;
+    
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        onAvatarChange(file);
+      }
+    };
+    input.click();
+  };
+
+  const getInitials = (fullName: string) => {
+    return fullName
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
     <div className="relative">
-      {/* Banner Image */}
+      {/* Banner Section */}
       <div 
-        className="w-full h-48 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-t-lg relative overflow-hidden"
+        className="h-48 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg mb-4"
+        style={bannerUrl ? { 
+          backgroundImage: `url(${bannerUrl})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        } : {}}
       >
-        {bannerUrl && (
-          <img 
-            src={bannerUrl} 
-            alt="Profile banner" 
-            className="w-full h-full object-cover"
-          />
-        )}
         {isEditable && (
           <div className="absolute top-4 right-4 flex gap-2">
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="bg-white"
-              onClick={onTogglePreview}
-            >
-              <Eye className="mr-1" size={16} />
-              {isPreviewMode ? "Exit Preview" : "Preview"}
-            </Button>
-            <Button 
-              onClick={onEditProfile}
-              size="sm" 
-              variant="default"
-            >
-              <Edit className="mr-1" size={16} />
-              Edit Profile
-            </Button>
+            {onTogglePreview && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onTogglePreview}
+                className="bg-white/90 hover:bg-white"
+              >
+                {isPreviewMode ? (
+                  <>
+                    <EyeOff className="w-4 h-4 mr-2" />
+                    Exit Preview
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-4 h-4 mr-2" />
+                    Preview
+                  </>
+                )}
+              </Button>
+            )}
+            {onEditProfile && !isPreviewMode && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onEditProfile}
+                className="bg-white/90 hover:bg-white"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Profile
+              </Button>
+            )}
           </div>
         )}
       </div>
-      
-      {/* Profile Info */}
-      <div className="px-6 pb-6 pt-16 bg-card rounded-b-lg shadow-sm relative">
-        <div className="absolute -top-12 left-6">
-          <Avatar className="w-24 h-24 border-4 border-background shadow-md">
-            <AvatarImage src={imageUrl} alt={name} />
-            <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-              {name.split(' ').map(n => n[0]).join('')}
-            </AvatarFallback>
-          </Avatar>
-        </div>
-        
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold">{name}</h1>
-            {platform && followers && (
-              <p className="text-muted-foreground">
-                {platform} Creator • {followers} followers
-              </p>
+
+      {/* Profile Info Section */}
+      <div className="flex flex-col md:flex-row gap-6 items-start">
+        {/* Avatar */}
+        <div className="relative -mt-16 md:-mt-20">
+          <div 
+            className={`relative ${onAvatarChange && !isPreviewMode ? 'cursor-pointer group' : ''}`}
+            onClick={!isPreviewMode ? handleAvatarClick : undefined}
+          >
+            <Avatar className="w-32 h-32 border-4 border-white shadow-lg">
+              <AvatarImage src={imageUrl} alt={name} />
+              <AvatarFallback className="text-2xl bg-gray-200">
+                {getInitials(name)}
+              </AvatarFallback>
+            </Avatar>
+            
+            {onAvatarChange && !isPreviewMode && (
+              <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                {isUploading ? (
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Camera className="w-6 h-6 text-white" />
+                )}
+              </div>
             )}
-            <p className="mt-2 text-sm text-foreground max-w-2xl">{bio}</p>
+          </div>
+        </div>
+
+        {/* Profile Details */}
+        <div className="flex-1 pt-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {name || 'Creator Profile'}
+              </h1>
+              {platform && (
+                <div className="flex items-center gap-2 text-gray-600 mb-2">
+                  <span className="text-sm font-medium">Primary Platform:</span>
+                  <span className="text-sm">{platform}</span>
+                </div>
+              )}
+              {followers && (
+                <div className="flex items-center gap-2 text-gray-600">
+                  <span className="text-sm font-medium">Followers:</span>
+                  <span className="text-sm">{followers}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="text-gray-700 max-w-2xl">
+            <p className="leading-relaxed">
+              {bio || 'No bio yet. Add one to complete your profile.'}
+            </p>
           </div>
         </div>
       </div>
