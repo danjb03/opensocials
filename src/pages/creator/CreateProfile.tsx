@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -277,6 +278,25 @@ const CreateProfile = () => {
                 </div>
               </div>
 
+              <div className="space-y-4">
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold mb-2">Connect Your Social Platforms</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Link your social media accounts to showcase your reach and analytics
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={initializePhylloConnect}
+                    disabled={isPhylloLoading}
+                    className="flex items-center gap-2"
+                  >
+                    <LinkIcon className="h-4 w-4" />
+                    {isPhylloLoading ? 'Connecting...' : 'Connect Your Social Platforms'}
+                  </Button>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="instagramHandle">Instagram Handle</Label>
@@ -342,27 +362,6 @@ const CreateProfile = () => {
                     onChange={(e) => handleInputChange('engagementRate', e.target.value)}
                     placeholder="3.5"
                   />
-                </div>
-              </div>
-
-              <div className="border-t pt-6">
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <h3 className="text-lg font-semibold mb-2">Connect Your Social Accounts</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Verify your social media presence and get accurate analytics
-                    </p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={initializePhylloConnect}
-                      disabled={isPhylloLoading}
-                      className="flex items-center gap-2"
-                    >
-                      <LinkIcon className="h-4 w-4" />
-                      {isPhylloLoading ? 'Connecting...' : 'Connect Your Social Accounts'}
-                    </Button>
-                  </div>
                 </div>
               </div>
               
