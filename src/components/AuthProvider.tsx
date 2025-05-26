@@ -1,8 +1,8 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AuthContext, type UserRole } from '@/lib/auth';
 import { toast } from 'sonner';
+import { useUserDataSync } from '@/hooks/useUserDataSync';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -10,6 +10,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState<UserRole | null>(null);
   const [emailConfirmed, setEmailConfirmed] = useState<boolean | null>(null);
+
+  // Initialize user data synchronization
+  useUserDataSync();
 
   useEffect(() => {
     // Set up auth state listener first
@@ -33,10 +36,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setEmailConfirmed(null);
           setIsLoading(false);
           
-          // Clean up user data store when user logs out
-          import('@/lib/userDataStore').then(({ userDataStore }) => {
-            userDataStore.cleanup();
-          });
+          // Clean up user data store when user logs out - handled by useUserDataSync
         }
       }
     );
