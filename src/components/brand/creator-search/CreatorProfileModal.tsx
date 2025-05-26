@@ -11,7 +11,6 @@ import { CreatorHeader } from './creator-profile-modal/CreatorHeader';
 import { CreatorMetrics } from './creator-profile-modal/CreatorMetrics';
 import { CreatorAbout } from './creator-profile-modal/CreatorAbout';
 import { CreatorSkills } from './creator-profile-modal/CreatorSkills';
-import { CreatorSocialLinks } from './creator-profile-modal/CreatorSocialLinks';
 import { CreatorAudienceLocation } from './creator-profile-modal/CreatorAudienceLocation';
 import { CreatorActionButtons } from './creator-profile-modal/CreatorActionButtons';
 import { CreatorProfileLoading } from './creator-profile-modal/CreatorProfileLoading';
@@ -37,7 +36,6 @@ export const CreatorProfileModal = ({
 
   const handleInvite = (creatorId: number) => {
     if (creator) {
-      // Convert number to string and include campaign ID if available
       handleInviteCreator(creatorId.toString(), creator.name, campaignId || undefined);
     }
   };
@@ -45,8 +43,10 @@ export const CreatorProfileModal = ({
   if (isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <CreatorProfileLoading />
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+          <div className="p-6">
+            <CreatorProfileLoading />
+          </div>
         </DialogContent>
       </Dialog>
     );
@@ -56,32 +56,37 @@ export const CreatorProfileModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="sr-only">Creator Profile</DialogTitle>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Creator Profile - {creator.name}</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6">
-          <CreatorHeader creator={creator} />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-6">
-              <CreatorMetrics creator={creator} />
-              <CreatorAbout creator={creator} />
-              <CreatorSkills skills={creator.skills} />
-            </div>
-            
-            <div className="space-y-6">
-              <CreatorSocialLinks socialLinks={creator.socialLinks} />
-              <CreatorAudienceLocation audienceLocation={creator.audienceLocation} />
-            </div>
+        <div className="relative">
+          <div className="p-6 pb-0">
+            <CreatorHeader creator={creator} />
           </div>
           
-          <CreatorActionButtons 
-            creator={creator} 
-            onInvite={handleInvite}
-            isLoading={inviteLoading}
-          />
+          <div className="px-6 pb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Left Column - Metrics */}
+              <div className="lg:col-span-1">
+                <CreatorMetrics creator={creator} />
+              </div>
+              
+              {/* Right Column - About, Skills, Location */}
+              <div className="lg:col-span-2 space-y-6">
+                <CreatorAbout creator={creator} />
+                <CreatorSkills skills={creator.skills} />
+                <CreatorAudienceLocation audienceLocation={creator.audienceLocation} />
+              </div>
+            </div>
+            
+            <CreatorActionButtons 
+              creator={creator} 
+              onInvite={handleInvite}
+              isLoading={inviteLoading}
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

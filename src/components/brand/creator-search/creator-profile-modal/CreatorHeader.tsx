@@ -2,7 +2,7 @@
 import React from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Globe } from 'lucide-react';
+import { Globe, MapPin, Calendar, Users } from 'lucide-react';
 import { Creator } from '@/types/creator';
 import { CreatorSocialLinks } from './CreatorSocialLinks';
 
@@ -14,44 +14,93 @@ export const CreatorHeader = ({ creator }: CreatorHeaderProps) => {
   return (
     <>
       <div className="relative">
-        {/* Banner image */}
-        <div className="h-16 w-full overflow-hidden bg-gradient-to-r from-primary/20 via-primary/10 to-secondary/20">
+        {/* Enhanced Banner */}
+        <div className="h-32 w-full overflow-hidden bg-gradient-to-br from-primary/30 via-primary/20 to-secondary/30 rounded-xl relative">
           {creator.bannerImageUrl && (
             <img 
               src={creator.bannerImageUrl} 
               alt="" 
-              className="w-full h-full object-cover opacity-90" 
+              className="w-full h-full object-cover" 
             />
           )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
         </div>
         
-        {/* Avatar */}
-        <Avatar className="absolute w-12 h-12 -bottom-6 left-4 border-3 border-background">
+        {/* Enhanced Avatar */}
+        <Avatar className="absolute w-20 h-20 -bottom-10 left-6 border-4 border-background shadow-lg">
           <AvatarImage src={creator.imageUrl} alt={creator.name} />
-          <AvatarFallback>{creator.name.substring(0, 2)}</AvatarFallback>
+          <AvatarFallback className="text-xl font-bold bg-primary/10 text-primary">
+            {creator.name.substring(0, 2).toUpperCase()}
+          </AvatarFallback>
         </Avatar>
       </div>
       
-      <div className="flex justify-between items-start mb-3 pt-8 px-0">
-        <div>
-          <h2 className="text-base font-bold">{creator.name}</h2>
-          <p className="text-muted-foreground text-xs">{creator.platform} Creator</p>
-          <CreatorSocialLinks socialLinks={creator.socialLinks} />
-        </div>
-        
-        <div className="flex flex-col gap-1 items-end">
-          <Badge variant="secondary" className="text-[10px] py-0.5">
-            {creator.audience}
-          </Badge>
-          <Badge variant="outline" className="text-[10px] py-0.5">
-            {creator.contentType}
-          </Badge>
-          {creator.audienceLocation && (
-            <Badge variant="secondary" className="text-[10px] py-0.5 flex items-center gap-1">
-              <Globe className="h-2 w-2" />
-              {creator.audienceLocation.primary}
-            </Badge>
-          )}
+      <div className="pt-12 pb-6">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+          <div className="flex-1 space-y-3">
+            {/* Name and Platform */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">{creator.name}</h2>
+              <div className="flex items-center gap-2 text-gray-600">
+                <span className="font-medium">{creator.platform} Creator</span>
+                <span className="text-gray-400">•</span>
+                <div className="flex items-center gap-1">
+                  <Users className="h-4 w-4" />
+                  <span>{creator.followers} followers</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Bio */}
+            {creator.about && (
+              <p className="text-gray-700 leading-relaxed max-w-2xl">
+                {creator.about}
+              </p>
+            )}
+            
+            {/* Location and Join Date */}
+            <div className="flex items-center gap-4 text-sm text-gray-500">
+              {creator.audienceLocation && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  <span>{creator.audienceLocation.primary}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                <span>Creator since 2023</span>
+              </div>
+            </div>
+            
+            {/* Social Links */}
+            <CreatorSocialLinks socialLinks={creator.socialLinks} />
+          </div>
+          
+          {/* Tags and Badges */}
+          <div className="flex flex-col items-end gap-3">
+            <div className="flex flex-wrap gap-2 justify-end">
+              <Badge variant="secondary" className="text-sm px-3 py-1 bg-blue-50 text-blue-700 border-blue-200">
+                {creator.audience}
+              </Badge>
+              <Badge variant="outline" className="text-sm px-3 py-1 border-gray-300">
+                {creator.contentType}
+              </Badge>
+              {creator.audienceLocation && (
+                <Badge variant="secondary" className="text-sm px-3 py-1 bg-green-50 text-green-700 border-green-200 flex items-center gap-1">
+                  <Globe className="h-3 w-3" />
+                  {creator.audienceLocation.primary}
+                </Badge>
+              )}
+            </div>
+            
+            {/* Match Score if available */}
+            {creator.matchScore && (
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-green-600">{creator.matchScore}%</div>
+                <div className="text-xs text-green-700 font-medium">Match Score</div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>
