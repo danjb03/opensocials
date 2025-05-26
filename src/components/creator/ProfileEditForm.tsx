@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { CreatorProfile } from '@/hooks/useCreatorProfile';
 import { Card, CardContent } from '@/components/ui/card';
 import { industries } from '@/data/industries';
-import { CreatorTypeSelector } from '@/components/creator/setup/CreatorTypeSelector';
+import { CreatorTypeDropdown } from '@/components/creator/setup/CreatorTypeDropdown';
 import OAuthConnectButtons from '@/components/creator/OAuthConnectButtons';
 
 export interface ProfileEditFormProps {
@@ -244,8 +243,7 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
 
       <Card>
         <CardContent className="pt-6">
-          <h3 className="text-lg font-medium mb-4">Creator Type *</h3>
-          <CreatorTypeSelector selected={creatorType} setSelected={setCreatorType} />
+          <CreatorTypeDropdown selected={creatorType} setSelected={setCreatorType} />
         </CardContent>
       </Card>
 

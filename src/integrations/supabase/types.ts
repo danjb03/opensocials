@@ -442,12 +442,14 @@ export type Database = {
           company_name: string | null
           content_type: string | null
           created_at: string | null
+          creator_type: string | null
           display_name: string | null
           email: string | null
           engagement_rate: string | null
           first_name: string | null
           follower_count: string | null
           id: string
+          industries: string[] | null
           industry: string | null
           instagram_connected: boolean | null
           is_complete: boolean | null
@@ -482,12 +484,14 @@ export type Database = {
           company_name?: string | null
           content_type?: string | null
           created_at?: string | null
+          creator_type?: string | null
           display_name?: string | null
           email?: string | null
           engagement_rate?: string | null
           first_name?: string | null
           follower_count?: string | null
           id: string
+          industries?: string[] | null
           industry?: string | null
           instagram_connected?: boolean | null
           is_complete?: boolean | null
@@ -522,12 +526,14 @@ export type Database = {
           company_name?: string | null
           content_type?: string | null
           created_at?: string | null
+          creator_type?: string | null
           display_name?: string | null
           email?: string | null
           engagement_rate?: string | null
           first_name?: string | null
           follower_count?: string | null
           id?: string
+          industries?: string[] | null
           industry?: string | null
           instagram_connected?: boolean | null
           is_complete?: boolean | null
