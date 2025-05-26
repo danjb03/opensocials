@@ -40,32 +40,26 @@ export interface CreatorProfile {
   creatorType?: string;
 }
 
-interface ExtendedProfile {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
+interface CreatorProfileRecord {
+  user_id: string;
+  display_name: string | null;
   bio?: string | null;
-  avatar_url: string | null;
-  banner_url?: string | null;
+  follower_count?: number | null;
+  engagement_rate?: number | null;
   primary_platform?: string | null;
   content_type?: string | null;
   audience_type?: string | null;
-  follower_count?: string | null;
-  engagement_rate?: string | null;
-  is_profile_complete?: boolean | null;
-  instagram_connected?: boolean | null;
-  tiktok_connected?: boolean | null;
-  youtube_connected?: boolean | null;
-  linkedin_connected?: boolean | null;
-  show_instagram?: boolean | null;
-  show_tiktok?: boolean | null;
-  show_youtube?: boolean | null;
-  show_linkedin?: boolean | null;
-  show_location?: boolean | null;
-  show_analytics?: boolean | null;
-  audience_location?: any | null;
-  industries?: string[] | null;
+  audience_location?: string | null;
   creator_type?: string | null;
+  industries?: string[] | null;
+  categories?: string[] | null;
+  platform_types?: string[] | null;
+  social_links?: any | null;
+  audience_stats?: any | null;
+  headline?: string | null;
+  rate_card_url?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export const useCreatorProfileData = () => {
@@ -74,11 +68,17 @@ export const useCreatorProfileData = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const transformProfile = (data: ExtendedProfile): CreatorProfile => {
-    console.log('Transforming profile data:', data);
+  const transformProfile = (data: CreatorProfileRecord): CreatorProfile => {
+    console.log('Transforming creator profile data:', data);
     
+    // Parse display name or use empty strings
+    const displayName = data.display_name || '';
+    const nameParts = displayName.split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
     // Check if profile is complete based on required fields
-    const hasBasicInfo = Boolean(data.first_name && data.last_name && data.first_name.trim() && data.last_name.trim());
+    const hasBasicInfo = Boolean(firstName && lastName);
     const hasPlatform = Boolean(data.primary_platform && data.primary_platform.trim());
     const hasContentType = Boolean(data.content_type && data.content_type.trim());
     const hasIndustries = Boolean(data.industries && data.industries.length > 0);
@@ -92,39 +92,38 @@ export const useCreatorProfileData = () => {
       hasContentType,
       hasIndustries,
       hasCreatorType,
-      isComplete,
-      dbComplete: data.is_profile_complete
+      isComplete
     });
 
     return {
-      id: data.id,
-      firstName: data.first_name || '',
-      lastName: data.last_name || '',
+      id: data.user_id,
+      firstName,
+      lastName,
       bio: data.bio || '',
-      avatarUrl: data.avatar_url,
-      bannerUrl: data.banner_url || null,
+      avatarUrl: null, // Not stored in creator_profiles
+      bannerUrl: null, // Not stored in creator_profiles
       primaryPlatform: data.primary_platform || '',
       contentType: data.content_type || '',
       audienceType: data.audience_type || '',
-      followerCount: data.follower_count || '0',
-      engagementRate: data.engagement_rate || '0%',
+      followerCount: data.follower_count?.toString() || '0',
+      engagementRate: data.engagement_rate ? `${data.engagement_rate}%` : '0%',
       isProfileComplete: isComplete,
       socialConnections: {
-        instagram: Boolean(data.instagram_connected),
-        tiktok: Boolean(data.tiktok_connected),
-        youtube: Boolean(data.youtube_connected),
-        linkedin: Boolean(data.linkedin_connected)
+        instagram: false, // Will need to be handled separately if needed
+        tiktok: false,
+        youtube: false,
+        linkedin: false
       },
       visibilitySettings: {
-        showInstagram: data.show_instagram !== false,
-        showTiktok: data.show_tiktok !== false,
-        showYoutube: data.show_youtube !== false,
-        showLinkedin: data.show_linkedin !== false,
-        showLocation: data.show_location !== false,
-        showAnalytics: data.show_analytics !== false
+        showInstagram: true,
+        showTiktok: true,
+        showYoutube: true,
+        showLinkedin: true,
+        showLocation: true,
+        showAnalytics: true
       },
-      audienceLocation: data.audience_location || {
-        primary: 'Global',
+      audienceLocation: {
+        primary: data.audience_location || 'Global',
         secondary: [],
         countries: [
           { name: 'United States', percentage: 30 },
@@ -147,62 +146,74 @@ export const useCreatorProfileData = () => {
 
     const fetchProfile = async () => {
       try {
-        console.log('Fetching profile for user:', user.id);
+        console.log('Fetching creator profile for user:', user.id);
         
         const { data, error } = await supabase
-          .from('profiles')
+          .from('creator_profiles')
           .select('*')
-          .eq('id', user.id)
-          .single();
+          .eq('user_id', user.id)
+          .maybeSingle();
 
         if (error) {
-          console.error('Error fetching profile:', error);
-          
-          // If no profile exists, create a basic one
-          if (error.code === 'PGRST116') {
-            console.log('No profile found, creating basic profile...');
-            const { data: newProfile, error: createError } = await supabase
-              .from('profiles')
-              .insert({
-                id: user.id,
-                first_name: '',
-                last_name: '',
-                bio: '',
-                is_profile_complete: false
-              })
-              .select()
-              .single();
-              
-            if (createError) {
-              console.error('Error creating profile:', createError);
-              toast({
-                description: 'Failed to create creator profile',
-                variant: 'destructive'
-              });
-              return;
-            }
-            
-            if (newProfile) {
-              const transformedProfile = transformProfile(newProfile as unknown as ExtendedProfile);
-              setProfile(transformedProfile);
-            }
-          } else {
-            toast({
-              description: 'Failed to load creator profile',
-              variant: 'destructive'
-            });
-          }
+          console.error('Error fetching creator profile:', error);
+          toast({
+            description: 'Failed to load creator profile',
+            variant: 'destructive'
+          });
           return;
         }
 
         if (data) {
-          console.log('Profile data received:', data);
-          const transformedProfile = transformProfile(data as unknown as ExtendedProfile);
+          console.log('Creator profile data received:', data);
+          const transformedProfile = transformProfile(data as CreatorProfileRecord);
           console.log('Transformed profile:', transformedProfile);
           setProfile(transformedProfile);
+        } else {
+          // Create a basic profile structure for new users
+          setProfile({
+            id: user.id,
+            firstName: '',
+            lastName: '',
+            bio: '',
+            avatarUrl: null,
+            bannerUrl: null,
+            primaryPlatform: '',
+            contentType: '',
+            audienceType: '',
+            followerCount: '0',
+            engagementRate: '0%',
+            isProfileComplete: false,
+            socialConnections: {
+              instagram: false,
+              tiktok: false,
+              youtube: false,
+              linkedin: false
+            },
+            visibilitySettings: {
+              showInstagram: true,
+              showTiktok: true,
+              showYoutube: true,
+              showLinkedin: true,
+              showLocation: true,
+              showAnalytics: true
+            },
+            audienceLocation: {
+              primary: 'Global',
+              secondary: [],
+              countries: [
+                { name: 'United States', percentage: 30 },
+                { name: 'United Kingdom', percentage: 20 },
+                { name: 'Canada', percentage: 15 },
+                { name: 'Australia', percentage: 10 },
+                { name: 'Others', percentage: 25 }
+              ]
+            },
+            industries: [],
+            creatorType: ''
+          });
         }
       } catch (error) {
-        console.error('Error fetching profile:', error);
+        console.error('Error fetching creator profile:', error);
         toast({
           description: 'Failed to load creator profile',
           variant: 'destructive'

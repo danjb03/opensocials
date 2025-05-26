@@ -36,6 +36,48 @@ export type Database = {
         }
         Relationships: []
       }
+      brand_profiles: {
+        Row: {
+          brand_bio: string | null
+          brand_goal: string | null
+          budget_range: string | null
+          campaign_focus: string[] | null
+          company_name: string | null
+          created_at: string | null
+          industry: string | null
+          logo_url: string | null
+          updated_at: string | null
+          user_id: string
+          website_url: string | null
+        }
+        Insert: {
+          brand_bio?: string | null
+          brand_goal?: string | null
+          budget_range?: string | null
+          campaign_focus?: string[] | null
+          company_name?: string | null
+          created_at?: string | null
+          industry?: string | null
+          logo_url?: string | null
+          updated_at?: string | null
+          user_id: string
+          website_url?: string | null
+        }
+        Update: {
+          brand_bio?: string | null
+          brand_goal?: string | null
+          budget_range?: string | null
+          campaign_focus?: string[] | null
+          company_name?: string | null
+          created_at?: string | null
+          industry?: string | null
+          logo_url?: string | null
+          updated_at?: string | null
+          user_id?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       campaign_content: {
         Row: {
           campaign_id: string
@@ -194,91 +236,69 @@ export type Database = {
       }
       creator_profiles: {
         Row: {
-          access_token: string | null
-          account_id: string
+          audience_location: string | null
+          audience_stats: Json | null
+          audience_type: string | null
           bio: string | null
-          connected_at: string | null
+          categories: string[] | null
+          content_type: string | null
           created_at: string | null
-          email: string | null
-          engagement_metrics: Json | null
-          expires_in: number | null
-          id: string
-          metadata: Json | null
-          name: string | null
-          platform: string | null
-          profile_id: string | null
-          refresh_token: string | null
-          stats: Json | null
-          status: string | null
-          token_expires_at: string | null
+          creator_type: string | null
+          display_name: string | null
+          engagement_rate: number | null
+          follower_count: number | null
+          headline: string | null
+          industries: string[] | null
+          platform_types: string[] | null
+          primary_platform: string | null
+          rate_card_url: string | null
+          social_links: Json | null
           updated_at: string | null
-          username: string | null
+          user_id: string
         }
         Insert: {
-          access_token?: string | null
-          account_id: string
+          audience_location?: string | null
+          audience_stats?: Json | null
+          audience_type?: string | null
           bio?: string | null
-          connected_at?: string | null
+          categories?: string[] | null
+          content_type?: string | null
           created_at?: string | null
-          email?: string | null
-          engagement_metrics?: Json | null
-          expires_in?: number | null
-          id?: string
-          metadata?: Json | null
-          name?: string | null
-          platform?: string | null
-          profile_id?: string | null
-          refresh_token?: string | null
-          stats?: Json | null
-          status?: string | null
-          token_expires_at?: string | null
+          creator_type?: string | null
+          display_name?: string | null
+          engagement_rate?: number | null
+          follower_count?: number | null
+          headline?: string | null
+          industries?: string[] | null
+          platform_types?: string[] | null
+          primary_platform?: string | null
+          rate_card_url?: string | null
+          social_links?: Json | null
           updated_at?: string | null
-          username?: string | null
+          user_id: string
         }
         Update: {
-          access_token?: string | null
-          account_id?: string
+          audience_location?: string | null
+          audience_stats?: Json | null
+          audience_type?: string | null
           bio?: string | null
-          connected_at?: string | null
+          categories?: string[] | null
+          content_type?: string | null
           created_at?: string | null
-          email?: string | null
-          engagement_metrics?: Json | null
-          expires_in?: number | null
-          id?: string
-          metadata?: Json | null
-          name?: string | null
-          platform?: string | null
-          profile_id?: string | null
-          refresh_token?: string | null
-          stats?: Json | null
-          status?: string | null
-          token_expires_at?: string | null
+          creator_type?: string | null
+          display_name?: string | null
+          engagement_rate?: number | null
+          follower_count?: number | null
+          headline?: string | null
+          industries?: string[] | null
+          platform_types?: string[] | null
+          primary_platform?: string | null
+          rate_card_url?: string | null
+          social_links?: Json | null
           updated_at?: string | null
-          username?: string | null
+          user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "social_accounts_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "admin_crm_brands_view"
-            referencedColumns: ["brand_id"]
-          },
-          {
-            foreignKeyName: "social_accounts_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "admin_crm_creators_view"
-            referencedColumns: ["creator_id"]
-          },
-          {
-            foreignKeyName: "social_accounts_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       creator_types: {
         Row: {
@@ -655,15 +675,7 @@ export type Database = {
           id?: string
           social_account_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "social_metrics_social_account_id_fkey"
-            columns: ["social_account_id"]
-            isOneToOne: false
-            referencedRelation: "creator_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_roles: {
         Row: {

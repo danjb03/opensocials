@@ -1,8 +1,8 @@
+
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
-import { submitCreatorProfile } from '@/utils/creatorOnboarding';
 import { CreatorProfile } from './useCreatorProfileData';
 
 export const useCreatorProfileActions = (
@@ -20,68 +20,39 @@ export const useCreatorProfileActions = (
       return;
     }
 
-    console.log('Starting profile update with data:', updatedData);
+    console.log('Starting creator profile update with data:', updatedData);
 
     try {
-      // Prepare database update with all required fields
-      const dbUpdateData: Record<string, any> = {
-        first_name: updatedData.firstName || '',
-        last_name: updatedData.lastName || '',
+      // Prepare creator_profiles update data
+      const displayName = `${updatedData.firstName || ''} ${updatedData.lastName || ''}`.trim();
+      
+      const creatorProfileData: Record<string, any> = {
+        user_id: user.id,
+        display_name: displayName,
         bio: updatedData.bio || '',
         primary_platform: updatedData.primaryPlatform || '',
         content_type: updatedData.contentType || '',
         audience_type: updatedData.audienceType || '',
-        audience_location: updatedData.audienceLocation || {
-          primary: 'Global',
-          secondary: [],
-          countries: [
-            { name: 'United States', percentage: 30 },
-            { name: 'United Kingdom', percentage: 20 },
-            { name: 'Canada', percentage: 15 },
-            { name: 'Australia', percentage: 10 },
-            { name: 'Others', percentage: 25 }
-          ]
-        },
+        audience_location: updatedData.audienceLocation?.primary || 'Global',
         industries: updatedData.industries || [],
         creator_type: updatedData.creatorType || '',
-        is_profile_complete: true,
         updated_at: new Date().toISOString()
       };
 
-      console.log('Updating profile with data:', dbUpdateData);
+      console.log('Upserting creator profile with data:', creatorProfileData);
 
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update(dbUpdateData)
-        .eq('id', user.id);
+      const { error: upsertError } = await supabase
+        .from('creator_profiles')
+        .upsert(creatorProfileData, {
+          onConflict: 'user_id'
+        });
 
-      if (updateError) {
-        console.error('Supabase error updating profile:', updateError);
-        throw new Error(`Database update failed: ${updateError.message}`);
+      if (upsertError) {
+        console.error('Supabase error upserting creator profile:', upsertError);
+        throw new Error(`Database upsert failed: ${upsertError.message}`);
       }
 
-      console.log('Profile updated in database successfully');
-
-      // Save industry and creator type data if provided
-      if (updatedData.industries && updatedData.industries.length > 0 && updatedData.creatorType) {
-        try {
-          console.log('Saving industry and creator type data...');
-          await submitCreatorProfile({
-            userId: user.id,
-            industries: updatedData.industries,
-            creatorType: updatedData.creatorType
-          });
-          console.log('Industry and creator type data saved successfully');
-        } catch (error) {
-          console.error('Error saving industry and creator type data:', error);
-          // Show the specific error to the user but don't fail the entire update
-          toast.error('Profile updated but industry data failed to save', {
-            description: 'Please try updating your industries again.'
-          });
-          // Re-throw to prevent success message
-          throw error;
-        }
-      }
+      console.log('Creator profile upserted successfully');
 
       // Update local state - merge with existing profile data
       setProfile(prev => {
@@ -99,9 +70,9 @@ export const useCreatorProfileActions = (
         description: 'Your profile is now complete and ready for brand collaborations.'
       });
 
-      console.log('Profile update completed successfully');
+      console.log('Creator profile update completed successfully');
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error('Error updating creator profile:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error('Failed to update profile', {
         description: errorMessage
@@ -114,17 +85,8 @@ export const useCreatorProfileActions = (
     if (!user?.id || !profile) return;
 
     try {
-      const updateData: Record<string, boolean> = {};
-      const dbField = setting.replace(/([A-Z])/g, "_$1").toLowerCase();
+      // For now, just update local state since visibility settings aren't in creator_profiles yet
       const newValue = !profile.visibilitySettings[setting];
-      updateData[dbField] = newValue;
-
-      const { error } = await supabase
-        .from('profiles')
-        .update(updateData)
-        .eq('id', user.id);
-
-      if (error) throw error;
 
       setProfile((prev) => {
         if (!prev) return null;

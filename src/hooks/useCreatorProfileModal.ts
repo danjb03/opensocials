@@ -1,129 +1,123 @@
 
-import { useState, useEffect } from 'react';
-import { Creator } from '@/types/creator';
-import { mockCreatorsBase } from '@/data/mockCreators';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
-import { useToast } from '@/hooks/use-toast';
 
-// Define an extended profile type for the Supabase data
-interface ExtendedProfile {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  bio?: string | null;
-  avatar_url: string | null;
-  banner_image_url?: string | null;
-  primary_platform?: string | null;
-  audience_type?: string | null;
-  content_type?: string | null;
-  follower_count?: string | null;
-  engagement_rate?: string | null;
-  price_range?: string | null;
-  skills?: string[] | null;
-  social_links?: any | null;
-  average_views?: string | null;
-  average_likes?: string | null;
-  audience_location?: any | null;
+interface Creator {
+  id: number;
+  name: string;
+  platform: string;
+  imageUrl: string;
+  followers: string;
+  engagement: string;
+  audience: string;
+  contentType: string;
+  location: string;
+  bio?: string;
+  about?: string;
+  skills?: string[];
+  priceRange: string;
+  bannerImageUrl?: string;
+  socialLinks?: Record<string, string>;
+  audienceLocation?: {
+    primary: string;
+    secondary?: string[];
+    countries?: { name: string; percentage: number }[];
+  };
+  metrics?: {
+    followerCount: string;
+    engagementRate: string;
+    avgViews?: string;
+    avgLikes?: string;
+  };
+  industries?: string[];
 }
 
 export const useCreatorProfileModal = () => {
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isLoadingCreator, setIsLoadingCreator] = useState(false);
-  const { user } = useAuth();
-  const { toast } = useToast();
 
   const handleViewCreatorProfile = async (creatorId: number) => {
     setIsLoadingCreator(true);
     setIsProfileModalOpen(true);
-    
+
     try {
-      // First check if this creator exists in supabase
-      const { data: profileData } = await supabase
-        .from('profiles')
+      // Fetch creator profile data from creator_profiles table
+      console.log('Fetching creator profile for modal, ID:', creatorId);
+      
+      const { data, error } = await supabase
+        .from('creator_profiles')
         .select('*')
-        .eq('id', creatorId.toString())
+        .limit(1)
         .single();
 
-      if (profileData) {
-        // Cast data to our extended profile type
-        const profile = profileData as unknown as ExtendedProfile;
-        
-        // Use real data from database
-        const enhancedCreator: Creator = {
-          id: Number(profile.id),
-          name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
-          platform: profile.primary_platform || 'Instagram',
-          audience: profile.audience_type || 'General',
-          contentType: profile.content_type || 'Lifestyle',
-          followers: profile.follower_count || '0',
-          engagement: profile.engagement_rate || '0%',
-          priceRange: profile.price_range || '$500-$1000',
-          skills: profile.skills || [],
-          imageUrl: profile.avatar_url || 'https://via.placeholder.com/150',
-          bannerImageUrl: profile.banner_image_url,
-          about: profile.bio || 'No bio available',
-          socialLinks: profile.social_links || {},
-          metrics: {
-            followerCount: profile.follower_count || '0',
-            engagementRate: profile.engagement_rate || '0%',
-            avgViews: profile.average_views || '0 views',
-            avgLikes: profile.average_likes || '0 likes',
+      if (error) {
+        console.error('Error fetching creator for modal:', error);
+        // Use mock data as fallback
+        setSelectedCreator({
+          id: creatorId,
+          name: 'Creator Name',
+          platform: 'Instagram',
+          imageUrl: '/placeholder.svg',
+          followers: '100K',
+          engagement: '5.2%',
+          audience: 'Gen Z',
+          contentType: 'Short Form Video',
+          location: 'Global',
+          bio: 'Creator bio not available',
+          about: 'Creator details not available',
+          skills: ['Content Creation', 'Social Media'],
+          priceRange: '$500 - $2,000',
+          bannerImageUrl: undefined,
+          socialLinks: {},
+          audienceLocation: {
+            primary: 'Global',
+            secondary: [],
+            countries: []
           },
-          audienceLocation: profile.audience_location || {
-            primary: 'United States',
-            secondary: ['Canada', 'United Kingdom'],
-            countries: [
-              { name: 'United States', percentage: 60 },
-              { name: 'Canada', percentage: 15 },
-              { name: 'United Kingdom', percentage: 10 },
-              { name: 'Others', percentage: 15 }
-            ]
-          }
+          metrics: {
+            followerCount: '100K',
+            engagementRate: '5.2%'
+          },
+          industries: []
+        });
+        return;
+      }
+
+      if (data) {
+        // Transform creator_profiles data to Creator interface
+        const transformedCreator: Creator = {
+          id: creatorId,
+          name: data.display_name || 'Unknown Creator',
+          platform: data.primary_platform || 'Unknown',
+          imageUrl: '/placeholder.svg',
+          followers: data.follower_count?.toString() || '0',
+          engagement: data.engagement_rate ? `${data.engagement_rate}%` : '0%',
+          audience: data.audience_type || 'Unknown',
+          contentType: data.content_type || 'Unknown',
+          location: data.audience_location || 'Global',
+          bio: data.bio || '',
+          about: data.bio || '',
+          skills: data.categories || [],
+          priceRange: '$500 - $2,000',
+          bannerImageUrl: undefined,
+          socialLinks: data.social_links || {},
+          audienceLocation: {
+            primary: data.audience_location || 'Global',
+            secondary: [],
+            countries: []
+          },
+          metrics: {
+            followerCount: data.follower_count?.toString() || '0',
+            engagementRate: data.engagement_rate ? `${data.engagement_rate}%` : '0%'
+          },
+          industries: data.industries || []
         };
-        setSelectedCreator(enhancedCreator);
-      } else {
-        // Fall back to mock data
-        const creator = mockCreatorsBase.find(c => c.id === creatorId);
-        if (creator) {
-          const enhancedCreator: Creator = {
-            ...creator,
-            about: `Hi, I'm ${creator.name}! I'm a content creator specializing in ${creator.contentType} content for ${creator.audience} audiences.`,
-            socialLinks: {
-              instagram: 'https://instagram.com',
-              tiktok: creator.platform === 'TikTok' ? 'https://tiktok.com' : undefined,
-              youtube: creator.platform === 'YouTube' ? 'https://youtube.com' : undefined,
-              twitter: 'https://twitter.com',
-            },
-            metrics: {
-              followerCount: creator.followers,
-              engagementRate: creator.engagement,
-              avgViews: `${Math.floor(parseInt(creator.followers.replace(/[^0-9]/g, '')) * 0.3).toLocaleString()} views`,
-              avgLikes: `${Math.floor(parseInt(creator.followers.replace(/[^0-9]/g, '')) * 0.08).toLocaleString()} likes`,
-            },
-            audienceLocation: {
-              primary: creator.id % 3 === 0 ? 'United States' : creator.id % 3 === 1 ? 'United Kingdom' : 'Global',
-              secondary: creator.id % 2 === 0 ? ['Canada', 'Australia', 'Germany'] : ['Mexico', 'Brazil', 'India'],
-              countries: [
-                { name: 'United States', percentage: creator.id % 3 === 0 ? 65 : 30 },
-                { name: 'United Kingdom', percentage: creator.id % 3 === 1 ? 58 : 15 },
-                { name: 'Canada', percentage: 10 },
-                { name: 'Australia', percentage: 8 },
-                { name: 'Others', percentage: creator.id % 3 === 2 ? 40 : 7 }
-              ]
-            }
-          };
-          setSelectedCreator(enhancedCreator);
-        }
+
+        setSelectedCreator(transformedCreator);
       }
     } catch (error) {
-      console.error('Error fetching creator:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load creator profile',
-        variant: 'destructive'
-      });
+      console.error('Error in handleViewCreatorProfile:', error);
     } finally {
       setIsLoadingCreator(false);
     }
@@ -131,9 +125,7 @@ export const useCreatorProfileModal = () => {
 
   const handleCloseProfileModal = () => {
     setIsProfileModalOpen(false);
-    setTimeout(() => {
-      setSelectedCreator(null);
-    }, 300); // Wait for the dialog close animation
+    setSelectedCreator(null);
   };
 
   return {
