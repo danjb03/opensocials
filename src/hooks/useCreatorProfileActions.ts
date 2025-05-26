@@ -23,11 +23,11 @@ export const useCreatorProfileActions = (
     console.log('Starting creator profile update with data:', updatedData);
 
     try {
-      // Prepare creator_profiles update data
+      // Prepare creator_profiles update data with explicit user_id
       const displayName = `${updatedData.firstName || ''} ${updatedData.lastName || ''}`.trim();
       
-      const creatorProfileData: Record<string, any> = {
-        user_id: user.id,
+      const creatorProfileData = {
+        user_id: user.id, // Explicitly set user_id as required
         display_name: displayName,
         bio: updatedData.bio || '',
         primary_platform: updatedData.primaryPlatform || '',

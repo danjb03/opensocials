@@ -74,35 +74,47 @@ export const useCreatorSearch = () => {
         console.log('Raw creator profiles data:', data);
 
         // Transform creator_profiles data to Creator interface
-        const transformedCreators: Creator[] = (data || []).map((profile, index) => ({
-          id: index + 1, // Use index as id since creator_profiles doesn't have numeric id
-          name: profile.display_name || 'Unknown Creator',
-          platform: profile.primary_platform || 'Unknown',
-          imageUrl: '/placeholder.svg', // Default image since not stored in creator_profiles
-          followers: profile.follower_count?.toString() || '0',
-          engagement: profile.engagement_rate ? `${profile.engagement_rate}%` : '0%',
-          audience: profile.audience_type || 'Unknown',
-          contentType: profile.content_type || 'Unknown',
-          location: profile.audience_location || 'Global',
-          bio: profile.bio || '',
-          about: profile.bio || '',
-          skills: profile.categories || [],
-          priceRange: '$500 - $2,000', // Default since not in creator_profiles
-          bannerImageUrl: undefined,
-          socialLinks: profile.social_links || {},
-          audienceLocation: {
-            primary: profile.audience_location || 'Global',
-            secondary: [],
-            countries: []
-          },
-          metrics: {
-            followerCount: profile.follower_count?.toString() || '0',
-            engagementRate: profile.engagement_rate ? `${profile.engagement_rate}%` : '0%',
-            avgViews: undefined,
-            avgLikes: undefined
-          },
-          industries: profile.industries || []
-        }));
+        const transformedCreators: Creator[] = (data || []).map((profile, index) => {
+          // Safely handle social_links JSON type
+          const socialLinks: Record<string, string> = {};
+          if (profile.social_links && typeof profile.social_links === 'object' && !Array.isArray(profile.social_links)) {
+            Object.entries(profile.social_links).forEach(([key, value]) => {
+              if (typeof value === 'string') {
+                socialLinks[key] = value;
+              }
+            });
+          }
+
+          return {
+            id: index + 1, // Use index as id since creator_profiles doesn't have numeric id
+            name: profile.display_name || 'Unknown Creator',
+            platform: profile.primary_platform || 'Unknown',
+            imageUrl: '/placeholder.svg', // Default image since not stored in creator_profiles
+            followers: profile.follower_count?.toString() || '0',
+            engagement: profile.engagement_rate ? `${profile.engagement_rate}%` : '0%',
+            audience: profile.audience_type || 'Unknown',
+            contentType: profile.content_type || 'Unknown',
+            location: profile.audience_location || 'Global',
+            bio: profile.bio || '',
+            about: profile.bio || '',
+            skills: profile.categories || [],
+            priceRange: '$500 - $2,000', // Default since not in creator_profiles
+            bannerImageUrl: undefined,
+            socialLinks,
+            audienceLocation: {
+              primary: profile.audience_location || 'Global',
+              secondary: [],
+              countries: []
+            },
+            metrics: {
+              followerCount: profile.follower_count?.toString() || '0',
+              engagementRate: profile.engagement_rate ? `${profile.engagement_rate}%` : '0%',
+              avgViews: undefined,
+              avgLikes: undefined
+            },
+            industries: profile.industries || []
+          };
+        });
 
         console.log('Transformed creators:', transformedCreators);
         setCreators(transformedCreators);

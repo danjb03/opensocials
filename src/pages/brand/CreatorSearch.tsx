@@ -60,6 +60,12 @@ const CreatorSearch = () => {
     }
   }, [campaignId, setSelectedCampaignId]);
 
+  // Transform availableCampaigns to match expected type
+  const campaignsForBar = availableCampaigns.map(campaign => ({
+    id: campaign.id,
+    title: campaign.name
+  }));
+
   return (
     <BrandLayout>
       <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -101,7 +107,7 @@ const CreatorSearch = () => {
           <div className="mb-8 animate-fade-in">
             <SelectedCreatorsBar 
               selectedCreators={selectedCreators}
-              availableCampaigns={availableCampaigns}
+              availableCampaigns={campaignsForBar}
               selectedCampaignId={selectedCampaignId}
               onSelectCampaign={setSelectedCampaignId}
               onAddToCart={addCreatorsToProject}
@@ -130,15 +136,21 @@ const CreatorSearch = () => {
           ) : viewMode === 'grid' ? (
             <CreatorGrid 
               creators={filteredCreators}
-              selectedCreators={selectedCreators}
-              onToggleCreator={handleToggleCreator}
+              selectedCreators={selectedCreators.map(c => c.id)}
+              onToggleCreator={(creatorId: number) => {
+                const creator = filteredCreators.find(c => c.id === creatorId);
+                if (creator) handleToggleCreator(creator);
+              }}
               onViewProfile={handleViewCreatorProfile}
             />
           ) : (
             <CreatorList
               creators={filteredCreators}
-              selectedCreators={selectedCreators}
-              onToggleCreator={handleToggleCreator}
+              selectedCreators={selectedCreators.map(c => c.id)}
+              onToggleCreator={(creatorId: number) => {
+                const creator = filteredCreators.find(c => c.id === creatorId);
+                if (creator) handleToggleCreator(creator);
+              }}
               onViewProfile={handleViewCreatorProfile}
             />
           )}

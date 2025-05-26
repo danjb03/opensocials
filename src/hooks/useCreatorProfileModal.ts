@@ -86,6 +86,16 @@ export const useCreatorProfileModal = () => {
 
       if (data) {
         // Transform creator_profiles data to Creator interface
+        // Safely handle social_links JSON type
+        const socialLinks: Record<string, string> = {};
+        if (data.social_links && typeof data.social_links === 'object' && !Array.isArray(data.social_links)) {
+          Object.entries(data.social_links).forEach(([key, value]) => {
+            if (typeof value === 'string') {
+              socialLinks[key] = value;
+            }
+          });
+        }
+
         const transformedCreator: Creator = {
           id: creatorId,
           name: data.display_name || 'Unknown Creator',
@@ -101,7 +111,7 @@ export const useCreatorProfileModal = () => {
           skills: data.categories || [],
           priceRange: '$500 - $2,000',
           bannerImageUrl: undefined,
-          socialLinks: data.social_links || {},
+          socialLinks,
           audienceLocation: {
             primary: data.audience_location || 'Global',
             secondary: [],
