@@ -14,24 +14,43 @@ export const useCreatorProfileActions = (
   const { toast: uiToast } = useToast();
 
   const updateProfile = async (updatedData: Partial<CreatorProfile>) => {
-    if (!user?.id || !profile) return;
+    if (!user?.id) {
+      toast.error('Authentication required', {
+        description: 'Please log in to update your profile.'
+      });
+      return;
+    }
+
+    if (!profile) {
+      toast.error('Profile not found', {
+        description: 'Unable to find your profile to update.'
+      });
+      return;
+    }
 
     try {
       console.log('Profile update requested with data:', updatedData);
       
+      // Prepare database update with all required fields
       const dbUpdateData: Record<string, any> = {
-        first_name: updatedData.firstName ?? profile.firstName,
-        last_name: updatedData.lastName ?? profile.lastName,
-        bio: updatedData.bio ?? profile.bio,
-        primary_platform: updatedData.primaryPlatform ?? profile.primaryPlatform,
-        content_type: updatedData.contentType ?? profile.contentType,
-        audience_type: updatedData.audienceType ?? profile.audienceType,
-        is_profile_complete: updatedData.isProfileComplete ?? profile.isProfileComplete
+        first_name: updatedData.firstName || profile.firstName,
+        last_name: updatedData.lastName || profile.lastName,
+        bio: updatedData.bio || profile.bio || '',
+        primary_platform: updatedData.primaryPlatform || profile.primaryPlatform || '',
+        content_type: updatedData.contentType || profile.contentType || '',
+        audience_type: updatedData.audienceType || profile.audienceType || '',
+        is_profile_complete: true, // Always mark as complete when updating
+        updated_at: new Date().toISOString()
       };
 
+      // Handle audience location
       if (updatedData.audienceLocation) {
         dbUpdateData.audience_location = updatedData.audienceLocation;
+      } else if (profile.audienceLocation) {
+        dbUpdateData.audience_location = profile.audienceLocation;
       }
+
+      console.log('Updating profile with data:', dbUpdateData);
 
       const { error } = await supabase
         .from('profiles')
@@ -43,6 +62,7 @@ export const useCreatorProfileActions = (
         throw error;
       }
 
+      // Save industry and creator type data if provided
       if (updatedData.industries && updatedData.industries.length > 0 && updatedData.creatorType) {
         try {
           await submitCreatorProfile({
@@ -50,24 +70,37 @@ export const useCreatorProfileActions = (
             industries: updatedData.industries,
             creatorType: updatedData.creatorType
           });
+          console.log('Industry and creator type data saved successfully');
         } catch (error) {
           console.error('Error saving industry and creator type data:', error);
-          toast.error('Your profile was updated but we had trouble saving your industry selections', {
-            description: 'Please try again or contact support.'
+          // Don't fail the entire update for this
+          toast.error('Profile updated but industry data failed to save', {
+            description: 'Please try updating your industries again.'
           });
         }
       }
 
-      toast.success('Profile updated successfully', {
-        description: 'Your profile has been updated.'
+      // Update local state
+      setProfile(prev => {
+        if (!prev) return null;
+        return { 
+          ...prev, 
+          ...updatedData,
+          isProfileComplete: true
+        };
       });
 
-      setProfile(prev => prev ? { ...prev, ...updatedData } : null);
+      toast.success('Profile updated successfully!', {
+        description: 'Your profile is now complete and ready for brand collaborations.'
+      });
+
+      console.log('Profile update completed successfully');
     } catch (error) {
       console.error('Error updating profile:', error);
       toast.error('Failed to update profile', {
-        description: 'Please try again later.'
+        description: 'Please check your internet connection and try again.'
       });
+      throw error; // Re-throw to handle in component
     }
   };
 

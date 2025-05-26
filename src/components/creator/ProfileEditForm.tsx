@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,7 @@ import { CreatorProfile } from '@/hooks/useCreatorProfile';
 import { Card, CardContent } from '@/components/ui/card';
 import { industries } from '@/data/industries';
 import { CreatorTypeSelector } from '@/components/creator/setup/CreatorTypeSelector';
+import OAuthConnectButtons from '@/components/creator/OAuthConnectButtons';
 
 export interface ProfileEditFormProps {
   profile: CreatorProfile;
@@ -127,20 +129,52 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    await onSubmit({
-      firstName,
-      lastName,
-      bio,
-      primaryPlatform: primaryPlatforms.join(', '),
-      contentType: contentTypes.join(', '),
-      audienceType,
-      audienceLocation: {
-        ...profile.audienceLocation,
-        primary: audienceLocation
-      },
-      industries: selectedIndustries,
-      creatorType
-    });
+    // Validate required fields
+    if (!firstName.trim() || !lastName.trim()) {
+      alert('Please fill in your first and last name');
+      return;
+    }
+
+    if (selectedIndustries.length === 0) {
+      alert('Please select at least one industry');
+      return;
+    }
+
+    if (primaryPlatforms.length === 0) {
+      alert('Please select at least one platform');
+      return;
+    }
+
+    if (contentTypes.length === 0) {
+      alert('Please select at least one content format');
+      return;
+    }
+
+    if (!creatorType) {
+      alert('Please select your creator type');
+      return;
+    }
+
+    try {
+      await onSubmit({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        bio: bio.trim(),
+        primaryPlatform: primaryPlatforms.join(', '),
+        contentType: contentTypes.join(', '),
+        audienceType,
+        audienceLocation: {
+          ...profile.audienceLocation,
+          primary: audienceLocation
+        },
+        industries: selectedIndustries,
+        creatorType,
+        isProfileComplete: true
+      });
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert('Failed to save profile. Please try again.');
+    }
   };
 
   return (
@@ -149,21 +183,23 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
         <CardContent className="pt-6">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="firstName">First Name *</Label>
               <Input
                 id="firstName"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="Your first name"
+                required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="lastName">Last Name *</Label>
               <Input
                 id="lastName"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Your last name"
+                required
               />
             </div>
           </div>
@@ -183,8 +219,21 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
 
       <Card>
         <CardContent className="pt-6">
-          <h3 className="text-lg font-medium mb-4">Creator Type</h3>
+          <h3 className="text-lg font-medium mb-4">Creator Type *</h3>
           <CreatorTypeSelector selected={creatorType} setSelected={setCreatorType} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-medium mb-4">Connect Your Social Media</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Connect your social media accounts to showcase your reach and get ready for brand collaborations.
+          </p>
+          <OAuthConnectButtons 
+            platforms={profile.socialConnections}
+            isLoading={isLoading}
+          />
         </CardContent>
       </Card>
 
@@ -195,7 +244,7 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
             
             {/* Industry Selection */}
             <div className="space-y-3">
-              <Label>Industries</Label>
+              <Label>Industries *</Label>
               <div className="flex gap-2">
                 <Select onValueChange={handleIndustrySelect}>
                   <SelectTrigger className="flex-1">
@@ -253,7 +302,7 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
             
             {/* Platform Selection */}
             <div className="space-y-3">
-              <Label>Primary Platforms (select multiple)</Label>
+              <Label>Primary Platforms * (select multiple)</Label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {platformOptions.map((platform) => (
                   <div key={platform} className="flex items-center space-x-2 p-2 border rounded-md hover:bg-gray-50">
@@ -332,7 +381,7 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
 
             {/* Content Type Selection */}
             <div className="space-y-3">
-              <Label>Content Formats (select multiple)</Label>
+              <Label>Content Formats * (select multiple)</Label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {contentTypeOptions.map((contentType) => (
                   <div key={contentType} className="flex items-center space-x-2 p-2 border rounded-md hover:bg-gray-50">
@@ -397,7 +446,7 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
           type="submit"
           disabled={isLoading}
         >
-          {isLoading ? 'Saving...' : 'Save Profile'}
+          {isLoading ? 'Saving...' : 'Complete Profile & Get Ready for Brands!'}
         </Button>
       </div>
     </form>

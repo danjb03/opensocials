@@ -25,29 +25,34 @@ const CreatorDashboard = () => {
   } = useCreatorProfile();
 
   const handleProfileSubmit = async (values: any) => {
-    await updateProfile({
-      firstName: values.firstName,
-      lastName: values.lastName,
-      bio: values.bio,
-      primaryPlatform: values.primaryPlatform,
-      contentType: values.contentType,
-      audienceType: values.audienceType,
-      audienceLocation: {
-        primary: values.audienceLocation?.primary || profile?.audienceLocation?.primary || '',
-        secondary: profile?.audienceLocation?.secondary || [],
-        countries: profile?.audienceLocation?.countries || [
-          { name: 'United States', percentage: 30 },
-          { name: 'United Kingdom', percentage: 20 },
-          { name: 'Canada', percentage: 15 },
-          { name: 'Australia', percentage: 10 },
-          { name: 'Others', percentage: 25 }
-        ]
-      },
-      industries: values.industries || [],
-      creatorType: values.creatorType || '',
-      isProfileComplete: true
-    });
-    setIsEditing(false);
+    try {
+      await updateProfile({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        bio: values.bio,
+        primaryPlatform: values.primaryPlatform,
+        contentType: values.contentType,
+        audienceType: values.audienceType,
+        audienceLocation: {
+          primary: values.audienceLocation?.primary || values.audienceLocation || 'Global',
+          secondary: profile?.audienceLocation?.secondary || [],
+          countries: profile?.audienceLocation?.countries || [
+            { name: 'United States', percentage: 30 },
+            { name: 'United Kingdom', percentage: 20 },
+            { name: 'Canada', percentage: 15 },
+            { name: 'Australia', percentage: 10 },
+            { name: 'Others', percentage: 25 }
+          ]
+        },
+        industries: values.industries || [],
+        creatorType: values.creatorType || '',
+        isProfileComplete: true
+      });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      // Error is already handled in updateProfile
+    }
   };
 
   const handleStartProfileSetup = () => {
@@ -92,20 +97,22 @@ const CreatorDashboard = () => {
   return (
     <CreatorLayout>
       <div className="container mx-auto p-6 space-y-6">
-        <CreatorProfileHeader 
-          name={profile ? `${profile.firstName} ${profile.lastName}` : 'Creator Profile'}
-          imageUrl={profile?.avatarUrl || undefined}
-          bannerUrl={profile?.bannerUrl || undefined}
-          bio={profile?.bio || 'No bio yet. Add one to complete your profile.'}
-          platform={profile?.primaryPlatform}
-          followers={profile?.followerCount}
-          isEditable={true}
-          onEditProfile={handleEditProfile}
-          onTogglePreview={handleTogglePreview}
-          isPreviewMode={isPreviewMode}
-          onAvatarChange={uploadAvatar}
-          isUploading={isUploading}
-        />
+        {profile && profile.isProfileComplete && (
+          <CreatorProfileHeader 
+            name={`${profile.firstName} ${profile.lastName}`}
+            imageUrl={profile?.avatarUrl || undefined}
+            bannerUrl={profile?.bannerUrl || undefined}
+            bio={profile?.bio || 'No bio yet. Add one to complete your profile.'}
+            platform={profile?.primaryPlatform}
+            followers={profile?.followerCount}
+            isEditable={true}
+            onEditProfile={handleEditProfile}
+            onTogglePreview={handleTogglePreview}
+            isPreviewMode={isPreviewMode}
+            onAvatarChange={uploadAvatar}
+            isUploading={isUploading}
+          />
+        )}
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3">
@@ -132,7 +139,7 @@ const CreatorDashboard = () => {
           </div>
           
           <div className="lg:col-span-1">
-            {profile && (
+            {profile && profile.isProfileComplete && (
               <VisibilityControls 
                 visibilitySettings={profile?.visibilitySettings || {
                   showInstagram: true,
