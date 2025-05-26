@@ -37,20 +37,6 @@ export function useCreatorInvitationActions() {
       
       const brandName = brandData.company_name || brandData.display_name || 'A brand';
 
-      // Get campaign info if campaign ID is provided
-      let campaignName = "a campaign";
-      if (campaignId) {
-        const { data: campaignData, error: campaignError } = await supabase
-          .from('projects')
-          .select('name')
-          .eq('id', campaignId)
-          .single();
-          
-        if (!campaignError && campaignData) {
-          campaignName = campaignData.name;
-        }
-      }
-
       // Update the brand_creator_connections table
       const { error } = await supabase
         .from('brand_creator_connections')
@@ -58,7 +44,6 @@ export function useCreatorInvitationActions() {
           creator_id: creatorId,
           brand_id: brandId,
           status: 'invited',
-          project_id: campaignId, // Store the campaign ID if provided
           created_at: new Date().toISOString()
         });
 
@@ -68,10 +53,10 @@ export function useCreatorInvitationActions() {
       if (creatorData?.email) {
         await sendEmail({
           to: creatorData.email,
-          subject: `Invitation to Collaborate on ${campaignName}`,
+          subject: `Invitation to Collaborate`,
           html: `
             <h2>You've Been Invited to a Campaign</h2>
-            <p>${brandName} has invited you to participate in their campaign: ${campaignName}.</p>
+            <p>${brandName} has invited you to participate in their campaign.</p>
             <p>Log in to your account to view the details.</p>
             <p><a href="${window.location.origin}/creator/deals" style="display: inline-block; background-color: #4F46E5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Invitation</a></p>
           `,

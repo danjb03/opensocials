@@ -7,18 +7,11 @@ import { useAuth } from '@/lib/auth';
 export interface CreatorInvitation {
   id: string;
   brand_id: string;
-  project_id: string;
   status: 'invited' | 'accepted' | 'declined';
   created_at: string;
   updated_at: string;
   brand_name?: string;
   company_name?: string;
-  project_name?: string;
-  project_description?: string;
-  project_budget?: number;
-  project_currency?: string;
-  project_start_date?: string;
-  project_end_date?: string;
 }
 
 export function useCreatorInvitations() {
@@ -40,21 +33,12 @@ export function useCreatorInvitations() {
         .select(`
           id,
           brand_id,
-          project_id,
           status,
           created_at,
           updated_at,
           profiles!brand_creator_connections_brand_id_fkey (
             company_name,
             display_name
-          ),
-          projects!brand_creator_connections_project_id_fkey (
-            name,
-            description,
-            budget,
-            currency,
-            start_date,
-            end_date
           )
         `)
         .eq('creator_id', user.id)
@@ -65,18 +49,11 @@ export function useCreatorInvitations() {
       const formattedInvitations: CreatorInvitation[] = data.map(item => ({
         id: item.id,
         brand_id: item.brand_id,
-        project_id: item.project_id,
         status: item.status as 'invited' | 'accepted' | 'declined',
         created_at: item.created_at,
         updated_at: item.updated_at,
         brand_name: (item.profiles as any)?.display_name || (item.profiles as any)?.company_name,
         company_name: (item.profiles as any)?.company_name,
-        project_name: (item.projects as any)?.name,
-        project_description: (item.projects as any)?.description,
-        project_budget: (item.projects as any)?.budget,
-        project_currency: (item.projects as any)?.currency,
-        project_start_date: (item.projects as any)?.start_date,
-        project_end_date: (item.projects as any)?.end_date,
       }));
 
       setInvitations(formattedInvitations);

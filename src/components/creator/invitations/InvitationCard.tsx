@@ -4,8 +4,8 @@ import { format } from 'date-fns';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Calendar, DollarSign, Building2, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Building2, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { CreatorInvitation } from '@/hooks/useCreatorInvitations';
 
 interface InvitationCardProps {
@@ -47,13 +47,6 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({
     }
   };
 
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency || 'USD',
-    }).format(amount);
-  };
-
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
@@ -65,9 +58,9 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({
               </AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-semibold text-lg">{invitation.project_name}</h3>
+              <h3 className="font-semibold text-lg">Campaign Invitation</h3>
               <p className="text-sm text-muted-foreground">
-                from {invitation.brand_name || invitation.company_name}
+                from {invitation.brand_name || invitation.company_name || 'Brand'}
               </p>
             </div>
           </div>
@@ -76,31 +69,9 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({
       </CardHeader>
 
       <CardContent className="space-y-3">
-        {invitation.project_description && (
-          <p className="text-sm text-gray-600 line-clamp-2">
-            {invitation.project_description}
-          </p>
-        )}
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-          {invitation.project_budget && (
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-              <span>
-                Budget: {formatCurrency(invitation.project_budget, invitation.project_currency || 'USD')}
-              </span>
-            </div>
-          )}
-          
-          {invitation.project_start_date && invitation.project_end_date && (
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span>
-                {format(new Date(invitation.project_start_date), 'MMM d')} - {format(new Date(invitation.project_end_date), 'MMM d, yyyy')}
-              </span>
-            </div>
-          )}
-        </div>
+        <p className="text-sm text-gray-600">
+          You've been invited to participate in a campaign collaboration.
+        </p>
 
         <div className="text-xs text-muted-foreground">
           Invited {format(new Date(invitation.created_at), 'MMM d, yyyy at h:mm a')}

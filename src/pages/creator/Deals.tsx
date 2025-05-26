@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InvitationsList } from '@/components/creator/invitations/InvitationsList';
-import { PendingDeals } from '@/components/deals/PendingDeals';
-import { PastDeals } from '@/components/deals/PastDeals';
+import PendingDeals from '@/components/deals/PendingDeals';
+import PastDeals from '@/components/deals/PastDeals';
 import { MailPlus, Handshake, History } from 'lucide-react';
 
 const CreatorDeals = () => {
@@ -41,11 +41,11 @@ const CreatorDeals = () => {
           </TabsContent>
 
           <TabsContent value="pending">
-            <PendingDeals />
+            <PendingDeals deals={[]} />
           </TabsContent>
 
           <TabsContent value="past">
-            <PastDeals />
+            <PastDeals deals={[]} />
           </TabsContent>
         </Tabs>
       </div>
