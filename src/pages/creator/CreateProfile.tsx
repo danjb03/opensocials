@@ -106,7 +106,7 @@ const CreateProfile = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             user_id: userId,
-            platform: workplatformId, // platform name like "instagram"
+            platform: workplatformId,
             account_id: accountId,
             workplatform_id: workplatformId
           })
@@ -278,22 +278,24 @@ const CreateProfile = () => {
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold mb-2">Connect Your Social Platforms</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Link your social media accounts to showcase your reach and analytics
-                  </p>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={initializePhylloConnect}
-                    disabled={isPhylloLoading}
-                    className="flex items-center gap-2"
-                  >
-                    <LinkIcon className="h-4 w-4" />
-                    {isPhylloLoading ? 'Connecting...' : 'Connect Your Social Platforms'}
-                  </Button>
+              <div className="border-t pt-6">
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <h3 className="text-lg font-semibold mb-2">Connect Your Social Media</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Connect your social media accounts to showcase your reach and get ready for brand collaborations.
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={initializePhylloConnect}
+                      disabled={isPhylloLoading}
+                      className="flex items-center gap-2"
+                    >
+                      <LinkIcon className="h-4 w-4" />
+                      {isPhylloLoading ? 'Connecting...' : 'Connect Your Social Platforms'}
+                    </Button>
+                  </div>
                 </div>
               </div>
 
