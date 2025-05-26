@@ -5,7 +5,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { PlusCircle, Info, Check, UserPlus } from 'lucide-react';
 import { Creator } from '@/types/creator';
-import { useCreatorInvitations } from '@/hooks/useCreatorInvitations';
+import { useCreatorInvitationActions } from '@/hooks/useCreatorInvitationActions';
 import { useToast } from '@/hooks/use-toast';
 
 type CreatorListItemProps = {
@@ -16,7 +16,7 @@ type CreatorListItemProps = {
 };
 
 export const CreatorListItem = ({ creator, isSelected, onToggleSelect, onViewProfile }: CreatorListItemProps) => {
-  const { handleInviteCreator, isLoading } = useCreatorInvitations();
+  const { handleInviteCreator, isLoading } = useCreatorInvitationActions();
   const { toast } = useToast();
 
   const handleInvite = (e: React.MouseEvent) => {
