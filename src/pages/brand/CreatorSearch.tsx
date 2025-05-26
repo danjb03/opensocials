@@ -76,7 +76,13 @@ const CreatorSearch = () => {
     bannerImageUrl: creator.bannerImageUrl,
     about: creator.about,
     socialLinks: creator.socialLinks,
-    metrics: creator.metrics,
+    metrics: {
+      followerCount: creator.metrics?.followerCount || creator.followers,
+      engagementRate: creator.metrics?.engagementRate || creator.engagement,
+      avgViews: creator.metrics?.avgViews || "N/A",
+      avgLikes: creator.metrics?.avgLikes || "N/A",
+      growthTrend: creator.metrics?.growthTrend
+    },
     audienceLocation: creator.audienceLocation,
     industries: creator.industries,
     matchScore: creator.matchScore
@@ -97,7 +103,13 @@ const CreatorSearch = () => {
     bannerImageUrl: creator.bannerImageUrl,
     about: creator.about,
     socialLinks: creator.socialLinks,
-    metrics: creator.metrics,
+    metrics: {
+      followerCount: creator.metrics?.followerCount || creator.followers,
+      engagementRate: creator.metrics?.engagementRate || creator.engagement,
+      avgViews: creator.metrics?.avgViews || "N/A",
+      avgLikes: creator.metrics?.avgLikes || "N/A",
+      growthTrend: creator.metrics?.growthTrend
+    },
     audienceLocation: creator.audienceLocation,
     industries: creator.industries,
     matchScore: creator.matchScore
@@ -152,7 +164,7 @@ const CreatorSearch = () => {
         {transformedSelectedCreators.length > 0 && (
           <div className="mb-8 animate-fade-in">
             <SelectedCreatorsBar 
-              selectedCreators={transformedSelectedCreators}
+              selectedCreators={selectedCreatorIds}
               availableCampaigns={campaignsForBar}
               selectedCampaignId={selectedCampaignId}
               onSelectCampaign={setSelectedCampaignId}
@@ -205,7 +217,14 @@ const CreatorSearch = () => {
         <CreatorProfileModal 
           creator={selectedCreator ? {
             ...selectedCreator,
-            skills: selectedCreator.skills || [] // Ensure skills is always an array
+            skills: selectedCreator.skills || [], // Ensure skills is always an array
+            metrics: {
+              followerCount: selectedCreator.metrics?.followerCount || selectedCreator.followers,
+              engagementRate: selectedCreator.metrics?.engagementRate || selectedCreator.engagement,
+              avgViews: selectedCreator.metrics?.avgViews || "N/A",
+              avgLikes: selectedCreator.metrics?.avgLikes || "N/A",
+              growthTrend: selectedCreator.metrics?.growthTrend
+            }
           } : null}
           isOpen={isProfileModalOpen} 
           onClose={handleCloseProfileModal}
