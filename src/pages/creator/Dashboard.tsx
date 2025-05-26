@@ -1,14 +1,11 @@
 
-import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
 import CreatorProfileHeader from '@/components/creator/CreatorProfileHeader';
 import VisibilityControls from '@/components/creator/VisibilityControls';
 import DashboardContent from '@/components/creator/dashboard/DashboardContent';
 import { useCreatorProfile } from '@/hooks/useCreatorProfile';
-import { CreatorProfile } from '@/hooks/useCreatorProfile';
 
 const CreatorDashboard = () => {
   const { user } = useAuth();
@@ -26,7 +23,7 @@ const CreatorDashboard = () => {
     platformAnalytics
   } = useCreatorProfile();
 
-  const handleProfileSubmit = async (values: Partial<CreatorProfile>) => {
+  const handleProfileSubmit = async (values: any) => {
     await updateProfile({
       firstName: values.firstName,
       lastName: values.lastName,
@@ -63,6 +60,21 @@ const CreatorDashboard = () => {
       console.error(`Failed to connect ${platform}:`, error);
     }
   };
+
+  if (isLoading) {
+    return (
+      <CreatorLayout>
+        <div className="container mx-auto p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="w-8 h-8 border-t-2 border-b-2 border-primary rounded-full animate-spin mx-auto mb-4"></div>
+              <p>Loading your profile...</p>
+            </div>
+          </div>
+        </div>
+      </CreatorLayout>
+    );
+  }
 
   return (
     <CreatorLayout>
