@@ -2,6 +2,7 @@
 import { Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "./index";
 import CreatorDashboard from "@/pages/creator/Dashboard";
+import CreatorAnalytics from "@/pages/creator/Analytics";
 import CreatorDeals from "@/pages/creator/Deals";
 import CreatorCampaigns from "@/pages/creator/Campaigns";
 import CampaignDetail from "@/pages/creator/CampaignDetail";
@@ -23,7 +24,7 @@ export const CreatorRoutes = () => {
         path="analytics" 
         element={
           <ProtectedRoute requiredRole="creator">
-            <CreatorDashboard />
+            <CreatorAnalytics />
           </ProtectedRoute>
         } 
       />

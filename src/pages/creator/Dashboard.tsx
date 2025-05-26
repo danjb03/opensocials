@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,65 +25,6 @@ const CreatorDashboard = () => {
     connectSocialPlatform,
     platformAnalytics
   } = useCreatorProfile();
-  
-  const { data: earnings } = useQuery({
-    queryKey: ['creator-earnings', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('deal_earnings')
-        .select('amount, earned_at')
-        .eq('creator_id', user?.id)
-        .order('earned_at', { ascending: true });
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
-  const { data: connections } = useQuery({
-    queryKey: ['creator-connections', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('brand_creator_connections')
-        .select('status')
-        .eq('creator_id', user?.id);
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
-  const { data: deals } = useQuery({
-    queryKey: ['creator-deals', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('deals')
-        .select('value, status')
-        .eq('creator_id', user?.id);
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
-  const totalEarnings = earnings?.reduce((sum, earning) => sum + earning.amount, 0) || 0;
-  const pipelineValue = deals
-    ?.filter(deal => deal.status === 'pending')
-    .reduce((sum, deal) => sum + deal.value, 0) || 0;
-    
-  const connectionStats = {
-    outreach: connections?.filter(c => c.status === 'outreach').length || 0,
-    in_talks: connections?.filter(c => c.status === 'in_talks').length || 0,
-    working: connections?.filter(c => c.status === 'working').length || 0,
-  };
-
-  const earningsData = earnings?.map(earning => ({
-    date: new Date(earning.earned_at).toLocaleDateString(),
-    amount: earning.amount,
-  })) || [];
 
   const handleProfileSubmit = async (values: Partial<CreatorProfile>) => {
     await updateProfile({
@@ -145,10 +87,14 @@ const CreatorDashboard = () => {
               isLoading={isLoading}
               isEditing={isEditing}
               isPreviewMode={isPreviewMode}
-              totalEarnings={totalEarnings}
-              pipelineValue={pipelineValue}
-              connectionStats={connectionStats}
-              earningsData={earningsData}
+              totalEarnings={0}
+              pipelineValue={0}
+              connectionStats={{
+                outreach: 0,
+                in_talks: 0,
+                working: 0,
+              }}
+              earningsData={[]}
               platformAnalytics={platformAnalytics}
               onProfileSubmit={handleProfileSubmit}
               onCancelEdit={() => setIsEditing(false)}
