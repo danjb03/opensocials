@@ -6,7 +6,7 @@ import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CreatorCard from './CreatorCard';
 import CreatorEmptyState from './CreatorEmptyState';
-import { useCreatorInvitations } from '@/hooks/useCreatorInvitations';
+import { useCreatorInvitationActions } from '@/hooks/useCreatorInvitationActions';
 
 interface CampaignCreatorsProps {
   creators: Creator[];
@@ -15,7 +15,7 @@ interface CampaignCreatorsProps {
 
 const CampaignCreators: React.FC<CampaignCreatorsProps> = ({ creators, orderId }) => {
   const navigate = useNavigate();
-  const { handleInviteCreator, isLoading } = useCreatorInvitations();
+  const { handleInviteCreator, isLoading } = useCreatorInvitationActions();
 
   const handleFindMoreCreators = () => {
     // Navigate to creator search with the current campaign ID pre-selected

@@ -1,101 +1,189 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { sendEmail } from '@/utils/email';
+import { useAuth } from '@/lib/auth';
+
+export interface CreatorInvitation {
+  id: string;
+  brand_id: string;
+  project_id: string;
+  status: 'invited' | 'accepted' | 'declined';
+  created_at: string;
+  updated_at: string;
+  brand_name?: string;
+  company_name?: string;
+  project_name?: string;
+  project_description?: string;
+  project_budget?: number;
+  project_currency?: string;
+  project_start_date?: string;
+  project_end_date?: string;
+}
 
 export function useCreatorInvitations() {
+  const { user } = useAuth();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState<Record<string, boolean>>({});
-  
-  const handleInviteCreator = async (creatorId: string, creatorName: string, campaignId?: string) => {
+  const [invitations, setInvitations] = useState<CreatorInvitation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
+
+  // Fetch invitations for the current creator
+  const fetchInvitations = async () => {
+    if (!user?.id) return;
+
     try {
-      setIsLoading(prev => ({ ...prev, [`invite-${creatorId}`]: true }));
+      setIsLoading(true);
       
-      // Find creator in database by ID
-      const { data: creatorData, error: creatorError } = await supabase
-        .from('profiles')
-        .select('id, email')
-        .eq('id', creatorId)
-        .single();
-
-      if (creatorError) throw creatorError;
-
-      const currentUser = await supabase.auth.getUser();
-      const brandId = currentUser.data.user?.id;
-      
-      if (!brandId) throw new Error("Brand ID not found");
-
-      // Get brand information
-      const { data: brandData, error: brandError } = await supabase
-        .from('profiles')
-        .select('company_name, display_name')
-        .eq('id', brandId)
-        .single();
-        
-      if (brandError) throw brandError;
-      
-      const brandName = brandData.company_name || brandData.display_name || 'A brand';
-
-      // Get campaign info if campaign ID is provided
-      let campaignName = "a campaign";
-      if (campaignId) {
-        const { data: campaignData, error: campaignError } = await supabase
-          .from('projects')
-          .select('name')
-          .eq('id', campaignId)
-          .single();
-          
-        if (!campaignError && campaignData) {
-          campaignName = campaignData.name;
-        }
-      }
-
-      // Update the brand_creator_connections table
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('brand_creator_connections')
-        .insert({
-          creator_id: creatorId,
-          brand_id: brandId,
-          status: 'invited',
-          project_id: campaignId, // Store the campaign ID if provided
-          created_at: new Date().toISOString()
-        });
+        .select(`
+          id,
+          brand_id,
+          project_id,
+          status,
+          created_at,
+          updated_at,
+          profiles!brand_creator_connections_brand_id_fkey (
+            company_name,
+            display_name
+          ),
+          projects!brand_creator_connections_project_id_fkey (
+            name,
+            description,
+            budget,
+            currency,
+            start_date,
+            end_date
+          )
+        `)
+        .eq('creator_id', user.id)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Send an email notification to the creator
-      if (creatorData?.email) {
-        await sendEmail({
-          to: creatorData.email,
-          subject: `Invitation to Collaborate on ${campaignName}`,
-          html: `
-            <h2>You've Been Invited to a Campaign</h2>
-            <p>${brandName} has invited you to participate in their campaign: ${campaignName}.</p>
-            <p>Log in to your account to view the details.</p>
-            <p><a href="${window.location.origin}/creator/deals" style="display: inline-block; background-color: #4F46E5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Invitation</a></p>
-          `,
-        });
-      }
+      const formattedInvitations: CreatorInvitation[] = data.map(item => ({
+        id: item.id,
+        brand_id: item.brand_id,
+        project_id: item.project_id,
+        status: item.status as 'invited' | 'accepted' | 'declined',
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+        brand_name: (item.profiles as any)?.display_name || (item.profiles as any)?.company_name,
+        company_name: (item.profiles as any)?.company_name,
+        project_name: (item.projects as any)?.name,
+        project_description: (item.projects as any)?.description,
+        project_budget: (item.projects as any)?.budget,
+        project_currency: (item.projects as any)?.currency,
+        project_start_date: (item.projects as any)?.start_date,
+        project_end_date: (item.projects as any)?.end_date,
+      }));
 
-      toast({
-        title: "Creator invited",
-        description: `${creatorName} has been invited to this campaign.`,
-      });
+      setInvitations(formattedInvitations);
     } catch (error) {
-      console.error('Error inviting creator:', error);
+      console.error('Error fetching invitations:', error);
       toast({
-        title: "Invitation failed",
-        description: "There was an error sending the invitation. Please try again.",
-        variant: "destructive"
+        title: "Error",
+        description: "Failed to load invitations. Please try again.",
+        variant: "destructive",
       });
     } finally {
-      setIsLoading(prev => ({ ...prev, [`invite-${creatorId}`]: false }));
+      setIsLoading(false);
     }
   };
 
-  return { 
-    handleInviteCreator, 
-    isLoading 
+  // Accept an invitation
+  const acceptInvitation = async (invitationId: string) => {
+    try {
+      setActionLoading(prev => ({ ...prev, [invitationId]: true }));
+
+      const { error } = await supabase
+        .from('brand_creator_connections')
+        .update({ 
+          status: 'accepted',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', invitationId);
+
+      if (error) throw error;
+
+      // Update local state
+      setInvitations(prev => 
+        prev.map(inv => 
+          inv.id === invitationId 
+            ? { ...inv, status: 'accepted' as const, updated_at: new Date().toISOString() }
+            : inv
+        )
+      );
+
+      toast({
+        title: "Invitation accepted",
+        description: "You've successfully accepted the campaign invitation!",
+      });
+
+    } catch (error) {
+      console.error('Error accepting invitation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to accept invitation. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(prev => ({ ...prev, [invitationId]: false }));
+    }
+  };
+
+  // Decline an invitation
+  const declineInvitation = async (invitationId: string) => {
+    try {
+      setActionLoading(prev => ({ ...prev, [invitationId]: true }));
+
+      const { error } = await supabase
+        .from('brand_creator_connections')
+        .update({ 
+          status: 'declined',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', invitationId);
+
+      if (error) throw error;
+
+      // Update local state
+      setInvitations(prev => 
+        prev.map(inv => 
+          inv.id === invitationId 
+            ? { ...inv, status: 'declined' as const, updated_at: new Date().toISOString() }
+            : inv
+        )
+      );
+
+      toast({
+        title: "Invitation declined",
+        description: "You've declined the campaign invitation.",
+      });
+
+    } catch (error) {
+      console.error('Error declining invitation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to decline invitation. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(prev => ({ ...prev, [invitationId]: false }));
+    }
+  };
+
+  useEffect(() => {
+    fetchInvitations();
+  }, [user?.id]);
+
+  return {
+    invitations,
+    isLoading,
+    actionLoading,
+    acceptInvitation,
+    declineInvitation,
+    refetchInvitations: fetchInvitations,
   };
 }

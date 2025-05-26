@@ -15,7 +15,7 @@ import { CreatorSocialLinks } from './creator-profile-modal/CreatorSocialLinks';
 import { CreatorAudienceLocation } from './creator-profile-modal/CreatorAudienceLocation';
 import { CreatorActionButtons } from './creator-profile-modal/CreatorActionButtons';
 import { CreatorProfileLoading } from './creator-profile-modal/CreatorProfileLoading';
-import { useCreatorInvitations } from '@/hooks/useCreatorInvitations';
+import { useCreatorInvitationActions } from '@/hooks/useCreatorInvitationActions';
 import { useSearchParams } from 'react-router-dom';
 
 interface CreatorProfileModalProps {
@@ -31,7 +31,7 @@ export const CreatorProfileModal = ({
   onClose, 
   isLoading 
 }: CreatorProfileModalProps) => {
-  const { handleInviteCreator, isLoading: inviteLoading } = useCreatorInvitations();
+  const { handleInviteCreator, isLoading: inviteLoading } = useCreatorInvitationActions();
   const [searchParams] = useSearchParams();
   const campaignId = searchParams.get('campaign');
 
