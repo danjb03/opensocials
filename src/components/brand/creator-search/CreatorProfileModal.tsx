@@ -61,16 +61,8 @@ export const CreatorProfileModal = ({
             <TabsContent value="overview" className="space-y-6 mt-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-6">
-                  <CreatorMetrics 
-                    followers={creator.followers}
-                    avgViews={creator.avgViews}
-                    engagementRate={creator.engagementRate}
-                  />
-                  <CreatorAbout 
-                    bio={creator.bio}
-                    niche={creator.niche}
-                    location={creator.location}
-                  />
+                  <CreatorMetrics creator={creator} />
+                  <CreatorAbout creator={creator} />
                   <CreatorSkills skills={creator.skills} />
                 </div>
                 
@@ -82,7 +74,11 @@ export const CreatorProfileModal = ({
             </TabsContent>
             
             <TabsContent value="campaigns" className="mt-6">
-              <CreatorCampaignsTab creator={creator} />
+              <CreatorCampaignsTab 
+                creator={creator} 
+                onInvite={onInvite}
+                isLoading={{ [`invite-${creator.id}`]: inviteLoading }}
+              />
             </TabsContent>
           </Tabs>
           

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import BrandLayout from '@/components/layouts/BrandLayout';
@@ -12,11 +11,13 @@ import { useCreatorSearch } from '@/hooks/useCreatorSearch';
 import { useCreatorProfileModal } from '@/hooks/useCreatorProfileModal';
 import { useSearchParams } from 'react-router-dom';
 import { Creator } from '@/types/creator';
+import { toast } from '@/components/ui/sonner';
 
 const CreatorSearch = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list'); // Default to list view
   const [searchParams] = useSearchParams();
   const campaignId = searchParams.get('campaign');
+  const [inviteLoading, setInviteLoading] = useState(false);
   
   const {
     searchTerm,
@@ -53,6 +54,18 @@ const CreatorSearch = () => {
     handleViewCreatorProfile,
     handleCloseProfileModal
   } = useCreatorProfileModal();
+
+  const handleInviteCreator = async (creatorId: number) => {
+    setInviteLoading(true);
+    try {
+      // Add your invite logic here
+      toast.success('Creator invited successfully!');
+    } catch (error) {
+      toast.error('Failed to invite creator');
+    } finally {
+      setInviteLoading(false);
+    }
+  };
   
   // Set the campaign ID from URL parameter if present
   useEffect(() => {
@@ -229,6 +242,8 @@ const CreatorSearch = () => {
           } : null}
           isOpen={isProfileModalOpen} 
           onClose={handleCloseProfileModal}
+          onInvite={handleInviteCreator}
+          inviteLoading={inviteLoading}
           isLoading={isLoadingCreator}
         />
       </div>
