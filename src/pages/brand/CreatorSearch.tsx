@@ -11,6 +11,7 @@ import { CreatorProfileModal } from '@/components/brand/creator-search/CreatorPr
 import { useCreatorSearch } from '@/hooks/useCreatorSearch';
 import { useCreatorProfileModal } from '@/hooks/useCreatorProfileModal';
 import { useSearchParams } from 'react-router-dom';
+import { Creator } from '@/types/creator';
 
 const CreatorSearch = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list'); // Default to list view
@@ -60,11 +61,56 @@ const CreatorSearch = () => {
     }
   }, [campaignId, setSelectedCampaignId]);
 
+  // Transform creators from hook to match the Creator type from @/types/creator
+  const transformedCreators: Creator[] = filteredCreators.map(creator => ({
+    id: creator.id,
+    name: creator.name,
+    platform: creator.platform,
+    audience: creator.audience,
+    contentType: creator.contentType,
+    followers: creator.followers,
+    engagement: creator.engagement,
+    priceRange: creator.priceRange,
+    skills: creator.skills || [], // Ensure skills is always an array
+    imageUrl: creator.imageUrl,
+    bannerImageUrl: creator.bannerImageUrl,
+    about: creator.about,
+    socialLinks: creator.socialLinks,
+    metrics: creator.metrics,
+    audienceLocation: creator.audienceLocation,
+    industries: creator.industries,
+    matchScore: creator.matchScore
+  }));
+
+  // Transform selectedCreators to match the Creator type from @/types/creator
+  const transformedSelectedCreators: Creator[] = selectedCreators.map(creator => ({
+    id: creator.id,
+    name: creator.name,
+    platform: creator.platform,
+    audience: creator.audience,
+    contentType: creator.contentType,
+    followers: creator.followers,
+    engagement: creator.engagement,
+    priceRange: creator.priceRange,
+    skills: creator.skills || [], // Ensure skills is always an array
+    imageUrl: creator.imageUrl,
+    bannerImageUrl: creator.bannerImageUrl,
+    about: creator.about,
+    socialLinks: creator.socialLinks,
+    metrics: creator.metrics,
+    audienceLocation: creator.audienceLocation,
+    industries: creator.industries,
+    matchScore: creator.matchScore
+  }));
+
   // Transform availableCampaigns to match expected type
   const campaignsForBar = availableCampaigns.map(campaign => ({
     id: campaign.id,
     title: campaign.name
   }));
+
+  // Get selected creator IDs for components that expect number[]
+  const selectedCreatorIds = selectedCreators.map(c => c.id);
 
   return (
     <BrandLayout>
@@ -103,10 +149,10 @@ const CreatorSearch = () => {
           </CardContent>
         </Card>
         
-        {selectedCreators.length > 0 && (
+        {transformedSelectedCreators.length > 0 && (
           <div className="mb-8 animate-fade-in">
             <SelectedCreatorsBar 
-              selectedCreators={selectedCreators}
+              selectedCreators={transformedSelectedCreators}
               availableCampaigns={campaignsForBar}
               selectedCampaignId={selectedCampaignId}
               onSelectCampaign={setSelectedCampaignId}
@@ -116,7 +162,7 @@ const CreatorSearch = () => {
         )}
         
         <div className="relative min-h-[300px]">
-          {filteredCreators.length === 0 ? (
+          {transformedCreators.length === 0 ? (
             <div className="text-center py-16 bg-gray-50 rounded-lg border border-dashed border-gray-200">
               <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -135,8 +181,8 @@ const CreatorSearch = () => {
             </div>
           ) : viewMode === 'grid' ? (
             <CreatorGrid 
-              creators={filteredCreators}
-              selectedCreators={selectedCreators.map(c => c.id)}
+              creators={transformedCreators}
+              selectedCreators={selectedCreatorIds}
               onToggleCreator={(creatorId: number) => {
                 const creator = filteredCreators.find(c => c.id === creatorId);
                 if (creator) handleToggleCreator(creator);
@@ -145,8 +191,8 @@ const CreatorSearch = () => {
             />
           ) : (
             <CreatorList
-              creators={filteredCreators}
-              selectedCreators={selectedCreators.map(c => c.id)}
+              creators={transformedCreators}
+              selectedCreators={selectedCreatorIds}
               onToggleCreator={(creatorId: number) => {
                 const creator = filteredCreators.find(c => c.id === creatorId);
                 if (creator) handleToggleCreator(creator);
@@ -157,7 +203,10 @@ const CreatorSearch = () => {
         </div>
         
         <CreatorProfileModal 
-          creator={selectedCreator} 
+          creator={selectedCreator ? {
+            ...selectedCreator,
+            skills: selectedCreator.skills || [] // Ensure skills is always an array
+          } : null}
           isOpen={isProfileModalOpen} 
           onClose={handleCloseProfileModal}
           isLoading={isLoadingCreator}
