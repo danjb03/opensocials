@@ -43,8 +43,8 @@ export const CreatorProfileModal = ({
   if (isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
-          <div className="p-6">
+        <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto p-0 bg-white">
+          <div className="p-8">
             <CreatorProfileLoading />
           </div>
         </DialogContent>
@@ -56,31 +56,49 @@ export const CreatorProfileModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto p-0 bg-white">
         <DialogHeader className="sr-only">
           <DialogTitle>Creator Profile - {creator.name}</DialogTitle>
         </DialogHeader>
         
         <div className="relative">
-          <div className="p-6 pb-0">
-            <CreatorHeader creator={creator} />
+          {/* Enhanced Header with Banner */}
+          <div className="relative">
+            {/* Banner Background */}
+            <div className="h-32 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 relative overflow-hidden">
+              <div className="absolute inset-0 bg-black/20"></div>
+              {creator.bannerImageUrl && (
+                <img 
+                  src={creator.bannerImageUrl} 
+                  alt="Creator banner" 
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+            
+            {/* Profile Header */}
+            <div className="px-8 pb-0">
+              <CreatorHeader creator={creator} />
+            </div>
           </div>
           
-          <div className="px-6 pb-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Left Column - Metrics */}
-              <div className="lg:col-span-1">
+          {/* Content Grid */}
+          <div className="px-8 pb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
+              {/* Left Column - Metrics & Location */}
+              <div className="lg:col-span-1 space-y-6">
                 <CreatorMetrics creator={creator} />
+                <CreatorAudienceLocation audienceLocation={creator.audienceLocation} />
               </div>
               
-              {/* Right Column - About, Skills, Location */}
+              {/* Right Column - About & Skills */}
               <div className="lg:col-span-2 space-y-6">
                 <CreatorAbout creator={creator} />
                 <CreatorSkills skills={creator.skills} />
-                <CreatorAudienceLocation audienceLocation={creator.audienceLocation} />
               </div>
             </div>
             
+            {/* Action Buttons */}
             <CreatorActionButtons 
               creator={creator} 
               onInvite={handleInvite}
