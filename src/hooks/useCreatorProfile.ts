@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useCreatorProfileData, CreatorProfile } from './useCreatorProfileData';
 import { useCreatorProfileActions } from './useCreatorProfileActions';
 
-export { CreatorProfile } from './useCreatorProfileData';
+export type { CreatorProfile } from './useCreatorProfileData';
 
 export const useCreatorProfile = () => {
   const [isEditing, setIsEditing] = useState(false);

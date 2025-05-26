@@ -6,7 +6,10 @@ import { toast } from 'sonner';
 import { submitCreatorProfile } from '@/utils/creatorOnboarding';
 import { CreatorProfile } from './useCreatorProfileData';
 
-export const useCreatorProfileActions = (profile: CreatorProfile | null, setProfile: (profile: CreatorProfile | null) => void) => {
+export const useCreatorProfileActions = (
+  profile: CreatorProfile | null, 
+  setProfile: (updater: (prev: CreatorProfile | null) => CreatorProfile | null) => void
+) => {
   const { user } = useAuth();
   const { toast: uiToast } = useToast();
 

@@ -159,5 +159,9 @@ export const useCreatorProfileData = () => {
     fetchProfile();
   }, [user?.id, toast]);
 
-  return { profile, isLoading, setProfile };
+  return { 
+    profile, 
+    isLoading, 
+    setProfile: (updater: (prev: CreatorProfile | null) => CreatorProfile | null) => setProfile(updater)
+  };
 };
