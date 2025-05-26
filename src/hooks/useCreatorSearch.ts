@@ -25,11 +25,17 @@ interface Creator {
     secondary?: string[];
     countries?: { name: string; percentage: number }[];
   };
-  metrics?: {
-    followerCount: string;
-    engagementRate: string;
-    avgViews?: string;
-    avgLikes?: string;
+  // External API metrics - to be populated by Modash or similar
+  externalMetrics?: {
+    followerCount: number;
+    engagementRate: number;
+    avgViews: number;
+    avgLikes: number;
+    avgComments: number;
+    reachRate: number;
+    impressions: number;
+    growthRate: number;
+    lastUpdated: string;
   };
   industries?: string[];
 }
@@ -53,6 +59,26 @@ export const useCreatorSearch = () => {
   const [selectedCreators, setSelectedCreators] = useState<Creator[]>([]);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>('');
   const [availableCampaigns, setAvailableCampaigns] = useState<Array<{id: string, name: string}>>([]);
+
+  // Fetch external metrics for a creator (placeholder for Modash integration)
+  const fetchExternalMetrics = async (creatorId: string, platform: string) => {
+    // TODO: Implement Modash or similar API integration
+    // This will fetch real-time metrics from external APIs
+    console.log(`Fetching external metrics for creator ${creatorId} on ${platform}`);
+    
+    // Placeholder return - replace with actual API call
+    return {
+      followerCount: 0,
+      engagementRate: 0,
+      avgViews: 0,
+      avgLikes: 0,
+      avgComments: 0,
+      reachRate: 0,
+      impressions: 0,
+      growthRate: 0,
+      lastUpdated: new Date().toISOString()
+    };
+  };
 
   // Fetch creators from creator_profiles table
   useEffect(() => {
@@ -106,18 +132,25 @@ export const useCreatorSearch = () => {
               secondary: [],
               countries: []
             },
-            metrics: {
-              followerCount: profile.follower_count?.toString() || '0',
-              engagementRate: profile.engagement_rate ? `${profile.engagement_rate}%` : '0%',
-              avgViews: undefined,
-              avgLikes: undefined
-            },
+            // External metrics will be populated by API calls
+            externalMetrics: undefined,
             industries: profile.industries || []
           };
         });
 
         console.log('Transformed creators:', transformedCreators);
         setCreators(transformedCreators);
+
+        // TODO: Fetch external metrics for each creator
+        // This would be done in batches to avoid rate limiting
+        /*
+        for (const creator of transformedCreators) {
+          if (creator.platform && creator.id) {
+            const metrics = await fetchExternalMetrics(creator.id.toString(), creator.platform);
+            // Update creator with external metrics
+          }
+        }
+        */
       } catch (error) {
         console.error('Error in fetchCreators:', error);
         toast.error('Failed to load creators');
@@ -254,6 +287,7 @@ export const useCreatorSearch = () => {
     getActiveFilterCount,
     availableCampaigns,
     selectedCampaignId,
-    setSelectedCampaignId
+    setSelectedCampaignId,
+    fetchExternalMetrics // Expose for future use
   };
 };

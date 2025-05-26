@@ -77,15 +77,15 @@ const CreatorSearch = () => {
     about: creator.about,
     socialLinks: creator.socialLinks,
     metrics: {
-      followerCount: creator.metrics?.followerCount || creator.followers,
-      engagementRate: creator.metrics?.engagementRate || creator.engagement,
-      avgViews: creator.metrics?.avgViews || "N/A",
-      avgLikes: creator.metrics?.avgLikes || "N/A",
-      growthTrend: creator.metrics?.growthTrend
+      // Use external API data when available, fallback to stored data
+      followerCount: creator.externalMetrics?.followerCount?.toString() || creator.followers,
+      engagementRate: creator.externalMetrics?.engagementRate ? `${creator.externalMetrics.engagementRate}%` : creator.engagement,
+      avgViews: creator.externalMetrics?.avgViews?.toString() || "N/A",
+      avgLikes: creator.externalMetrics?.avgLikes?.toString() || "N/A",
+      growthTrend: creator.externalMetrics?.growthRate ? `${creator.externalMetrics.growthRate}%` : undefined
     },
     audienceLocation: creator.audienceLocation,
-    industries: creator.industries,
-    matchScore: creator.matchScore
+    industries: creator.industries
   }));
 
   // Transform selectedCreators to match the Creator type from @/types/creator
@@ -104,15 +104,15 @@ const CreatorSearch = () => {
     about: creator.about,
     socialLinks: creator.socialLinks,
     metrics: {
-      followerCount: creator.metrics?.followerCount || creator.followers,
-      engagementRate: creator.metrics?.engagementRate || creator.engagement,
-      avgViews: creator.metrics?.avgViews || "N/A",
-      avgLikes: creator.metrics?.avgLikes || "N/A",
-      growthTrend: creator.metrics?.growthTrend
+      // Use external API data when available, fallback to stored data
+      followerCount: creator.externalMetrics?.followerCount?.toString() || creator.followers,
+      engagementRate: creator.externalMetrics?.engagementRate ? `${creator.externalMetrics.engagementRate}%` : creator.engagement,
+      avgViews: creator.externalMetrics?.avgViews?.toString() || "N/A",
+      avgLikes: creator.externalMetrics?.avgLikes?.toString() || "N/A",
+      growthTrend: creator.externalMetrics?.growthRate ? `${creator.externalMetrics.growthRate}%` : undefined
     },
     audienceLocation: creator.audienceLocation,
-    industries: creator.industries,
-    matchScore: creator.matchScore
+    industries: creator.industries
   }));
 
   // Transform availableCampaigns to match expected type
@@ -219,11 +219,12 @@ const CreatorSearch = () => {
             ...selectedCreator,
             skills: selectedCreator.skills || [], // Ensure skills is always an array
             metrics: {
-              followerCount: selectedCreator.metrics?.followerCount || selectedCreator.followers,
-              engagementRate: selectedCreator.metrics?.engagementRate || selectedCreator.engagement,
-              avgViews: selectedCreator.metrics?.avgViews || "N/A",
-              avgLikes: selectedCreator.metrics?.avgLikes || "N/A",
-              growthTrend: selectedCreator.metrics?.growthTrend
+              // Use external API data when available
+              followerCount: selectedCreator.externalMetrics?.followerCount?.toString() || selectedCreator.followers,
+              engagementRate: selectedCreator.externalMetrics?.engagementRate ? `${selectedCreator.externalMetrics.engagementRate}%` : selectedCreator.engagement,
+              avgViews: selectedCreator.externalMetrics?.avgViews?.toString() || "N/A",
+              avgLikes: selectedCreator.externalMetrics?.avgLikes?.toString() || "N/A",
+              growthTrend: selectedCreator.externalMetrics?.growthRate ? `${selectedCreator.externalMetrics.growthRate}%` : undefined
             }
           } : null}
           isOpen={isProfileModalOpen} 

@@ -23,11 +23,17 @@ interface Creator {
     secondary?: string[];
     countries?: { name: string; percentage: number }[];
   };
-  metrics?: {
-    followerCount: string;
-    engagementRate: string;
-    avgViews?: string;
-    avgLikes?: string;
+  // External API metrics - to be populated by Modash or similar
+  externalMetrics?: {
+    followerCount: number;
+    engagementRate: number;
+    avgViews: number;
+    avgLikes: number;
+    avgComments: number;
+    reachRate: number;
+    impressions: number;
+    growthRate: number;
+    lastUpdated: string;
   };
   industries?: string[];
 }
@@ -75,10 +81,8 @@ export const useCreatorProfileModal = () => {
             secondary: [],
             countries: []
           },
-          metrics: {
-            followerCount: '100K',
-            engagementRate: '5.2%'
-          },
+          // External metrics will be fetched from Modash/similar APIs
+          externalMetrics: undefined,
           industries: []
         });
         return;
@@ -117,14 +121,23 @@ export const useCreatorProfileModal = () => {
             secondary: [],
             countries: []
           },
-          metrics: {
-            followerCount: data.follower_count?.toString() || '0',
-            engagementRate: data.engagement_rate ? `${data.engagement_rate}%` : '0%'
-          },
+          // External metrics will be populated by API calls
+          externalMetrics: undefined,
           industries: data.industries || []
         };
 
         setSelectedCreator(transformedCreator);
+
+        // TODO: Fetch external metrics for this creator
+        // This is where you would call Modash or similar API
+        /*
+        try {
+          const externalMetrics = await fetchCreatorMetrics(creatorId, transformedCreator.platform);
+          setSelectedCreator(prev => prev ? { ...prev, externalMetrics } : null);
+        } catch (error) {
+          console.error('Failed to fetch external metrics:', error);
+        }
+        */
       }
     } catch (error) {
       console.error('Error in handleViewCreatorProfile:', error);
