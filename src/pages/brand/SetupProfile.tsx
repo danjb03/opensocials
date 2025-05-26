@@ -23,6 +23,16 @@ const industries = [
   'Other'
 ];
 
+const budgetRanges = [
+  'Under £1,000',
+  '£1,000 - £5,000',
+  '£5,000 - £10,000',
+  '£10,000 - £25,000',
+  '£25,000 - £50,000',
+  '£50,000 - £100,000',
+  'Over £100,000'
+];
+
 const SetupProfile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -33,6 +43,10 @@ const SetupProfile = () => {
     setWebsite,
     industry,
     setIndustry,
+    brandBio,
+    setBrandBio,
+    budgetRange,
+    setBudgetRange,
     logoPreview,
     logoUrl,
     isLoading,
@@ -49,10 +63,9 @@ const SetupProfile = () => {
       
       try {
         const { data, error } = await supabase
-          .from('profiles')
-          .select('is_complete')
-          .eq('id', user.id)
-          .eq('role', 'brand')
+          .from('brand_profiles')
+          .select('*')
+          .eq('user_id', user.id)
           .maybeSingle();
           
         if (error) {
@@ -60,9 +73,9 @@ const SetupProfile = () => {
           return;
         }
         
-        // If profile is already marked as complete, redirect to dashboard
-        if (data?.is_complete === true) {
-          console.log('Profile is already complete, redirecting from setup page');
+        // If profile exists, redirect to dashboard
+        if (data) {
+          console.log('Brand profile already exists, redirecting from setup page');
           toast.info('Your profile is already set up');
           navigate('/brand');
         }
@@ -73,47 +86,6 @@ const SetupProfile = () => {
     
     checkProfileCompletion();
   }, [user, navigate]);
-
-  // Debug check on initial load to verify profile status
-  useEffect(() => {
-    const checkProfileStatus = async () => {
-      if (!user) return;
-      
-      try {
-        console.log('👁️‍🗨️ SetupProfile page loaded for user:', user.id);
-        
-        // Check bypass flag - remove it if we're on the setup page to avoid issues
-        const bypassCheck = localStorage.getItem('bypass_brand_check');
-        if (bypassCheck) {
-          console.log('🔄 Found bypass_brand_check flag on setup page, removing it');
-          localStorage.removeItem('bypass_brand_check');
-        }
-        
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .maybeSingle();
-          
-        if (error) {
-          console.error('❌ Error checking profile status:', error);
-          return;
-        }
-        
-        console.log('📦 Current profile data on setup page:', data);
-        
-        // Check specific fields that might cause redirect loops
-        const requiredFields = ['company_name', 'website', 'logo_url', 'industry'];
-        const missing = requiredFields.filter((f) => !data?.[f]);
-        console.log('❓ Missing required fields:', missing);
-        console.log('✅ is_complete flag:', data?.is_complete);
-      } catch (error) {
-        console.error('❌ Error in profile status check:', error);
-      }
-    };
-    
-    checkProfileStatus();
-  }, [user]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
@@ -139,6 +111,10 @@ const SetupProfile = () => {
               setWebsite={setWebsite}
               industry={industry}
               setIndustry={setIndustry}
+              brandBio={brandBio}
+              setBrandBio={setBrandBio}
+              budgetRange={budgetRange}
+              setBudgetRange={setBudgetRange}
               logoFile={null}
               logoPreview={logoPreview}
               logoUrl={logoUrl}
@@ -148,6 +124,7 @@ const SetupProfile = () => {
               onSubmit={handleSubmit}
               onSkip={handleSkipForNow}
               industries={industries}
+              budgetRanges={budgetRanges}
             />
           </CardContent>
         </Card>

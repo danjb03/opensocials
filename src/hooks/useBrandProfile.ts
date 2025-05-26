@@ -5,13 +5,17 @@ import { useAuth } from '@/lib/auth';
 import { toast } from '@/components/ui/sonner';
 
 interface BrandProfile {
-  id: string;
+  user_id: string;
   company_name: string;
   logo_url: string | null;
-  website: string | null;
+  website_url: string | null;
   industry: string | null;
-  is_complete: boolean;
+  budget_range: string | null;
+  brand_bio: string | null;
+  brand_goal: string | null;
+  campaign_focus: string[] | null;
   created_at: string;
+  updated_at: string;
 }
 
 export const useBrandProfile = () => {
@@ -31,27 +35,17 @@ export const useBrandProfile = () => {
       setError(null);
 
       try {
-        // Get the profile for the current brand user
+        // Get the brand profile for the current user
         const { data, error } = await supabase
-          .from('profiles')
+          .from('brand_profiles')
           .select('*')
-          .eq('id', user.id)
-          .eq('role', 'brand')
+          .eq('user_id', user.id)
           .maybeSingle();
 
         if (error) throw error;
         
         if (data) {
-          // Transform profile data to match expected BrandProfile interface
-          setProfile({
-            id: data.id,
-            company_name: data.company_name || '',
-            logo_url: data.logo_url,
-            website: data.website,
-            industry: data.industry,
-            is_complete: data.is_complete || false,
-            created_at: data.created_at || new Date().toISOString(),
-          });
+          setProfile(data);
         }
       } catch (err: any) {
         console.error('Error fetching brand profile:', err);
@@ -65,23 +59,27 @@ export const useBrandProfile = () => {
   }, [user]);
 
   const updateProfile = async (updates: Partial<BrandProfile>) => {
-    if (!profile || !user) {
+    if (!user) {
       toast.error('You must be logged in to update your profile');
       return { success: false };
     }
 
     try {
       const { error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', user.id);
+        .from('brand_profiles')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
 
       if (error) throw error;
       
-      setProfile({
-        ...profile,
-        ...updates
-      });
+      setProfile(prev => prev ? {
+        ...prev,
+        ...updates,
+        updated_at: new Date().toISOString()
+      } : null);
       
       toast.success('Profile updated successfully');
       return { success: true };
@@ -92,10 +90,41 @@ export const useBrandProfile = () => {
     }
   };
 
+  const createProfile = async (profileData: Omit<BrandProfile, 'user_id' | 'created_at' | 'updated_at'>) => {
+    if (!user) {
+      toast.error('You must be logged in to create a profile');
+      return { success: false };
+    }
+
+    try {
+      const newProfile = {
+        user_id: user.id,
+        ...profileData,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from('brand_profiles')
+        .insert(newProfile);
+
+      if (error) throw error;
+      
+      setProfile(newProfile);
+      toast.success('Profile created successfully');
+      return { success: true };
+    } catch (err: any) {
+      console.error('Error creating profile:', err);
+      toast.error('Failed to create profile');
+      return { success: false, error: err.message };
+    }
+  };
+
   return {
     profile,
     isLoading,
     error,
-    updateProfile
+    updateProfile,
+    createProfile
   };
 };

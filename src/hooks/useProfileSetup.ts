@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,23 +17,24 @@ export const useProfileSetup = () => {
   const [companyName, setCompanyName] = useState('');
   const [website, setWebsite] = useState('');
   const [industry, setIndustry] = useState<string>('');
+  const [brandBio, setBrandBio] = useState('');
+  const [budgetRange, setBudgetRange] = useState('');
   
   // Hooks
   const { logoFile, logoPreview, logoUrl, setLogoUrl, handleLogoChange, clearLogo, uploadLogo } = 
     useLogoUpload(user?.id);
   const { redirectToDashboard } = useBrandNavigation();
 
-  // Load existing profile
+  // Load existing brand profile
   useEffect(() => {
     const checkExistingProfile = async () => {
       if (!user) return;
       
       try {
         const { data, error } = await supabase
-          .from('profiles')
+          .from('brand_profiles')
           .select('*')
-          .eq('id', user.id)
-          .eq('role', 'brand')
+          .eq('user_id', user.id)
           .maybeSingle();
           
         if (error) {
@@ -44,16 +46,16 @@ export const useProfileSetup = () => {
           console.log('📦 Found existing brand profile:', data);
           setExistingProfile(data);
           setCompanyName(data.company_name || '');
-          setWebsite(data.website || '');
+          setWebsite(data.website_url || '');
           setIndustry(data.industry || '');
+          setBrandBio(data.brand_bio || '');
+          setBudgetRange(data.budget_range || '');
           setLogoUrl(data.logo_url || null);
           
-          // If profile is already complete, redirect to dashboard
-          if (data.is_complete === true) {
-            console.log('Profile is already complete, redirecting to dashboard');
-            toast.info('Your profile is already set up');
-            redirectToDashboard();
-          }
+          // If profile exists, redirect to dashboard
+          console.log('Profile exists, redirecting to dashboard');
+          toast.info('Your profile is already set up');
+          redirectToDashboard();
         }
       } catch (error) {
         console.error('❌ Error checking brand profile:', error);
@@ -74,18 +76,24 @@ export const useProfileSetup = () => {
 
     try {
       const profileData = {
+        user_id: user.id,
         company_name: companyName || 'My Brand',
-        is_complete: true, // Always set to true when skipping
-        role: 'brand',
-        status: 'accepted'
+        website_url: null,
+        industry: null,
+        brand_bio: null,
+        budget_range: null,
+        logo_url: null,
+        brand_goal: null,
+        campaign_focus: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
-      console.log("💾 Updating minimal profile data:", profileData);
+      console.log("💾 Creating minimal brand profile:", profileData);
 
       const { error } = await supabase
-        .from('profiles')
-        .update(profileData)
-        .eq('id', user.id);
+        .from('brand_profiles')
+        .insert(profileData);
 
       if (error) throw error;
 
@@ -118,7 +126,7 @@ export const useProfileSetup = () => {
     }
 
     setIsLoading(true);
-    console.log("🚀 Starting profile setup submission");
+    console.log("🚀 Starting brand profile setup submission");
 
     try {
       let uploadedLogoUrl = null;
@@ -128,21 +136,24 @@ export const useProfileSetup = () => {
       }
 
       const profileData = {
+        user_id: user.id,
         company_name: companyName,
-        website: website || null,
+        website_url: website || null,
         industry: industry || null,
+        brand_bio: brandBio || null,
+        budget_range: budgetRange || null,
         logo_url: uploadedLogoUrl || logoUrl,
-        is_complete: true, // Always set to true when submitting
-        role: 'brand',
-        status: 'accepted'
+        brand_goal: null,
+        campaign_focus: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
-      console.log("💾 Updating profile with data:", profileData);
+      console.log("💾 Creating brand profile with data:", profileData);
 
       const { error } = await supabase
-        .from('profiles')
-        .update(profileData)
-        .eq('id', user.id);
+        .from('brand_profiles')
+        .insert(profileData);
 
       if (error) throw error;
 
@@ -167,6 +178,10 @@ export const useProfileSetup = () => {
     setWebsite,
     industry,
     setIndustry,
+    brandBio,
+    setBrandBio,
+    budgetRange,
+    setBudgetRange,
     logoFile,
     logoPreview,
     logoUrl,
