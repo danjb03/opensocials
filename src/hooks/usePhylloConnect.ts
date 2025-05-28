@@ -99,12 +99,14 @@ export const usePhylloConnect = (
       }
 
       try {
-        phylloConnect.on('exit', eventHandlers.handleExit);
+        // Use a properly declared function with exactly 1 parameter for the exit callback
+        phylloConnect.on('exit', function (reason) {
+          console.warn("Phyllo exit triggered with:", reason);
+          setIsLoading?.(false);
+        });
         console.log('✓ exit handler registered successfully');
       } catch (e) {
         console.error('✗ Error registering exit handler:', e);
-        console.error('Exit handler function:', eventHandlers.handleExit);
-        console.error('Exit handler toString:', eventHandlers.handleExit.toString());
       }
 
       console.log('Opening Phyllo Connect...');
