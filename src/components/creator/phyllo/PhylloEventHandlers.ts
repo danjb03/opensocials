@@ -39,8 +39,8 @@ export const createPhylloEventHandlers = (
     }
   };
 
-  const handleAccountDisconnected = (accountId: string, workplatformId: string) => {
-    console.log('Account Disconnected with parameters:', { accountId, workplatformId });
+  const handleAccountDisconnected = (accountId: string, workplatformId: string, userIdFromEvent: string) => {
+    console.log('Account Disconnected with parameters:', { accountId, workplatformId, userIdFromEvent });
     toast.success('Social account disconnected successfully');
     onConnectionSuccess?.();
   };
