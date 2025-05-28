@@ -62,7 +62,7 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
 
       const isSetupPage = location.pathname === '/brand/setup-profile';
       if (isSetupPage) {
-        console.log('✅ Already on setup page, allowing access');
+        console.log('✅ On setup page, allowing access');
         setIsChecking(false);
         return;
       }
@@ -70,32 +70,32 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
       try {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('*')
+          .select('is_complete')
           .eq('id', user.id)
           .eq('role', 'brand')
           .maybeSingle();
 
-        if (profileError || !profile) {
-          console.error('❌ Error fetching brand profile:', profileError);
-          navigate('/auth', { replace: true });
+        if (profileError) {
+          console.error('❌ Error fetching profile:', profileError);
+          setIsChecking(false);
           return;
         }
 
-        console.log('📦 Raw profile fetch:', profile);
+        console.log('📦 Profile check result:', profile);
 
-        // Simplified check: Use is_complete as the primary indicator
-        // Only redirect if profile is explicitly not complete
-        if (profile.is_complete !== true) {
+        // Only redirect if profile is explicitly marked as incomplete
+        // This reduces unnecessary redirects and improves performance
+        if (profile?.is_complete === false) {
           console.log('🚨 Profile marked as incomplete, redirecting to setup');
           navigate('/brand/setup-profile', { replace: true });
           return;
         }
 
-        console.log('✅ Profile is complete, allowing access to dashboard');
+        console.log('✅ Profile check passed, allowing access');
         setIsChecking(false);
       } catch (err) {
         console.error('❌ Error in guard logic:', err);
-        navigate('/auth', { replace: true });
+        setIsChecking(false);
       }
     };
 

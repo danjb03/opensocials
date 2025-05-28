@@ -3,11 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Logo from '@/components/ui/logo';
 import ProfileForm from '@/components/brand/setup/ProfileForm';
 import { useProfileSetup } from '@/hooks/useProfileSetup';
-import { useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
-import { useNavigate } from 'react-router-dom';
-import { toast } from '@/components/ui/sonner';
 
 const industries = [
   'Technology', 
@@ -34,8 +29,6 @@ const budgetRanges = [
 ];
 
 const SetupProfile = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const {
     companyName,
     setCompanyName,
@@ -50,50 +43,24 @@ const SetupProfile = () => {
     logoPreview,
     logoUrl,
     isLoading,
+    existingProfile,
     handleLogoChange,
     clearLogo,
     handleSkipForNow,
     handleSubmit
   } = useProfileSetup();
 
-  // Check if profile is already complete and redirect if necessary
-  useEffect(() => {
-    const checkProfileCompletion = async () => {
-      if (!user) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('brand_profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle();
-          
-        if (error) {
-          console.error('Error checking profile completion:', error);
-          return;
-        }
-        
-        // If profile exists, redirect to dashboard
-        if (data) {
-          console.log('Brand profile already exists, redirecting from setup page');
-          toast.info('Your profile is already set up');
-          navigate('/brand');
-        }
-      } catch (error) {
-        console.error('Error in profile completion check:', error);
-      }
-    };
-    
-    checkProfileCompletion();
-  }, [user, navigate]);
-
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <Logo className="mx-auto mb-6" />
-          <h1 className="text-3xl font-bold mb-2">Set Up Your Brand Profile</h1>
-          <p className="text-muted-foreground">Complete your profile to get started</p>
+          <h1 className="text-3xl font-bold mb-2">
+            {existingProfile ? 'Edit Your Brand Profile' : 'Set Up Your Brand Profile'}
+          </h1>
+          <p className="text-muted-foreground">
+            {existingProfile ? 'Update your profile information' : 'Complete your profile to get started'}
+          </p>
         </div>
         
         <Card>

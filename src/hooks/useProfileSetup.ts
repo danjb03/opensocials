@@ -25,9 +25,9 @@ export const useProfileSetup = () => {
     useLogoUpload(user?.id);
   const { redirectToDashboard } = useBrandNavigation();
 
-  // Load existing brand profile
+  // Simplified profile check - only load when component mounts, don't auto-redirect
   useEffect(() => {
-    const checkExistingProfile = async () => {
+    const loadExistingProfile = async () => {
       if (!user) return;
       
       try {
@@ -43,7 +43,7 @@ export const useProfileSetup = () => {
         }
         
         if (data) {
-          console.log('📦 Found existing brand profile:', data);
+          console.log('📦 Found existing brand profile, populating form');
           setExistingProfile(data);
           setCompanyName(data.company_name || '');
           setWebsite(data.website_url || '');
@@ -51,19 +51,14 @@ export const useProfileSetup = () => {
           setBrandBio(data.brand_bio || '');
           setBudgetRange(data.budget_range || '');
           setLogoUrl(data.logo_url || null);
-          
-          // If profile exists, redirect to dashboard
-          console.log('Profile exists, redirecting to dashboard');
-          toast.info('Your profile is already set up');
-          redirectToDashboard();
         }
       } catch (error) {
         console.error('❌ Error checking brand profile:', error);
       }
     };
     
-    checkExistingProfile();
-  }, [user, setLogoUrl, redirectToDashboard]);
+    loadExistingProfile();
+  }, [user, setLogoUrl]);
 
   const handleSkipForNow = async () => {
     if (!user) {
@@ -151,9 +146,10 @@ export const useProfileSetup = () => {
 
       console.log("💾 Creating brand profile with data:", profileData);
 
+      // Use upsert instead of insert to handle existing profiles
       const { error } = await supabase
         .from('brand_profiles')
-        .insert(profileData);
+        .upsert(profileData, { onConflict: 'user_id' });
 
       if (error) throw error;
 
@@ -186,6 +182,7 @@ export const useProfileSetup = () => {
     logoPreview,
     logoUrl,
     isLoading,
+    existingProfile,
     handleLogoChange,
     clearLogo,
     handleSkipForNow,
