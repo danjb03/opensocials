@@ -64,11 +64,16 @@ export const createPhylloEventHandlers = (
     setIsLoading?.(false);
   };
 
-  // Try with no parameters first - the SDK might expect exactly 0 parameters
-  const handleExit = (...args: any[]) => {
-    console.log('Phyllo Connect exit - handleExit called with arguments:', args);
-    console.log('Arguments length:', args.length);
-    console.log('Arguments array:', args);
+  // Try with exactly 0 declared parameters - SDK expects specific parameter count
+  const handleExit = () => {
+    console.log('Phyllo Connect exit - handleExit called with 0 declared parameters');
+    console.log('Function.length (declared parameter count):', handleExit.length);
+    
+    // Access actual arguments passed by SDK using arguments object in a function declaration
+    const actualArgs = Array.prototype.slice.call(arguments);
+    console.log('Actual arguments passed by SDK:', actualArgs);
+    console.log('Actual arguments length:', actualArgs.length);
+    
     setIsLoading?.(false);
   };
 
