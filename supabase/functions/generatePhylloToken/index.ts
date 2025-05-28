@@ -49,24 +49,53 @@ serve(async (req) => {
     if (createUserResponse.ok) {
       const userData = await createUserResponse.json();
       phylloUserId = userData.id;
-      console.log('Phyllo user created/found:', phylloUserId);
+      console.log('Phyllo user created successfully:', phylloUserId);
     } else {
       const errorText = await createUserResponse.text();
       console.log('User creation response:', createUserResponse.status, errorText);
       
-      // If user already exists, we can still proceed to token generation
+      // If user already exists, we need to look up the existing user
       if (createUserResponse.status === 409 || createUserResponse.status === 400) {
-        // User might already exist, use the external_id as reference
-        phylloUserId = user_id;
-        console.log('User likely exists, proceeding with token generation');
+        console.log('User already exists, looking up existing user by external_id:', user_id);
+        
+        // Look up the existing user by external_id
+        const getUserResponse = await fetch(`https://api.staging.getphyllo.com/v1/users?external_id=${user_id}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Basic ${basicAuth}`,
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        if (getUserResponse.ok) {
+          const getUserData = await getUserResponse.json();
+          console.log('User lookup response:', JSON.stringify(getUserData, null, 2));
+          
+          // Extract the Phyllo user ID from the response
+          if (getUserData.data && getUserData.data.length > 0) {
+            phylloUserId = getUserData.data[0].id;
+            console.log('Found existing Phyllo user ID:', phylloUserId);
+          } else {
+            console.error('No user found in lookup response');
+            throw new Error('User exists but could not be found in lookup');
+          }
+        } else {
+          const lookupErrorText = await getUserResponse.text();
+          console.error('Failed to lookup existing user:', getUserResponse.status, lookupErrorText);
+          throw new Error(`Failed to lookup existing user: ${lookupErrorText}`);
+        }
       } else {
         throw new Error(`Failed to create user: ${errorText}`);
       }
     }
 
-    console.log('Generating SDK token for user:', phylloUserId);
+    if (!phylloUserId) {
+      throw new Error('Could not determine Phyllo user ID');
+    }
+
+    console.log('Generating SDK token for Phyllo user ID:', phylloUserId);
     
-    // Step 2: Generate SDK token
+    // Step 2: Generate SDK token using the correct Phyllo user ID
     const tokenResponse = await fetch('https://api.staging.getphyllo.com/v1/sdk-tokens', {
       method: 'POST',
       headers: {
