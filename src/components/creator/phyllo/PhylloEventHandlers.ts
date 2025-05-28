@@ -63,17 +63,12 @@ export const createPhylloEventHandlers = (
     setIsLoading?.(false);
   };
 
-  // Use function declaration to access arguments object
-  function handleExit() {
-    console.log('Phyllo Connect exit - handleExit called with 0 declared parameters');
-    console.log('Function.length (declared parameter count):', handleExit.length);
-    
-    // Access actual arguments passed by SDK using arguments object
-    console.log('Actual arguments passed by SDK:', Array.from(arguments));
-    console.log('Actual arguments length:', arguments.length);
-    
+  // Try with the exact parameter signature that Phyllo expects
+  const handleExit = (reason: string, workplatformId: string) => {
+    console.log('Phyllo Connect exit called with parameters:', { reason, workplatformId });
+    console.log('Exit function declared parameters:', handleExit.length);
     setIsLoading?.(false);
-  }
+  };
 
   return {
     handleAccountConnected,

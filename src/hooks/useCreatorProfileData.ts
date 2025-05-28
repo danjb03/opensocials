@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
@@ -67,7 +66,7 @@ export const useCreatorProfileData = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
-  const fetchedRef = useRef(false);
+  const hasFetchedRef = useRef(false);
 
   const transformProfile = (data: CreatorProfileRecord): CreatorProfile => {
     console.log('Transforming creator profile data:', data);
@@ -140,17 +139,20 @@ export const useCreatorProfileData = () => {
   };
 
   useEffect(() => {
-    if (!user?.id || fetchedRef.current) {
-      if (!user?.id) {
-        setIsLoading(false);
-      }
+    if (!user?.id) {
+      setIsLoading(false);
+      return;
+    }
+
+    // Prevent multiple fetches for the same user
+    if (hasFetchedRef.current) {
       return;
     }
 
     const fetchProfile = async () => {
       try {
         console.log('Fetching creator profile for user:', user.id);
-        fetchedRef.current = true;
+        hasFetchedRef.current = true;
         
         const { data, error } = await supabase
           .from('creator_profiles')
@@ -228,6 +230,11 @@ export const useCreatorProfileData = () => {
     };
 
     fetchProfile();
+
+    // Reset the ref when user changes
+    return () => {
+      hasFetchedRef.current = false;
+    };
   }, [user?.id, toast]);
 
   return { 
