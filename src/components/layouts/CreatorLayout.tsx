@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ChartLine, DollarSign, FileText, User, Menu, X } from 'lucide-react';
+import { ChartLine, DollarSign, FileText, User } from 'lucide-react';
+import SidebarToggle from './SidebarToggle';
 import Footer from './Footer';
 
 interface CreatorLayoutProps {
@@ -34,112 +35,96 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
     }
   };
 
-  const navigationItems = [
-    {
-      title: 'Profile',
-      icon: User,
-      path: '/creator',
-      isActive: location.pathname === '/creator'
-    },
-    {
-      title: 'Analytics',
-      icon: ChartLine,
-      path: '/creator/analytics',
-      isActive: location.pathname === '/creator/analytics'
-    },
-    {
-      title: 'Deals',
-      icon: DollarSign,
-      path: '/creator/deals',
-      isActive: location.pathname === '/creator/deals'
-    },
-    {
-      title: 'Campaigns',
-      icon: FileText,
-      path: '/creator/campaigns',
-      isActive: location.pathname.startsWith('/creator/campaigns')
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <aside className={`relative bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${
+    <div className="min-h-screen flex">
+      <aside className={`relative bg-sidebar text-sidebar-foreground transition-all duration-300 ${
         isSidebarCollapsed ? 'w-16' : 'w-64'
-      } flex flex-col`}>
-        {/* Sidebar Header */}
-        <div className="p-6 border-b border-gray-100">
-          <div className="flex items-center justify-between">
-            {!isSidebarCollapsed && (
-              <Logo className="h-8" />
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              className="h-8 w-8 p-0 hover:bg-gray-100 transition-colors"
+      }`}>
+        <SidebarToggle 
+          isCollapsed={isSidebarCollapsed} 
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
+        
+        <div className="p-4 flex flex-col h-full">
+          <div className="mb-6">
+            <Logo className={isSidebarCollapsed ? 'hidden' : 'block'} />
+          </div>
+          
+          <nav className="space-y-1 flex-1">
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent ${
+                location.pathname === '/creator' ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
+              }`}
+              asChild
             >
-              {isSidebarCollapsed ? (
-                <Menu className="h-4 w-4" />
-              ) : (
-                <X className="h-4 w-4" />
-              )}
+              <Link to="/creator" className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Profile</span>}
+              </Link>
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent ${
+                location.pathname === '/creator/analytics' ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
+              }`}
+              asChild
+            >
+              <Link to="/creator/analytics" className="flex items-center gap-2">
+                <ChartLine className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Analytics</span>}
+              </Link>
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent ${
+                location.pathname === '/creator/deals' ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
+              }`}
+              asChild
+            >
+              <Link to="/creator/deals" className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Deals</span>}
+              </Link>
+            </Button>
+
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent ${
+                location.pathname.startsWith('/creator/campaigns') ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
+              }`}
+              asChild
+            >
+              <Link to="/creator/campaigns" className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                {!isSidebarCollapsed && <span>Campaigns</span>}
+              </Link>
+            </Button>
+          </nav>
+          
+          <div className="mt-auto pt-4 border-t border-sidebar-border">
+            {!isSidebarCollapsed && (
+              <div className="text-sm opacity-70 mb-2">
+                Logged in as {user?.email}
+              </div>
+            )}
+            <Button 
+              variant="default" 
+              onClick={handleSignOut} 
+              disabled={isLoggingOut}
+              className="w-full"
+            >
+              {isLoggingOut ? "..." : isSidebarCollapsed ? "Out" : "Sign Out"}
             </Button>
           </div>
         </div>
-        
-        {/* Navigation */}
-        <nav className="flex-1 px-4 py-6">
-          <div className="space-y-1">
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    item.isActive
-                      ? 'bg-black text-white shadow-sm'
-                      : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                  }`}
-                >
-                  <Icon className="h-5 w-5 flex-shrink-0" />
-                  {!isSidebarCollapsed && (
-                    <span className="truncate">{item.title}</span>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
-        
-        {/* Sidebar Footer */}
-        <div className="p-4 border-t border-gray-100">
-          {!isSidebarCollapsed && (
-            <div className="mb-3">
-              <p className="text-xs text-gray-500 truncate">
-                {user?.email}
-              </p>
-            </div>
-          )}
-          <Button 
-            variant="outline" 
-            onClick={handleSignOut} 
-            disabled={isLoggingOut}
-            size="sm"
-            className="w-full justify-center border-gray-200 hover:bg-gray-50 transition-colors"
-          >
-            {isLoggingOut ? "..." : isSidebarCollapsed ? "Out" : "Sign Out"}
-          </Button>
-        </div>
       </aside>
       
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0">
-        <div className="flex-1 overflow-auto">
-          <div className="p-8">
-            {children}
-          </div>
+      <main className="flex-1 bg-background overflow-auto flex flex-col">
+        <div className="flex-1">
+          {children}
         </div>
         <Footer />
       </main>
