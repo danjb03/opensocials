@@ -63,8 +63,8 @@ export const createPhylloEventHandlers = (
     setIsLoading?.(false);
   };
 
-  const handleExit = () => {
-    console.log('Phyllo Connect exit');
+  const handleExit = (reason: string) => {
+    console.log('Phyllo Connect exit with reason:', reason);
     setIsLoading?.(false);
   };
 
