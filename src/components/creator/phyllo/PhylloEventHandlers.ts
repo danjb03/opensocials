@@ -1,5 +1,4 @@
 
-
 import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -64,18 +63,17 @@ export const createPhylloEventHandlers = (
     setIsLoading?.(false);
   };
 
-  // Try with exactly 0 declared parameters - SDK expects specific parameter count
-  const handleExit = () => {
+  // Use function declaration to access arguments object
+  function handleExit() {
     console.log('Phyllo Connect exit - handleExit called with 0 declared parameters');
     console.log('Function.length (declared parameter count):', handleExit.length);
     
-    // Access actual arguments passed by SDK using arguments object in a function declaration
-    const actualArgs = Array.prototype.slice.call(arguments);
-    console.log('Actual arguments passed by SDK:', actualArgs);
-    console.log('Actual arguments length:', actualArgs.length);
+    // Access actual arguments passed by SDK using arguments object
+    console.log('Actual arguments passed by SDK:', Array.from(arguments));
+    console.log('Actual arguments length:', arguments.length);
     
     setIsLoading?.(false);
-  };
+  }
 
   return {
     handleAccountConnected,

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -67,6 +67,7 @@ export const useCreatorProfileData = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
+  const fetchedRef = useRef(false);
 
   const transformProfile = (data: CreatorProfileRecord): CreatorProfile => {
     console.log('Transforming creator profile data:', data);
@@ -139,14 +140,17 @@ export const useCreatorProfileData = () => {
   };
 
   useEffect(() => {
-    if (!user?.id) {
-      setIsLoading(false);
+    if (!user?.id || fetchedRef.current) {
+      if (!user?.id) {
+        setIsLoading(false);
+      }
       return;
     }
 
     const fetchProfile = async () => {
       try {
         console.log('Fetching creator profile for user:', user.id);
+        fetchedRef.current = true;
         
         const { data, error } = await supabase
           .from('creator_profiles')
