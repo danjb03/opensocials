@@ -7,7 +7,6 @@ import { toast } from '@/components/ui/sonner';
 import { useCreateProfileForm } from '@/hooks/useCreateProfileForm';
 import { ProfileBasicInfo } from '@/components/creator/ProfileBasicInfo';
 import { ContentTypeSelection } from '@/components/creator/ContentTypeSelection';
-import { SocialHandlesForm } from '@/components/creator/SocialHandlesForm';
 
 declare global {
   interface Window {
@@ -153,11 +152,6 @@ const CreateProfile = () => {
                   </div>
                 </div>
               </div>
-
-              <SocialHandlesForm 
-                formData={formData}
-                onInputChange={handleInputChange}
-              />
               
               <div className="pt-4 flex justify-end">
                 <Button type="submit" disabled={isLoading} className="min-w-32">
