@@ -7,9 +7,8 @@ export const createPhylloEventHandlers = (
   onConnectionSuccess?: () => void,
   setIsLoading?: (loading: boolean) => void
 ) => {
-  const handleAccountConnected = (...args: any[]) => {
-    console.log('Account Connected with args:', args);
-    const [accountId, workplatformId, userIdFromEvent] = args;
+  const handleAccountConnected = (accountId: string, workplatformId: string, userIdFromEvent: string) => {
+    console.log('Account Connected with parameters:', { accountId, workplatformId, userIdFromEvent });
 
     if (accountId && workplatformId && userIdFromEvent) {
       console.log('Calling storeConnectedAccount function...');
@@ -34,37 +33,38 @@ export const createPhylloEventHandlers = (
         console.error('Error storing connected account:', error);
         toast.error('Connected to platform but failed to save connection. Please try again.');
       });
+    } else {
+      console.error('Missing required parameters for account connection:', { accountId, workplatformId, userIdFromEvent });
+      toast.error('Failed to connect: missing account information');
     }
   };
 
-  const handleAccountDisconnected = (...args: any[]) => {
-    console.log('Account Disconnected with args:', args);
+  const handleAccountDisconnected = (accountId: string, workplatformId: string) => {
+    console.log('Account Disconnected with parameters:', { accountId, workplatformId });
     toast.success('Social account disconnected successfully');
     onConnectionSuccess?.();
   };
 
-  const handleTokenExpired = (...args: any[]) => {
-    console.log('Token expired with args:', args);
+  const handleTokenExpired = (accountId: string) => {
+    console.log('Token expired for account:', accountId);
     toast.error('Session expired. Please try connecting again.');
     setIsLoading?.(false);
   };
 
-  const handleConnectionFailure = (...args: any[]) => {
-    console.log('Connection failure with args:', args);
-    const [reason, workplatformId] = args;
+  const handleConnectionFailure = (reason: string, workplatformId: string) => {
+    console.log('Connection failure:', { reason, workplatformId });
     toast.error(`Failed to connect to ${workplatformId || 'platform'}: ${reason || 'Unknown error'}`);
     setIsLoading?.(false);
   };
 
-  const handleError = (...args: any[]) => {
-    console.log('Phyllo Connect error with args:', args);
-    const [reason] = args;
+  const handleError = (reason: string) => {
+    console.log('Phyllo Connect error:', reason);
     toast.error(`Failed to connect social account: ${reason || 'Unknown error'}`);
     setIsLoading?.(false);
   };
 
-  const handleExit = (...args: any[]) => {
-    console.log('Phyllo Connect exit with args:', args);
+  const handleExit = () => {
+    console.log('Phyllo Connect exit');
     setIsLoading?.(false);
   };
 
