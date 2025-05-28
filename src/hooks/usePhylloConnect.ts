@@ -99,9 +99,9 @@ export const usePhylloConnect = (
       }
 
       try {
-        // Use a properly declared function with exactly 1 parameter for the exit callback
-        phylloConnect.on('exit', function (reason) {
-          console.warn("Phyllo exit triggered with:", reason);
+        // Use a properly declared function with exactly 2 parameters for the exit callback
+        phylloConnect.on('exit', function (reason, userId) {
+          console.warn("Phyllo exit triggered with reason:", reason, "User:", userId);
           setIsPhylloLoading(false);
         });
         console.log('✓ exit handler registered successfully');
