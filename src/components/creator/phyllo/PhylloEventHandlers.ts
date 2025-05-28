@@ -63,24 +63,16 @@ export const createPhylloEventHandlers = (
     setIsLoading?.(false);
   };
 
-  // ATTEMPT 1: Try with 0 declared parameters (most common for exit callbacks)
-  function handleExit() {
-    console.log('🔍 PHYLLO EXIT DEBUG - Attempt 1: 0 declared parameters');
+  // ATTEMPT 2: Try with exactly 1 declared parameter (common pattern for exit callbacks)
+  const handleExit = (reason: any) => {
+    console.log('🔍 PHYLLO EXIT DEBUG - Attempt 2: 1 declared parameter');
     console.log('Function.length (declared parameter count):', handleExit.length);
-    
-    // Capture actual arguments passed by SDK using arguments object
-    console.log('Actual arguments passed by SDK:', Array.from(arguments));
-    console.log('Actual arguments length:', arguments.length);
-    
-    // Log each argument individually for clarity
-    for (let i = 0; i < arguments.length; i++) {
-      console.log(`Argument ${i}:`, arguments[i]);
-    }
+    console.log('Received exit reason:', reason);
     
     setIsLoading?.(false);
     
-    console.log('✅ Exit handler completed successfully with 0 declared parameters');
-  }
+    console.log('✅ Exit handler completed successfully with 1 declared parameter');
+  };
 
   return {
     handleAccountConnected,
