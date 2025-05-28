@@ -52,6 +52,34 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
     });
   };
 
+  const generatePhylloToken = async () => {
+    if (!user?.id) {
+      throw new Error('User not authenticated');
+    }
+
+    console.log('Generating Phyllo token for user:', user.id);
+    
+    const { data, error } = await supabase.functions.invoke('generatePhylloToken', {
+      body: {
+        user_id: user.id,
+        user_name: user.email?.split('@')[0] || 'User'
+      }
+    });
+
+    if (error) {
+      console.error('Error generating Phyllo token:', error);
+      throw new Error(error.message || 'Failed to generate Phyllo token');
+    }
+
+    if (!data?.token) {
+      console.error('No token received from generatePhylloToken');
+      throw new Error('No token received from server');
+    }
+
+    console.log('Successfully generated Phyllo token');
+    return data.token;
+  };
+
   const initializePhylloConnect = async () => {
     if (!user?.id) {
       toast.error('Please log in to connect your social accounts');
@@ -71,14 +99,16 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
         throw new Error('Phyllo Connect library not available');
       }
       
+      console.log('Generating fresh Phyllo token...');
+      const freshToken = await generatePhylloToken();
+      
       console.log('Initializing Phyllo Connect for user:', user.id);
       
-      // Using a more recent token - you should replace this with your actual valid token
       const phylloConnect = window.PhylloConnect.initialize({
         clientDisplayName: "OpenSocials",
-        environment: "sandbox", // Changed from "staging" to "sandbox"
+        environment: "staging",
         userId: user.id,
-        token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiOThlZDQyZGQtNGVkZS00YjNiLWEwMGQtMDA1NGZjODk1YTZhIiwidGVuYW50X2lkIjoiYjJmMWEzN2ItYjliZi00YTEzLTlmYTctM2QwNTA1YjRhN2EyIiwidGVuYW50X2FwcF9pZCI6IjAyZTEzZTYyLTRjYjAtNDA2Zi1iYTUzLTE1MDBjNzQzMzQwZSIsInByb2R1Y3RzIjpbIkVOR0FHRU1FTlRfQVVESUVOQ0UiLCJJREVOVElUWSIsIkVOR0FHRU1FTlQiXSwiaXNzIjoiaHR0cHM6Ly9hcGkuZ2V0cGh5bGxvLmNvbSIsImF1ZCI6Imh0dHBzOi8vYXBpLmdldHBoeWxsby5jb20vdjEvaW50ZXJuYWwiLCJpYXQiOjE3NDgyOTQ2NjkuNzAxOTE3LCJleHAiOjE3NDg4OTk0NjkuNzAxOTA2fQ.82YCC8_JQkHwBKPHUitH6gugyc9W67FxetSlI70tWaw"
+        token: freshToken
       });
 
       phylloConnect.on('accountConnected', async (accountId: string, workplatformId: string, userId: string) => {
@@ -125,7 +155,7 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
       phylloConnect.open();
     } catch (error) {
       console.error('Error initializing Phyllo Connect:', error);
-      toast.error('Failed to load social account connection. Please try again.');
+      toast.error(`Failed to load social account connection: ${error.message}`);
       setIsPhylloLoading(false);
     }
   };
