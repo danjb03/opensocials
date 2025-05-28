@@ -9,16 +9,34 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-async function validateSuperAdmin(supabase, token: string) {
+async function validateAdminAccess(supabase, token: string) {
   const { data: { user } } = await supabase.auth.getUser(token);
+  
+  if (!user) {
+    return { isValid: false, status: 401, message: "Authentication required" };
+  }
+
+  // Check if user has admin role in user_roles table
+  const { data: userRole } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id)
+    .eq("status", "approved")
+    .in("role", ["admin", "super_admin"])
+    .single();
+
+  // Also check profiles table for admin role as fallback
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
-    .eq("id", user?.id)
+    .eq("id", user.id)
     .single();
 
-  if (!profile || profile.role !== "super_admin") {
-    return { isValid: false, status: 403, message: "Unauthorized" };
+  const hasAdminRole = userRole?.role === "admin" || userRole?.role === "super_admin" || 
+                       profile?.role === "admin" || profile?.role === "super_admin";
+
+  if (!hasAdminRole) {
+    return { isValid: false, status: 403, message: "Admin access required" };
   }
 
   return { isValid: true };
@@ -36,20 +54,27 @@ serve(async (req) => {
 
   const authHeader = req.headers.get("authorization") || "";
   const token = authHeader.replace("Bearer ", "");
-  const validation = await validateSuperAdmin(supabase, token);
+  
+  console.log("Processing creator leaderboard request for token:", token ? "present" : "missing");
+  
+  const validation = await validateAdminAccess(supabase, token);
 
   if (!validation.isValid) {
+    console.log("Access denied:", validation.message);
     return new Response(JSON.stringify({ error: validation.message }), {
       headers: corsHeaders,
       status: validation.status,
     });
   }
 
+  console.log("Access granted, fetching earnings data");
+
   const { data: earningsData, error } = await supabase
     .from("deal_earnings")
     .select("creator_id, amount");
 
   if (error) {
+    console.error("Error fetching earnings data:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: corsHeaders,
       status: 500,
@@ -87,6 +112,8 @@ serve(async (req) => {
       platform: profile?.primary_platform ?? 'N/A',
     };
   });
+
+  console.log("Successfully fetched leaderboard with", leaderboard.length, "creators");
 
   return new Response(JSON.stringify({ success: true, data: leaderboard }), {
     headers: corsHeaders,

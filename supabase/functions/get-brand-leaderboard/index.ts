@@ -9,16 +9,34 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-async function validateSuperAdmin(supabase, token: string) {
+async function validateAdminAccess(supabase, token: string) {
   const { data: { user } } = await supabase.auth.getUser(token);
+  
+  if (!user) {
+    return { isValid: false, status: 401, message: "Authentication required" };
+  }
+
+  // Check if user has admin role in user_roles table
+  const { data: userRole } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id)
+    .eq("status", "approved")
+    .in("role", ["admin", "super_admin"])
+    .single();
+
+  // Also check profiles table for admin role as fallback
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
-    .eq("id", user?.id)
+    .eq("id", user.id)
     .single();
 
-  if (!profile || profile.role !== "super_admin") {
-    return { isValid: false, status: 403, message: "Unauthorized" };
+  const hasAdminRole = userRole?.role === "admin" || userRole?.role === "super_admin" || 
+                       profile?.role === "admin" || profile?.role === "super_admin";
+
+  if (!hasAdminRole) {
+    return { isValid: false, status: 403, message: "Admin access required" };
   }
 
   return { isValid: true };
@@ -36,20 +54,53 @@ serve(async (req) => {
 
   const authHeader = req.headers.get("authorization") || "";
   const token = authHeader.replace("Bearer ", "");
-  const validation = await validateSuperAdmin(supabase, token);
+  
+  console.log("Processing brand leaderboard request for token:", token ? "present" : "missing");
+  
+  const validation = await validateAdminAccess(supabase, token);
 
   if (!validation.isValid) {
+    console.log("Access denied:", validation.message);
     return new Response(JSON.stringify({ error: validation.message }), {
       headers: corsHeaders,
       status: validation.status,
     });
   }
 
-  const { data: dealData, error } = await supabase
-    .from("brand_deals")
-    .select("brand_id, budget");
+  console.log("Access granted, fetching brand deals data");
+
+  // Check if brand_deals table exists, if not use projects table
+  let dealData;
+  let error;
+  
+  try {
+    const { data, error: brandDealsError } = await supabase
+      .from("brand_deals")
+      .select("brand_id, budget");
+    
+    if (brandDealsError && brandDealsError.code === "42P01") {
+      // Table doesn't exist, use projects table instead
+      console.log("brand_deals table not found, using projects table");
+      const { data: projectData, error: projectError } = await supabase
+        .from("projects")
+        .select("brand_id, budget");
+      
+      dealData = projectData;
+      error = projectError;
+    } else {
+      dealData = data;
+      error = brandDealsError;
+    }
+  } catch (e) {
+    console.error("Error fetching deal data:", e);
+    return new Response(JSON.stringify({ error: "Failed to fetch deal data" }), {
+      headers: corsHeaders,
+      status: 500,
+    });
+  }
 
   if (error) {
+    console.error("Error fetching deal data:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: corsHeaders,
       status: 500,
@@ -87,6 +138,8 @@ serve(async (req) => {
       industry: profile?.industry ?? 'N/A',
     };
   });
+
+  console.log("Successfully fetched brand leaderboard with", leaderboard.length, "brands");
 
   return new Response(JSON.stringify({ success: true, data: leaderboard }), {
     headers: corsHeaders,
