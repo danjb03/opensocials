@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { LinkIcon } from 'lucide-react';
@@ -91,12 +92,14 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
       console.log('Loading Phyllo script...');
       await loadPhylloScript();
       
-      // Wait a bit for the script to fully initialize
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait longer for the script to fully initialize
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       if (!window.PhylloConnect) {
         throw new Error('Phyllo Connect library not available');
       }
+
+      console.log('PhylloConnect object:', window.PhylloConnect);
       
       console.log('Generating fresh Phyllo token...');
       const freshToken = await generatePhylloToken();
@@ -110,70 +113,67 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
         token: freshToken
       });
 
-      phylloConnect.on('accountConnected', async (accountId: string, workplatformId: string, userId: string) => {
-        console.log('Account Connected:', { accountId, workplatformId, userId });
+      console.log('Phyllo Connect initialized:', phylloConnect);
 
-        try {
+      // Start with minimal event handlers to identify the problematic one
+      phylloConnect.on('accountConnected', (...args: any[]) => {
+        console.log('Account Connected with args:', args);
+        const [accountId, workplatformId, userId] = args;
+
+        if (accountId && workplatformId && userId) {
           console.log('Calling storeConnectedAccount function...');
           
-          const { data, error } = await supabase.functions.invoke('storeConnectedAccount', {
+          supabase.functions.invoke('storeConnectedAccount', {
             body: {
               user_id: user.id,
               platform: workplatformId,
               account_id: accountId,
               workplatform_id: workplatformId
             }
-          });
-          
-          if (error) {
+          }).then(({ data, error }) => {
+            if (error) {
+              console.error('Error storing connected account:', error);
+              toast.error('Connected to platform but failed to save connection. Please try again.');
+            } else {
+              console.log('Successfully stored connected account:', data);
+              toast.success('Social account connected successfully!');
+              onConnectionSuccess?.();
+            }
+          }).catch(error => {
             console.error('Error storing connected account:', error);
-            throw error;
-          }
-          
-          console.log('Successfully stored connected account:', data);
-          toast.success('Social account connected successfully!');
-          onConnectionSuccess?.();
-        } catch (error) {
-          console.error('Error storing connected account:', error);
-          toast.error('Connected to platform but failed to save connection. Please try again.');
+            toast.error('Connected to platform but failed to save connection. Please try again.');
+          });
         }
       });
 
-      phylloConnect.on('accountDisconnected', (accountId: string, workplatformId: string, userId: string) => {
-        console.log('Account Disconnected:', { accountId, workplatformId, userId });
+      phylloConnect.on('accountDisconnected', (...args: any[]) => {
+        console.log('Account Disconnected with args:', args);
         toast.success('Social account disconnected successfully');
         onConnectionSuccess?.();
       });
 
-      phylloConnect.on('tokenExpired', async (userId: string) => {
-        console.log('Token expired for user:', userId);
+      phylloConnect.on('tokenExpired', (...args: any[]) => {
+        console.log('Token expired with args:', args);
         toast.error('Session expired. Please try connecting again.');
         setIsPhylloLoading(false);
-        
-        // Optionally attempt to refresh token automatically
-        try {
-          const newToken = await generatePhylloToken();
-          console.log('Token refreshed successfully');
-          // You could reinitialize Phyllo Connect with the new token here
-        } catch (error) {
-          console.error('Failed to refresh token:', error);
-        }
       });
 
-      phylloConnect.on('connectionFailure', (reason: string, workplatformId: string, userId: string) => {
-        console.error('Connection failure:', { reason, workplatformId, userId });
-        toast.error(`Failed to connect to ${workplatformId}: ${reason}`);
+      phylloConnect.on('connectionFailure', (...args: any[]) => {
+        console.log('Connection failure with args:', args);
+        const [reason, workplatformId] = args;
+        toast.error(`Failed to connect to ${workplatformId || 'platform'}: ${reason || 'Unknown error'}`);
         setIsPhylloLoading(false);
       });
 
-      phylloConnect.on('error', (reason: string) => {
-        console.error('Phyllo Connect error:', reason);
-        toast.error(`Failed to connect social account: ${reason}`);
+      phylloConnect.on('error', (...args: any[]) => {
+        console.log('Phyllo Connect error with args:', args);
+        const [reason] = args;
+        toast.error(`Failed to connect social account: ${reason || 'Unknown error'}`);
         setIsPhylloLoading(false);
       });
 
-      phylloConnect.on('exit', (reason: string, userId: string) => {
-        console.log('Phyllo Connect exit:', { reason, userId });
+      phylloConnect.on('exit', (...args: any[]) => {
+        console.log('Phyllo Connect exit with args:', args);
         setIsPhylloLoading(false);
       });
 
