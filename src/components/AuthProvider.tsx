@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AuthContext, type UserRole } from '@/lib/auth';
@@ -35,8 +36,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setRole(null);
           setEmailConfirmed(null);
           setIsLoading(false);
-          
-          // Clean up user data store when user logs out - handled by useUserDataSync
         }
       }
     );
@@ -93,14 +92,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return;
       }
       
-      // If user is not a super_admin, continue with normal role checks...
-      // If not found in user_roles, check profiles table as fallback
-      
-      if (user?.user_metadata?.role) {
-        console.log("✅ Found role in user metadata:", user.user_metadata.role);
-        resolvedRole = user.user_metadata.role as UserRole;
-      }
-      
       // Check other roles in user_roles table
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
@@ -119,42 +110,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return;
       }
       
+      // Fallback to user metadata if no role found in user_roles
+      if (user?.user_metadata?.role) {
+        console.log("✅ Found role in user metadata:", user.user_metadata.role);
+        resolvedRole = user.user_metadata.role as UserRole;
+        setRole(resolvedRole);
+        setIsLoading(false);
+        return;
+      }
+      
       // Finally, check the profiles table if role still not found
-      if (!user?.user_metadata?.role && !roleData?.role) {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', userId)
-          .maybeSingle();
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle();
 
-        if (error) {
-          console.error('❌ Error fetching user role from profiles:', error);
-          toast.error('Failed to fetch user role: ' + error.message);
-          setIsLoading(false);
-          return;
+      if (profileError) {
+        console.error('❌ Error fetching user role from profiles:', profileError);
+        // Don't show error toast for missing profiles as they should be created automatically
+        if (!profileError.message?.includes('PGRST116')) {
+          toast.error('Failed to fetch user role: ' + profileError.message);
         }
-
-        console.log("📋 User role data from profiles:", data);
-        
-        if (data?.role) {
-          console.log("✅ Setting role from profiles table:", data.role);
-          resolvedRole = data.role as UserRole;
-        }
+        setIsLoading(false);
+        return;
       }
 
-      // If still no role found, show error
-      if (!resolvedRole && !user?.user_metadata?.role && !roleData?.role) {
-        console.log("❌ No role found, setting to null");
-        toast.error('Your account does not have a role assigned. Please contact an administrator.');
-        setRole(null);
-      } else if (resolvedRole) {
+      console.log("📋 User role data from profiles:", profileData);
+      
+      if (profileData?.role) {
+        console.log("✅ Setting role from profiles table:", profileData.role);
+        resolvedRole = profileData.role as UserRole;
         setRole(resolvedRole);
+      } else {
+        console.log("❌ No role found anywhere, setting to null");
+        toast.error('Your account does not have a role assigned. Please contact support if this persists.');
+        setRole(null);
       }
       
       setIsLoading(false);
     } catch (error) {
       console.error('❌ Failed to fetch user role:', error);
-      toast.error('Failed to fetch user role');
+      toast.error('Failed to fetch user role. Please try refreshing the page.');
       setIsLoading(false);
     }
   };

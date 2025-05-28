@@ -27,7 +27,7 @@ export function useSignUp() {
     console.log(`🆕 Signing up new ${role}...`);
 
     try {
-      // Sign up the user with Supabase - this will trigger built-in email confirmation
+      // Sign up the user with Supabase - the database trigger will handle profile creation
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -35,58 +35,58 @@ export function useSignUp() {
           data: {
             first_name: firstName,
             last_name: lastName,
-            role: role
+            role: role,
+            // Include company_name for brands if needed
+            ...(role === 'brand' && { company_name: `${firstName} ${lastName}'s Brand` })
           },
           emailRedirectTo: `${window.location.origin}/auth?confirmation=true`
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle specific error cases
+        if (error.message.includes('User already registered')) {
+          toast.error('An account with this email already exists. Please try signing in instead.');
+          return false;
+        } else if (error.message.includes('Password should be')) {
+          toast.error('Password must be at least 6 characters long.');
+          return false;
+        } else if (error.message.includes('Invalid email')) {
+          toast.error('Please enter a valid email address.');
+          return false;
+        } else {
+          throw error;
+        }
+      }
 
       if (data.user) {
-        console.log('✅ Signup complete:', data.user.id);
+        console.log('✅ Signup complete for user:', data.user.id);
         
-        // Create a profile entry if one doesn't exist yet
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .insert({
-            id: data.user.id,
-            email,
-            role,
-            first_name: firstName,
-            last_name: lastName,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            status: 'pending'
-          })
-          .select()
-          .single();
-        
-        if (profileError) {
-          // If there's an error because the profile already exists, this is normal for admin-invited users
-          console.log('Profile may already exist:', profileError.message);
-        }
-
         // Check if email was confirmed immediately (if email confirmation is disabled in Supabase)
         if (data.user.email_confirmed_at) {
-          toast.success('Account created! You can now log in.');
+          toast.success('Account created successfully! You can now log in.');
         } else {
-          toast.success('Account created! Please check your email to confirm your account.');
+          toast.success('Account created! Please check your email to confirm your account before logging in.');
         }
         
         resetForm();
         return true;
+      } else {
+        toast.error('Account creation failed. Please try again.');
+        return false;
       }
     } catch (err: any) {
       console.error('❌ Signup failed:', err.message);
       
-      // Special handling for email sending errors
-      if (err.message?.includes('sending email') || err.message?.includes('confirmation email')) {
-        toast.error('Account created but there was an issue sending the confirmation email. Please check your Supabase email configuration.');
+      // Handle network and other unexpected errors
+      if (err.message?.includes('Failed to fetch') || err.message?.includes('network')) {
+        toast.error('Network error. Please check your connection and try again.');
+      } else if (err.message?.includes('sending email') || err.message?.includes('confirmation email')) {
+        toast.success('Account created but there was an issue sending the confirmation email. Please contact support if you need help.');
         resetForm();
-        return true; // Return true since the account was created
+        return true; // Account was created successfully
       } else {
-        toast.error(err.message || 'Signup failed. Try again.');
+        toast.error(err.message || 'Signup failed. Please try again.');
       }
     } finally {
       setIsLoading(false);
