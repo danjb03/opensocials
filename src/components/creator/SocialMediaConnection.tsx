@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { LinkIcon } from 'lucide-react';
@@ -173,8 +172,8 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
         setIsPhylloLoading(false);
       });
 
-      phylloConnect.on('exit', (reason: string) => {
-        console.log('Phyllo Connect exit:', reason);
+      phylloConnect.on('exit', (reason: string, userId: string) => {
+        console.log('Phyllo Connect exit:', { reason, userId });
         setIsPhylloLoading(false);
       });
 
