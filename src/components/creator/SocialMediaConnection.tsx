@@ -72,7 +72,7 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
     }
 
     if (!data?.token) {
-      console.error('No token received from generatePhylloToken');
+      console.error('No token received from generatePhylloToken. Full response:', data);
       throw new Error('No token received from server');
     }
 
@@ -138,6 +138,33 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
           console.error('Error storing connected account:', error);
           toast.error('Connected to platform but failed to save connection. Please try again.');
         }
+      });
+
+      phylloConnect.on('accountDisconnected', (accountId: string, workplatformId: string, userId: string) => {
+        console.log('Account Disconnected:', { accountId, workplatformId, userId });
+        toast.success('Social account disconnected successfully');
+        onConnectionSuccess?.();
+      });
+
+      phylloConnect.on('tokenExpired', async (userId: string) => {
+        console.log('Token expired for user:', userId);
+        toast.error('Session expired. Please try connecting again.');
+        setIsPhylloLoading(false);
+        
+        // Optionally attempt to refresh token automatically
+        try {
+          const newToken = await generatePhylloToken();
+          console.log('Token refreshed successfully');
+          // You could reinitialize Phyllo Connect with the new token here
+        } catch (error) {
+          console.error('Failed to refresh token:', error);
+        }
+      });
+
+      phylloConnect.on('connectionFailure', (reason: string, workplatformId: string, userId: string) => {
+        console.error('Connection failure:', { reason, workplatformId, userId });
+        toast.error(`Failed to connect to ${workplatformId}: ${reason}`);
+        setIsPhylloLoading(false);
       });
 
       phylloConnect.on('error', (reason: string) => {

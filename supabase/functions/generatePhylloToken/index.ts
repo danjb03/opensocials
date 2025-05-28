@@ -93,12 +93,22 @@ serve(async (req) => {
     }
 
     const tokenData = await tokenResponse.json();
-    console.log('Successfully generated Phyllo token');
+    console.log('Raw token response from Phyllo:', JSON.stringify(tokenData, null, 2));
+
+    // Extract the token - check multiple possible property names
+    const token = tokenData.token || tokenData.sdk_token || tokenData.access_token || tokenData.data?.token;
+    
+    if (!token) {
+      console.error('No token found in response. Available properties:', Object.keys(tokenData));
+      throw new Error(`No token found in Phyllo response. Response structure: ${JSON.stringify(tokenData)}`);
+    }
+
+    console.log('Successfully extracted Phyllo token');
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        token: tokenData.token,
+        token: token,
         user_id: phylloUserId
       }), 
       { 
