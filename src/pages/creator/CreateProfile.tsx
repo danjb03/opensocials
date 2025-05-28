@@ -62,10 +62,10 @@ const CreateProfile = () => {
       });
 
       phylloConnect.on('accountConnected', async (accountId: string, workplatformId: string, userId: string) => {
-        console.log('Account Connected:', accountId, workplatformId, userId);
+        console.log('Account Connected:', { accountId, workplatformId, userId });
 
         try {
-          await fetch('https://pcnrnciwgdrukzciwexi.functions.supabase.co/storeConnectedAccount', {
+          const response = await fetch('https://pcnrnciwgdrukzciwexi.functions.supabase.co/storeConnectedAccount', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -76,7 +76,11 @@ const CreateProfile = () => {
             })
           });
           
-          toast.success('Social account connected successfully!');
+          if (response.ok) {
+            toast.success('Social account connected successfully!');
+          } else {
+            throw new Error('Failed to store account connection');
+          }
         } catch (error) {
           console.error('Error storing connected account:', error);
           toast.error('Failed to save account connection');
@@ -86,6 +90,7 @@ const CreateProfile = () => {
       phylloConnect.on('error', (reason: string) => {
         console.log('Phyllo Connect error:', reason);
         toast.error('Failed to connect social account');
+        setIsPhylloLoading(false);
       });
 
       phylloConnect.on('exit', (reason: string) => {
