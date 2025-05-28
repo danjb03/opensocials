@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CreatorProfile } from '@/hooks/useCreatorProfile';
 import { CreatorTypeDropdown } from '@/components/creator/setup/CreatorTypeDropdown';
-import OAuthConnectButtons from '@/components/creator/OAuthConnectButtons';
+import { SocialMediaConnection } from '@/components/creator/SocialMediaConnection';
 import { BasicInfoSection } from './form-sections/BasicInfoSection';
 import { IndustryContentSection } from './form-sections/IndustryContentSection';
 
@@ -106,6 +106,10 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
     }
   };
 
+  const handleConnectionSuccess = () => {
+    console.log('Social media connection successful');
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <BasicInfoSection 
@@ -125,14 +129,7 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
 
       <Card>
         <CardContent className="pt-6">
-          <h3 className="text-lg font-medium mb-4">Connect Your Social Media</h3>
-          <p className="text-sm text-gray-600 mb-4">
-            Connect your social media accounts to showcase your reach and get ready for brand collaborations.
-          </p>
-          <OAuthConnectButtons 
-            platforms={profile.socialConnections}
-            isLoading={isLoading}
-          />
+          <SocialMediaConnection onConnectionSuccess={handleConnectionSuccess} />
         </CardContent>
       </Card>
 
