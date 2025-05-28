@@ -1,4 +1,3 @@
-
 import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -63,8 +62,8 @@ export const createPhylloEventHandlers = (
     setIsLoading?.(false);
   };
 
-  const handleExit = (reason: string) => {
-    console.log('Phyllo Connect exit with reason:', reason);
+  const handleExit = () => {
+    console.log('Phyllo Connect exit');
     setIsLoading?.(false);
   };
 
