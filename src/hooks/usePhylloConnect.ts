@@ -57,23 +57,62 @@ export const usePhylloConnect = (
       const eventHandlers = createPhylloEventHandlers(
         userId,
         onConnectionSuccess,
-        setIsPhylloLoading
+        setIsLoading
       );
 
-      // Set up event handlers
-      phylloConnect.on('accountConnected', eventHandlers.handleAccountConnected);
-      phylloConnect.on('accountDisconnected', eventHandlers.handleAccountDisconnected);
-      phylloConnect.on('tokenExpired', eventHandlers.handleTokenExpired);
-      phylloConnect.on('connectionFailure', eventHandlers.handleConnectionFailure);
-      phylloConnect.on('error', eventHandlers.handleError);
-      phylloConnect.on('exit', eventHandlers.handleExit);
+      // Add debugging for event handler registration
+      console.log('Registering event handlers...');
+      
+      try {
+        phylloConnect.on('accountConnected', eventHandlers.handleAccountConnected);
+        console.log('✓ accountConnected handler registered');
+      } catch (e) {
+        console.error('✗ Error registering accountConnected handler:', e);
+      }
+
+      try {
+        phylloConnect.on('accountDisconnected', eventHandlers.handleAccountDisconnected);
+        console.log('✓ accountDisconnected handler registered');
+      } catch (e) {
+        console.error('✗ Error registering accountDisconnected handler:', e);
+      }
+
+      try {
+        phylloConnect.on('tokenExpired', eventHandlers.handleTokenExpired);
+        console.log('✓ tokenExpired handler registered');
+      } catch (e) {
+        console.error('✗ Error registering tokenExpired handler:', e);
+      }
+
+      try {
+        phylloConnect.on('connectionFailure', eventHandlers.handleConnectionFailure);
+        console.log('✓ connectionFailure handler registered');
+      } catch (e) {
+        console.error('✗ Error registering connectionFailure handler:', e);
+      }
+
+      try {
+        phylloConnect.on('error', eventHandlers.handleError);
+        console.log('✓ error handler registered');
+      } catch (e) {
+        console.error('✗ Error registering error handler:', e);
+      }
+
+      try {
+        phylloConnect.on('exit', eventHandlers.handleExit);
+        console.log('✓ exit handler registered successfully');
+      } catch (e) {
+        console.error('✗ Error registering exit handler:', e);
+        console.error('Exit handler function:', eventHandlers.handleExit);
+        console.error('Exit handler toString:', eventHandlers.handleExit.toString());
+      }
 
       console.log('Opening Phyllo Connect...');
       phylloConnect.open();
     } catch (error) {
       console.error('Error initializing Phyllo Connect:', error);
       toast.error(`Failed to load social account connection: ${error.message}`);
-      setIsPhylloLoading(false);
+      setIsLoading?.(false);
     }
   };
 
