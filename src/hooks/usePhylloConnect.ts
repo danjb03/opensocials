@@ -102,7 +102,7 @@ export const usePhylloConnect = (
         // Use a properly declared function with exactly 1 parameter for the exit callback
         phylloConnect.on('exit', function (reason) {
           console.warn("Phyllo exit triggered with:", reason);
-          setIsLoading?.(false);
+          setIsPhylloLoading(false);
         });
         console.log('✓ exit handler registered successfully');
       } catch (e) {
