@@ -57,7 +57,7 @@ export const usePhylloConnect = (
       const eventHandlers = createPhylloEventHandlers(
         userId,
         onConnectionSuccess,
-        setIsLoading
+        setIsPhylloLoading
       );
 
       // Add debugging for event handler registration
@@ -112,7 +112,7 @@ export const usePhylloConnect = (
     } catch (error) {
       console.error('Error initializing Phyllo Connect:', error);
       toast.error(`Failed to load social account connection: ${error.message}`);
-      setIsLoading?.(false);
+      setIsPhylloLoading(false);
     }
   };
 

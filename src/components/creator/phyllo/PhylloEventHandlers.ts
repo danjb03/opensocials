@@ -1,4 +1,5 @@
 
+
 import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -64,10 +65,10 @@ export const createPhylloEventHandlers = (
   };
 
   // Try with no parameters first - the SDK might expect exactly 0 parameters
-  const handleExit = () => {
-    console.log('Phyllo Connect exit - handleExit called with arguments:', arguments);
-    console.log('Arguments length:', arguments.length);
-    console.log('Arguments object:', Array.from(arguments));
+  const handleExit = (...args: any[]) => {
+    console.log('Phyllo Connect exit - handleExit called with arguments:', args);
+    console.log('Arguments length:', args.length);
+    console.log('Arguments array:', args);
     setIsLoading?.(false);
   };
 
