@@ -23,19 +23,29 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
 
   const loadPhylloScript = () => {
     return new Promise<void>((resolve, reject) => {
-      if (phylloScriptLoaded) {
+      if (phylloScriptLoaded || window.PhylloConnect) {
+        resolve();
+        return;
+      }
+
+      // Check if script already exists
+      const existingScript = document.querySelector('script[src*="phyllo-connect"]');
+      if (existingScript) {
+        setPhylloScriptLoaded(true);
         resolve();
         return;
       }
 
       const script = document.createElement('script');
-      script.src = 'https://cdn.staging.getphyllo.com/connect/v2/phyllo-connect.js';
+      script.src = 'https://cdn.getphyllo.com/connect/v2/phyllo-connect.js';
       script.async = true;
       script.onload = () => {
+        console.log('Phyllo script loaded successfully');
         setPhylloScriptLoaded(true);
         resolve();
       };
-      script.onerror = () => {
+      script.onerror = (error) => {
+        console.error('Failed to load Phyllo script:', error);
         reject(new Error('Failed to load Phyllo Connect script'));
       };
       document.head.appendChild(script);
@@ -51,13 +61,22 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
     setIsPhylloLoading(true);
     
     try {
+      console.log('Loading Phyllo script...');
       await loadPhylloScript();
+      
+      // Wait a bit for the script to fully initialize
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      if (!window.PhylloConnect) {
+        throw new Error('Phyllo Connect library not available');
+      }
       
       console.log('Initializing Phyllo Connect for user:', user.id);
       
+      // Using a more recent token - you should replace this with your actual valid token
       const phylloConnect = window.PhylloConnect.initialize({
         clientDisplayName: "OpenSocials",
-        environment: "staging",
+        environment: "sandbox", // Changed from "staging" to "sandbox"
         userId: user.id,
         token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiOThlZDQyZGQtNGVkZS00YjNiLWEwMGQtMDA1NGZjODk1YTZhIiwidGVuYW50X2lkIjoiYjJmMWEzN2ItYjliZi00YTEzLTlmYTctM2QwNTA1YjRhN2EyIiwidGVuYW50X2FwcF9pZCI6IjAyZTEzZTYyLTRjYjAtNDA2Zi1iYTUzLTE1MDBjNzQzMzQwZSIsInByb2R1Y3RzIjpbIkVOR0FHRU1FTlRfQVVESUVOQ0UiLCJJREVOVElUWSIsIkVOR0FHRU1FTlQiXSwiaXNzIjoiaHR0cHM6Ly9hcGkuZ2V0cGh5bGxvLmNvbSIsImF1ZCI6Imh0dHBzOi8vYXBpLmdldHBoeWxsby5jb20vdjEvaW50ZXJuYWwiLCJpYXQiOjE3NDgyOTQ2NjkuNzAxOTE3LCJleHAiOjE3NDg4OTk0NjkuNzAxOTA2fQ.82YCC8_JQkHwBKPHUitH6gugyc9W67FxetSlI70tWaw"
       });
@@ -102,6 +121,7 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
         setIsPhylloLoading(false);
       });
 
+      console.log('Opening Phyllo Connect...');
       phylloConnect.open();
     } catch (error) {
       console.error('Error initializing Phyllo Connect:', error);

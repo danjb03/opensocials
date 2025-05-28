@@ -19,6 +19,19 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Get the authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('No authorization header found');
+      return new Response(
+        JSON.stringify({ error: 'Authorization header required' }), 
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
     const requestBody = await req.json();
     console.log('Received request body:', requestBody);
 
@@ -37,17 +50,20 @@ serve(async (req) => {
 
     console.log('Storing connected account:', { user_id, platform, account_id, workplatform_id });
 
-    const { data, error } = await supabase.from("connected_accounts").upsert([
-      {
+    // Use upsert to handle existing connections
+    const { data, error } = await supabase
+      .from("connected_accounts")
+      .upsert({
         user_id,
         platform,
         account_id,
         workplatform_id,
-        connected_at: new Date().toISOString()
-      },
-    ], {
-      onConflict: 'user_id,platform'
-    });
+        connected_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,platform'
+      })
+      .select();
 
     if (error) {
       console.error('Database error:', error);
@@ -63,7 +79,11 @@ serve(async (req) => {
     console.log('Successfully stored connected account:', data);
 
     return new Response(
-      JSON.stringify({ success: true, data }), 
+      JSON.stringify({ 
+        success: true, 
+        data,
+        message: 'Connected account stored successfully'
+      }), 
       { 
         status: 200, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
