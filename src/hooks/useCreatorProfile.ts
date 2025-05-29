@@ -3,10 +3,11 @@ import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useCreatorProfileData, CreatorProfile } from './useCreatorProfileData';
+import { useCreatorProfileData } from './useCreatorProfileData';
+import { CreatorProfile } from '@/types/creatorProfile';
 import { useCreatorProfileActions } from './useCreatorProfileActions';
 
-export type { CreatorProfile } from './useCreatorProfileData';
+export type { CreatorProfile } from '@/types/creatorProfile';
 
 export const useCreatorProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
