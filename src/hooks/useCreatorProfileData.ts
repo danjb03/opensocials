@@ -76,7 +76,7 @@ export const useCreatorProfileData = () => {
     };
 
     fetchCreatorProfile();
-  }, [user?.id]); // Removed toast from dependencies to prevent infinite loop
+  }, [user?.id]);
 
   return {
     profile,
