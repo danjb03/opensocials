@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useProjectData } from '@/hooks/useProjectData';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 // Import components
 import { CampaignHeader } from '@/components/brand/analytics/CampaignHeader';
@@ -16,41 +17,24 @@ import { ContentTab } from '@/components/brand/analytics/ContentTab';
 const CampaignAnalytics = () => {
   const { id } = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState('overview');
-  const [project, setProject] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { projects, isLoading, error } = useProjectData();
   const { toast } = useToast();
 
+  // Find the specific project by ID
+  const project = projects.find(p => p.id === id);
+
   useEffect(() => {
-    const fetchProject = async () => {
-      try {
-        if (!id) return;
-        
-        setLoading(true);
-        const { data, error } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('id', id)
-          .single();
-        
-        if (error) throw error;
-        
-        setProject(data);
-      } catch (error) {
-        console.error('Error fetching project:', error);
-        toast({
-          title: 'Error',
-          description: 'Could not load project details',
-          variant: 'destructive',
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchProject();
-  }, [id, toast]);
-  
-  if (loading) {
+    if (error) {
+      console.error('Error loading project analytics:', error);
+      toast({
+        title: 'Error',
+        description: 'Could not load project analytics',
+        variant: 'destructive',
+      });
+    }
+  }, [error, toast]);
+
+  if (isLoading) {
     return (
       <BrandLayout>
         <div className="container mx-auto p-6 max-w-7xl">
@@ -77,36 +61,46 @@ const CampaignAnalytics = () => {
   }
   
   return (
-    <BrandLayout>
-      <div className="container mx-auto p-6 max-w-7xl">
-        <CampaignHeader projectName={project.name} projectId={project.id} />
+    <ErrorBoundary>
+      <BrandLayout>
+        <div className="container mx-auto p-6 max-w-7xl">
+          <CampaignHeader projectName={project.name} projectId={project.id} />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid grid-cols-4 gap-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="engagement">Engagement</TabsTrigger>
-            <TabsTrigger value="creators">Campaign Creators</TabsTrigger>
-            <TabsTrigger value="content">Content Performance</TabsTrigger>
-          </TabsList>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <TabsList className="grid grid-cols-4 gap-4">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="engagement">Engagement</TabsTrigger>
+              <TabsTrigger value="creators">Campaign Creators</TabsTrigger>
+              <TabsTrigger value="content">Content Performance</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="overview" className="space-y-4">
-            <OverviewTab />
-          </TabsContent>
+            <TabsContent value="overview" className="space-y-4">
+              <ErrorBoundary>
+                <OverviewTab />
+              </ErrorBoundary>
+            </TabsContent>
 
-          <TabsContent value="engagement" className="space-y-4">
-            <EngagementTab />
-          </TabsContent>
+            <TabsContent value="engagement" className="space-y-4">
+              <ErrorBoundary>
+                <EngagementTab />
+              </ErrorBoundary>
+            </TabsContent>
 
-          <TabsContent value="creators" className="space-y-4">
-            <CreatorsTab />
-          </TabsContent>
+            <TabsContent value="creators" className="space-y-4">
+              <ErrorBoundary>
+                <CreatorsTab />
+              </ErrorBoundary>
+            </TabsContent>
 
-          <TabsContent value="content" className="space-y-4">
-            <ContentTab />
-          </TabsContent>
-        </Tabs>
-      </div>
-    </BrandLayout>
+            <TabsContent value="content" className="space-y-4">
+              <ErrorBoundary>
+                <ContentTab />
+              </ErrorBoundary>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </BrandLayout>
+    </ErrorBoundary>
   );
 };
 
