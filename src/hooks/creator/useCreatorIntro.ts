@@ -39,8 +39,23 @@ export const useCreatorIntro = () => {
     checkCreatorIntro();
   }, [user, role]);
 
-  const dismissIntro = () => {
-    setShowIntro(false);
+  const dismissIntro = async () => {
+    if (!user) {
+      setShowIntro(false);
+      return;
+    }
+
+    try {
+      await supabase.functions.invoke('dismiss-creator-intro', {
+        headers: {
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
+      });
+    } catch (error) {
+      console.error('Error dismissing creator intro:', error);
+    } finally {
+      setShowIntro(false);
+    }
   };
 
   return {

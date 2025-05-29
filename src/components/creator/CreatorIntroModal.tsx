@@ -3,8 +3,6 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
 import { DollarSign, Zap, TrendingUp } from 'lucide-react';
 
 interface CreatorIntroModalProps {
@@ -15,20 +13,11 @@ interface CreatorIntroModalProps {
 export const CreatorIntroModal = ({ isOpen, onClose }: CreatorIntroModalProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   const handleDismiss = async () => {
-    if (!user) return;
-
     setIsLoading(true);
     try {
-      await supabase.functions.invoke('dismiss-creator-intro', {
-        headers: {
-          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
-      });
-      
-      onClose();
+      await Promise.resolve(onClose());
       navigate('/creator', { replace: true });
     } catch (error) {
       console.error('Error dismissing intro:', error);
