@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
@@ -235,7 +236,7 @@ export const useCreatorProfileData = () => {
     return () => {
       hasFetchedRef.current = false;
     };
-  }, [user?.id, toast]);
+  }, [user?.id]); // Removed toast from dependencies to prevent infinite loop
 
   return { 
     profile, 
