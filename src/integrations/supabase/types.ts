@@ -34,7 +34,50 @@ export type Database = {
           status?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_creator"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "fk_creator"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_creators_view"
+            referencedColumns: ["creator_id"]
+          },
+          {
+            foreignKeyName: "fk_creator"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_creator_id"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "fk_creator_id"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_creators_view"
+            referencedColumns: ["creator_id"]
+          },
+          {
+            foreignKeyName: "fk_creator_id"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       brand_profiles: {
         Row: {

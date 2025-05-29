@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,7 +52,7 @@ const ProfileForm = ({
   budgetRanges
 }: ProfileFormProps) => {
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="companyName">Company Name *</Label>
         <Input 
@@ -121,11 +120,11 @@ const ProfileForm = ({
           value={brandBio}
           onChange={(e) => setBrandBio(e.target.value)}
           placeholder="Tell us about your brand..."
-          rows={3}
+          rows={4}
         />
       </div>
       
-      <div className="pt-4 flex justify-between">
+      <div className="flex justify-between pt-4">
         <Button
           type="button"
           variant="outline"
