@@ -756,6 +756,134 @@ export type Database = {
         }
         Relationships: []
       }
+      r4_enforcement_logs: {
+        Row: {
+          action_taken: Json | null
+          context: Json | null
+          id: string
+          rule_id: string | null
+          target_id: string
+          target_type: string
+          triggered_at: string | null
+        }
+        Insert: {
+          action_taken?: Json | null
+          context?: Json | null
+          id?: string
+          rule_id?: string | null
+          target_id: string
+          target_type: string
+          triggered_at?: string | null
+        }
+        Update: {
+          action_taken?: Json | null
+          context?: Json | null
+          id?: string
+          rule_id?: string | null
+          target_id?: string
+          target_type?: string
+          triggered_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "r4_enforcement_logs_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "r4_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      r4_flags: {
+        Row: {
+          description: string | null
+          key: string
+          updated_at: string | null
+          value: boolean | null
+        }
+        Insert: {
+          description?: string | null
+          key: string
+          updated_at?: string | null
+          value?: boolean | null
+        }
+        Update: {
+          description?: string | null
+          key?: string
+          updated_at?: string | null
+          value?: boolean | null
+        }
+        Relationships: []
+      }
+      r4_rule_sandbox: {
+        Row: {
+          created_at: string | null
+          id: string
+          rule_action: Json
+          rule_condition: Json
+          rule_description: string | null
+          rule_name: string
+          test_result: Json | null
+          tested_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          rule_action: Json
+          rule_condition: Json
+          rule_description?: string | null
+          rule_name: string
+          test_result?: Json | null
+          tested_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          rule_action?: Json
+          rule_condition?: Json
+          rule_description?: string | null
+          rule_name?: string
+          test_result?: Json | null
+          tested_at?: string | null
+        }
+        Relationships: []
+      }
+      r4_rules: {
+        Row: {
+          created_at: string | null
+          enabled: boolean | null
+          id: string
+          priority: number | null
+          rule_action: Json
+          rule_condition: Json
+          rule_description: string | null
+          rule_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          priority?: number | null
+          rule_action: Json
+          rule_condition: Json
+          rule_description?: string | null
+          rule_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          priority?: number | null
+          rule_action?: Json
+          rule_condition?: Json
+          rule_description?: string | null
+          rule_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       social_metrics: {
         Row: {
           data: Json
