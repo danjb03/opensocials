@@ -58,7 +58,7 @@ export const usePhylloConnect = (
         setIsPhylloLoading
       );
 
-      // Register callbacks with correct parameter counts
+      // Register callbacks with exact parameter counts as per Phyllo SDK documentation
       phylloConnect.on('accountConnected', function (accountId, workplatformId, userIdFromEvent) {
         console.log('Account Connected:', { accountId, workplatformId, userIdFromEvent });
         eventHandlers.handleAccountConnected(accountId, workplatformId, userIdFromEvent);
@@ -69,29 +69,39 @@ export const usePhylloConnect = (
         eventHandlers.handleAccountDisconnected(accountId, workplatformId, userIdFromEvent);
       });
 
-      phylloConnect.on('error', function (reason) {
-        console.log('Phyllo Connect error:', reason);
-        eventHandlers.handleError(reason);
-      });
-
-      // Updated exit callback with 3 parameters as per SDK documentation
-      phylloConnect.on('exit', function (reason, workplatformId, userId) {
-        console.log('Phyllo exit triggered:', { reason, workplatformId, userId });
-        eventHandlers.handleExit(reason, workplatformId, userId);
-      });
-
       phylloConnect.on('tokenExpired', function (accountId) {
         console.log('Token expired for account:', accountId);
         eventHandlers.handleTokenExpired(accountId);
       });
 
-      phylloConnect.on('connectionFailure', function (reason, workplatformId, userId) {
-        console.log('Connection failure:', { reason, workplatformId, userId });
-        eventHandlers.handleConnectionFailure(reason, workplatformId, userId);
+      phylloConnect.on('connectionFailure', function (reason, workplatformId, userIdFromEvent) {
+        console.log('Connection failure:', { reason, workplatformId, userIdFromEvent });
+        eventHandlers.handleConnectionFailure(reason, workplatformId, userIdFromEvent);
+      });
+
+      phylloConnect.on('error', function (reason) {
+        console.log('Phyllo Connect error:', reason);
+        eventHandlers.handleError(reason);
+      });
+
+      phylloConnect.on('exit', function (reason, workplatformId, userIdFromEvent) {
+        console.log('Phyllo exit triggered:', { reason, workplatformId, userIdFromEvent });
+        eventHandlers.handleExit(reason, workplatformId, userIdFromEvent);
       });
 
       console.log('All callbacks registered successfully. Opening Phyllo Connect...');
-      phylloConnect.open();
+      
+      // Add a small delay before opening to ensure all callbacks are properly registered
+      setTimeout(() => {
+        try {
+          phylloConnect.open();
+        } catch (openError) {
+          console.error('Error opening Phyllo Connect:', openError);
+          toast.error(`Failed to open social account connection: ${openError.message}`);
+          setIsPhylloLoading(false);
+        }
+      }, 100);
+      
     } catch (error) {
       console.error('Error initializing Phyllo Connect:', error);
       toast.error(`Failed to load social account connection: ${error.message}`);
