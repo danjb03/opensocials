@@ -49,13 +49,13 @@ export const BrandIntroModal = ({ isOpen, onClose }: BrandIntroModalProps) => {
             {/* Headlines */}
             <div className="space-y-4">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                Welcome to the platform where{' '}
+                Launch campaigns that{' '}
                 <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  everyone gets paid
+                  actually convert
                 </span>
               </h1>
               <p className="text-xl sm:text-2xl text-gray-600 font-medium max-w-2xl mx-auto">
-                Everything you need, nothing you don't and money on the table.
+                Just brief, match and go live in hours.
               </p>
             </div>
 
@@ -88,15 +88,15 @@ export const BrandIntroModal = ({ isOpen, onClose }: BrandIntroModalProps) => {
                 </div>
               </div>
 
-              {/* Quality Delivery */}
+              {/* Clear Outcomes */}
               <div className="group">
                 <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                   <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300">
                     <CheckCircle className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">Quality Delivery</h3>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Clear Outcomes</h3>
                   <p className="text-gray-600 leading-relaxed">
-                    Professional results that drive engagement.
+                    Carefully qualified, campaign proven. Ready to work.
                   </p>
                 </div>
               </div>
