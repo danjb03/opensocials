@@ -79,7 +79,7 @@ export const usePhylloConnect = (
     }
   };
 
-  const initializePhylloConnect = async () => {
+  const initializePhylloConnect = async (platform: string) => {
     if (!userId) {
       toast.error('Please log in to connect your social accounts');
       return;
@@ -88,7 +88,7 @@ export const usePhylloConnect = (
     setIsPhylloLoading(true);
     
     try {
-      await initializePhylloRedirect(userId, userEmail);
+      await initializePhylloRedirect(userId, userEmail, platform);
     } catch (error) {
       console.error('💥 Error initializing Phyllo Connect:', error);
       toast.error(`Failed to load social account connection: ${error.message}`);
