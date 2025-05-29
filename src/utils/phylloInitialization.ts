@@ -1,16 +1,16 @@
 
-import { generatePhylloToken } from './phylloToken';
 import { storeRedirectData } from './phylloRedirectData';
 
 export const createPhylloRedirectUrl = (token: string, userId: string): string => {
   const returnUrl = `${window.location.origin}/creator/connect/callback`;
   
   const phylloParams = new URLSearchParams({
-    client_display_name: 'OpenSocials',
-    user_token: token,
-    user_id: userId,
-    env: 'staging',
-    redirect_url: returnUrl
+    clientDisplayName: 'OpenSocials',
+    userId: userId,
+    token: token,
+    environment: 'staging',
+    flow: 'redirect',
+    redirectUrl: returnUrl
   });
   
   const baseUrl = 'https://connect.getphyllo.com';
@@ -27,9 +27,25 @@ export const initializePhylloRedirect = async (
   userEmail: string | undefined
 ): Promise<void> => {
   console.log('🚀 Starting Phyllo Connect initialization...');
-  console.log('🔑 Generating fresh Phyllo token...');
+  console.log('🔑 Generating fresh Phyllo token via edge function...');
   
-  const freshToken = await generatePhylloToken(userId, userEmail);
+  // Use the Supabase edge function approach
+  const response = await fetch('/functions/v1/generatePhylloToken', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ 
+      user_id: userId,
+      user_name: userEmail?.split('@')[0] || 'User'
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to generate Phyllo token: ${response.statusText}`);
+  }
+
+  const { token: freshToken } = await response.json();
   
   if (!freshToken) {
     throw new Error('Failed to generate Phyllo token');
