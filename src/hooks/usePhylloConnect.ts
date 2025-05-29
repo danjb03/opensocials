@@ -85,8 +85,19 @@ export const usePhylloConnect = (
       }
 
       try {
-        phylloConnect.on('connectionFailure', eventHandlers.handleConnectionFailure);
-        console.log('✓ connectionFailure handler registered');
+        // Use a properly declared function with exactly 1 parameter for the connectionFailure callback
+        phylloConnect.on('connectionFailure', function (reason) {
+          console.log('🔍 PHYLLO CONNECTION FAILURE DEBUG - 1 parameter attempt');
+          console.log('Function.length (declared parameter count):', arguments.callee.length);
+          console.log('Actual arguments received:', arguments);
+          console.log('Reason:', reason);
+          
+          // Call the original handler logic
+          eventHandlers.handleConnectionFailure(reason, undefined);
+          
+          console.log('✅ ConnectionFailure handler completed successfully with 1 declared parameter');
+        });
+        console.log('✓ connectionFailure handler registered successfully');
       } catch (e) {
         console.error('✗ Error registering connectionFailure handler:', e);
       }
