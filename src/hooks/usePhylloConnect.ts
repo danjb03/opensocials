@@ -83,7 +83,7 @@ export const usePhylloConnect = (
       return false;
     }
 
-    const requiredMethods = ['on', 'open'];
+    const requiredMethods = ['on'];
     for (const method of requiredMethods) {
       if (typeof phylloConnect[method] !== 'function') {
         console.error(`❌ PhylloConnect instance missing required method: ${method}`);
@@ -121,7 +121,7 @@ export const usePhylloConnect = (
         environment: "staging",
         userId: redirectData.userId,
         token: redirectData.token,
-        mode: "redirect" // Use redirect mode consistently
+        mode: "redirect"
       };
 
       console.log('📋 Phyllo config for resume:', config);
@@ -206,14 +206,6 @@ export const usePhylloConnect = (
     
     try {
       console.log('🚀 Starting Phyllo Connect initialization...');
-      console.log('📜 Loading Phyllo script...');
-      await loadPhylloScript();
-      
-      const isReady = await waitForPhylloReady();
-      if (!isReady) {
-        throw new Error('Phyllo Connect library failed to load properly');
-      }
-
       console.log('🔑 Generating fresh Phyllo token...');
       const freshToken = await generatePhylloToken(userId, userEmail);
       
@@ -231,53 +223,15 @@ export const usePhylloConnect = (
       
       localStorage.setItem('phyllo_redirect_data', JSON.stringify(redirectData));
       
-      console.log('⚙️ Initializing Phyllo Connect for user:', userId);
+      console.log('🔄 Redirecting to Phyllo Connect URL...');
       
-      const config = {
-        clientDisplayName: "OpenSocials",
-        environment: "staging",
-        userId: userId,
-        token: freshToken,
-        mode: "redirect" // Use redirect mode instead of popup
-      };
-
-      console.log('📋 Phyllo config for initialization:', {
-        ...config,
-        token: '***redacted***'
-      });
-
-      try {
-        const phylloConnect = await window.PhylloConnect.initialize(config);
-        console.log('✅ PhylloConnect initialization completed:', phylloConnect);
-
-        if (!validatePhylloConnect(phylloConnect)) {
-          throw new Error('Failed to initialize Phyllo Connect - invalid instance returned');
-        }
-
-        console.log('🔗 Phyllo Connect initialized, registering callbacks...');
-
-        const eventHandlers = createPhylloEventHandlers(
-          userId,
-          onConnectionSuccess,
-          setIsPhylloLoading
-        );
-
-        // Register all event handlers
-        registerEventHandlers(phylloConnect, eventHandlers);
-
-        console.log('🔓 Opening Phyllo Connect for social platform selection...');
-        
-        try {
-          phylloConnect.open();
-          console.log('🎉 Phyllo Connect opened successfully!');
-        } catch (openError) {
-          console.error('❌ Error opening Phyllo Connect:', openError);
-          throw new Error(`Failed to open social account connection: ${openError.message}`);
-        }
-      } catch (initError) {
-        console.error('❌ Phyllo initialization error details:', initError);
-        throw new Error(`Phyllo initialization failed: ${initError.message}`);
-      }
+      // Construct the Phyllo Connect URL
+      const phylloUrl = `https://connect.getphyllo.com?clientDisplayName=OpenSocials&token=${encodeURIComponent(freshToken)}&userId=${encodeURIComponent(userId)}&flow=redirect&environment=staging`;
+      
+      console.log('🌐 Phyllo redirect URL:', phylloUrl.replace(freshToken, '***redacted***'));
+      
+      // Redirect to Phyllo Connect
+      window.location.href = phylloUrl;
       
     } catch (error) {
       console.error('💥 Error initializing Phyllo Connect:', error);
