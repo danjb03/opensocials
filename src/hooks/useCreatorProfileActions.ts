@@ -3,7 +3,7 @@ import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
-import { CreatorProfile } from './useCreatorProfileData';
+import { CreatorProfile } from '@/types/creatorProfile';
 
 export const useCreatorProfileActions = (
   profile: CreatorProfile | null, 
