@@ -3,20 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import { OrderStage, orderStageLabels } from '@/types/orders';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { deleteCampaign } from '@/utils/campaign';
-import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { DeleteCampaignModal } from '@/components/brand/modals/DeleteCampaignModal';
 
 interface CampaignStageNavProps {
   currentStageIndex: number;
@@ -29,6 +16,7 @@ interface CampaignStageNavProps {
   canMovePrevious: boolean;
   canMoveNext: boolean;
   orderId: string;
+  orderTitle?: string;
 }
 
 const CampaignStageNav: React.FC<CampaignStageNavProps> = ({
@@ -42,12 +30,11 @@ const CampaignStageNav: React.FC<CampaignStageNavProps> = ({
   canMovePrevious,
   canMoveNext,
   orderId,
+  orderTitle,
 }) => {
   const currentStage = stages[currentStageIndex];
   const isContractPaymentStage = currentStage === 'contract_payment';
-  const [isDeleting, setIsDeleting] = useState(false);
-  const { toast } = useToast();
-  const navigate = useNavigate();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   
   // Simplified message for stage info
   const getStageMessage = () => {
@@ -57,98 +44,63 @@ const CampaignStageNav: React.FC<CampaignStageNavProps> = ({
     return `Stage: ${currentStageIndex + 1} of ${stages.length}`;
   };
 
-  const handleDeleteCampaign = async () => {
-    setIsDeleting(true);
-    const { success } = await deleteCampaign(orderId);
-
-    if (success) {
-      toast({
-        title: "Campaign deleted",
-        description: "The campaign has been successfully deleted."
-      });
-
-      navigate('/brand/dashboard');
-    } else {
-      toast({
-        title: "Error",
-        description: "Failed to delete campaign. Please try again.",
-        variant: "destructive"
-      });
-    }
-
-    setIsDeleting(false);
-  };
-
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={onClose}>
-            <ChevronLeft className="h-4 w-4 mr-1" /> Back to campaigns
-          </Button>
+    <>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={onClose}>
+              <ChevronLeft className="h-4 w-4 mr-1" /> Back to campaigns
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1 hover:bg-red-50 text-red-600 border-red-200"
+              onClick={() => setShowDeleteModal(true)}
+            >
+              <Trash2 className="h-4 w-4 mr-1" /> Delete Campaign
+            </Button>
+          </div>
           
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-1 hover:bg-red-50 text-red-600 border-red-200"
-                disabled={isDeleting}
+          <div className="flex space-x-3">
+            {canMovePrevious && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={onMovePrevious}
+                className="shadow-sm"
               >
-                <Trash2 className="h-4 w-4 mr-1" /> Delete Campaign
+                <ChevronLeft className="h-4 w-4 mr-1" /> Previous Stage
               </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Campaign</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete this campaign? This action cannot be undone and will remove all associated data.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction 
-                  onClick={handleDeleteCampaign} 
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? "Deleting..." : "Delete Campaign"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+            )}
+            
+            {canMoveNext && !isContractPaymentStage && (
+              <Button 
+                size="sm" 
+                onClick={onMoveNext}
+                className="shadow-sm bg-black text-white hover:bg-gray-800"
+              >
+                Complete Next Steps <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            )}
+          </div>
         </div>
         
-        <div className="flex space-x-3">
-          {canMovePrevious && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onMovePrevious}
-              className="shadow-sm"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" /> Previous Stage
-            </Button>
-          )}
-          
-          {canMoveNext && !isContractPaymentStage && (
-            <Button 
-              size="sm" 
-              onClick={onMoveNext}
-              className="shadow-sm bg-black text-white hover:bg-gray-800"
-            >
-              Complete Next Steps <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          )}
+        <div className="border-t bg-gray-50 flex justify-between p-4 mt-4">
+          <div className="text-sm text-gray-500">
+            {getStageMessage()}
+          </div>
         </div>
       </div>
-      
-      <div className="border-t bg-gray-50 flex justify-between p-4 mt-4">
-        <div className="text-sm text-gray-500">
-          {getStageMessage()}
-        </div>
-      </div>
-    </div>
+
+      <DeleteCampaignModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        campaignId={orderId}
+        campaignName={orderTitle}
+      />
+    </>
   );
 };
 
