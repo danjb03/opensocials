@@ -22,27 +22,28 @@ export function useScalableQuery<T = any>({
   customQueryFn,
   ...options
 }: ScalableQueryOptions<T>) {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
 
-  // Create a safe query key that doesn't call userDataStore when no user
+  // Create a safe query key that includes auth loading state
   const queryKey = user?.id 
-    ? (() => {
-        try {
-          return userDataStore.getUserQueryKey(baseKey);
-        } catch (error) {
-          console.warn('⚠️ Failed to get user query key, falling back to no-user key:', error);
-          return ['no-user', ...baseKey];
-        }
-      })()
+    ? [`user-${user.id}`, ...baseKey]
     : ['no-user', ...baseKey];
 
   return useQuery({
     queryKey,
     queryFn: async () => {
+      // Wait for auth to be ready and user to be available
+      if (authLoading) {
+        console.log('⏳ Auth still loading, waiting...');
+        throw new Error('Auth loading');
+      }
+
       if (!user?.id) {
         console.log('🚫 No authenticated user, returning empty result');
         return [] as T;
       }
+
+      console.log('✅ User authenticated, proceeding with query:', user.id);
 
       if (customQueryFn) {
         return customQueryFn();
@@ -55,9 +56,16 @@ export function useScalableQuery<T = any>({
       const result = await userDataStore.executeUserQuery(tableName, selectColumns, additionalFilters);
       return result as T;
     },
-    enabled: !!user?.id && (options.enabled !== false),
+    enabled: !authLoading && !!user?.id && (options.enabled !== false),
     staleTime: 30000, // 30 seconds
     refetchOnWindowFocus: true,
+    retry: (failureCount, error) => {
+      // Don't retry auth-related errors
+      if (error?.message === 'Auth loading' || error?.message?.includes('User not authenticated')) {
+        return false;
+      }
+      return failureCount < 3;
+    },
     ...options
   });
 }
