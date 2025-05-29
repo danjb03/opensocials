@@ -74,10 +74,10 @@ export const usePhylloConnect = (
         eventHandlers.handleTokenExpired(accountId);
       });
 
-      // Updated to use single parameter as per SDK validation requirements
-      phylloConnect.on('connectionFailure', function (reason) {
-        console.log('Connection failure:', { reason });
-        eventHandlers.handleConnectionFailure(reason);
+      // Updated to use two parameters as per SDK validation requirements
+      phylloConnect.on('connectionFailure', function (reason, userIdFromEvent) {
+        console.log('Connection failure:', { reason, userIdFromEvent });
+        eventHandlers.handleConnectionFailure(reason, userIdFromEvent);
       });
 
       phylloConnect.on('error', function (reason) {
