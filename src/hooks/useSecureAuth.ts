@@ -31,9 +31,13 @@ export const useSecureAuth = () => {
     try {
       setAuthError(null);
       
-      // Use a more secure approach to get user role
+      // First try to get role from user_roles table
       const { data: roleData, error: roleError } = await supabase
-        .rpc('get_current_user_role');
+        .from('user_roles')
+        .select('role, status')
+        .eq('user_id', userId)
+        .eq('status', 'approved')
+        .maybeSingle();
       
       if (roleError) {
         console.error('❌ Error fetching user role:', roleError);
@@ -43,7 +47,7 @@ export const useSecureAuth = () => {
       }
       
       if (roleData) {
-        setRole(roleData as UserRole);
+        setRole(roleData.role as UserRole);
       } else {
         // Fallback to checking profiles table
         const { data: profileData, error: profileError } = await supabase
