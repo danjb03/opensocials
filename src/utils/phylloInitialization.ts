@@ -6,11 +6,11 @@ export const createPhylloRedirectUrl = (token: string, userId: string): string =
   const returnUrl = `${window.location.origin}/creator/connect/callback`;
   
   const phylloParams = new URLSearchParams({
-    clientDisplayName: 'OpenSocials',
-    token: token,
-    userId: userId,
-    environment: 'staging',
-    redirectURL: returnUrl
+    client_display_name: 'OpenSocials',
+    user_token: token,
+    user_id: userId,
+    env: 'staging',
+    redirect_url: returnUrl
   });
   
   const baseUrl = 'https://connect.getphyllo.com';
