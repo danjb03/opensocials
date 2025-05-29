@@ -58,7 +58,7 @@ export const useOrderData = () => {
 
         console.log('📋 Processing projects array:', {
           totalProjects: projectsData.length,
-          projects: projectsData.map(p => {
+          projects: projectsData.map((p, index) => {
             // Type guard to ensure p is not null and is an object with the expected properties
             if (p && typeof p === 'object' && !('error' in p)) {
               const project = p as Record<string, any>;
@@ -68,7 +68,7 @@ export const useOrderData = () => {
                 status: project.status 
               };
             }
-            return { id: 'invalid', name: 'invalid', status: 'invalid' };
+            return { id: `invalid-${index}`, name: 'invalid', status: 'invalid' };
           })
         });
 

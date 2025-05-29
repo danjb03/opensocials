@@ -29,12 +29,18 @@ export function useScalableQuery<T = any>({
     ? [`user-${user.id}`, ...baseKey]
     : ['no-user', ...baseKey];
 
+  // Check if both auth and store are ready
+  const isStoreReady = userDataStore.isReady();
+  const isFullyReady = !authLoading && !!user?.id && isStoreReady;
+
   console.log('🔍 useScalableQuery initialized:', {
     baseKey,
     tableName,
     userId: user?.id,
     authLoading,
-    enabled: !authLoading && !!user?.id && (options.enabled !== false)
+    isStoreReady,
+    isFullyReady,
+    enabled: isFullyReady && (options.enabled !== false)
   });
 
   return useQuery({
@@ -43,6 +49,7 @@ export function useScalableQuery<T = any>({
       console.log('📡 useScalableQuery executing queryFn:', {
         authLoading,
         userId: user?.id,
+        isStoreReady,
         tableName,
         customQueryFn: !!customQueryFn
       });
@@ -58,7 +65,12 @@ export function useScalableQuery<T = any>({
         return [] as T;
       }
 
-      console.log('✅ User authenticated, proceeding with query:', user.id);
+      if (!isStoreReady) {
+        console.log('⏳ UserDataStore not ready, waiting...');
+        throw new Error('Store not initialized');
+      }
+
+      console.log('✅ User authenticated and store ready, proceeding with query:', user.id);
 
       try {
         if (customQueryFn) {
@@ -81,13 +93,15 @@ export function useScalableQuery<T = any>({
         throw error;
       }
     },
-    enabled: !authLoading && !!user?.id && (options.enabled !== false),
+    enabled: isFullyReady && (options.enabled !== false),
     staleTime: 30000, // 30 seconds
     refetchOnWindowFocus: true,
     retry: (failureCount, error) => {
       console.log('🔄 Retry logic:', { failureCount, errorMessage: error?.message });
-      // Don't retry auth-related errors
-      if (error?.message === 'Auth loading' || error?.message?.includes('User not authenticated')) {
+      // Don't retry auth-related or store initialization errors
+      if (error?.message === 'Auth loading' || 
+          error?.message === 'Store not initialized' || 
+          error?.message?.includes('User not authenticated')) {
         return false;
       }
       return failureCount < 3;

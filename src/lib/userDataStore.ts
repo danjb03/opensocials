@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { useQueryClient } from '@tanstack/react-query';
@@ -13,6 +12,7 @@ export class UserDataStore {
   private userId: string | null = null;
   private queryClient: any = null;
   private activeChannels: Map<string, any> = new Map();
+  private isInitialized: boolean = false;
 
   private constructor() {}
 
@@ -26,13 +26,24 @@ export class UserDataStore {
   initialize(userId: string, queryClient: any) {
     this.userId = userId;
     this.queryClient = queryClient;
+    this.isInitialized = true;
     this.setupRealtimeSubscriptions();
+    console.log('🔄 UserDataStore initialized for user:', userId);
   }
 
   cleanup() {
     this.cleanupChannels();
     this.userId = null;
     this.queryClient = null;
+    this.isInitialized = false;
+    console.log('🧹 UserDataStore cleaned up');
+  }
+
+  /**
+   * Check if the store is ready for use
+   */
+  isReady(): boolean {
+    return this.isInitialized && !!this.userId;
   }
 
   /**
@@ -47,7 +58,9 @@ export class UserDataStore {
    * Execute user-scoped database query with automatic filtering
    */
   async executeUserQuery(tableName: string, selectColumns = '*', additionalFilters = {}) {
-    if (!this.userId) throw new Error('User not authenticated');
+    if (!this.isReady()) {
+      throw new Error('User not authenticated or store not initialized');
+    }
 
     let query = supabase
       .from(tableName as any)
