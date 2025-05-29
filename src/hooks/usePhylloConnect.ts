@@ -74,7 +74,6 @@ export const usePhylloConnect = (
         eventHandlers.handleTokenExpired(accountId);
       });
 
-      // Use proper function declaration with exactly 2 parameters for connectionFailure
       phylloConnect.on('connectionFailure', function (reason, workplatformId) {
         console.log('Connection failure:', { reason, workplatformId });
         eventHandlers.handleConnectionFailure(reason, workplatformId);
@@ -85,9 +84,9 @@ export const usePhylloConnect = (
         eventHandlers.handleError(reason);
       });
 
-      // Use proper function declaration with exactly 2 parameters for exit
-      phylloConnect.on('exit', function (reason, userId) {
-        console.warn("Phyllo exit triggered with reason:", reason, "User:", userId);
+      // Fix: Use exactly 1 parameter for exit handler as expected by SDK
+      phylloConnect.on('exit', function (exitContext) {
+        console.warn("Phyllo exit triggered:", exitContext);
         setIsPhylloLoading(false);
       });
 

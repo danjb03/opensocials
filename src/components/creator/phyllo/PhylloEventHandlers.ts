@@ -63,8 +63,9 @@ export const createPhylloEventHandlers = (
     setIsLoading?.(false);
   };
 
-  const handleExit = (reason: any) => {
-    console.log('Phyllo exit with reason:', reason);
+  // Updated to accept single exitContext parameter matching SDK expectations
+  const handleExit = (exitContext: any) => {
+    console.log('Phyllo exit with context:', exitContext);
     setIsLoading?.(false);
   };
 
