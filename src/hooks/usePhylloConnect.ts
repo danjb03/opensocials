@@ -225,23 +225,31 @@ export const usePhylloConnect = (
       
       console.log('🔄 Redirecting to Phyllo Connect URL...');
       
-      // Construct the return URL for our app
+      // Use a simpler return URL that matches our routing
       const returnUrl = `${window.location.origin}/creator/connect/callback`;
       
-      // Construct the Phyllo Connect URL with proper encoding
-      const phylloBaseUrl = 'https://connect.getphyllo.com';
-      const params = new URLSearchParams({
+      // Build the redirect URL more carefully
+      const phylloParams = {
         clientDisplayName: 'OpenSocials',
         token: freshToken,
         userId: userId,
-        flow: 'redirect',
         environment: 'staging',
         redirectURL: returnUrl
-      });
+      };
       
-      const phylloUrl = `${phylloBaseUrl}?${params.toString()}`;
+      // Construct URL with proper encoding
+      const baseUrl = 'https://connect.getphyllo.com';
+      const queryString = Object.entries(phylloParams)
+        .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+        .join('&');
       
-      console.log('🌐 Redirecting to Phyllo Connect with return URL:', returnUrl);
+      const phylloUrl = `${baseUrl}?${queryString}`;
+      
+      console.log('🌐 Phyllo Connect URL:', phylloUrl);
+      console.log('🔙 Return URL:', returnUrl);
+      
+      // Add a small delay to ensure localStorage is saved
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       // Redirect to Phyllo Connect
       window.location.href = phylloUrl;
