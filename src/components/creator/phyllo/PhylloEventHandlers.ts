@@ -64,9 +64,9 @@ export const createPhylloEventHandlers = (
     setIsLoading?.(false);
   };
 
-  // Updated to accept two parameters as per Phyllo SDK documentation
-  const handleExit = (reason: string, userId: string) => {
-    console.warn('Phyllo exit triggered with reason:', reason, 'User:', userId);
+  // Updated to accept 0 parameters to match the callback registration
+  const handleExit = () => {
+    console.warn('Phyllo exit triggered');
     setIsLoading?.(false);
   };
 
