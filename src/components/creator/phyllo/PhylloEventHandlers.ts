@@ -7,67 +7,117 @@ export const createPhylloEventHandlers = (
   onConnectionSuccess?: () => void,
   setIsLoading?: (loading: boolean) => void
 ) => {
-  const handleAccountConnected = (accountId: string, workplatformId: string, userIdFromEvent: string) => {
-    console.log('Account Connected with parameters:', { accountId, workplatformId, userIdFromEvent });
+  const handleAccountConnected = async (accountId: string, workplatformId: string, userIdFromEvent: string) => {
+    try {
+      console.log('Facebook/Account Connected with parameters:', { accountId, workplatformId, userIdFromEvent });
 
-    if (accountId && workplatformId && userIdFromEvent) {
-      console.log('Calling storeConnectedAccount function...');
+      if (!accountId || !workplatformId || !userIdFromEvent) {
+        console.error('Missing required parameters for account connection:', { accountId, workplatformId, userIdFromEvent });
+        toast.error('Failed to connect: missing account information');
+        setIsLoading?.(false);
+        return;
+      }
+
+      console.log('Calling storeConnectedAccount function for platform:', workplatformId);
       
-      supabase.functions.invoke('storeConnectedAccount', {
+      const { data, error } = await supabase.functions.invoke('storeConnectedAccount', {
         body: {
           user_id: userId,
           platform: workplatformId,
           account_id: accountId,
           workplatform_id: workplatformId
         }
-      }).then(({ data, error }) => {
-        if (error) {
-          console.error('Error storing connected account:', error);
-          toast.error('Connected to platform but failed to save connection. Please try again.');
-        } else {
-          console.log('Successfully stored connected account:', data);
-          toast.success('Social account connected successfully!');
-          onConnectionSuccess?.();
-        }
-      }).catch(error => {
-        console.error('Error storing connected account:', error);
-        toast.error('Connected to platform but failed to save connection. Please try again.');
       });
-    } else {
-      console.error('Missing required parameters for account connection:', { accountId, workplatformId, userIdFromEvent });
-      toast.error('Failed to connect: missing account information');
+
+      if (error) {
+        console.error('Error storing connected account:', error);
+        toast.error(`Connected to ${workplatformId} but failed to save connection. Please try again.`);
+        setIsLoading?.(false);
+        return;
+      }
+
+      console.log('Successfully stored connected account:', data);
+      toast.success(`${workplatformId} account connected successfully!`);
+      onConnectionSuccess?.();
+      setIsLoading?.(false);
+      
+    } catch (error) {
+      console.error('Error in handleAccountConnected:', error);
+      toast.error(`Failed to connect ${workplatformId}: ${error.message}`);
+      setIsLoading?.(false);
     }
   };
 
   const handleAccountDisconnected = (accountId: string, workplatformId: string, userIdFromEvent: string) => {
-    console.log('Account Disconnected with parameters:', { accountId, workplatformId, userIdFromEvent });
-    toast.success('Social account disconnected successfully');
-    onConnectionSuccess?.();
+    try {
+      console.log('Account Disconnected with parameters:', { accountId, workplatformId, userIdFromEvent });
+      toast.success(`${workplatformId} account disconnected successfully`);
+      onConnectionSuccess?.();
+      setIsLoading?.(false);
+    } catch (error) {
+      console.error('Error in handleAccountDisconnected:', error);
+      setIsLoading?.(false);
+    }
   };
 
   const handleTokenExpired = (accountId: string) => {
-    console.log('Token expired for account:', accountId);
-    toast.error('Session expired. Please try connecting again.');
-    setIsLoading?.(false);
+    try {
+      console.log('Token expired for account:', accountId);
+      toast.error('Session expired. Please try connecting again.');
+      setIsLoading?.(false);
+    } catch (error) {
+      console.error('Error in handleTokenExpired:', error);
+      setIsLoading?.(false);
+    }
   };
 
-  // Updated to accept three parameters as per SDK requirements
   const handleConnectionFailure = (reason: string, workplatformId: string, userIdFromEvent: string) => {
-    console.log('Connection failure with parameters:', { reason, workplatformId, userIdFromEvent });
-    toast.error(`Failed to connect to ${workplatformId || 'platform'}: ${reason || 'Unknown error'}`);
-    setIsLoading?.(false);
+    try {
+      console.log('Connection failure with parameters:', { reason, workplatformId, userIdFromEvent });
+      
+      // Add specific handling for Facebook failures
+      if (workplatformId?.toLowerCase().includes('facebook') || workplatformId?.toLowerCase().includes('meta')) {
+        console.log('Facebook connection failed:', reason);
+        toast.error(`Failed to connect to Facebook: ${reason || 'Connection was cancelled or failed'}`);
+      } else {
+        toast.error(`Failed to connect to ${workplatformId || 'platform'}: ${reason || 'Unknown error'}`);
+      }
+      setIsLoading?.(false);
+    } catch (error) {
+      console.error('Error in handleConnectionFailure:', error);
+      setIsLoading?.(false);
+    }
   };
 
   const handleError = (reason: string) => {
-    console.log('Phyllo Connect error:', reason);
-    toast.error(`Failed to connect social account: ${reason || 'Unknown error'}`);
-    setIsLoading?.(false);
+    try {
+      console.log('Phyllo Connect error:', reason);
+      toast.error(`Failed to connect social account: ${reason || 'Unknown error'}`);
+      setIsLoading?.(false);
+    } catch (error) {
+      console.error('Error in handleError:', error);
+      setIsLoading?.(false);
+    }
   };
 
-  // Updated to accept 3 parameters as per Phyllo SDK documentation
   const handleExit = (reason: string, workplatformId: string, userIdFromEvent: string) => {
-    console.warn('Phyllo exit triggered with reason:', reason, 'Work Platform:', workplatformId, 'User:', userIdFromEvent);
-    setIsLoading?.(false);
+    try {
+      console.warn('Phyllo exit triggered with reason:', reason, 'Work Platform:', workplatformId, 'User:', userIdFromEvent);
+      
+      // Only show toast if it's not a successful completion
+      if (reason && reason !== 'completed' && reason !== 'success') {
+        if (workplatformId?.toLowerCase().includes('facebook') || workplatformId?.toLowerCase().includes('meta')) {
+          console.log('Facebook connection cancelled by user');
+          toast.info('Facebook connection was cancelled');
+        } else {
+          toast.info(`Connection to ${workplatformId || 'platform'} was cancelled`);
+        }
+      }
+      setIsLoading?.(false);
+    } catch (error) {
+      console.error('Error in handleExit:', error);
+      setIsLoading?.(false);
+    }
   };
 
   return {

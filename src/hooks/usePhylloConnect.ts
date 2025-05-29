@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from '@/components/ui/sonner';
 import { usePhylloScript } from './usePhylloScript';
@@ -128,11 +127,8 @@ export const usePhylloConnect = (
       console.log('Phyllo config for resume:', config);
 
       try {
-        // Await the initialization promise and add detailed error logging
         const phylloConnect = await window.PhylloConnect.initialize(config);
-        console.log('PhylloConnect initialization completed:', phylloConnect);
-        console.log('PhylloConnect type:', typeof phylloConnect);
-        console.log('PhylloConnect methods:', phylloConnect ? Object.keys(phylloConnect) : 'undefined');
+        console.log('PhylloConnect initialization completed for resume:', phylloConnect);
 
         if (!validatePhylloConnect(phylloConnect)) {
           throw new Error('Failed to initialize Phyllo Connect - invalid instance returned');
@@ -150,8 +146,8 @@ export const usePhylloConnect = (
         console.log('Phyllo Connect resumed successfully');
         setIsPhylloLoading(false);
       } catch (initError) {
-        console.error('Phyllo initialization error details:', initError);
-        throw new Error(`Phyllo initialization failed: ${initError.message}`);
+        console.error('Phyllo resume initialization error:', initError);
+        throw new Error(`Phyllo resume initialization failed: ${initError.message}`);
       }
       
     } catch (error) {
@@ -245,14 +241,11 @@ export const usePhylloConnect = (
         redirectURL: `${window.location.origin}/creator?phyllo_return=true`
       };
 
-      console.log('Phyllo config:', config);
+      console.log('Phyllo config for initialization:', config);
 
       try {
-        // Await the initialization promise and add detailed error logging
         const phylloConnect = await window.PhylloConnect.initialize(config);
         console.log('PhylloConnect initialization completed:', phylloConnect);
-        console.log('PhylloConnect type:', typeof phylloConnect);
-        console.log('PhylloConnect methods:', phylloConnect ? Object.keys(phylloConnect) : 'undefined');
 
         if (!validatePhylloConnect(phylloConnect)) {
           throw new Error('Failed to initialize Phyllo Connect - invalid instance returned');
@@ -269,9 +262,8 @@ export const usePhylloConnect = (
         // Register all event handlers
         registerEventHandlers(phylloConnect, eventHandlers);
 
-        console.log('Opening Phyllo Connect...');
+        console.log('Opening Phyllo Connect for social platform selection...');
         
-        // For redirect flow, open immediately
         try {
           phylloConnect.open();
         } catch (openError) {

@@ -50,7 +50,7 @@ serve(async (req) => {
 
     console.log('Storing connected account:', { user_id, platform, account_id, workplatform_id });
 
-    // Use upsert to handle existing connections
+    // Use upsert to handle existing connections with proper timestamp handling
     const { data, error } = await supabase
       .from("connected_accounts")
       .upsert({
@@ -58,8 +58,7 @@ serve(async (req) => {
         platform,
         account_id,
         workplatform_id,
-        connected_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        connected_at: new Date().toISOString()
       }, {
         onConflict: 'user_id,platform'
       })
@@ -67,6 +66,21 @@ serve(async (req) => {
 
     if (error) {
       console.error('Database error:', error);
+      
+      // Check if it's a column missing error and provide helpful message
+      if (error.message.includes('column') && error.message.includes('does not exist')) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Database schema issue - please contact support',
+            details: error.message
+          }), 
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+      
       return new Response(
         JSON.stringify({ error: `Database error: ${error.message}` }), 
         { 
@@ -92,7 +106,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Unexpected error:', error);
     return new Response(
-      JSON.stringify({ error: `Unexpected error: ${error.message}` }), 
+      JSON.stringify({ 
+        error: 'Unexpected error occurred',
+        details: error.message
+      }), 
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
