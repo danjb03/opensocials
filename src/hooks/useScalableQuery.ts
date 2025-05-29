@@ -92,15 +92,17 @@ export function useScalableQuery<T = any>({
       }
       return failureCount < 3;
     },
-    onError: (error) => {
-      console.error('❌ useScalableQuery error:', error);
-    },
-    onSuccess: (data) => {
-      console.log('✅ useScalableQuery success:', { 
-        dataType: typeof data, 
-        isArray: Array.isArray(data), 
-        count: Array.isArray(data) ? data.length : 'not array' 
-      });
+    meta: {
+      onError: (error) => {
+        console.error('❌ useScalableQuery error:', error);
+      },
+      onSuccess: (data) => {
+        console.log('✅ useScalableQuery success:', { 
+          dataType: typeof data, 
+          isArray: Array.isArray(data), 
+          count: Array.isArray(data) ? data.length : 'not array' 
+        });
+      }
     },
     ...options
   });

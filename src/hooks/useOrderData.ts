@@ -58,34 +58,39 @@ export const useOrderData = () => {
 
         console.log('📋 Processing projects array:', {
           totalProjects: projectsData.length,
-          projects: projectsData.map(p => ({ id: p.id, name: p.name, status: p.status }))
+          projects: projectsData.map(p => {
+            // Type guard to ensure p is an object with the expected properties
+            if (p && typeof p === 'object' && !('error' in p)) {
+              const project = p as Record<string, any>;
+              return { 
+                id: project.id, 
+                name: project.name, 
+                status: project.status 
+              };
+            }
+            return { id: 'invalid', name: 'invalid', status: 'invalid' };
+          })
         });
 
         // Transform projects to orders
         const orders: Order[] = [];
         
         for (const [index, item] of projectsData.entries()) {
-          console.log(`🔄 Processing project ${index + 1}/${projectsData.length}:`, {
-            id: item?.id,
-            name: item?.name,
-            type: typeof item,
-            hasError: 'error' in (item as Record<string, any>)
-          });
-
-          // Skip null, undefined, or non-object items
-          if (!item || typeof item !== 'object') {
-            console.warn(`⚠️ Skipping invalid item at index ${index}:`, item);
-            continue;
-          }
-
-          // Skip error objects
-          if ('error' in (item as Record<string, any>)) {
-            console.warn(`⚠️ Skipping error object at index ${index}:`, item);
+          // Type guard: check if item is a valid object and not an error
+          if (!item || typeof item !== 'object' || 'error' in (item as Record<string, any>)) {
+            console.warn(`⚠️ Skipping invalid or error item at index ${index}:`, item);
             continue;
           }
 
           const projectItem = item as Record<string, any>;
           
+          console.log(`🔄 Processing project ${index + 1}/${projectsData.length}:`, {
+            id: projectItem?.id,
+            name: projectItem?.name,
+            type: typeof projectItem,
+            hasRequiredFields: !!(projectItem?.id && projectItem?.name)
+          });
+
           // Validate required fields for project
           if (typeof projectItem.id === 'string' &&
               typeof projectItem.name === 'string') {
