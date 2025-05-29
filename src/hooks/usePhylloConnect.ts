@@ -85,9 +85,9 @@ export const usePhylloConnect = (
         eventHandlers.handleTokenExpired(accountId);
       });
 
-      phylloConnect.on('connectionFailure', function (reason, userIdFromEvent) {
-        console.log('Connection failure:', { reason, userIdFromEvent });
-        eventHandlers.handleConnectionFailure(reason, userIdFromEvent);
+      phylloConnect.on('connectionFailure', function (reason, workplatformId, userId) {
+        console.log('Connection failure:', { reason, workplatformId, userId });
+        eventHandlers.handleConnectionFailure(reason, workplatformId, userId);
       });
 
       console.log('All callbacks registered successfully. Opening Phyllo Connect...');

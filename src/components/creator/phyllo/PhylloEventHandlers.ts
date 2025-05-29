@@ -51,9 +51,9 @@ export const createPhylloEventHandlers = (
     setIsLoading?.(false);
   };
 
-  // Updated to accept two parameters as per SDK validation requirements
-  const handleConnectionFailure = (reason: string, userId: string) => {
-    console.log('Connection failure:', { reason, userId });
+  // Updated to accept three parameters as per SDK requirements
+  const handleConnectionFailure = (reason: string, workplatformId: string, userId: string) => {
+    console.log('Connection failure:', { reason, workplatformId, userId });
     toast.error(`Failed to connect: ${reason || 'Unknown error'}`);
     setIsLoading?.(false);
   };
