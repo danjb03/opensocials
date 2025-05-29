@@ -52,9 +52,9 @@ export const createPhylloEventHandlers = (
   };
 
   // Updated to accept three parameters as per SDK requirements
-  const handleConnectionFailure = (reason: string, workplatformId: string, userId: string) => {
-    console.log('Connection failure:', { reason, workplatformId, userId });
-    toast.error(`Failed to connect: ${reason || 'Unknown error'}`);
+  const handleConnectionFailure = (reason: string, workplatformId: string, userIdFromEvent: string) => {
+    console.log('Connection failure with parameters:', { reason, workplatformId, userIdFromEvent });
+    toast.error(`Failed to connect to ${workplatformId || 'platform'}: ${reason || 'Unknown error'}`);
     setIsLoading?.(false);
   };
 
@@ -64,9 +64,9 @@ export const createPhylloEventHandlers = (
     setIsLoading?.(false);
   };
 
-  // Updated to accept 2 parameters as per Phyllo SDK documentation
-  const handleExit = (reason: string, userId: string) => {
-    console.warn('Phyllo exit triggered with reason:', reason, 'User:', userId);
+  // Updated to accept 3 parameters as per Phyllo SDK documentation
+  const handleExit = (reason: string, workplatformId: string, userIdFromEvent: string) => {
+    console.warn('Phyllo exit triggered with reason:', reason, 'Work Platform:', workplatformId, 'User:', userIdFromEvent);
     setIsLoading?.(false);
   };
 
