@@ -18,6 +18,7 @@ const CreateProfile = () => {
 
   const handleConnectionSuccess = () => {
     console.log('Social media connection successful from CreateProfile');
+    // Optionally refresh profile data or show success message
   };
 
   return (
