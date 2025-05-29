@@ -26,7 +26,7 @@ export const useProjects = () => {
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Fetch projects with scalable query system
+  // Fetch projects with scalable query system - using the same approach as useCampaigns
   const { data: projects = [], isLoading, error, refetch } = useScalableQuery<Project[]>({
     baseKey: ['projects', filters],
     customQueryFn: async (): Promise<Project[]> => {
@@ -43,7 +43,9 @@ export const useProjects = () => {
           userDataStore.executeUserQuery('projects', '*', {})
         );
 
-        // Validate the response structure
+        console.log('📊 Raw projects data from database:', projectsData);
+
+        // Validate the response structure - same as useCampaigns
         if (!projectsData || typeof projectsData === 'string') {
           console.error('❌ Invalid projects data:', projectsData);
           return [];
@@ -61,7 +63,7 @@ export const useProjects = () => {
           return [];
         }
 
-        // Filter out any invalid entries and validate project structure
+        // Transform and validate projects - same logic as campaigns
         const validProjects: Project[] = [];
         
         for (const item of projectsData) {
@@ -70,22 +72,37 @@ export const useProjects = () => {
             continue;
           }
 
-          // Skip error objects - explicit type check and assertion
+          // Skip error objects
           if ('error' in (item as Record<string, any>)) {
             continue;
           }
 
-          // Type-safe validation - now TypeScript knows item is a valid object
           const projectItem = item as Record<string, any>;
           
+          // Validate required fields
           if (typeof projectItem.id === 'string' &&
               typeof projectItem.name === 'string' &&
               typeof projectItem.campaign_type === 'string') {
             
-            // Cast to Project after validation
-            validProjects.push(projectItem as Project);
+            // Transform to match Project type exactly
+            const project: Project = {
+              id: projectItem.id,
+              name: projectItem.name,
+              campaign_type: projectItem.campaign_type,
+              start_date: projectItem.start_date || '',
+              end_date: projectItem.end_date || '',
+              budget: Number(projectItem.budget) || 0,
+              currency: projectItem.currency || 'USD',
+              platforms: Array.isArray(projectItem.platforms) ? projectItem.platforms : [],
+              status: projectItem.status || 'draft',
+              is_priority: Boolean(projectItem.is_priority)
+            };
+            
+            validProjects.push(project);
           }
         }
+
+        console.log('✅ Projects validated and transformed:', validProjects.length, 'projects');
 
         // Apply client-side filtering for complex filters
         let filteredProjects = validProjects;
@@ -123,7 +140,7 @@ export const useProjects = () => {
           });
         }
         
-        console.log('📊 Filtered projects:', filteredProjects.length, 'projects');
+        console.log('📊 Final filtered projects:', filteredProjects.length, 'projects');
         
         return filteredProjects;
       } catch (error) {
@@ -131,7 +148,7 @@ export const useProjects = () => {
         return [];
       }
     },
-    staleTime: 5000,
+    staleTime: 30000, // Same as useCampaigns
     refetchOnWindowFocus: true,
   });
 
