@@ -225,6 +225,9 @@ export const usePhylloConnect = (
       
       console.log('🔄 Redirecting to Phyllo Connect URL...');
       
+      // Construct the return URL for our app
+      const returnUrl = `${window.location.origin}/creator/connect/callback`;
+      
       // Construct the Phyllo Connect URL with proper encoding
       const phylloBaseUrl = 'https://connect.getphyllo.com';
       const params = new URLSearchParams({
@@ -232,12 +235,13 @@ export const usePhylloConnect = (
         token: freshToken,
         userId: userId,
         flow: 'redirect',
-        environment: 'staging'
+        environment: 'staging',
+        redirectURL: returnUrl
       });
       
       const phylloUrl = `${phylloBaseUrl}?${params.toString()}`;
       
-      console.log('🌐 Redirecting to Phyllo Connect...');
+      console.log('🌐 Redirecting to Phyllo Connect with return URL:', returnUrl);
       
       // Redirect to Phyllo Connect
       window.location.href = phylloUrl;
