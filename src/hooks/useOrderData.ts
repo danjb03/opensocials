@@ -59,7 +59,7 @@ export const useOrderData = () => {
         console.log('📋 Processing projects array:', {
           totalProjects: projectsData.length,
           projects: projectsData.map(p => {
-            // Type guard to ensure p is an object with the expected properties
+            // Type guard to ensure p is not null and is an object with the expected properties
             if (p && typeof p === 'object' && !('error' in p)) {
               const project = p as Record<string, any>;
               return { 
