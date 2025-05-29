@@ -1,7 +1,6 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { logSecurityEvent, extractClientInfo } from '../shared/security-utils.ts'
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -33,34 +32,20 @@ serve(async (req) => {
       )
     }
 
-    // Check if user is a creator using the new security function
-    const { data: userRole } = await supabaseClient
-      .rpc('get_current_user_role')
+    const { data: profile, error: profileError } = await supabaseClient
+      .from('profiles')
+      .select('has_seen_creator_intro')
+      .eq('id', user.id)
+      .maybeSingle()
 
-    if (!userRole || userRole !== 'creator') {
+    if (profileError) {
       return new Response(
-        JSON.stringify({ showIntro: false }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Failed to fetch profile' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Check if creator intro has been dismissed
-    const { data: profile } = await supabaseClient
-      .from('profiles')
-      .select('creator_intro_dismissed')
-      .eq('id', user.id)
-      .single()
-
-    const showIntro = !profile?.creator_intro_dismissed
-
-    // Log security event
-    const clientInfo = extractClientInfo(req)
-    await logSecurityEvent(supabaseClient, {
-      user_id: user.id,
-      action: 'check_creator_intro',
-      resource_type: 'creator_intro',
-      ...clientInfo
-    })
+    const showIntro = !profile?.has_seen_creator_intro
 
     return new Response(
       JSON.stringify({ showIntro }),
