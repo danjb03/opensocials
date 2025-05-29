@@ -225,10 +225,19 @@ export const usePhylloConnect = (
       
       console.log('🔄 Redirecting to Phyllo Connect URL...');
       
-      // Construct the Phyllo Connect URL
-      const phylloUrl = `https://connect.getphyllo.com?clientDisplayName=OpenSocials&token=${encodeURIComponent(freshToken)}&userId=${encodeURIComponent(userId)}&flow=redirect&environment=staging`;
+      // Construct the Phyllo Connect URL with proper encoding
+      const phylloBaseUrl = 'https://connect.getphyllo.com';
+      const params = new URLSearchParams({
+        clientDisplayName: 'OpenSocials',
+        token: freshToken,
+        userId: userId,
+        flow: 'redirect',
+        environment: 'staging'
+      });
       
-      console.log('🌐 Phyllo redirect URL:', phylloUrl.replace(freshToken, '***redacted***'));
+      const phylloUrl = `${phylloBaseUrl}?${params.toString()}`;
+      
+      console.log('🌐 Redirecting to Phyllo Connect...');
       
       // Redirect to Phyllo Connect
       window.location.href = phylloUrl;
