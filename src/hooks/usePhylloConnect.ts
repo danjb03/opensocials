@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from '@/components/ui/sonner';
 import { usePhylloScript } from './usePhylloScript';
@@ -127,7 +126,9 @@ export const usePhylloConnect = (
 
       console.log('Phyllo config for resume:', config);
 
-      const phylloConnect = window.PhylloConnect.initialize(config);
+      // Await the initialization promise
+      const phylloConnect = await window.PhylloConnect.initialize(config);
+      console.log('PhylloConnect initialization completed:', phylloConnect);
 
       if (!validatePhylloConnect(phylloConnect)) {
         throw new Error('Failed to initialize Phyllo Connect - invalid instance returned');
@@ -154,32 +155,32 @@ export const usePhylloConnect = (
 
   const registerEventHandlers = (phylloConnect: any, eventHandlers: any) => {
     try {
-      phylloConnect.on('accountConnected', function (accountId: string, workplatformId: string, userIdFromEvent: string) {
+      phylloConnect.on('accountConnected', function (accountId, workplatformId, userIdFromEvent) {
         console.log('Account Connected:', { accountId, workplatformId, userIdFromEvent });
         eventHandlers.handleAccountConnected(accountId, workplatformId, userIdFromEvent);
       });
 
-      phylloConnect.on('accountDisconnected', function (accountId: string, workplatformId: string, userIdFromEvent: string) {
+      phylloConnect.on('accountDisconnected', function (accountId, workplatformId, userIdFromEvent) {
         console.log('Account Disconnected:', { accountId, workplatformId, userIdFromEvent });
         eventHandlers.handleAccountDisconnected(accountId, workplatformId, userIdFromEvent);
       });
 
-      phylloConnect.on('tokenExpired', function (accountId: string) {
+      phylloConnect.on('tokenExpired', function (accountId) {
         console.log('Token expired for account:', accountId);
         eventHandlers.handleTokenExpired(accountId);
       });
 
-      phylloConnect.on('connectionFailure', function (reason: string, workplatformId: string, userIdFromEvent: string) {
+      phylloConnect.on('connectionFailure', function (reason, workplatformId, userIdFromEvent) {
         console.log('Connection failure:', { reason, workplatformId, userIdFromEvent });
         eventHandlers.handleConnectionFailure(reason, workplatformId, userIdFromEvent);
       });
 
-      phylloConnect.on('error', function (reason: string) {
+      phylloConnect.on('error', function (reason) {
         console.log('Phyllo Connect error:', reason);
         eventHandlers.handleError(reason);
       });
 
-      phylloConnect.on('exit', function (reason: string, workplatformId: string, userIdFromEvent: string) {
+      phylloConnect.on('exit', function (reason, workplatformId, userIdFromEvent) {
         console.log('Phyllo exit triggered:', { reason, workplatformId, userIdFromEvent });
         eventHandlers.handleExit(reason, workplatformId, userIdFromEvent);
       });
@@ -238,7 +239,9 @@ export const usePhylloConnect = (
 
       console.log('Phyllo config:', config);
 
-      const phylloConnect = window.PhylloConnect.initialize(config);
+      // Await the initialization promise
+      const phylloConnect = await window.PhylloConnect.initialize(config);
+      console.log('PhylloConnect initialization completed:', phylloConnect);
 
       if (!validatePhylloConnect(phylloConnect)) {
         throw new Error('Failed to initialize Phyllo Connect - invalid instance returned');
