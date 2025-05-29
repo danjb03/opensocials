@@ -5,20 +5,16 @@ import { storeRedirectData } from './phylloRedirectData';
 export const createPhylloRedirectUrl = (token: string, userId: string): string => {
   const returnUrl = `${window.location.origin}/creator/connect/callback`;
   
-  const phylloParams = {
+  const phylloParams = new URLSearchParams({
     clientDisplayName: 'OpenSocials',
     token: token,
     userId: userId,
     environment: 'staging',
     redirectURL: returnUrl
-  };
+  });
   
   const baseUrl = 'https://connect.getphyllo.com';
-  const queryString = Object.entries(phylloParams)
-    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-    .join('&');
-  
-  const phylloUrl = `${baseUrl}?${queryString}`;
+  const phylloUrl = `${baseUrl}?${phylloParams.toString()}`;
   
   console.log('🌐 Phyllo Connect URL:', phylloUrl);
   console.log('🔙 Return URL:', returnUrl);
