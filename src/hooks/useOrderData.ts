@@ -10,7 +10,7 @@ export const useOrderData = () => {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   // Fetch projects and transform to orders
-  const { data: projects = [], isLoading, error } = useScalableQuery<Project[]>({
+  const { data: projects = [], isLoading, error, refetch } = useScalableQuery<Project[]>({
     baseKey: ['projects'],
     tableName: 'projects',
     selectColumns: '*',
@@ -49,6 +49,12 @@ export const useOrderData = () => {
     setSelectedOrderId(null);
   };
 
+  // Expose refetch as refreshOrders for compatibility
+  const refreshOrders = () => {
+    console.log('🔄 Refreshing orders data');
+    refetch();
+  };
+
   return {
     orders,
     activeStage,
@@ -60,6 +66,7 @@ export const useOrderData = () => {
     handleStageChange,
     handleOrderSelect,
     handleCloseOrderDetail,
+    refreshOrders, // Add this for compatibility
     setOrders: (newOrders: Order[]) => {
       console.log('Note: Direct order updates will not persist to the database.');
       // This is a legacy interface - actual updates should go through the projects table
