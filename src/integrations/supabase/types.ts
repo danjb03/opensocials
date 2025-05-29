@@ -87,10 +87,13 @@ export type Database = {
           campaign_focus: string[] | null
           company_name: string | null
           created_at: string | null
+          feature_flags: Json | null
           industry: string | null
           logo_url: string | null
+          r4_spend_grade: string | null
           updated_at: string | null
           user_id: string
+          version: number | null
           website_url: string | null
         }
         Insert: {
@@ -100,10 +103,13 @@ export type Database = {
           campaign_focus?: string[] | null
           company_name?: string | null
           created_at?: string | null
+          feature_flags?: Json | null
           industry?: string | null
           logo_url?: string | null
+          r4_spend_grade?: string | null
           updated_at?: string | null
           user_id: string
+          version?: number | null
           website_url?: string | null
         }
         Update: {
@@ -113,10 +119,13 @@ export type Database = {
           campaign_focus?: string[] | null
           company_name?: string | null
           created_at?: string | null
+          feature_flags?: Json | null
           industry?: string | null
           logo_url?: string | null
+          r4_spend_grade?: string | null
           updated_at?: string | null
           user_id?: string
+          version?: number | null
           website_url?: string | null
         }
         Relationships: []
@@ -214,44 +223,30 @@ export type Database = {
       }
       connected_accounts: {
         Row: {
-          id: string
-          creator_id: string | null
-          platform: string
-          external_user_id: string | null
-          access_token: string | null
-          refresh_token: string | null
-          expires_at: string | null
+          account_id: string
           connected_at: string | null
+          id: string
+          platform: string
+          user_id: string | null
+          workplatform_id: string
         }
         Insert: {
-          id?: string
-          creator_id?: string | null
-          platform: string
-          external_user_id?: string | null
-          access_token?: string | null
-          refresh_token?: string | null
-          expires_at?: string | null
+          account_id: string
           connected_at?: string | null
+          id?: string
+          platform: string
+          user_id?: string | null
+          workplatform_id: string
         }
         Update: {
-          id?: string
-          creator_id?: string | null
-          platform?: string
-          external_user_id?: string | null
-          access_token?: string | null
-          refresh_token?: string | null
-          expires_at?: string | null
+          account_id?: string
           connected_at?: string | null
+          id?: string
+          platform?: string
+          user_id?: string | null
+          workplatform_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "connected_accounts_creator_id_fkey",
-            columns: ["creator_id"],
-            isOneToOne: false,
-            referencedRelation: "profiles",
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       creator_industries: {
         Row: {
@@ -550,7 +545,9 @@ export type Database = {
           display_name: string | null
           email: string | null
           engagement_rate: string | null
+          feature_flags: Json | null
           first_name: string | null
+          flagged: boolean | null
           follower_count: string | null
           has_seen_creator_intro: boolean | null
           has_seen_intro: boolean | null
@@ -565,6 +562,8 @@ export type Database = {
           logo_url: string | null
           primary_platform: string | null
           profile_type: string | null
+          r4_recommendations: Json | null
+          r4_score: number | null
           role: string | null
           show_analytics: boolean | null
           show_instagram: boolean | null
@@ -575,6 +574,7 @@ export type Database = {
           status: string | null
           tiktok_connected: boolean | null
           updated_at: string | null
+          version: number | null
           website: string | null
           youtube_connected: boolean | null
         }
@@ -594,7 +594,9 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           engagement_rate?: string | null
+          feature_flags?: Json | null
           first_name?: string | null
+          flagged?: boolean | null
           follower_count?: string | null
           has_seen_creator_intro?: boolean | null
           has_seen_intro?: boolean | null
@@ -609,6 +611,8 @@ export type Database = {
           logo_url?: string | null
           primary_platform?: string | null
           profile_type?: string | null
+          r4_recommendations?: Json | null
+          r4_score?: number | null
           role?: string | null
           show_analytics?: boolean | null
           show_instagram?: boolean | null
@@ -619,6 +623,7 @@ export type Database = {
           status?: string | null
           tiktok_connected?: boolean | null
           updated_at?: string | null
+          version?: number | null
           website?: string | null
           youtube_connected?: boolean | null
         }
@@ -638,7 +643,9 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           engagement_rate?: string | null
+          feature_flags?: Json | null
           first_name?: string | null
+          flagged?: boolean | null
           follower_count?: string | null
           has_seen_creator_intro?: boolean | null
           has_seen_intro?: boolean | null
@@ -653,6 +660,8 @@ export type Database = {
           logo_url?: string | null
           primary_platform?: string | null
           profile_type?: string | null
+          r4_recommendations?: Json | null
+          r4_score?: number | null
           role?: string | null
           show_analytics?: boolean | null
           show_instagram?: boolean | null
@@ -663,6 +672,7 @@ export type Database = {
           status?: string | null
           tiktok_connected?: boolean | null
           updated_at?: string | null
+          version?: number | null
           website?: string | null
           youtube_connected?: boolean | null
         }

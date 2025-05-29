@@ -3,6 +3,7 @@ import React from 'react';
 import { useAuth } from '@/lib/auth';
 import { usePhylloConnect } from '@/hooks/usePhylloConnect';
 import { PhylloConnector } from './phyllo/PhylloConnector';
+import { sanitizeString } from '@/utils/security';
 
 interface SocialMediaConnectionProps {
   onConnectionSuccess?: () => void;
@@ -32,7 +33,22 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
   }
 
   const handleConnect = (platform: string) => {
-    initializePhylloConnect(platform);
+    // Security: Sanitize platform input
+    const sanitizedPlatform = sanitizeString(platform, 20);
+    
+    // Validate platform against allowed list
+    const allowedPlatforms = [
+      'instagram', 'tiktok', 'youtube', 'twitch', 'linkedin', 
+      'twitter', 'reddit', 'patreon', 'spotify', 'facebook', 
+      'discord', 'pinterest', 'shopify'
+    ];
+    
+    if (!allowedPlatforms.includes(sanitizedPlatform)) {
+      console.error('Invalid platform:', platform);
+      return;
+    }
+    
+    initializePhylloConnect(sanitizedPlatform);
   };
 
   return (
