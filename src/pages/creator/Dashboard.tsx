@@ -5,10 +5,13 @@ import CreatorProfileHeader from '@/components/creator/CreatorProfileHeader';
 import VisibilityControls from '@/components/creator/VisibilityControls';
 import DashboardContent from '@/components/creator/dashboard/DashboardContent';
 import { useCreatorProfile } from '@/hooks/useCreatorProfile';
+import { CreatorIntroModal } from '@/components/creator/CreatorIntroModal';
+import { useCreatorIntro } from '@/hooks/creator/useCreatorIntro';
 
 const CreatorDashboard = () => {
   const { user } = useAuth();
-  const { 
+  const { showIntro, isLoading: introLoading, dismissIntro } = useCreatorIntro();
+  const {
     profile, 
     isLoading, 
     isEditing, 
@@ -86,6 +89,18 @@ const CreatorDashboard = () => {
 
   console.log('Dashboard render - profile:', profile, 'isLoading:', isLoading, 'isEditing:', isEditing);
 
+  if (introLoading) {
+    return (
+      <CreatorLayout>
+        <div className="container mx-auto p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="w-8 h-8 border-t-2 border-b-2 border-primary rounded-full animate-spin mx-auto mb-4"></div>
+          </div>
+        </div>
+      </CreatorLayout>
+    );
+  }
+
   if (isLoading) {
     return (
       <CreatorLayout>
@@ -102,6 +117,7 @@ const CreatorDashboard = () => {
   }
 
   return (
+    <>
     <CreatorLayout>
       <div className="container mx-auto p-6 space-y-6">
         {profile && profile.isProfileComplete && !isEditing && (
@@ -163,6 +179,12 @@ const CreatorDashboard = () => {
         </div>
       </div>
     </CreatorLayout>
+
+      <CreatorIntroModal
+        isOpen={showIntro}
+        onClose={dismissIntro}
+      />
+    </>
   );
 };
 
