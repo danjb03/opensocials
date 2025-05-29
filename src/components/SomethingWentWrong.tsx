@@ -13,21 +13,10 @@ const SomethingWentWrong: React.FC<SomethingWentWrongProps> = ({
   error, 
   resetErrorBoundary 
 }) => {
-  const getErrorMessage = (error: any): string => {
-    if (!error) {
-      return 'An unexpected error occurred';
-    }
-    
-    if (typeof error === 'string') {
-      return error;
-    }
-    
-    if (typeof error === 'object') {
-      return error.message || error.toString() || 'An unexpected error occurred';
-    }
-    
-    return 'An unexpected error occurred';
-  };
+  // Bulletproof error message extraction
+  const errorMessage = typeof error === 'string'
+    ? error
+    : error?.message || 'An unexpected error occurred';
 
   const handleRetry = () => {
     if (resetErrorBoundary) {
@@ -36,8 +25,6 @@ const SomethingWentWrong: React.FC<SomethingWentWrongProps> = ({
       window.location.reload();
     }
   };
-
-  const errorMessage = getErrorMessage(error);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
