@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { deleteCampaign } from '@/utils/campaign';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -59,31 +59,24 @@ const CampaignStageNav: React.FC<CampaignStageNavProps> = ({
 
   const handleDeleteCampaign = async () => {
     setIsDeleting(true);
-    try {
-      const { error } = await supabase
-        .from('projects')
-        .delete()
-        .eq('id', orderId);
+    const { success } = await deleteCampaign(orderId);
 
-      if (error) throw error;
-      
+    if (success) {
       toast({
         title: "Campaign deleted",
         description: "The campaign has been successfully deleted."
       });
-      
-      // Navigate back to campaigns list
-      navigate('/brand/orders');
-    } catch (error) {
-      console.error('Error deleting campaign:', error);
+
+      navigate('/brand/dashboard');
+    } else {
       toast({
         title: "Error",
         description: "Failed to delete campaign. Please try again.",
         variant: "destructive"
       });
-    } finally {
-      setIsDeleting(false);
     }
+
+    setIsDeleting(false);
   };
 
   return (
@@ -96,10 +89,11 @@ const CampaignStageNav: React.FC<CampaignStageNavProps> = ({
           
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="flex items-center gap-1 hover:bg-red-50 text-red-600 border-red-200"
+                disabled={isDeleting}
               >
                 <Trash2 className="h-4 w-4 mr-1" /> Delete Campaign
               </Button>
