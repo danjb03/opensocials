@@ -1,52 +1,30 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BarChart2, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useProjectData } from '@/hooks/useProjectData';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const CampaignAnalyticsList = () => {
-  const [campaigns, setCampaigns] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { projects: campaigns, isLoading, error } = useProjectData();
 
   useEffect(() => {
-    const fetchCompletedCampaigns = async () => {
-      try {
-        setLoading(true);
-        const { data: user } = await supabase.auth.getUser();
-        
-        if (!user.user) return;
-        
-        const { data, error } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('brand_id', user.user.id)
-          .eq('status', 'completed')
-          .order('end_date', { ascending: false });
-        
-        if (error) throw error;
-        
-        setCampaigns(data || []);
-      } catch (error) {
-        console.error('Error fetching completed campaigns:', error);
-        toast({
-          title: 'Error',
-          description: 'Could not load completed campaigns',
-          variant: 'destructive',
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchCompletedCampaigns();
-  }, [toast]);
+    if (error) {
+      console.error('Error loading campaigns for analytics:', error);
+      toast({
+        title: 'Error',
+        description: 'Could not load campaigns',
+        variant: 'destructive',
+      });
+    }
+  }, [error, toast]);
 
   // Mock analytics data for demonstration
   const getAnalyticsSummary = (campaign: any) => {
@@ -61,6 +39,7 @@ const CampaignAnalyticsList = () => {
   };
 
   return (
+    <ErrorBoundary>
     <BrandLayout>
       <div className="container mx-auto p-6 max-w-7xl">
         <div className="flex items-center justify-between mb-6">
@@ -69,11 +48,11 @@ const CampaignAnalyticsList = () => {
 
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Completed Campaigns</CardTitle>
-            <CardDescription>View detailed analytics for your completed campaigns</CardDescription>
+            <CardTitle>Your Campaigns</CardTitle>
+            <CardDescription>View performance metrics for all of your campaigns</CardDescription>
           </CardHeader>
           <CardContent>
-            {loading ? (
+            {isLoading ? (
               <div className="animate-pulse space-y-4">
                 <div className="h-12 bg-gray-200 rounded"></div>
                 <div className="h-12 bg-gray-200 rounded"></div>
@@ -120,7 +99,7 @@ const CampaignAnalyticsList = () => {
             ) : (
               <div className="text-center py-10">
                 <BarChart2 className="h-12 w-12 mx-auto text-gray-300 mb-2" />
-                <p className="text-gray-500 mb-4">No completed campaigns yet</p>
+                <p className="text-gray-500 mb-4">No campaigns found</p>
                 <Button onClick={() => navigate('/brand/projects')}>Go to Projects</Button>
               </div>
             )}
@@ -128,6 +107,7 @@ const CampaignAnalyticsList = () => {
         </Card>
       </div>
     </BrandLayout>
+    </ErrorBoundary>
   );
 };
 
