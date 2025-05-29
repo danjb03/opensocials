@@ -29,9 +29,24 @@ export function useScalableQuery<T = any>({
     ? [`user-${user.id}`, ...baseKey]
     : ['no-user', ...baseKey];
 
+  console.log('🔍 useScalableQuery initialized:', {
+    baseKey,
+    tableName,
+    userId: user?.id,
+    authLoading,
+    enabled: !authLoading && !!user?.id && (options.enabled !== false)
+  });
+
   return useQuery({
     queryKey,
     queryFn: async () => {
+      console.log('📡 useScalableQuery executing queryFn:', {
+        authLoading,
+        userId: user?.id,
+        tableName,
+        customQueryFn: !!customQueryFn
+      });
+
       // Wait for auth to be ready and user to be available
       if (authLoading) {
         console.log('⏳ Auth still loading, waiting...');
@@ -45,26 +60,47 @@ export function useScalableQuery<T = any>({
 
       console.log('✅ User authenticated, proceeding with query:', user.id);
 
-      if (customQueryFn) {
-        return customQueryFn();
-      }
+      try {
+        if (customQueryFn) {
+          console.log('🔧 Executing custom query function');
+          const result = await customQueryFn();
+          console.log('✅ Custom query function result:', result);
+          return result;
+        }
 
-      if (!tableName) {
-        throw new Error('Either tableName or customQueryFn must be provided');
-      }
+        if (!tableName) {
+          throw new Error('Either tableName or customQueryFn must be provided');
+        }
 
-      const result = await userDataStore.executeUserQuery(tableName, selectColumns, additionalFilters);
-      return result as T;
+        console.log('🗄️ Executing database query:', { tableName, selectColumns, additionalFilters });
+        const result = await userDataStore.executeUserQuery(tableName, selectColumns, additionalFilters);
+        console.log('✅ Database query result:', { count: Array.isArray(result) ? result.length : 'not array', result });
+        return result as T;
+      } catch (error) {
+        console.error('❌ Error in useScalableQuery:', error);
+        throw error;
+      }
     },
     enabled: !authLoading && !!user?.id && (options.enabled !== false),
     staleTime: 30000, // 30 seconds
     refetchOnWindowFocus: true,
     retry: (failureCount, error) => {
+      console.log('🔄 Retry logic:', { failureCount, errorMessage: error?.message });
       // Don't retry auth-related errors
       if (error?.message === 'Auth loading' || error?.message?.includes('User not authenticated')) {
         return false;
       }
       return failureCount < 3;
+    },
+    onError: (error) => {
+      console.error('❌ useScalableQuery error:', error);
+    },
+    onSuccess: (data) => {
+      console.log('✅ useScalableQuery success:', { 
+        dataType: typeof data, 
+        isArray: Array.isArray(data), 
+        count: Array.isArray(data) ? data.length : 'not array' 
+      });
     },
     ...options
   });

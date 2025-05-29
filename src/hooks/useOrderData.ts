@@ -9,12 +9,14 @@ export const useOrderData = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
+  console.log('🔍 useOrderData hook initialized for user:', user?.id);
+
   // Fetch orders from Supabase using scalable query system - same approach as useProjects
   const { data: orders = [], isLoading, error, refetch } = useScalableQuery<Order[]>({
     baseKey: ['orders'],
     customQueryFn: async () => {
       if (!user?.id) {
-        console.log('🚫 No user found, returning empty array');
+        console.log('🚫 No user found in customQueryFn, returning empty array');
         return [];
       }
       
@@ -25,11 +27,16 @@ export const useOrderData = () => {
           userDataStore.executeUserQuery('projects', '*', {})
         );
 
-        console.log('📊 Raw projects data for orders:', projectsData);
+        console.log('📊 Raw projects data for orders:', {
+          type: typeof projectsData,
+          isArray: Array.isArray(projectsData),
+          count: Array.isArray(projectsData) ? projectsData.length : 'not array',
+          data: projectsData
+        });
 
         // Validate the response structure - same as useProjects
         if (!projectsData || typeof projectsData === 'string') {
-          console.error('❌ Invalid projects data:', projectsData);
+          console.error('❌ Invalid projects data - not an object:', projectsData);
           return [];
         }
 
@@ -41,21 +48,39 @@ export const useOrderData = () => {
 
         // Ensure projectsData is an array
         if (!Array.isArray(projectsData)) {
-          console.error('❌ Projects data is not an array:', projectsData);
+          console.error('❌ Projects data is not an array:', {
+            type: typeof projectsData,
+            keys: Object.keys(projectsData as any),
+            data: projectsData
+          });
           return [];
         }
+
+        console.log('📋 Processing projects array:', {
+          totalProjects: projectsData.length,
+          projects: projectsData.map(p => ({ id: p.id, name: p.name, status: p.status }))
+        });
 
         // Transform projects to orders
         const orders: Order[] = [];
         
-        for (const item of projectsData) {
+        for (const [index, item] of projectsData.entries()) {
+          console.log(`🔄 Processing project ${index + 1}/${projectsData.length}:`, {
+            id: item?.id,
+            name: item?.name,
+            type: typeof item,
+            hasError: 'error' in (item as Record<string, any>)
+          });
+
           // Skip null, undefined, or non-object items
           if (!item || typeof item !== 'object') {
+            console.warn(`⚠️ Skipping invalid item at index ${index}:`, item);
             continue;
           }
 
           // Skip error objects
           if ('error' in (item as Record<string, any>)) {
+            console.warn(`⚠️ Skipping error object at index ${index}:`, item);
             continue;
           }
 
@@ -66,16 +91,40 @@ export const useOrderData = () => {
               typeof projectItem.name === 'string') {
             
             try {
+              console.log(`✅ Converting project to order:`, {
+                id: projectItem.id,
+                name: projectItem.name,
+                status: projectItem.status
+              });
               const order = projectToOrder(projectItem);
               orders.push(order);
+              console.log(`✅ Successfully converted project to order:`, {
+                orderId: order.id,
+                orderTitle: order.title,
+                orderStage: order.stage
+              });
             } catch (error) {
-              console.warn('⚠️ Failed to convert project to order:', projectItem.id, error);
+              console.warn(`⚠️ Failed to convert project to order:`, {
+                projectId: projectItem.id,
+                projectName: projectItem.name,
+                error: error
+              });
               continue;
             }
+          } else {
+            console.warn(`⚠️ Project missing required fields:`, {
+              id: typeof projectItem.id,
+              name: typeof projectItem.name,
+              projectItem
+            });
           }
         }
 
-        console.log('✅ Orders transformed from projects:', orders.length, 'orders');
+        console.log('✅ Orders transformation complete:', {
+          totalProjectsProcessed: projectsData.length,
+          ordersCreated: orders.length,
+          orders: orders.map(o => ({ id: o.id, title: o.title, stage: o.stage }))
+        });
         
         return orders;
       } catch (error) {
@@ -92,6 +141,13 @@ export const useOrderData = () => {
     refetchOnWindowFocus: true,
   });
 
+  console.log('🎯 useOrderData final state:', {
+    isLoading,
+    error: error?.message,
+    ordersCount: orders?.length || 0,
+    orders: orders?.map(o => ({ id: o.id, title: o.title, stage: o.stage }))
+  });
+
   // Handle error
   if (error) {
     console.error('❌ Error in useOrderData:', error);
@@ -104,6 +160,7 @@ export const useOrderData = () => {
 
   // Function to refresh orders data
   const refreshOrders = () => {
+    console.log('🔄 Refreshing orders data');
     refetch();
   };
 
