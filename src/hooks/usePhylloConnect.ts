@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { toast } from '@/components/ui/sonner';
 import { usePhylloScript } from './usePhylloScript';
@@ -73,9 +74,10 @@ export const usePhylloConnect = (
         eventHandlers.handleTokenExpired(accountId);
       });
 
-      phylloConnect.on('connectionFailure', function (reason, workplatformId) {
-        console.log('Connection failure:', { reason, workplatformId });
-        eventHandlers.handleConnectionFailure(reason, workplatformId);
+      // Updated to use single parameter as per SDK validation requirements
+      phylloConnect.on('connectionFailure', function (reason) {
+        console.log('Connection failure:', { reason });
+        eventHandlers.handleConnectionFailure(reason);
       });
 
       phylloConnect.on('error', function (reason) {
@@ -83,10 +85,10 @@ export const usePhylloConnect = (
         eventHandlers.handleError(reason);
       });
 
-      // Fix: Use the proper exit handler with exactly 2 parameters as per SDK documentation
-      phylloConnect.on('exit', function (reason, userIdFromEvent) {
-        console.warn("Phyllo exit triggered with reason:", reason, "User:", userIdFromEvent);
-        eventHandlers.handleExit(reason, userIdFromEvent);
+      // Updated to use single parameter as per SDK validation requirements
+      phylloConnect.on('exit', function (reason) {
+        console.warn("Phyllo exit triggered with reason:", reason);
+        eventHandlers.handleExit(reason);
       });
 
       console.log('All event handlers registered successfully. Opening Phyllo Connect...');

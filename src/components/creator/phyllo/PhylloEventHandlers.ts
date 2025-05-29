@@ -1,3 +1,4 @@
+
 import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -50,9 +51,10 @@ export const createPhylloEventHandlers = (
     setIsLoading?.(false);
   };
 
-  const handleConnectionFailure = (reason: string, workplatformId: string) => {
-    console.log('Connection failure:', { reason, workplatformId });
-    toast.error(`Failed to connect to ${workplatformId || 'platform'}: ${reason || 'Unknown error'}`);
+  // Updated to accept single parameter as per SDK validation requirements
+  const handleConnectionFailure = (reason: string) => {
+    console.log('Connection failure:', { reason });
+    toast.error(`Failed to connect: ${reason || 'Unknown error'}`);
     setIsLoading?.(false);
   };
 
@@ -62,9 +64,9 @@ export const createPhylloEventHandlers = (
     setIsLoading?.(false);
   };
 
-  // Updated to accept two parameters as per Phyllo SDK documentation
-  const handleExit = (reason: string, userId: string) => {
-    console.warn('Phyllo exit triggered with reason:', reason, 'User:', userId);
+  // Updated to accept single parameter as per SDK validation requirements
+  const handleExit = (reason: string) => {
+    console.warn('Phyllo exit triggered with reason:', reason);
     setIsLoading?.(false);
   };
 

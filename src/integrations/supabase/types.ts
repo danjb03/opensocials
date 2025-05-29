@@ -774,6 +774,7 @@ export type Database = {
       }
       duplicate_project: {
         Args:
+          | Record<PropertyKey, never>
           | { original_project_id: string }
           | {
               original_project_id: string
