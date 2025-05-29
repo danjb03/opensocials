@@ -1,12 +1,13 @@
-
 import BrandLayout from '@/components/layouts/BrandLayout';
 import BrandDashboardStats from '@/components/brand/dashboard/BrandDashboardStats';
 import TodoPanel from '@/components/brand/dashboard/TodoPanel';
 import CreatorList from '@/components/brand/dashboard/CreatorList';
 import QuickActions from '@/components/brand/dashboard/QuickActions';
 import BrandCampaignTable from '@/components/brand/dashboard/BrandCampaignTable';
+import { BrandIntroModal } from '@/components/brand/BrandIntroModal';
 import { useBrandDashboard } from '@/hooks/useBrandDashboard';
 import { useUserDataSync } from '@/hooks/useUserDataSync';
+import { useBrandIntro } from '@/hooks/brand/useBrandIntro';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -21,6 +22,9 @@ const Dashboard = () => {
   
   // Initialize user data synchronization
   const { refreshUserData } = useUserDataSync();
+  
+  // Brand intro modal logic
+  const { showIntro, isLoading: introLoading, dismissIntro } = useBrandIntro();
   
   const { 
     isLoading,
@@ -92,50 +96,71 @@ const Dashboard = () => {
     console.log('👑 Is super admin state:', isSuperAdmin);
   }, [role, isSuperAdmin]);
 
-  return (
-    <BrandLayout>
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Brand Dashboard</h1>
-          
-          {/* Show the back button if either condition is true */}
-          {(isSuperAdmin || role === 'super_admin') && (
-            <Button 
-              variant="outline" 
-              onClick={handleBackToSuperAdmin} 
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Super Admin
-            </Button>
-          )}
-        </div>
-        
-        {isLoading ? (
+  // Show intro modal if needed
+  if (introLoading) {
+    return (
+      <BrandLayout>
+        <div className="container mx-auto p-6">
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
-        ) : (
-          <>
-            <QuickActions />
+        </div>
+      </BrandLayout>
+    );
+  }
+
+  return (
+    <>
+      <BrandLayout>
+        <div className="container mx-auto p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold">Brand Dashboard</h1>
             
-            <BrandDashboardStats 
-              totalProjects={projectStats.totalProjects}
-              activeProjects={projectStats.activeProjects}
-              completedProjects={projectStats.completedProjects}
-            />
-            
-            <div className="space-y-6">
-              <BrandCampaignTable />
-              
-              <TodoPanel items={todoItems} />
-              
-              <CreatorList creators={creators} />
+            {/* Show the back button if either condition is true */}
+            {(isSuperAdmin || role === 'super_admin') && (
+              <Button 
+                variant="outline" 
+                onClick={handleBackToSuperAdmin} 
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Super Admin
+              </Button>
+            )}
+          </div>
+          
+          {isLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
-          </>
-        )}
-      </div>
-    </BrandLayout>
+          ) : (
+            <>
+              <QuickActions />
+              
+              <BrandDashboardStats 
+                totalProjects={projectStats.totalProjects}
+                activeProjects={projectStats.activeProjects}
+                completedProjects={projectStats.completedProjects}
+              />
+              
+              <div className="space-y-6">
+                <BrandCampaignTable />
+                
+                <TodoPanel items={todoItems} />
+                
+                <CreatorList creators={creators} />
+              </div>
+            </>
+          )}
+        </div>
+      </BrandLayout>
+
+      {/* Brand Intro Modal */}
+      <BrandIntroModal 
+        isOpen={showIntro} 
+        onClose={dismissIntro} 
+      />
+    </>
   );
 };
 
