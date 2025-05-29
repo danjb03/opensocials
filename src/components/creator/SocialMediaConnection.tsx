@@ -31,10 +31,11 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
     );
   }
 
+  const handleConnect = (platform: string) => {
+    initializePhylloConnect(platform);
+  };
+
   return (
-    <PhylloConnector 
-      onConnect={initializePhylloConnect}
-      isLoading={isPhylloLoading}
-    />
+    <PhylloConnector onConnect={handleConnect} isLoading={isPhylloLoading} />
   );
 };

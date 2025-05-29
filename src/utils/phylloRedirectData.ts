@@ -3,14 +3,21 @@ interface PhylloRedirectData {
   userId: string;
   userEmail?: string;
   token: string;
+  platform: string;
   timestamp: number;
 }
 
-export const storeRedirectData = (userId: string, userEmail: string | undefined, token: string): void => {
+export const storeRedirectData = (
+  userId: string,
+  userEmail: string | undefined,
+  token: string,
+  platform: string
+): void => {
   const redirectData: PhylloRedirectData = {
     userId,
     userEmail,
     token,
+    platform,
     timestamp: Date.now()
   };
   

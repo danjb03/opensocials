@@ -2,8 +2,12 @@
 import { generatePhylloToken } from './phylloToken';
 import { storeRedirectData } from './phylloRedirectData';
 
-export const createPhylloRedirectUrl = (token: string, userId: string): string => {
-  const returnUrl = `${window.location.origin}/creator/connect/callback`;
+export const createPhylloRedirectUrl = (
+  token: string,
+  userId: string,
+  platform: string
+): string => {
+  const returnUrl = `${window.location.origin}/creator/phyllo/callback`;
   
   const phylloParams = new URLSearchParams({
     clientDisplayName: 'OpenSocials',
@@ -25,7 +29,8 @@ export const createPhylloRedirectUrl = (token: string, userId: string): string =
 
 export const initializePhylloRedirect = async (
   userId: string,
-  userEmail: string | undefined
+  userEmail: string | undefined,
+  platform: string
 ): Promise<void> => {
   console.log('🚀 Starting Phyllo Connect initialization...');
   console.log('🔑 Generating fresh Phyllo token...');
@@ -37,11 +42,11 @@ export const initializePhylloRedirect = async (
   }
 
   // Store data for redirect return
-  storeRedirectData(userId, userEmail, freshToken);
+  storeRedirectData(userId, userEmail, freshToken, platform);
   
   console.log('🔄 Redirecting to Phyllo Connect URL...');
   
-  const phylloUrl = createPhylloRedirectUrl(freshToken, userId);
+  const phylloUrl = createPhylloRedirectUrl(freshToken, userId, platform);
   
   // Add a small delay to ensure localStorage is saved
   await new Promise(resolve => setTimeout(resolve, 100));

@@ -214,30 +214,44 @@ export type Database = {
       }
       connected_accounts: {
         Row: {
-          account_id: string
-          connected_at: string | null
           id: string
+          creator_id: string | null
           platform: string
-          user_id: string | null
-          workplatform_id: string
+          external_user_id: string | null
+          access_token: string | null
+          refresh_token: string | null
+          expires_at: string | null
+          connected_at: string | null
         }
         Insert: {
-          account_id: string
-          connected_at?: string | null
           id?: string
+          creator_id?: string | null
           platform: string
-          user_id?: string | null
-          workplatform_id: string
+          external_user_id?: string | null
+          access_token?: string | null
+          refresh_token?: string | null
+          expires_at?: string | null
+          connected_at?: string | null
         }
         Update: {
-          account_id?: string
-          connected_at?: string | null
           id?: string
+          creator_id?: string | null
           platform?: string
-          user_id?: string | null
-          workplatform_id?: string
+          external_user_id?: string | null
+          access_token?: string | null
+          refresh_token?: string | null
+          expires_at?: string | null
+          connected_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "connected_accounts_creator_id_fkey",
+            columns: ["creator_id"],
+            isOneToOne: false,
+            referencedRelation: "profiles",
+            referencedColumns: ["id"]
+          },
+        ]
       }
       creator_industries: {
         Row: {

@@ -7,19 +7,28 @@ import CreatorDeals from "@/pages/creator/Deals";
 import CreatorCampaigns from "@/pages/creator/Campaigns";
 import CampaignDetail from "@/pages/creator/CampaignDetail";
 import ContentUpload from "@/pages/creator/ContentUpload";
-import ConnectCallback from "@/pages/connect/Callback";
+import PhylloCallback from "@/pages/creator/phyllo/Callback";
+import ProfileSetup from "@/pages/creator/profile/Setup";
 
 export const CreatorRoutes = () => {
   return (
     <Routes>
       {/* Creator Dashboard Routes */}
-      <Route 
-        path="" 
+      <Route
+        path=""
         element={
           <ProtectedRoute requiredRole="creator">
             <CreatorDashboard />
           </ProtectedRoute>
-        } 
+        }
+      />
+      <Route
+        path="profile/setup"
+        element={
+          <ProtectedRoute requiredRole="creator">
+            <ProfileSetup />
+          </ProtectedRoute>
+        }
       />
       <Route 
         path="analytics" 
@@ -65,13 +74,13 @@ export const CreatorRoutes = () => {
       />
       
       {/* Social Media Connection Callback */}
-      <Route 
-        path="connect/callback" 
+      <Route
+        path="phyllo/callback"
         element={
           <ProtectedRoute requiredRole="creator">
-            <ConnectCallback />
+            <PhylloCallback />
           </ProtectedRoute>
-        } 
+        }
       />
     </Routes>
   );
