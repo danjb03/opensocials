@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 /**
@@ -6,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
  */
 export const deleteCampaign = async (campaignId: string) => {
   const { error } = await supabase
-    .from('campaigns')
+    .from('projects')
     .delete()
     .eq('id', campaignId)
     .single();
