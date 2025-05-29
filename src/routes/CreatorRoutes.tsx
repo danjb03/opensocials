@@ -7,6 +7,7 @@ import CreatorDeals from "@/pages/creator/Deals";
 import CreatorCampaigns from "@/pages/creator/Campaigns";
 import CampaignDetail from "@/pages/creator/CampaignDetail";
 import ContentUpload from "@/pages/creator/ContentUpload";
+import ConnectCallback from "@/pages/connect/Callback";
 
 export const CreatorRoutes = () => {
   return (
@@ -59,6 +60,16 @@ export const CreatorRoutes = () => {
         element={
           <ProtectedRoute requiredRole="creator">
             <ContentUpload />
+          </ProtectedRoute>
+        } 
+      />
+      
+      {/* Social Media Connection Callback */}
+      <Route 
+        path="connect/callback" 
+        element={
+          <ProtectedRoute requiredRole="creator">
+            <ConnectCallback />
           </ProtectedRoute>
         } 
       />

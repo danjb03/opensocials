@@ -33,7 +33,7 @@ export const usePhylloConnect = (
       const phylloReturn = urlParams.get('phyllo_return');
       
       if (phylloReturn === 'true' && userId) {
-        console.log('Detected return from Phyllo redirect');
+        console.log('🔄 Detected return from Phyllo redirect');
         
         // Get stored data from localStorage
         const storedData = localStorage.getItem('phyllo_redirect_data');
@@ -45,7 +45,7 @@ export const usePhylloConnect = (
             if (redirectData.userId === userId) {
               const isTokenExpired = Date.now() - redirectData.timestamp > 3600000; // 1 hour
               if (!isTokenExpired) {
-                console.log('Resuming Phyllo Connect session after redirect');
+                console.log('✅ Resuming Phyllo Connect session after redirect');
                 setIsPhylloLoading(true);
                 
                 // Clean up URL and localStorage
@@ -55,16 +55,16 @@ export const usePhylloConnect = (
                 // Resume Phyllo Connect
                 await resumePhylloConnect(redirectData);
               } else {
-                console.warn('Stored token has expired');
+                console.warn('⚠️ Stored token has expired');
                 localStorage.removeItem('phyllo_redirect_data');
                 toast.error('Session expired. Please try connecting again.');
               }
             } else {
-              console.warn('Stored userId does not match current user');
+              console.warn('⚠️ Stored userId does not match current user');
               localStorage.removeItem('phyllo_redirect_data');
             }
           } catch (error) {
-            console.error('Error parsing stored Phyllo data:', error);
+            console.error('❌ Error parsing stored Phyllo data:', error);
             localStorage.removeItem('phyllo_redirect_data');
             toast.error('Failed to restore session. Please try connecting again.');
           }
@@ -79,14 +79,14 @@ export const usePhylloConnect = (
 
   const validatePhylloConnect = (phylloConnect: any): boolean => {
     if (!phylloConnect) {
-      console.error('PhylloConnect instance is undefined');
+      console.error('❌ PhylloConnect instance is undefined');
       return false;
     }
 
     const requiredMethods = ['on', 'open'];
     for (const method of requiredMethods) {
       if (typeof phylloConnect[method] !== 'function') {
-        console.error(`PhylloConnect instance missing required method: ${method}`);
+        console.error(`❌ PhylloConnect instance missing required method: ${method}`);
         return false;
       }
     }
@@ -106,7 +106,7 @@ export const usePhylloConnect = (
 
   const resumePhylloConnect = async (redirectData: PhylloRedirectData) => {
     try {
-      console.log('Loading Phyllo script for resume...');
+      console.log('📜 Loading Phyllo script for resume...');
       await loadPhylloScript();
       
       const isReady = await waitForPhylloReady();
@@ -114,21 +114,21 @@ export const usePhylloConnect = (
         throw new Error('Phyllo Connect library failed to load properly');
       }
 
-      console.log('Resuming Phyllo Connect with stored token');
+      console.log('🔄 Resuming Phyllo Connect with stored token');
       
       const config = {
         clientDisplayName: "OpenSocials",
         environment: "staging",
         userId: redirectData.userId,
         token: redirectData.token,
-        redirect: false // Don't redirect on resume, we're already back
+        mode: "redirect" // Use redirect mode consistently
       };
 
-      console.log('Phyllo config for resume:', config);
+      console.log('📋 Phyllo config for resume:', config);
 
       try {
         const phylloConnect = await window.PhylloConnect.initialize(config);
-        console.log('PhylloConnect initialization completed for resume:', phylloConnect);
+        console.log('✅ PhylloConnect initialization completed for resume:', phylloConnect);
 
         if (!validatePhylloConnect(phylloConnect)) {
           throw new Error('Failed to initialize Phyllo Connect - invalid instance returned');
@@ -143,15 +143,15 @@ export const usePhylloConnect = (
         // Register all event handlers
         registerEventHandlers(phylloConnect, eventHandlers);
 
-        console.log('Phyllo Connect resumed successfully');
+        console.log('✅ Phyllo Connect resumed successfully');
         setIsPhylloLoading(false);
       } catch (initError) {
-        console.error('Phyllo resume initialization error:', initError);
+        console.error('❌ Phyllo resume initialization error:', initError);
         throw new Error(`Phyllo resume initialization failed: ${initError.message}`);
       }
       
     } catch (error) {
-      console.error('Error resuming Phyllo Connect:', error);
+      console.error('💥 Error resuming Phyllo Connect:', error);
       toast.error(`Failed to resume social account connection: ${error.message}`);
       setIsPhylloLoading(false);
     }
@@ -191,7 +191,7 @@ export const usePhylloConnect = (
 
       console.log('✅ All event handlers registered successfully');
     } catch (error) {
-      console.error('Error registering event handlers:', error);
+      console.error('❌ Error registering event handlers:', error);
       throw new Error(`Failed to register event handlers: ${error.message}`);
     }
   };
@@ -206,7 +206,7 @@ export const usePhylloConnect = (
     
     try {
       console.log('🚀 Starting Phyllo Connect initialization...');
-      console.log('Loading Phyllo script...');
+      console.log('📜 Loading Phyllo script...');
       await loadPhylloScript();
       
       const isReady = await waitForPhylloReady();
@@ -214,7 +214,7 @@ export const usePhylloConnect = (
         throw new Error('Phyllo Connect library failed to load properly');
       }
 
-      console.log('📄 Generating fresh Phyllo token...');
+      console.log('🔑 Generating fresh Phyllo token...');
       const freshToken = await generatePhylloToken(userId, userEmail);
       
       if (!freshToken) {
@@ -238,8 +238,7 @@ export const usePhylloConnect = (
         environment: "staging",
         userId: userId,
         token: freshToken,
-        redirect: true,
-        redirectURL: `${window.location.origin}/creator?phyllo_return=true`
+        mode: "redirect" // Use redirect mode instead of popup
       };
 
       console.log('📋 Phyllo config for initialization:', {
