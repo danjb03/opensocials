@@ -65,21 +65,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log("🔍 Fetching role for user:", userId);
       let resolvedRole: UserRole | null = null;
       
-      // Use the new security function to get user role
-      const { data: userRoleData, error: roleError } = await supabase
-        .rpc('get_current_user_role');
-      
-      if (roleError) {
-        console.error('❌ Error fetching user role:', roleError);
-      } else if (userRoleData) {
-        console.log("✅ Role data from security function:", userRoleData);
-        resolvedRole = userRoleData as UserRole;
-        setRole(resolvedRole);
-        setIsLoading(false);
-        return;
-      }
-      
-      // Fallback to checking user_roles table directly
+      // First try to get role from user_roles table directly
       const { data: roleTableData, error: roleTableError } = await supabase
         .from('user_roles')
         .select('role, status')
@@ -92,6 +78,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } else if (roleTableData) {
         console.log("✅ Role data from user_roles table:", roleTableData);
         resolvedRole = roleTableData.role as UserRole;
+        setRole(resolvedRole);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Fallback to checking profiles table
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      if (profileError) {
+        console.error('❌ Error fetching user role from profiles:', profileError);
+      } else if (profileData?.role) {
+        console.log("✅ Role data from profiles table:", profileData);
+        resolvedRole = profileData.role as UserRole;
         setRole(resolvedRole);
         setIsLoading(false);
         return;
