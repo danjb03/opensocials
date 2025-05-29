@@ -63,15 +63,9 @@ export const createPhylloEventHandlers = (
     setIsLoading?.(false);
   };
 
-  // ATTEMPT 2: Try with exactly 1 declared parameter (common pattern for exit callbacks)
   const handleExit = (reason: any) => {
-    console.log('🔍 PHYLLO EXIT DEBUG - Attempt 2: 1 declared parameter');
-    console.log('Function.length (declared parameter count):', handleExit.length);
-    console.log('Received exit reason:', reason);
-    
+    console.log('Phyllo exit with reason:', reason);
     setIsLoading?.(false);
-    
-    console.log('✅ Exit handler completed successfully with 1 declared parameter');
   };
 
   return {

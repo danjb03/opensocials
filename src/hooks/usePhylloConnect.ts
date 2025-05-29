@@ -31,15 +31,13 @@ export const usePhylloConnect = (
       console.log('Loading Phyllo script...');
       await loadPhylloScript();
       
-      // Wait longer for the script to fully initialize
+      // Wait for the script to fully initialize
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       if (!window.PhylloConnect) {
         throw new Error('Phyllo Connect library not available');
       }
 
-      console.log('PhylloConnect object:', window.PhylloConnect);
-      
       console.log('Generating fresh Phyllo token...');
       const freshToken = await generatePhylloToken(userId, userEmail);
       
@@ -52,7 +50,7 @@ export const usePhylloConnect = (
         token: freshToken
       });
 
-      console.log('Phyllo Connect initialized:', phylloConnect);
+      console.log('Phyllo Connect initialized, registering event handlers...');
 
       const eventHandlers = createPhylloEventHandlers(
         userId,
@@ -60,67 +58,40 @@ export const usePhylloConnect = (
         setIsPhylloLoading
       );
 
-      // Add debugging for event handler registration
-      console.log('Registering event handlers...');
-      
-      try {
-        phylloConnect.on('accountConnected', eventHandlers.handleAccountConnected);
-        console.log('✓ accountConnected handler registered');
-      } catch (e) {
-        console.error('✗ Error registering accountConnected handler:', e);
-      }
+      // Register event handlers with correct parameter counts
+      phylloConnect.on('accountConnected', function (accountId, workplatformId, userIdFromEvent) {
+        console.log('Account Connected:', { accountId, workplatformId, userIdFromEvent });
+        eventHandlers.handleAccountConnected(accountId, workplatformId, userIdFromEvent);
+      });
 
-      try {
-        phylloConnect.on('accountDisconnected', eventHandlers.handleAccountDisconnected);
-        console.log('✓ accountDisconnected handler registered');
-      } catch (e) {
-        console.error('✗ Error registering accountDisconnected handler:', e);
-      }
+      phylloConnect.on('accountDisconnected', function (accountId, workplatformId, userIdFromEvent) {
+        console.log('Account Disconnected:', { accountId, workplatformId, userIdFromEvent });
+        eventHandlers.handleAccountDisconnected(accountId, workplatformId, userIdFromEvent);
+      });
 
-      try {
-        phylloConnect.on('tokenExpired', eventHandlers.handleTokenExpired);
-        console.log('✓ tokenExpired handler registered');
-      } catch (e) {
-        console.error('✗ Error registering tokenExpired handler:', e);
-      }
+      phylloConnect.on('tokenExpired', function (accountId) {
+        console.log('Token expired for account:', accountId);
+        eventHandlers.handleTokenExpired(accountId);
+      });
 
-      try {
-        // Use a properly declared function with exactly 1 parameter for the connectionFailure callback
-        phylloConnect.on('connectionFailure', function (reason) {
-          console.log('🔍 PHYLLO CONNECTION FAILURE DEBUG - 1 parameter attempt');
-          console.log('Function.length (declared parameter count):', arguments.callee.length);
-          console.log('Actual arguments received:', arguments);
-          console.log('Reason:', reason);
-          
-          // Call the original handler logic
-          eventHandlers.handleConnectionFailure(reason, undefined);
-          
-          console.log('✅ ConnectionFailure handler completed successfully with 1 declared parameter');
-        });
-        console.log('✓ connectionFailure handler registered successfully');
-      } catch (e) {
-        console.error('✗ Error registering connectionFailure handler:', e);
-      }
+      // Use proper function declaration with exactly 2 parameters for connectionFailure
+      phylloConnect.on('connectionFailure', function (reason, workplatformId) {
+        console.log('Connection failure:', { reason, workplatformId });
+        eventHandlers.handleConnectionFailure(reason, workplatformId);
+      });
 
-      try {
-        phylloConnect.on('error', eventHandlers.handleError);
-        console.log('✓ error handler registered');
-      } catch (e) {
-        console.error('✗ Error registering error handler:', e);
-      }
+      phylloConnect.on('error', function (reason) {
+        console.log('Phyllo Connect error:', reason);
+        eventHandlers.handleError(reason);
+      });
 
-      try {
-        // Use a properly declared function with exactly 2 parameters for the exit callback
-        phylloConnect.on('exit', function (reason, userId) {
-          console.warn("Phyllo exit triggered with reason:", reason, "User:", userId);
-          setIsPhylloLoading(false);
-        });
-        console.log('✓ exit handler registered successfully');
-      } catch (e) {
-        console.error('✗ Error registering exit handler:', e);
-      }
+      // Use proper function declaration with exactly 2 parameters for exit
+      phylloConnect.on('exit', function (reason, userId) {
+        console.warn("Phyllo exit triggered with reason:", reason, "User:", userId);
+        setIsPhylloLoading(false);
+      });
 
-      console.log('Opening Phyllo Connect...');
+      console.log('All event handlers registered successfully. Opening Phyllo Connect...');
       phylloConnect.open();
     } catch (error) {
       console.error('Error initializing Phyllo Connect:', error);
