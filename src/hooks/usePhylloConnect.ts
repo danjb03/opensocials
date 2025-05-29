@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { toast } from '@/components/ui/sonner';
 import { usePhylloScript } from './usePhylloScript';
@@ -120,8 +121,7 @@ export const usePhylloConnect = (
         environment: "staging",
         userId: redirectData.userId,
         token: redirectData.token,
-        redirect: true,
-        redirectURL: `${window.location.origin}/creator?phyllo_return=true`
+        redirect: false // Don't redirect on resume, we're already back
       };
 
       console.log('Phyllo config for resume:', config);
@@ -160,36 +160,36 @@ export const usePhylloConnect = (
   const registerEventHandlers = (phylloConnect: any, eventHandlers: any) => {
     try {
       phylloConnect.on('accountConnected', function (accountId, workplatformId, userIdFromEvent) {
-        console.log('Account Connected:', { accountId, workplatformId, userIdFromEvent });
+        console.log('🟢 Account Connected Event:', { accountId, workplatformId, userIdFromEvent });
         eventHandlers.handleAccountConnected(accountId, workplatformId, userIdFromEvent);
       });
 
       phylloConnect.on('accountDisconnected', function (accountId, workplatformId, userIdFromEvent) {
-        console.log('Account Disconnected:', { accountId, workplatformId, userIdFromEvent });
+        console.log('🔴 Account Disconnected Event:', { accountId, workplatformId, userIdFromEvent });
         eventHandlers.handleAccountDisconnected(accountId, workplatformId, userIdFromEvent);
       });
 
       phylloConnect.on('tokenExpired', function (accountId) {
-        console.log('Token expired for account:', accountId);
+        console.log('⏰ Token Expired Event:', accountId);
         eventHandlers.handleTokenExpired(accountId);
       });
 
       phylloConnect.on('connectionFailure', function (reason, workplatformId, userIdFromEvent) {
-        console.log('Connection failure:', { reason, workplatformId, userIdFromEvent });
+        console.log('❌ Connection Failure Event:', { reason, workplatformId, userIdFromEvent });
         eventHandlers.handleConnectionFailure(reason, workplatformId, userIdFromEvent);
       });
 
       phylloConnect.on('error', function (reason) {
-        console.log('Phyllo Connect error:', reason);
+        console.log('🚨 Phyllo Error Event:', reason);
         eventHandlers.handleError(reason);
       });
 
       phylloConnect.on('exit', function (reason, workplatformId, userIdFromEvent) {
-        console.log('Phyllo exit triggered:', { reason, workplatformId, userIdFromEvent });
+        console.log('🚪 Phyllo Exit Event:', { reason, workplatformId, userIdFromEvent });
         eventHandlers.handleExit(reason, workplatformId, userIdFromEvent);
       });
 
-      console.log('All event handlers registered successfully');
+      console.log('✅ All event handlers registered successfully');
     } catch (error) {
       console.error('Error registering event handlers:', error);
       throw new Error(`Failed to register event handlers: ${error.message}`);
@@ -205,6 +205,7 @@ export const usePhylloConnect = (
     setIsPhylloLoading(true);
     
     try {
+      console.log('🚀 Starting Phyllo Connect initialization...');
       console.log('Loading Phyllo script...');
       await loadPhylloScript();
       
@@ -213,7 +214,7 @@ export const usePhylloConnect = (
         throw new Error('Phyllo Connect library failed to load properly');
       }
 
-      console.log('Generating fresh Phyllo token...');
+      console.log('📄 Generating fresh Phyllo token...');
       const freshToken = await generatePhylloToken(userId, userEmail);
       
       if (!freshToken) {
@@ -230,7 +231,7 @@ export const usePhylloConnect = (
       
       localStorage.setItem('phyllo_redirect_data', JSON.stringify(redirectData));
       
-      console.log('Initializing Phyllo Connect for user:', userId);
+      console.log('⚙️ Initializing Phyllo Connect for user:', userId);
       
       const config = {
         clientDisplayName: "OpenSocials",
@@ -241,17 +242,20 @@ export const usePhylloConnect = (
         redirectURL: `${window.location.origin}/creator?phyllo_return=true`
       };
 
-      console.log('Phyllo config for initialization:', config);
+      console.log('📋 Phyllo config for initialization:', {
+        ...config,
+        token: '***redacted***'
+      });
 
       try {
         const phylloConnect = await window.PhylloConnect.initialize(config);
-        console.log('PhylloConnect initialization completed:', phylloConnect);
+        console.log('✅ PhylloConnect initialization completed:', phylloConnect);
 
         if (!validatePhylloConnect(phylloConnect)) {
           throw new Error('Failed to initialize Phyllo Connect - invalid instance returned');
         }
 
-        console.log('Phyllo Connect initialized, registering callbacks...');
+        console.log('🔗 Phyllo Connect initialized, registering callbacks...');
 
         const eventHandlers = createPhylloEventHandlers(
           userId,
@@ -262,21 +266,22 @@ export const usePhylloConnect = (
         // Register all event handlers
         registerEventHandlers(phylloConnect, eventHandlers);
 
-        console.log('Opening Phyllo Connect for social platform selection...');
+        console.log('🔓 Opening Phyllo Connect for social platform selection...');
         
         try {
           phylloConnect.open();
+          console.log('🎉 Phyllo Connect opened successfully!');
         } catch (openError) {
-          console.error('Error opening Phyllo Connect:', openError);
+          console.error('❌ Error opening Phyllo Connect:', openError);
           throw new Error(`Failed to open social account connection: ${openError.message}`);
         }
       } catch (initError) {
-        console.error('Phyllo initialization error details:', initError);
+        console.error('❌ Phyllo initialization error details:', initError);
         throw new Error(`Phyllo initialization failed: ${initError.message}`);
       }
       
     } catch (error) {
-      console.error('Error initializing Phyllo Connect:', error);
+      console.error('💥 Error initializing Phyllo Connect:', error);
       toast.error(`Failed to load social account connection: ${error.message}`);
       setIsPhylloLoading(false);
       localStorage.removeItem('phyllo_redirect_data');
