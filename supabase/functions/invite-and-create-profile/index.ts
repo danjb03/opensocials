@@ -2,12 +2,12 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "npm:resend@2.0.0";
+import { validateEmail, sanitizeString, checkRateLimit, logSecurityEvent, extractClientInfo } from '../shared/security-utils.ts'
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const resendApiKey = Deno.env.get("RESEND_API_KEY");
 
-// Full CORS headers
 const corsHeaders = {
   "Content-Type": "application/json",
   "Access-Control-Allow-Origin": "*",
@@ -24,7 +24,6 @@ interface InviteRequest {
 }
 
 serve(async (req) => {
-  // 💣 PREVENT OPTIONS FAILURE - Handle OPTIONS request before any other logic
   if (req.method === "OPTIONS") {
     return new Response(null, {
       headers: corsHeaders,
@@ -34,6 +33,7 @@ serve(async (req) => {
 
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const clientInfo = extractClientInfo(req);
     
     // Validate auth token
     const authHeader = req.headers.get("authorization") || "";
@@ -47,21 +47,42 @@ serve(async (req) => {
       });
     }
     
-    // Verify admin role
-    const { data: adminRoleData } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", adminUser.id)
-      .single();
+    // Verify admin role using new security function
+    const { data: isAdmin } = await supabase.rpc('is_admin_user');
+    
+    if (!isAdmin) {
+      await logSecurityEvent(supabase, {
+        user_id: adminUser.id,
+        action: 'unauthorized_invite_attempt',
+        resource_type: 'user_invitation',
+        ...clientInfo
+      });
       
-    if (!adminRoleData || (adminRoleData.role !== "admin" && adminRoleData.role !== "super_admin")) {
       return new Response(JSON.stringify({ success: false, error: "Forbidden - Requires admin privileges" }), {
         status: 403,
         headers: corsHeaders
       });
     }
 
-    // Get invite data from request - Add try/catch to prevent crash on malformed JSON
+    // Rate limiting - max 10 invitations per hour per admin
+    const rateLimitPassed = await checkRateLimit(supabase, {
+      identifier: adminUser.id,
+      action: 'send_invitation',
+      maxRequests: 10,
+      windowMinutes: 60
+    });
+
+    if (!rateLimitPassed) {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Rate limit exceeded. Please wait before sending more invitations."
+      }), {
+        status: 429,
+        headers: corsHeaders
+      });
+    }
+
+    // Get and validate invite data
     let inviteData: InviteRequest;
     try {
       inviteData = await req.json();
@@ -77,12 +98,32 @@ serve(async (req) => {
     
     const { email, role, first_name, last_name } = inviteData;
 
+    // Enhanced input validation
     if (!email || !role) {
       return new Response(JSON.stringify({ success: false, error: "Email and role are required" }), {
         status: 400,
         headers: corsHeaders
       });
     }
+
+    if (!validateEmail(email)) {
+      return new Response(JSON.stringify({ success: false, error: "Invalid email format" }), {
+        status: 400,
+        headers: corsHeaders
+      });
+    }
+
+    const allowedRoles = ['creator', 'brand', 'admin'];
+    if (!allowedRoles.includes(role)) {
+      return new Response(JSON.stringify({ success: false, error: "Invalid role" }), {
+        status: 400,
+        headers: corsHeaders
+      });
+    }
+
+    // Sanitize inputs
+    const sanitizedFirstName = first_name ? sanitizeString(first_name, 50) : '';
+    const sanitizedLastName = last_name ? sanitizeString(last_name, 50) : '';
 
     // Log the invitation attempt
     const { error: logError } = await supabase
@@ -96,10 +137,9 @@ serve(async (req) => {
 
     if (logError) {
       console.error("Error logging invitation:", logError);
-      // Continue with the invitation process even if logging fails
     }
 
-    // Check if user already exists
+    // Check if user already exists with better error handling
     const { data: existingUsers, error: fetchError } = await supabase
       .from('profiles')
       .select('email')
@@ -107,7 +147,6 @@ serve(async (req) => {
       .limit(1);
       
     if (fetchError) {
-      // Update invitation log with error
       await supabase
         .from("invite_logs")
         .update({
@@ -123,7 +162,6 @@ serve(async (req) => {
     }
     
     if (existingUsers && existingUsers.length > 0) {
-      // Update invitation log with duplicate status
       await supabase
         .from("invite_logs")
         .update({
@@ -141,13 +179,13 @@ serve(async (req) => {
       });
     }
 
-    // Create the user in Supabase Auth
+    // Create the user in Supabase Auth with sanitized data
     const { data: userData, error: userError } = await supabase.auth.admin.createUser({
       email,
       email_confirm: true,
       user_metadata: { 
-        first_name: first_name || '',
-        last_name: last_name || '',
+        first_name: sanitizedFirstName,
+        last_name: sanitizedLastName,
         invited_by: adminUser.id,
         invited_at: new Date().toISOString(),
         role: role
@@ -155,7 +193,6 @@ serve(async (req) => {
     });
 
     if (userError) {
-      // Update invitation log with error
       await supabase
         .from("invite_logs")
         .update({
@@ -171,7 +208,6 @@ serve(async (req) => {
     }
 
     if (!userData.user) {
-      // Update invitation log with error
       await supabase
         .from("invite_logs")
         .update({
@@ -186,22 +222,21 @@ serve(async (req) => {
       throw new Error('User creation returned no user data');
     }
 
-    // Create profile entry
+    // Create profile entry with sanitized data
     const { error: profileError } = await supabase
       .from("profiles")
       .insert({
         id: userData.user.id,
         email,
         role,
-        first_name: first_name || '',
-        last_name: last_name || '',
+        first_name: sanitizedFirstName || '',
+        last_name: sanitizedLastName || '',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         status: 'pending'
       });
       
     if (profileError) {
-      // Update invitation log with error
       await supabase
         .from("invite_logs")
         .update({
@@ -226,7 +261,6 @@ serve(async (req) => {
     });
 
     if (linkError || !signInData || !signInData.properties?.action_link) {
-      // Update invitation log with error
       await supabase
         .from("invite_logs")
         .update({
@@ -268,7 +302,6 @@ serve(async (req) => {
           `,
         });
         
-        // Update invitation log with success status
         await supabase
           .from("invite_logs")
           .update({
@@ -284,7 +317,6 @@ serve(async (req) => {
         console.error("Failed to send email:", emailError);
         emailResponse = { id: "email-failed", message: emailError.message };
         
-        // Update invitation log with email failure
         await supabase
           .from("invite_logs")
           .update({
@@ -295,13 +327,11 @@ serve(async (req) => {
           .eq("triggered_by", adminUser.id)
           .order("sent_at", { ascending: false })
           .limit(1);
-        // Continue execution - don't throw an error that would break the function
       }
     } else {
       console.warn("RESEND_API_KEY not configured, email notification skipped");
       emailResponse = { id: "email-skipped", message: "RESEND_API_KEY not configured" };
       
-      // Update invitation log with skipped status
       await supabase
         .from("invite_logs")
         .update({
@@ -313,6 +343,15 @@ serve(async (req) => {
         .order("sent_at", { ascending: false })
         .limit(1);
     }
+
+    // Log successful invitation
+    await logSecurityEvent(supabase, {
+      user_id: adminUser.id,
+      action: 'user_invited',
+      resource_type: 'user_invitation',
+      resource_id: userData.user.id,
+      ...clientInfo
+    });
 
     return new Response(JSON.stringify({ 
       success: true, 

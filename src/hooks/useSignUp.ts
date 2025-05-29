@@ -13,6 +13,26 @@ interface SignUpParams {
   resetForm: () => void;
 }
 
+// Enhanced email validation
+const validateEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) && email.length <= 254;
+};
+
+// Password strength validation
+const validatePassword = (password: string): boolean => {
+  return password.length >= 8 && 
+         /[A-Z]/.test(password) && 
+         /[a-z]/.test(password) && 
+         /[0-9]/.test(password);
+};
+
+// Input sanitization
+const sanitizeString = (input: string, maxLength: number = 255): string => {
+  if (!input || typeof input !== 'string') return '';
+  return input.trim().slice(0, maxLength).replace(/[<>]/g, '');
+};
+
 export function useSignUp() {
   const handleSignUp = async ({
     email,
@@ -27,17 +47,37 @@ export function useSignUp() {
     console.log(`🆕 Signing up new ${role}...`);
 
     try {
+      // Enhanced client-side validation
+      if (!validateEmail(email)) {
+        toast.error('Please enter a valid email address.');
+        return false;
+      }
+
+      if (!validatePassword(password)) {
+        toast.error('Password must be at least 8 characters long and contain uppercase, lowercase, and numbers.');
+        return false;
+      }
+
+      // Sanitize inputs
+      const sanitizedFirstName = sanitizeString(firstName, 50);
+      const sanitizedLastName = sanitizeString(lastName, 50);
+
+      if (!sanitizedFirstName || !sanitizedLastName) {
+        toast.error('First name and last name are required.');
+        return false;
+      }
+
       // Sign up the user with Supabase - the database trigger will handle profile creation
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            first_name: firstName,
-            last_name: lastName,
+            first_name: sanitizedFirstName,
+            last_name: sanitizedLastName,
             role: role,
             // Include company_name for brands if needed
-            ...(role === 'brand' && { company_name: `${firstName} ${lastName}'s Brand` })
+            ...(role === 'brand' && { company_name: `${sanitizedFirstName} ${sanitizedLastName}'s Brand` })
           },
           emailRedirectTo: `${window.location.origin}/auth?confirmation=true`
         }
@@ -53,6 +93,9 @@ export function useSignUp() {
           return false;
         } else if (error.message.includes('Invalid email')) {
           toast.error('Please enter a valid email address.');
+          return false;
+        } else if (error.message.includes('Signup is disabled')) {
+          toast.error('Account registration is currently disabled. Please contact support.');
           return false;
         } else {
           throw error;

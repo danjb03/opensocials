@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 
@@ -7,17 +8,37 @@ interface SignInParams {
   setIsLoading: (isLoading: boolean) => void;
 }
 
+// Enhanced email validation
+const validateEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) && email.length <= 254;
+};
+
 export function useSignIn() {
   const handleSignIn = async ({ email, password, setIsLoading }: SignInParams) => {
     setIsLoading(true);
+    
     try {
+      // Client-side validation
+      if (!validateEmail(email)) {
+        toast.error('Please enter a valid email address.');
+        setIsLoading(false);
+        return;
+      }
+
+      if (!password || password.length < 6) {
+        toast.error('Password must be at least 6 characters long.');
+        setIsLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        // Special handling for unconfirmed email error
+        // Enhanced error handling
         if (error.message.includes("Email not confirmed")) {
           toast.error('Your email is not confirmed. Please check your inbox and click the confirmation link.');
           console.error('Login error - email not confirmed:', error.message);
@@ -34,6 +55,14 @@ export function useSignIn() {
             console.error('Error resending confirmation email:', resendError);
           }
           
+          setIsLoading(false);
+          return;
+        } else if (error.message.includes("Invalid login credentials")) {
+          toast.error('Invalid email or password. Please check your credentials and try again.');
+          setIsLoading(false);
+          return;
+        } else if (error.message.includes("Too many requests")) {
+          toast.error('Too many login attempts. Please wait a moment before trying again.');
           setIsLoading(false);
           return;
         } else {
@@ -59,7 +88,7 @@ export function useSignIn() {
         return;
       }
 
-      // Continue with the rest of the sign in process
+      // Continue with the rest of the sign in process using the new security function
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('role, is_complete')
@@ -109,7 +138,13 @@ export function useSignIn() {
       }
     } catch (err: any) {
       console.error('Login error:', err.message);
-      toast.error(err.message || 'Login failed.');
+      
+      // Enhanced error handling for network issues
+      if (err.message?.includes('Failed to fetch') || err.message?.includes('network')) {
+        toast.error('Network error. Please check your connection and try again.');
+      } else {
+        toast.error(err.message || 'Login failed.');
+      }
     } finally {
       setIsLoading(false);
     }

@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { logSecurityEvent, extractClientInfo } from '../shared/security-utils.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,22 +33,34 @@ serve(async (req) => {
       )
     }
 
-    // Check if user is a creator
-    const { data: profile } = await supabaseClient
-      .from('profiles')
-      .select('role, creator_intro_dismissed')
-      .eq('id', user.id)
-      .single()
+    // Check if user is a creator using the new security function
+    const { data: userRole } = await supabaseClient
+      .rpc('get_current_user_role')
 
-    if (!profile || profile.role !== 'creator') {
+    if (!userRole || userRole !== 'creator') {
       return new Response(
         JSON.stringify({ showIntro: false }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Show intro if not dismissed
-    const showIntro = !profile.creator_intro_dismissed
+    // Check if creator intro has been dismissed
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('creator_intro_dismissed')
+      .eq('id', user.id)
+      .single()
+
+    const showIntro = !profile?.creator_intro_dismissed
+
+    // Log security event
+    const clientInfo = extractClientInfo(req)
+    await logSecurityEvent(supabaseClient, {
+      user_id: user.id,
+      action: 'check_creator_intro',
+      resource_type: 'creator_intro',
+      ...clientInfo
+    })
 
     return new Response(
       JSON.stringify({ showIntro }),
