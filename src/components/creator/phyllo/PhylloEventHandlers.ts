@@ -1,4 +1,3 @@
-
 import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -63,9 +62,9 @@ export const createPhylloEventHandlers = (
     setIsLoading?.(false);
   };
 
-  // Updated to accept single exitContext parameter matching SDK expectations
-  const handleExit = (exitContext: any) => {
-    console.log('Phyllo exit with context:', exitContext);
+  // Updated to accept two parameters as per Phyllo SDK documentation
+  const handleExit = (reason: string, userId: string) => {
+    console.warn('Phyllo exit triggered with reason:', reason, 'User:', userId);
     setIsLoading?.(false);
   };
 

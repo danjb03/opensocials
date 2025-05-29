@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { toast } from '@/components/ui/sonner';
 import { usePhylloScript } from './usePhylloScript';
@@ -84,10 +83,10 @@ export const usePhylloConnect = (
         eventHandlers.handleError(reason);
       });
 
-      // Fix: Use exactly 1 parameter for exit handler as expected by SDK
-      phylloConnect.on('exit', function (exitContext) {
-        console.warn("Phyllo exit triggered:", exitContext);
-        setIsPhylloLoading(false);
+      // Fix: Use the proper exit handler with exactly 2 parameters as per SDK documentation
+      phylloConnect.on('exit', function (reason, userIdFromEvent) {
+        console.warn("Phyllo exit triggered with reason:", reason, "User:", userIdFromEvent);
+        eventHandlers.handleExit(reason, userIdFromEvent);
       });
 
       console.log('All event handlers registered successfully. Opening Phyllo Connect...');
