@@ -1,4 +1,5 @@
 
+import { generatePhylloToken } from './phylloToken';
 import { storeRedirectData } from './phylloRedirectData';
 
 export const createPhylloRedirectUrl = (token: string, userId: string): string => {
@@ -27,25 +28,9 @@ export const initializePhylloRedirect = async (
   userEmail: string | undefined
 ): Promise<void> => {
   console.log('🚀 Starting Phyllo Connect initialization...');
-  console.log('🔑 Generating fresh Phyllo token via edge function...');
+  console.log('🔑 Generating fresh Phyllo token...');
   
-  // Use the Supabase edge function approach
-  const response = await fetch('/functions/v1/generatePhylloToken', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ 
-      user_id: userId,
-      user_name: userEmail?.split('@')[0] || 'User'
-    })
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to generate Phyllo token: ${response.statusText}`);
-  }
-
-  const { token: freshToken } = await response.json();
+  const freshToken = await generatePhylloToken(userId, userEmail);
   
   if (!freshToken) {
     throw new Error('Failed to generate Phyllo token');
