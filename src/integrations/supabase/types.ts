@@ -538,6 +538,7 @@ export type Database = {
           engagement_rate: string | null
           first_name: string | null
           follower_count: string | null
+          has_seen_creator_intro: boolean | null
           has_seen_intro: boolean | null
           id: string
           industries: string[] | null
@@ -581,6 +582,7 @@ export type Database = {
           engagement_rate?: string | null
           first_name?: string | null
           follower_count?: string | null
+          has_seen_creator_intro?: boolean | null
           has_seen_intro?: boolean | null
           id: string
           industries?: string[] | null
@@ -624,6 +626,7 @@ export type Database = {
           engagement_rate?: string | null
           first_name?: string | null
           follower_count?: string | null
+          has_seen_creator_intro?: boolean | null
           has_seen_intro?: boolean | null
           id?: string
           industries?: string[] | null
