@@ -8,7 +8,7 @@ import { useAuth } from '@/lib/auth';
 import { ProjectsTable } from '@/components/brand/projects';
 import { ProjectsHeader } from '@/components/brand/ProjectsHeader';
 import { EmptyProjectsState } from '@/components/brand/EmptyProjectsState';
-import { useProjects } from '@/hooks/useProjects';
+import { useProjectData } from '@/hooks/useProjectData';
 import { Card, CardContent } from '@/components/ui/card';
 
 const Projects = () => {
@@ -22,7 +22,7 @@ const Projects = () => {
     setIsDialogOpen,
     handleFiltersChange,
     handleProjectCreated
-  } = useProjects();
+  } = useProjectData();
 
   // Check for query parameter to open the dialog automatically
   useEffect(() => {

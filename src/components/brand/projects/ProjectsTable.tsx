@@ -28,7 +28,7 @@ export const ProjectsTable = ({ projects, isLoading }: ProjectsTableProps) => {
   );
   const [tableProjects, setTableProjects] = useState<Project[]>(projects);
 
-  // Updated to redirect to campaigns section showing the specific campaign
+  // Navigate to project pipeline view with consistent parameter naming
   const handleViewProject = (projectId: string) => {
     navigate(`/brand/orders?projectId=${projectId}`);
   };
@@ -126,7 +126,7 @@ export const ProjectsTable = ({ projects, isLoading }: ProjectsTableProps) => {
       <Table>
         <TableHeader>
           <TableRow className="bg-gray-50">
-            <TableHead className="font-semibold">Campaign</TableHead>
+            <TableHead className="font-semibold">Project</TableHead>
             <TableHead className="font-semibold">
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
@@ -188,4 +188,66 @@ export const ProjectsTable = ({ projects, isLoading }: ProjectsTableProps) => {
       </Table>
     </div>
   );
+
+  async function handleTogglePriority(project: Project) {
+    const newPriorityValue = !project.is_priority;
+    
+    // Check if we're trying to add a new priority and already have 5
+    if (newPriorityValue && priorityCount >= 5 && !project.is_priority) {
+      toast({
+        title: "Priority limit reached",
+        description: "You can only have up to 5 priority projects",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ is_priority: newPriorityValue })
+        .eq('id', project.id);
+        
+      if (error) throw error;
+      
+      // Update local state for immediate UI feedback
+      if (newPriorityValue) {
+        setPriorityCount(prev => prev + 1);
+        toast({ 
+          title: "Added to priority", 
+          description: "Project has been marked as priority" 
+        });
+      } else {
+        setPriorityCount(prev => prev - 1);
+        toast({ 
+          title: "Removed from priority", 
+          description: "Project has been removed from priority" 
+        });
+      }
+      
+      // Force refresh the UI by updating the project in our local data
+      setTableProjects(prev => 
+        prev.map(p => p.id === project.id ? {...p, is_priority: newPriorityValue} : p)
+      );
+      
+    } catch (error) {
+      console.error('Error updating priority status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update priority status",
+        variant: "destructive"
+      });
+    }
+  }
+
+  function handleProjectDeleted(projectId: string) {
+    // Remove the project from the local state
+    setTableProjects(prev => prev.filter(p => p.id !== projectId));
+    
+    // Update priority count if needed
+    const deletedProject = projects.find(p => p.id === projectId);
+    if (deletedProject?.is_priority) {
+      setPriorityCount(prev => prev - 1);
+    }
+  }
 };
