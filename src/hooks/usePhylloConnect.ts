@@ -74,10 +74,10 @@ export const usePhylloConnect = (
         eventHandlers.handleError(reason);
       });
 
-      // Updated exit callback with 0 parameters
-      phylloConnect.on('exit', function () {
-        console.log('Phyllo exit triggered');
-        eventHandlers.handleExit();
+      // Updated exit callback with 2 parameters as per SDK documentation
+      phylloConnect.on('exit', function (reason, userId) {
+        console.log('Phyllo exit triggered:', { reason, userId });
+        eventHandlers.handleExit(reason, userId);
       });
 
       phylloConnect.on('tokenExpired', function (accountId) {
