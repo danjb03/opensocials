@@ -21,29 +21,48 @@ export const useUserRequests = (filter: string) => {
         return;
       }
       
-      const processedRequests: UserRequest[] = [];
-      
-      for (const item of roleData) {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('first_name, last_name')
-          .eq('id', item.user_id)
-          .single();
-        
-        processedRequests.push({
-          id: item.id,
-          user_id: item.user_id,
-          role: item.role,
-          status: item.status as 'pending' | 'approved' | 'declined',
-          created_at: item.created_at || '',
-          profiles: profileError ? null : {
-            first_name: profileData?.first_name || null,
-            last_name: profileData?.last_name || null,
-            email: null
+      const errors: unknown[] = [];
+      const processedRequests: UserRequest[] = await Promise.all(
+        roleData.map(async (item) => {
+          try {
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('first_name, last_name')
+              .eq('id', item.user_id)
+              .single();
+
+            if (profileError) throw profileError;
+
+            return {
+              id: item.id,
+              user_id: item.user_id,
+              role: item.role,
+              status: item.status as 'pending' | 'approved' | 'declined',
+              created_at: item.created_at || '',
+              profiles: {
+                first_name: profileData?.first_name || null,
+                last_name: profileData?.last_name || null,
+                email: null
+              }
+            };
+          } catch (err) {
+            errors.push(err);
+            return {
+              id: item.id,
+              user_id: item.user_id,
+              role: item.role,
+              status: item.status as 'pending' | 'approved' | 'declined',
+              created_at: item.created_at || '',
+              profiles: null
+            };
           }
-        });
+        })
+      );
+
+      if (errors.length > 0) {
+        toast.error('Some profile data could not be fetched');
       }
-      
+
       setUserRequests(processedRequests);
     } catch (error) {
       toast.error('Error fetching user requests', {
