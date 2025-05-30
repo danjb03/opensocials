@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import CreateProjectForm from '@/components/brand/CreateProjectForm';
+import { ProjectForm } from '@/components/brand/ProjectForm';
 import { useAuth } from '@/lib/auth';
 import { ProjectsTable } from '@/components/brand/projects';
 import { ProjectsHeader } from '@/components/brand/ProjectsHeader';
@@ -65,7 +65,7 @@ const Projects = () => {
               <DialogTitle className="text-2xl font-semibold">Create New Project</DialogTitle>
             </DialogHeader>
             <div className="p-6">
-              <CreateProjectForm onSuccess={handleProjectCreated} userId={user?.id} />
+              <ProjectForm onSuccess={handleProjectCreated} />
             </div>
           </DialogContent>
         </Dialog>
