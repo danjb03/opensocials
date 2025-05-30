@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { Upload, FilePlus, FileCheck } from 'lucide-react';
 
 interface BriefUploaderProps {
@@ -8,6 +9,7 @@ interface BriefUploaderProps {
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   briefFiles: File[];
   isUploading: boolean;
+  uploadProgress: number;
   handleProgressCampaign: () => void;
 }
 
@@ -16,6 +18,7 @@ export const BriefUploader: React.FC<BriefUploaderProps> = ({
   handleFileChange,
   briefFiles,
   isUploading,
+  uploadProgress,
   handleProgressCampaign,
 }) => {
   return (
@@ -50,23 +53,32 @@ export const BriefUploader: React.FC<BriefUploaderProps> = ({
         {briefFiles.length > 0 && (
           <div className="mt-4 w-full">
             <p className="text-sm font-medium text-gray-700 mb-2">Selected Files:</p>
-            <div className="space-y-2">
-              {briefFiles.map((file, index) => (
-                <div key={index} className="flex items-center bg-white p-2 rounded border shadow-sm">
-                  <FileCheck className="h-4 w-4 text-green-500 mr-2" />
-                  <span className="text-sm truncate">{file.name}</span>
-                  <span className="text-xs text-gray-500 ml-2">
-                    ({Math.round(file.size / 1024)} KB)
-                  </span>
-                </div>
-              ))}
+          <div className="space-y-2">
+            {briefFiles.map((file, index) => (
+              <div key={index} className="flex items-center bg-white p-2 rounded border shadow-sm">
+                <FileCheck className="h-4 w-4 text-green-500 mr-2" />
+                <span className="text-sm truncate">{file.name}</span>
+                <span className="text-xs text-gray-500 ml-2">
+                  ({Math.round(file.size / 1024)} KB)
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {isUploading && (
+            <div className="mt-3">
+              <Progress value={uploadProgress} className="h-2.5 bg-gray-100" />
+              <p className="text-xs text-gray-600 text-center mt-1">
+                {Math.round(uploadProgress)}%
+              </p>
             </div>
-            
-            <Button 
-              onClick={handleProgressCampaign} 
-              className="mt-4 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-              disabled={isUploading}
-            >
+          )}
+
+          <Button
+            onClick={handleProgressCampaign}
+            className="mt-4 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+            disabled={isUploading}
+          >
               {isUploading ? 'Uploading...' : 'Upload Files & Continue'}
             </Button>
           </div>
