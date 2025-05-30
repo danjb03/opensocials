@@ -1,16 +1,14 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { TikTokIcon, Instagram, Youtube } from '@/components/icons/SocialIcons';
-
 interface EmptyProfileStateProps {
   onStartProfileSetup: () => void;
 }
-
-const EmptyProfileState: React.FC<EmptyProfileStateProps> = ({ onStartProfileSetup }) => {
-  return (
-    <Card className="shadow-md border-dashed border-2 bg-gray-50">
+const EmptyProfileState: React.FC<EmptyProfileStateProps> = ({
+  onStartProfileSetup
+}) => {
+  return <Card className="shadow-md border-dashed border-2 bg-gray-50">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl">Complete Your Creator Profile</CardTitle>
         <CardDescription className="text-base">
@@ -24,9 +22,7 @@ const EmptyProfileState: React.FC<EmptyProfileStateProps> = ({ onStartProfileSet
             <Instagram size={32} className="text-gray-400" />
             <Youtube size={32} className="text-gray-400" />
           </div>
-          <p className="mt-4 text-center text-muted-foreground max-w-md">
-            Connect your social platforms, add a profile image, and share your content expertise to get matched with relevant brand campaigns.
-          </p>
+          <p className="mt-4 text-center text-muted-foreground max-w-md my-[17px]">Complete your profile so brands can find, trust, and book you instantly. Match with campaigns built for creators like you.</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -49,8 +45,6 @@ const EmptyProfileState: React.FC<EmptyProfileStateProps> = ({ onStartProfileSet
           Start Setting Up My Profile
         </Button>
       </CardFooter>
-    </Card>
-  );
+    </Card>;
 };
-
 export default EmptyProfileState;
