@@ -174,7 +174,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('💥 Critical error in fetch-insightiq-data function:', error);
+    console.error('💥 Critical error in insightiq function:', error);
     
     // Return mock data even on critical errors
     const mockData: InsightIQResponse = {
