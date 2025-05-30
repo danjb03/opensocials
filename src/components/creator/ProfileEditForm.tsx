@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -159,7 +158,7 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
           type="submit"
           disabled={isSubmitting || isLoading}
         >
-          {isSubmitting ? 'Saving...' : 'Complete Profile & Get Ready for Brands!'}
+          {isSubmitting ? 'Saving...' : 'Finish Setup & Start Earning'}
         </Button>
       </div>
     </form>
