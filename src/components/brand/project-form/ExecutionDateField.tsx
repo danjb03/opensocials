@@ -42,14 +42,13 @@ export function ExecutionDateField({ calculateDaysRemaining }: ExecutionDateFiel
                 </Button>
               </FormControl>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+            <PopoverContent className="w-auto p-0" align="start" style={{ pointerEvents: 'auto' }}>
               <Calendar
                 mode="single"
                 selected={field.value}
                 onSelect={(date) => field.onChange(date)}
                 disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                 initialFocus
-                className="pointer-events-auto"
               />
             </PopoverContent>
           </Popover>
