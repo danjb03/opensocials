@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { LinkIcon, Instagram, Youtube, Twitter, Loader2 } from 'lucide-react';
+import { LinkIcon, Instagram, Youtube, Twitter, Loader2, CheckCircle } from 'lucide-react';
 import { useInsightIQData } from '@/hooks/useInsightIQData';
 
 interface SocialMediaConnectionProps {
@@ -20,10 +20,38 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
   });
 
   const platforms = [
-    { name: 'Instagram', key: 'instagram', icon: Instagram, color: 'bg-gradient-to-r from-purple-500 to-pink-500' },
-    { name: 'YouTube', key: 'youtube', icon: Youtube, color: 'bg-red-500' },
-    { name: 'TikTok', key: 'tiktok', icon: LinkIcon, color: 'bg-black' },
-    { name: 'Twitter', key: 'twitter', icon: Twitter, color: 'bg-blue-500' }
+    { 
+      name: 'Instagram', 
+      key: 'instagram', 
+      icon: Instagram, 
+      color: 'from-purple-500 to-pink-500',
+      bgColor: 'bg-gradient-to-r from-purple-50 to-pink-50',
+      borderColor: 'border-purple-200'
+    },
+    { 
+      name: 'YouTube', 
+      key: 'youtube', 
+      icon: Youtube, 
+      color: 'from-red-500 to-red-600',
+      bgColor: 'bg-red-50',
+      borderColor: 'border-red-200'
+    },
+    { 
+      name: 'TikTok', 
+      key: 'tiktok', 
+      icon: LinkIcon, 
+      color: 'from-gray-800 to-black',
+      bgColor: 'bg-gray-50',
+      borderColor: 'border-gray-200'
+    },
+    { 
+      name: 'Twitter', 
+      key: 'twitter', 
+      icon: Twitter, 
+      color: 'from-blue-400 to-blue-600',
+      bgColor: 'bg-blue-50',
+      borderColor: 'border-blue-200'
+    }
   ];
 
   const handleUsernameChange = (platform: string, value: string) => {
@@ -48,81 +76,95 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <LinkIcon className="h-5 w-5" />
+    <Card className="shadow-sm">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-3 text-xl">
+          <div className="p-2 bg-primary rounded-lg">
+            <LinkIcon className="h-5 w-5 text-white" />
+          </div>
           Connect Your Social Media
         </CardTitle>
+        <p className="text-sm text-muted-foreground mt-2">
+          Enter your username to connect your social media accounts and showcase your reach to brands.
+        </p>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Enter your username to connect your social media accounts and showcase your reach to brands.
-          </p>
+      <CardContent className="space-y-6">
+        {platforms.map((platform) => {
+          const IconComponent = platform.icon;
+          const platformData = getPlatformData(platform.key);
+          const isLoading = platformData?.isLoading || false;
+          const hasData = !!platformData?.data;
+          const hasError = !!platformData?.error;
           
-          <div className="space-y-4">
-            {platforms.map((platform) => {
-              const IconComponent = platform.icon;
-              const platformData = getPlatformData(platform.key);
-              const isLoading = platformData?.isLoading || false;
-              const hasData = !!platformData?.data;
-              const hasError = !!platformData?.error;
-              
-              return (
-                <div key={platform.name} className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div className={`p-1 rounded ${platform.color}`}>
-                      <IconComponent className="h-4 w-4 text-white" />
-                    </div>
-                    <span className="font-medium">{platform.name}</span>
+          return (
+            <div key={platform.name} className={`p-4 rounded-xl border transition-all duration-200 ${platform.bgColor} ${platform.borderColor} ${hasData ? 'ring-2 ring-green-200' : ''}`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg bg-gradient-to-r ${platform.color}`}>
+                    <IconComponent className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-900">{platform.name}</span>
                     {hasData && (
-                      <div className="ml-auto flex items-center gap-1">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-xs text-green-600">Connected</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="text-xs text-green-700 font-medium">Connected</span>
                       </div>
                     )}
                   </div>
-                  
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder={`Enter your ${platform.name} username`}
-                      value={usernames[platform.key as keyof typeof usernames]}
-                      onChange={(e) => handleUsernameChange(platform.key, e.target.value)}
-                      className={hasError ? 'border-red-500' : ''}
-                    />
-                    <Button
-                      onClick={() => handleConnect(platform.key)}
-                      disabled={isLoading || !usernames[platform.key as keyof typeof usernames].trim()}
-                      className="shrink-0"
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        'Connect'
-                      )}
-                    </Button>
-                  </div>
-                  
-                  {hasError && (
-                    <p className="text-xs text-red-600">{platformData?.error}</p>
-                  )}
-                  
-                  {hasData && (
-                    <div className="text-xs text-muted-foreground">
-                      @{platformData?.username} • {platformData?.data?.followers.toLocaleString()} followers
-                    </div>
-                  )}
                 </div>
-              );
-            })}
-          </div>
-          
-          <div className="text-center pt-2">
-            <p className="text-xs text-muted-foreground">
-              Real-time analytics powered by InsightIQ
-            </p>
-          </div>
+              </div>
+              
+              <div className="flex gap-3">
+                <div className="flex-1 relative">
+                  <Input
+                    placeholder={`Enter your ${platform.name} username`}
+                    value={usernames[platform.key as keyof typeof usernames]}
+                    onChange={(e) => handleUsernameChange(platform.key, e.target.value)}
+                    className={`bg-white/80 backdrop-blur-sm border-white/50 focus:border-white focus:ring-2 focus:ring-white/20 ${hasError ? 'border-red-300 focus:border-red-400 focus:ring-red-100' : ''}`}
+                  />
+                </div>
+                <Button
+                  onClick={() => handleConnect(platform.key)}
+                  disabled={isLoading || !usernames[platform.key as keyof typeof usernames].trim()}
+                  className={`shrink-0 bg-gradient-to-r ${platform.color} hover:opacity-90 text-white border-0 shadow-md transition-all duration-200`}
+                  size="default"
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    'Connect'
+                  )}
+                </Button>
+              </div>
+              
+              {hasError && (
+                <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-xs text-red-600">{platformData?.error}</p>
+                </div>
+              )}
+              
+              {hasData && (
+                <div className="mt-3 p-3 bg-white/50 rounded-lg border border-white/30">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700">
+                      @{platformData?.username}
+                    </span>
+                    <span className="text-sm text-gray-600">
+                      {platformData?.data?.followers.toLocaleString()} followers
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+        
+        <div className="text-center pt-4 border-t border-gray-100">
+          <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+            <span>Real-time analytics powered by</span>
+            <span className="font-semibold text-gray-700">InsightIQ</span>
+          </p>
         </div>
       </CardContent>
     </Card>
