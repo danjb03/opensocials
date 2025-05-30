@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -6,21 +5,18 @@ import { InvitationsList } from '@/components/creator/invitations/InvitationsLis
 import PendingDeals from '@/components/deals/PendingDeals';
 import PastDeals from '@/components/deals/PastDeals';
 import { MailPlus, Handshake, History } from 'lucide-react';
-
 const CreatorDeals = () => {
   const [activeTab, setActiveTab] = useState<'invitations' | 'pending' | 'past'>('invitations');
-
-  return (
-    <CreatorLayout>
+  return <CreatorLayout>
       <div className="container mx-auto p-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Deals & Invitations</h1>
+          <h1 className="text-3xl font-bold mb-2">Paid Opportunities</h1>
           <p className="text-muted-foreground">
             Manage your campaign invitations and track your collaboration deals.
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="w-full">
+        <Tabs value={activeTab} onValueChange={value => setActiveTab(value as any)} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="invitations" className="flex items-center gap-2">
               <MailPlus className="h-4 w-4" />
@@ -49,8 +45,6 @@ const CreatorDeals = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </CreatorLayout>
-  );
+    </CreatorLayout>;
 };
-
 export default CreatorDeals;
