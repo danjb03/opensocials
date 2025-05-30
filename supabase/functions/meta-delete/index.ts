@@ -1,9 +1,7 @@
 
 // @ts-ignore
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const SUPABASE_URL = "https://pcnrnciwgdrukzciwexi.supabase.co";
+import { deleteSocialAccount } from "../shared/meta-delete-helper.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,32 +28,23 @@ serve(async (req) => {
       );
     }
 
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/social_accounts?profile_id=eq.${user_id}`, {
-      method: "DELETE",
-      headers: {
-        "apikey": SUPABASE_SERVICE_ROLE_KEY,
-        "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        "Content-Type": "application/json",
-        "Prefer": "return=representation"
-      }
-    });
+    const { success, error } = await deleteSocialAccount(user_id, "profile_id");
 
-    if (!res.ok) {
-      const error = await res.text();
+    if (!success) {
       return new Response(
         JSON.stringify({ error: `Deletion failed: ${error}` }),
-        { 
+        {
           status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
 
     return new Response(
       JSON.stringify({ success: true, user_id }),
-      { 
+      {
         status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   } catch (err) {
