@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
+import { checkIntro } from '@/utils/intro';
 
 export const useCreatorIntro = () => {
   const [showIntro, setShowIntro] = useState(false);
@@ -9,34 +10,18 @@ export const useCreatorIntro = () => {
   const { user, role } = useAuth();
 
   useEffect(() => {
-    const checkCreatorIntro = async () => {
+    const loadIntro = async () => {
       if (!user || role !== 'creator') {
         setIsLoading(false);
         return;
       }
 
-      try {
-        const { data, error } = await supabase.functions.invoke('check-creator-intro', {
-          headers: {
-            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          },
-        });
-
-        if (error) {
-          console.error('Error checking creator intro:', error);
-          setIsLoading(false);
-          return;
-        }
-
-        setShowIntro(data?.showIntro || false);
-      } catch (error) {
-        console.error('Error checking creator intro:', error);
-      } finally {
-        setIsLoading(false);
-      }
+      const shouldShow = await checkIntro('creator');
+      setShowIntro(shouldShow);
+      setIsLoading(false);
     };
 
-    checkCreatorIntro();
+    loadIntro();
   }, [user, role]);
 
   const dismissIntro = async () => {
