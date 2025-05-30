@@ -1,6 +1,12 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  sanitizeString,
+  validateEmail,
+  validateUrl,
+  validateSocialHandle,
+} from '../shared/security-utils.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,32 +14,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-// Input validation utilities
-const sanitizeString = (input: string, maxLength: number = 255): string => {
-  if (!input || typeof input !== 'string') return '';
-  return input.trim().slice(0, maxLength).replace(/[<>'"&]/g, '');
-};
-
-const validateEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email) && email.length <= 254;
-};
-
-const validateUrl = (url: string): boolean => {
-  if (!url) return true; // Optional field
-  try {
-    const parsedUrl = new URL(url);
-    return ['http:', 'https:'].includes(parsedUrl.protocol);
-  } catch {
-    return false;
-  }
-};
-
-const validateSocialHandle = (handle: string): boolean => {
-  if (!handle) return true; // Optional field
-  const cleanHandle = handle.replace(/^@/, '');
-  return cleanHandle.length <= 30 && /^[a-zA-Z0-9._]+$/.test(cleanHandle);
-};
+// Input validation utilities are imported from shared/security-utils.ts
 
 // Rate limiting
 const requestCounts = new Map<string, { count: number; resetTime: number }>();
