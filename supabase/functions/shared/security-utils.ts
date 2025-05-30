@@ -1,14 +1,4 @@
 
-import {
-  validateEmail,
-  sanitizeString,
-  validateUrl,
-  sanitizeUrl,
-  validateSocialHandle,
-} from '../../../shared/security.ts';
-
-export { validateEmail, sanitizeString, validateUrl, sanitizeUrl, validateSocialHandle };
-
 // Shared security utilities for Edge Functions
 export interface RateLimitConfig {
   identifier: string;
@@ -26,20 +16,19 @@ export interface SecurityAuditLog {
   user_agent?: string;
 }
 
-// Instead of importing from shared file, let's define these utilities directly here
-// to avoid module resolution issues in the edge function environment
-export const validateEmailLocal = (email: string): boolean => {
+// Security utilities defined directly here for edge function environment
+export const validateEmail = (email: string): boolean => {
   if (!email || typeof email !== 'string') return false;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email) && email.length <= 254;
 };
 
-export const sanitizeStringLocal = (input: string, maxLength: number = 255): string => {
+export const sanitizeString = (input: string, maxLength: number = 255): string => {
   if (!input || typeof input !== 'string') return '';
   return input.trim().slice(0, maxLength).replace(/[<>]/g, '');
 };
 
-export const validateUrlLocal = (url: string): boolean => {
+export const validateUrl = (url: string): boolean => {
   if (!url || typeof url !== 'string') return true;
   try {
     const parsed = new URL(url);
@@ -49,11 +38,11 @@ export const validateUrlLocal = (url: string): boolean => {
   }
 };
 
-export const sanitizeUrlLocal = (url: string): string => {
-  return validateUrlLocal(url) ? new URL(url).toString() : '';
+export const sanitizeUrl = (url: string): string => {
+  return validateUrl(url) ? new URL(url).toString() : '';
 };
 
-export const validateSocialHandleLocal = (handle: string): boolean => {
+export const validateSocialHandle = (handle: string): boolean => {
   if (!handle || typeof handle !== 'string') return true;
   const clean = handle.replace(/^@/, '');
   return clean.length <= 30 && /^[a-zA-Z0-9._]+$/.test(clean);
@@ -108,11 +97,11 @@ export const logSecurityEvent = async (supabase: any, event: SecurityAuditLog): 
       .from('security_audit_log')
       .insert({
         user_id: event.user_id,
-        action: sanitizeStringLocal(event.action, 100),
-        resource_type: sanitizeStringLocal(event.resource_type, 50),
-        resource_id: event.resource_id ? sanitizeStringLocal(event.resource_id, 100) : null,
+        action: sanitizeString(event.action, 100),
+        resource_type: sanitizeString(event.resource_type, 50),
+        resource_id: event.resource_id ? sanitizeString(event.resource_id, 100) : null,
         ip_address: event.ip_address,
-        user_agent: event.user_agent ? sanitizeStringLocal(event.user_agent, 500) : null
+        user_agent: event.user_agent ? sanitizeString(event.user_agent, 500) : null
       });
   } catch (error) {
     console.error('Failed to log security event:', error);
