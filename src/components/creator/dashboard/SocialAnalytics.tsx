@@ -2,6 +2,7 @@
 import React from 'react';
 import { SocialMediaConnection } from '@/components/creator/SocialMediaConnection';
 import AnalyticsModule from '@/components/creator/AnalyticsModule';
+import { useInsightIQData } from '@/hooks/useInsightIQData';
 
 interface SocialAnalyticsProps {
   socialConnections: {
@@ -34,57 +35,80 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
   onConnect,
   isLoading
 }) => {
+  const { getPlatformData } = useInsightIQData();
+
   const handleConnectionSuccess = () => {
-    // Refresh the analytics data when new connections are made
     console.log('Social media connection successful - refreshing analytics');
+  };
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+  };
+
+  const getAnalyticsData = (platform: string) => {
+    const insightIQData = getPlatformData(platform);
+    
+    if (insightIQData?.data) {
+      return {
+        followers: formatNumber(insightIQData.data.followers),
+        engagement: `${insightIQData.data.engagement_rate.toFixed(1)}%`,
+        views: formatNumber(insightIQData.data.avg_views),
+        likes: formatNumber(insightIQData.data.avg_likes),
+        verified: insightIQData.data.verified,
+        growthRate: `+${insightIQData.data.growth_rate.toFixed(1)}%`
+      };
+    }
+
+    // Fallback to existing data or defaults
+    const platformData = platformAnalytics[platform as keyof typeof platformAnalytics];
+    return {
+      followers: platformData?.followers || '0',
+      engagement: platformData?.engagement || '0%',
+      views: '0',
+      likes: '0',
+      verified: false,
+      growthRate: platformData?.growth || '0%'
+    };
   };
 
   return (
     <>
       <SocialMediaConnection onConnectionSuccess={handleConnectionSuccess} />
       
-      {socialConnections.instagram && (
+      {(socialConnections.instagram || getPlatformData('instagram')?.data) && (
         <AnalyticsModule 
           platform="Instagram" 
-          metrics={{
-            followers: platformAnalytics.instagram?.followers || '15.2K',
-            engagement: platformAnalytics.instagram?.engagement || '3.2%',
-            views: '5,600 avg',
-            likes: '1,200 avg',
-            verified: true,
-            growthRate: platformAnalytics.instagram?.growth || '+2.5%'
-          }}
+          metrics={getAnalyticsData('instagram')}
           isVisible={visibilitySettings.showInstagram}
         />
       )}
       
-      {socialConnections.tiktok && (
+      {(socialConnections.tiktok || getPlatformData('tiktok')?.data) && (
         <AnalyticsModule 
           platform="TikTok" 
-          metrics={{
-            followers: platformAnalytics.tiktok?.followers || '22.4K',
-            engagement: platformAnalytics.tiktok?.engagement || '5.7%',
-            views: '8,900 avg',
-            likes: '2,100 avg',
-            verified: false,
-            growthRate: platformAnalytics.tiktok?.growth || '+4.1%'
-          }}
+          metrics={getAnalyticsData('tiktok')}
           isVisible={visibilitySettings.showTiktok}
         />
       )}
       
-      {socialConnections.youtube && (
+      {(socialConnections.youtube || getPlatformData('youtube')?.data) && (
         <AnalyticsModule 
           platform="YouTube" 
-          metrics={{
-            followers: platformAnalytics.youtube?.followers || '8.7K',
-            engagement: platformAnalytics.youtube?.engagement || '2.8%',
-            views: '3,200 avg',
-            likes: '780 avg',
-            verified: true,
-            growthRate: platformAnalytics.youtube?.growth || '+1.2%'
-          }}
+          metrics={getAnalyticsData('youtube')}
           isVisible={visibilitySettings.showYoutube}
+        />
+      )}
+
+      {(socialConnections.twitter || getPlatformData('twitter')?.data) && (
+        <AnalyticsModule 
+          platform="Twitter" 
+          metrics={getAnalyticsData('twitter')}
+          isVisible={visibilitySettings.showLinkedin}
         />
       )}
     </>

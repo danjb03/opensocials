@@ -7,6 +7,7 @@ import DashboardContent from '@/components/creator/dashboard/DashboardContent';
 import { CreatorIntroModal } from '@/components/creator/CreatorIntroModal';
 import { useCreatorProfile } from '@/hooks/useCreatorProfile';
 import { useCreatorIntro } from '@/hooks/creator/useCreatorIntro';
+import { InsightIQProvider } from '@/components/creator/InsightIQProvider';
 
 const CreatorDashboard = () => {
   const { user } = useAuth();
@@ -122,65 +123,67 @@ const CreatorDashboard = () => {
   return (
     <>
       <CreatorLayout>
-        <div className="container mx-auto p-6 space-y-6">
-          {profile && profile.isProfileComplete && !isEditing && (
-            <CreatorProfileHeader 
-              name={`${profile.firstName} ${profile.lastName}`}
-              imageUrl={profile?.avatarUrl || undefined}
-              bannerUrl={profile?.bannerUrl || undefined}
-              bio={profile?.bio || 'No bio yet. Add one to complete your profile.'}
-              platform={profile?.primaryPlatform}
-              followers={profile?.followerCount}
-              isEditable={true}
-              onEditProfile={handleEditProfile}
-              onTogglePreview={handleTogglePreview}
-              isPreviewMode={isPreviewMode}
-              onAvatarChange={uploadAvatar}
-              isUploading={isUploading}
-            />
-          )}
-          
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div className="lg:col-span-3">
-              <DashboardContent 
-                profile={profile}
-                isLoading={isLoading}
-                isEditing={isEditing}
+        <InsightIQProvider>
+          <div className="container mx-auto p-6 space-y-6">
+            {profile && profile.isProfileComplete && !isEditing && (
+              <CreatorProfileHeader 
+                name={`${profile.firstName} ${profile.lastName}`}
+                imageUrl={profile?.avatarUrl || undefined}
+                bannerUrl={profile?.bannerUrl || undefined}
+                bio={profile?.bio || 'No bio yet. Add one to complete your profile.'}
+                platform={profile?.primaryPlatform}
+                followers={profile?.followerCount}
+                isEditable={true}
+                onEditProfile={handleEditProfile}
+                onTogglePreview={handleTogglePreview}
                 isPreviewMode={isPreviewMode}
-                totalEarnings={0}
-                pipelineValue={0}
-                connectionStats={{
-                  outreach: 0,
-                  in_talks: 0,
-                  working: 0,
-                }}
-                earningsData={[]}
-                platformAnalytics={platformAnalytics}
-                onProfileSubmit={handleProfileSubmit}
-                onCancelEdit={() => setIsEditing(false)}
-                onStartProfileSetup={handleStartProfileSetup}
                 onAvatarChange={uploadAvatar}
-                onConnectPlatform={handleOAuthConnect}
+                isUploading={isUploading}
               />
-            </div>
+            )}
             
-            <div className="lg:col-span-1">
-              {profile && profile.isProfileComplete && !isEditing && (
-                <VisibilityControls 
-                  visibilitySettings={profile?.visibilitySettings || {
-                    showInstagram: true,
-                    showTiktok: true,
-                    showYoutube: true,
-                    showLinkedin: true,
-                    showLocation: true,
-                    showAnalytics: true
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              <div className="lg:col-span-3">
+                <DashboardContent 
+                  profile={profile}
+                  isLoading={isLoading}
+                  isEditing={isEditing}
+                  isPreviewMode={isPreviewMode}
+                  totalEarnings={0}
+                  pipelineValue={0}
+                  connectionStats={{
+                    outreach: 0,
+                    in_talks: 0,
+                    working: 0,
                   }}
-                  onToggleVisibility={toggleVisibilitySetting}
+                  earningsData={[]}
+                  platformAnalytics={platformAnalytics}
+                  onProfileSubmit={handleProfileSubmit}
+                  onCancelEdit={() => setIsEditing(false)}
+                  onStartProfileSetup={handleStartProfileSetup}
+                  onAvatarChange={uploadAvatar}
+                  onConnectPlatform={handleOAuthConnect}
                 />
-              )}
+              </div>
+              
+              <div className="lg:col-span-1">
+                {profile && profile.isProfileComplete && !isEditing && (
+                  <VisibilityControls 
+                    visibilitySettings={profile?.visibilitySettings || {
+                      showInstagram: true,
+                      showTiktok: true,
+                      showYoutube: true,
+                      showLinkedin: true,
+                      showLocation: true,
+                      showAnalytics: true
+                    }}
+                    onToggleVisibility={toggleVisibilitySetting}
+                  />
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </InsightIQProvider>
       </CreatorLayout>
 
       {/* Creator Intro Modal */}
