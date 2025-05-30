@@ -2,7 +2,6 @@
 import { Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "./index";
 import BrandGuard from "@/components/BrandGuard";
-import BrandOnboardingGuard from "@/components/BrandOnboardingGuard";
 import SetupProfile from "@/pages/brand/SetupProfile";
 import BrandDashboard from "@/pages/brand/Dashboard";
 import Projects from "@/pages/brand/Projects";
@@ -27,39 +26,11 @@ export const BrandRoutes = () => {
         } 
       />
       
-      {/* Brand Dashboard Routes with Onboarding Guard */}
-      <Route 
-        path="" 
-        element={
-          <BrandOnboardingGuard>
-            <BrandDashboard />
-          </BrandOnboardingGuard>
-        } 
-      />
-      <Route 
-        path="projects" 
-        element={
-          <BrandOnboardingGuard>
-            <Projects />
-          </BrandOnboardingGuard>
-        } 
-      />
-      <Route 
-        path="creators" 
-        element={
-          <BrandOnboardingGuard>
-            <CreatorSearch />
-          </BrandOnboardingGuard>
-        } 
-      />
-      <Route 
-        path="orders" 
-        element={
-          <BrandOnboardingGuard>
-            <BrandOrders />
-          </BrandOnboardingGuard>
-        } 
-      />
+      {/* Brand Dashboard Routes */}
+      <Route path="" element={<BrandGuard><BrandDashboard /></BrandGuard>} />
+      <Route path="projects" element={<BrandGuard><Projects /></BrandGuard>} />
+      <Route path="creators" element={<BrandGuard><CreatorSearch /></BrandGuard>} />
+      <Route path="orders" element={<BrandGuard><BrandOrders /></BrandGuard>} />
       
       {/* Brand Project Routes with Regular Brand Guard */}
       <Route 

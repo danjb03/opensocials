@@ -49,12 +49,10 @@ export const useCreatorProfileModal = () => {
 
     try {
       // Fetch creator profile data from creator_profiles table
-      console.log('Fetching creator profile for modal, ID:', creatorId);
-      
       const { data, error } = await supabase
         .from('creator_profiles')
         .select('*')
-        .limit(1)
+        .eq('user_id', creatorId)
         .single();
 
       if (error) {

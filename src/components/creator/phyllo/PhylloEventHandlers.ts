@@ -9,7 +9,6 @@ export const createPhylloEventHandlers = (
 ) => {
   const handleAccountConnected = async (accountId: string, workplatformId: string, userIdFromEvent: string) => {
     try {
-      console.log('🟢 Account Connected Event Handler:', { accountId, workplatformId, userIdFromEvent });
 
       if (!accountId || !workplatformId || !userIdFromEvent) {
         console.error('❌ Missing required parameters for account connection:', { accountId, workplatformId, userIdFromEvent });
@@ -18,7 +17,6 @@ export const createPhylloEventHandlers = (
         return;
       }
 
-      console.log('💾 Calling storeConnectedAccount function for platform:', workplatformId);
       
       const { data, error } = await supabase.functions.invoke('storeConnectedAccount', {
         body: {
@@ -36,7 +34,6 @@ export const createPhylloEventHandlers = (
         return;
       }
 
-      console.log('✅ Successfully stored connected account:', data);
       toast.success(`${workplatformId} account connected successfully!`);
       onConnectionSuccess?.();
       setIsLoading?.(false);
@@ -50,7 +47,6 @@ export const createPhylloEventHandlers = (
 
   const handleAccountDisconnected = (accountId: string, workplatformId: string, userIdFromEvent: string) => {
     try {
-      console.log('🔴 Account Disconnected Event Handler:', { accountId, workplatformId, userIdFromEvent });
       toast.success(`${workplatformId} account disconnected successfully`);
       onConnectionSuccess?.();
       setIsLoading?.(false);
@@ -62,7 +58,6 @@ export const createPhylloEventHandlers = (
 
   const handleTokenExpired = (accountId: string) => {
     try {
-      console.log('⏰ Token Expired Event Handler:', accountId);
       toast.error('Session expired. Please try connecting again.');
       setIsLoading?.(false);
     } catch (error) {
@@ -73,7 +68,6 @@ export const createPhylloEventHandlers = (
 
   const handleConnectionFailure = (reason: string, workplatformId: string, userIdFromEvent: string) => {
     try {
-      console.log('❌ Connection Failure Event Handler:', { reason, workplatformId, userIdFromEvent });
       
       // Handle specific connection failure reasons
       let errorMessage = '';
@@ -100,7 +94,6 @@ export const createPhylloEventHandlers = (
 
   const handleError = (reason: string) => {
     try {
-      console.log('🚨 Phyllo Error Event Handler:', reason);
       
       let errorMessage = '';
       
@@ -122,7 +115,6 @@ export const createPhylloEventHandlers = (
 
   const handleExit = (reason: string, workplatformId: string, userIdFromEvent: string) => {
     try {
-      console.log('🚪 Phyllo Exit Event Handler:', { reason, workplatformId, userIdFromEvent });
       
       // Only show toast if it's not a successful completion
       if (reason && reason !== 'completed' && reason !== 'success') {
@@ -131,7 +123,7 @@ export const createPhylloEventHandlers = (
         } else if (reason.toLowerCase().includes('error')) {
           toast.error(`Connection failed: ${reason}`);
         } else {
-          console.log('ℹ️ Phyllo exited with reason:', reason);
+          // Silent exit
         }
       }
       setIsLoading?.(false);

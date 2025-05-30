@@ -15,14 +15,12 @@ export const useCreatorProfileData = () => {
   useEffect(() => {
     const fetchCreatorProfile = async () => {
       if (!user?.id) {
-        console.log('No user ID, skipping profile fetch');
         setIsLoading(false);
         return;
       }
 
       try {
         setIsLoading(true);
-        console.log('Fetching creator profile for user:', user.id);
 
         // First check profiles table for avatar
         const { data: profileData } = await supabase
@@ -44,7 +42,6 @@ export const useCreatorProfileData = () => {
         }
 
         if (creatorData) {
-          console.log('Creator profile found:', creatorData);
           const transformedProfile = transformCreatorProfile(creatorData);
           
           // Add avatar URL from profiles table
@@ -54,7 +51,6 @@ export const useCreatorProfileData = () => {
           
           setProfile(transformedProfile);
         } else {
-          console.log('No creator profile found, creating empty profile');
           const emptyProfile = createEmptyCreatorProfile(user.id);
           
           // Add avatar URL from profiles table if available
