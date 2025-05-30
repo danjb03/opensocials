@@ -35,7 +35,7 @@ const EmptyProfileState: React.FC<EmptyProfileStateProps> = ({
             <p className="text-sm text-muted-foreground">Connect your audience. Prove your reach. Own your value.</p>
           </div>
           <div className="border rounded-lg p-4 bg-white">
-            <h3 className="font-medium text-lg">3. Get Discovered</h3>
+            <h3 className="font-medium text-lg">3. Start Earning</h3>
             <p className="text-sm text-muted-foreground">Be seen by premium brands and start landing paid campaigns.</p>
           </div>
         </div>
