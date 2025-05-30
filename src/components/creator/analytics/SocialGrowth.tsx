@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
@@ -81,6 +80,12 @@ const SocialGrowth: React.FC = () => {
 
         <div className="text-sm text-muted-foreground text-center">
           Connect your social platforms to see real-time analytics
+        </div>
+
+        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800 text-center">
+            These stats update weekly. Keep posting to stay visible to brands.
+          </p>
         </div>
       </CardContent>
     </Card>
