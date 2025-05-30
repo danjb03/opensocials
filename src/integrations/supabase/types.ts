@@ -227,7 +227,7 @@ export type Database = {
           connected_at: string | null
           id: string
           platform: string
-          user_id: string | null
+          user_id: string
           workplatform_id: string
         }
         Insert: {
@@ -235,7 +235,7 @@ export type Database = {
           connected_at?: string | null
           id?: string
           platform: string
-          user_id?: string | null
+          user_id: string
           workplatform_id: string
         }
         Update: {
@@ -243,7 +243,7 @@ export type Database = {
           connected_at?: string | null
           id?: string
           platform?: string
-          user_id?: string | null
+          user_id?: string
           workplatform_id?: string
         }
         Relationships: []
@@ -306,6 +306,34 @@ export type Database = {
           },
           {
             foreignKeyName: "creator_industry_tags_industry_id_fkey"
+            columns: ["industry_id"]
+            isOneToOne: false
+            referencedRelation: "creator_industries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_creator_industry_tags_creator"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "fk_creator_industry_tags_creator"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_creators_view"
+            referencedColumns: ["creator_id"]
+          },
+          {
+            foreignKeyName: "fk_creator_industry_tags_creator"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_creator_industry_tags_industry"
             columns: ["industry_id"]
             isOneToOne: false
             referencedRelation: "creator_industries"
@@ -881,6 +909,66 @@ export type Database = {
           rule_description?: string | null
           rule_name?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      rate_limits: {
+        Row: {
+          action: string
+          count: number
+          created_at: string | null
+          id: string
+          identifier: string
+          window_start: string
+        }
+        Insert: {
+          action: string
+          count?: number
+          created_at?: string | null
+          id?: string
+          identifier: string
+          window_start: string
+        }
+        Update: {
+          action?: string
+          count?: number
+          created_at?: string | null
+          id?: string
+          identifier?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
+      security_audit_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          resource_id: string | null
+          resource_type: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          resource_id?: string | null
+          resource_type: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          user_agent?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

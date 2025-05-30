@@ -1,157 +1,243 @@
 
-// Input sanitization and validation utilities
 import DOMPurify from 'isomorphic-dompurify';
 
-export interface ValidationRule {
-  required?: boolean;
-  minLength?: number;
-  maxLength?: number;
-  pattern?: RegExp;
-  customValidator?: (value: string) => boolean;
-}
-
-export interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-}
-
-// HTML sanitization
-export const sanitizeHtml = (input: string): string => {
-  if (!input || typeof input !== 'string') return '';
-  return DOMPurify.sanitize(input, {
-    ALLOWED_TAGS: [], // Remove all HTML tags
-    ALLOWED_ATTR: []
-  });
+// Enhanced email validation with additional security checks
+export const validateEmail = (email: string): boolean => {
+  if (!email || typeof email !== 'string') return false;
+  
+  // Basic format validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) return false;
+  
+  // Length validation (RFC 5321 limit)
+  if (email.length > 254) return false;
+  
+  // Check for suspicious patterns
+  const suspiciousPatterns = [
+    /javascript:/i,
+    /data:/i,
+    /vbscript:/i,
+    /<script/i,
+    /on\w+\s*=/i
+  ];
+  
+  return !suspiciousPatterns.some(pattern => pattern.test(email));
 };
 
-// Basic string sanitization
+// Enhanced string sanitization with XSS protection
 export const sanitizeString = (input: string, maxLength: number = 255): string => {
   if (!input || typeof input !== 'string') return '';
-  return input
-    .trim()
-    .slice(0, maxLength)
-    .replace(/[<>'"&]/g, '') // Remove potentially dangerous characters
-    .replace(/\s+/g, ' '); // Normalize whitespace
+  
+  // Remove any HTML tags and decode entities
+  const cleaned = DOMPurify.sanitize(input, { 
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+    KEEP_CONTENT: true
+  });
+  
+  // Trim whitespace and limit length
+  return cleaned.trim().slice(0, maxLength);
 };
 
-// URL validation and sanitization
-export const sanitizeUrl = (url: string): string => {
-  if (!url) return '';
+// Enhanced HTML sanitization for rich content
+export const sanitizeHtml = (html: string, options: {
+  allowedTags?: string[];
+  allowedAttributes?: string[];
+  maxLength?: number;
+} = {}): string => {
+  if (!html || typeof html !== 'string') return '';
+  
+  const {
+    allowedTags = ['p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li'],
+    allowedAttributes = [],
+    maxLength = 5000
+  } = options;
+  
+  const cleaned = DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: allowedTags,
+    ALLOWED_ATTR: allowedAttributes,
+    REMOVE_DATA_ATTR: true,
+    REMOVE_UNKNOWN_PROTOCOL: true,
+    USE_PROFILES: { html: true }
+  });
+  
+  return cleaned.slice(0, maxLength);
+};
+
+// Enhanced URL validation with protocol checking
+export const validateUrl = (url: string): boolean => {
+  if (!url || typeof url !== 'string') return true; // Empty URLs are allowed
   
   try {
-    const parsedUrl = new URL(url);
-    // Only allow http/https protocols
-    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
-      return '';
-    }
-    return parsedUrl.toString();
+    const parsed = new URL(url);
+    const allowedProtocols = ['http:', 'https:'];
+    
+    // Check protocol
+    if (!allowedProtocols.includes(parsed.protocol)) return false;
+    
+    // Check for suspicious patterns
+    const suspiciousPatterns = [
+      /javascript:/i,
+      /data:/i,
+      /vbscript:/i,
+      /<script/i
+    ];
+    
+    return !suspiciousPatterns.some(pattern => pattern.test(url));
+  } catch {
+    return false;
+  }
+};
+
+// Sanitize URL with validation
+export const sanitizeUrl = (url: string): string => {
+  if (!validateUrl(url)) return '';
+  try {
+    return new URL(url).toString();
   } catch {
     return '';
   }
 };
 
-// Social media handle validation
-export const validateSocialHandle = (handle: string, platform: string): ValidationResult => {
-  const errors: string[] = [];
-  let isValid = true;
-
-  if (!handle) {
-    return { isValid: true, errors: [] }; // Optional field
-  }
-
-  // Remove @ symbol if present
-  const cleanHandle = handle.replace(/^@/, '');
-
-  // Basic validation
-  if (cleanHandle.length < 1 || cleanHandle.length > 30) {
-    errors.push(`${platform} handle must be between 1 and 30 characters`);
-    isValid = false;
-  }
-
-  // Check for valid characters (alphanumeric, underscore, period)
-  if (!/^[a-zA-Z0-9._]+$/.test(cleanHandle)) {
-    errors.push(`${platform} handle contains invalid characters`);
-    isValid = false;
-  }
-
-  return { isValid, errors };
-};
-
-// Email validation
-export const validateEmail = (email: string): ValidationResult => {
-  const errors: string[] = [];
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Enhanced social handle validation with XSS protection
+export const validateSocialHandle = (handle: string): boolean => {
+  if (!handle || typeof handle !== 'string') return true; // Empty handles are allowed
   
-  if (!email) {
-    errors.push('Email is required');
-    return { isValid: false, errors };
-  }
-
-  if (!emailRegex.test(email) || email.length > 254) {
-    errors.push('Invalid email format');
-    return { isValid: false, errors };
-  }
-
-  return { isValid: true, errors: [] };
+  // Remove @ prefix if present
+  const clean = handle.replace(/^@/, '');
+  
+  // Length validation
+  if (clean.length > 30) return false;
+  
+  // Character validation (alphanumeric, dots, underscores only)
+  if (!/^[a-zA-Z0-9._]+$/.test(clean)) return false;
+  
+  // Check for suspicious patterns
+  const suspiciousPatterns = [
+    /javascript/i,
+    /script/i,
+    /alert/i,
+    /on\w+/i
+  ];
+  
+  return !suspiciousPatterns.some(pattern => pattern.test(clean));
 };
 
-// Generic field validation
-export const validateField = (value: string, fieldName: string, rules: ValidationRule): ValidationResult => {
+// Sanitize social handle
+export const sanitizeSocialHandle = (handle: string): string => {
+  if (!handle || typeof handle !== 'string') return '';
+  
+  // Remove @ prefix and sanitize
+  const clean = handle.replace(/^@/, '');
+  const sanitized = sanitizeString(clean, 30);
+  
+  // Validate the result
+  return validateSocialHandle(sanitized) ? sanitized : '';
+};
+
+// Password strength validation with security requirements
+export const validatePassword = (password: string): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
-  let isValid = true;
-
-  if (rules.required && (!value || value.trim().length === 0)) {
-    errors.push(`${fieldName} is required`);
-    isValid = false;
+  
+  if (!password || typeof password !== 'string') {
+    errors.push('Password is required');
+    return { isValid: false, errors };
   }
-
-  if (value && rules.minLength && value.length < rules.minLength) {
-    errors.push(`${fieldName} must be at least ${rules.minLength} characters`);
-    isValid = false;
+  
+  if (password.length < 8) {
+    errors.push('Password must be at least 8 characters long');
   }
-
-  if (value && rules.maxLength && value.length > rules.maxLength) {
-    errors.push(`${fieldName} must not exceed ${rules.maxLength} characters`);
-    isValid = false;
+  
+  if (!/[A-Z]/.test(password)) {
+    errors.push('Password must contain at least one uppercase letter');
   }
-
-  if (value && rules.pattern && !rules.pattern.test(value)) {
-    errors.push(`${fieldName} format is invalid`);
-    isValid = false;
+  
+  if (!/[a-z]/.test(password)) {
+    errors.push('Password must contain at least one lowercase letter');
   }
-
-  if (value && rules.customValidator && !rules.customValidator(value)) {
-    errors.push(`${fieldName} is invalid`);
-    isValid = false;
+  
+  if (!/[0-9]/.test(password)) {
+    errors.push('Password must contain at least one number');
   }
-
-  return { isValid, errors };
+  
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    errors.push('Password must contain at least one special character');
+  }
+  
+  // Check for common weak patterns
+  const weakPatterns = [
+    /123456/,
+    /password/i,
+    /qwerty/i,
+    /(.)\1{3,}/, // Repeated characters
+  ];
+  
+  if (weakPatterns.some(pattern => pattern.test(password))) {
+    errors.push('Password contains common weak patterns');
+  }
+  
+  return { isValid: errors.length === 0, errors };
 };
 
-// Rate limiting helper
-export const createRateLimiter = (maxRequests: number, windowMs: number) => {
-  const requests = new Map<string, number[]>();
-
-  return (identifier: string): boolean => {
-    const now = Date.now();
-    const windowStart = now - windowMs;
-    
-    if (!requests.has(identifier)) {
-      requests.set(identifier, []);
+// Input sanitization for form data
+export const sanitizeFormData = (data: Record<string, any>): Record<string, any> => {
+  const sanitized: Record<string, any> = {};
+  
+  for (const [key, value] of Object.entries(data)) {
+    if (typeof value === 'string') {
+      sanitized[key] = sanitizeString(value);
+    } else if (Array.isArray(value)) {
+      sanitized[key] = value.map(item => 
+        typeof item === 'string' ? sanitizeString(item) : item
+      );
+    } else {
+      sanitized[key] = value;
     }
+  }
+  
+  return sanitized;
+};
 
-    const userRequests = requests.get(identifier)!;
-    
-    // Remove old requests outside the window
-    const validRequests = userRequests.filter(time => time > windowStart);
-    
-    if (validRequests.length >= maxRequests) {
-      return false; // Rate limit exceeded
-    }
-
-    validRequests.push(now);
-    requests.set(identifier, validRequests);
-    
+// Rate limiting check (client-side helper)
+export const checkClientRateLimit = (
+  action: string, 
+  maxRequests: number = 10, 
+  windowMs: number = 60000
+): boolean => {
+  const now = Date.now();
+  const key = `rate_limit_${action}`;
+  const data = localStorage.getItem(key);
+  
+  if (!data) {
+    localStorage.setItem(key, JSON.stringify({ count: 1, resetTime: now + windowMs }));
     return true;
-  };
+  }
+  
+  try {
+    const { count, resetTime } = JSON.parse(data);
+    
+    if (now > resetTime) {
+      localStorage.setItem(key, JSON.stringify({ count: 1, resetTime: now + windowMs }));
+      return true;
+    }
+    
+    if (count >= maxRequests) {
+      return false;
+    }
+    
+    localStorage.setItem(key, JSON.stringify({ count: count + 1, resetTime }));
+    return true;
+  } catch {
+    localStorage.removeItem(key);
+    return true;
+  }
 };
+
+// Security headers for API requests
+export const getSecurityHeaders = (): Record<string, string> => ({
+  'Content-Type': 'application/json',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'X-XSS-Protection': '1; mode=block',
+  'Referrer-Policy': 'strict-origin-when-cross-origin'
+});
