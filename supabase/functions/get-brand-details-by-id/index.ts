@@ -1,28 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Content-Type": "application/json",
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-async function validateSuperAdmin(supabase, token: string) {
-  const { data: { user } } = await supabase.auth.getUser(token);
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user?.id)
-    .single();
-
-  if (!profile || profile.role !== "super_admin") {
-    return { isValid: false, status: 403, message: "Unauthorized" };
-  }
-
-  return { isValid: true };
-}
+import { corsHeaders, validateSuperAdmin } from "../shared/admin-utils.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {

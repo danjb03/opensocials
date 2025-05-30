@@ -31,7 +31,8 @@ export const useCreatorIntro = () => {
     }
 
     try {
-      await supabase.functions.invoke('dismiss-creator-intro', {
+      await supabase.functions.invoke('dismiss-intro', {
+        body: { intro_type: 'creator' },
         headers: {
           Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
         },

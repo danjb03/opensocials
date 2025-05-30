@@ -28,7 +28,6 @@ export class UserDataStore {
     this.queryClient = queryClient;
     this.isInitialized = true;
     this.setupRealtimeSubscriptions();
-    console.log('🔄 UserDataStore initialized for user:', userId);
   }
 
   cleanup() {
@@ -36,7 +35,6 @@ export class UserDataStore {
     this.userId = null;
     this.queryClient = null;
     this.isInitialized = false;
-    console.log('🧹 UserDataStore cleaned up');
   }
 
   /**
@@ -127,7 +125,6 @@ export class UserDataStore {
         table: tableName,
         filter: filter
       }, (payload) => {
-        console.log(`Real-time update for ${tableName}:`, payload);
         this.invalidateUserQueries(queryKeys);
       })
       .subscribe();

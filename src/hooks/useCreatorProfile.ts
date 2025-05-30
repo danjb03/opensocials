@@ -30,7 +30,6 @@ export const useCreatorProfile = () => {
 
     setIsUploading(true);
     try {
-      console.log('Starting avatar upload for file:', file.name);
       
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}-avatar-${Date.now()}.${fileExt}`;
@@ -41,7 +40,6 @@ export const useCreatorProfile = () => {
       const bucketExists = buckets?.some(bucket => bucket.name === 'creator-assets');
       
       if (!bucketExists) {
-        console.log('Creating creator-assets bucket...');
         const { error: bucketError } = await supabase.storage.createBucket('creator-assets', {
           public: true,
           allowedMimeTypes: ['image/*'],
@@ -54,7 +52,6 @@ export const useCreatorProfile = () => {
         }
       }
 
-      console.log('Uploading file to:', filePath);
       const { error: uploadError } = await supabase.storage
         .from('creator-assets')
         .upload(filePath, file, {
@@ -66,12 +63,10 @@ export const useCreatorProfile = () => {
         throw uploadError;
       }
 
-      console.log('File uploaded successfully, getting public URL...');
       const { data } = supabase.storage
         .from('creator-assets')
         .getPublicUrl(filePath);
 
-      console.log('Public URL obtained:', data.publicUrl);
 
       const { error: updateError } = await supabase
         .from('profiles')
@@ -85,7 +80,6 @@ export const useCreatorProfile = () => {
         throw updateError;
       }
 
-      console.log('Avatar URL updated in database');
 
       setProfile((prev) => prev ? { ...prev, avatarUrl: data.publicUrl } : null);
 
@@ -107,7 +101,6 @@ export const useCreatorProfile = () => {
     if (!user?.id || !profile) return;
 
     try {
-      console.log(`Connecting ${platform} for user:`, user.id);
       
       const platformKey = `${platform}_connected`;
       const isCurrentlyConnected = profile.socialConnections[platform as keyof typeof profile.socialConnections];

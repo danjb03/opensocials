@@ -22,7 +22,8 @@ export const BrandIntroModal = ({ isOpen, onClose }: BrandIntroModalProps) => {
 
     setIsLoading(true);
     try {
-      await supabase.functions.invoke('dismiss-brand-intro', {
+      await supabase.functions.invoke('dismiss-intro', {
+        body: { intro_type: 'brand' },
         headers: {
           Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
         },
