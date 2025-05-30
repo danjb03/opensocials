@@ -28,7 +28,7 @@ const EmptyProfileState: React.FC<EmptyProfileStateProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="border rounded-lg p-4 bg-white">
             <h3 className="font-medium text-lg">1. Add Profile Info</h3>
-            <p className="text-sm text-muted-foreground">Upload a photo and complete your bio</p>
+            <p className="text-sm text-muted-foreground">Add Your Info - Upload your photo and bio. Make your first impression count.</p>
           </div>
           <div className="border rounded-lg p-4 bg-white">
             <h3 className="font-medium text-lg">2. Connect Socials</h3>
