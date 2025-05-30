@@ -98,4 +98,5 @@ http = true
 [functions]
 get-creator-leaderboard = {}
 seed-mock-data = {}
-insightiq = {}
+fetch-insightiq-data = {}
+refresh-insightiq = { schedule = "0 0 * * *" }
