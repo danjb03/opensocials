@@ -8,7 +8,6 @@ import DataDeletion from "@/pages/DataDeletion";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import NotFound from "@/pages/NotFound";
-import PhylloCallback from "@/pages/creator/phyllo/Callback";
 import AdminRoutes from "./AdminRoutes";
 import { BrandRoutes } from "./BrandRoutes";
 import { CreatorRoutes } from "./CreatorRoutes";
@@ -49,16 +48,6 @@ export const AppRoutes = () => {
       <Route path="/data-deletion" element={<DataDeletion />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/tos" element={<TermsOfService />} />
-      
-      {/* Social Media Connection Callback - accessible to all authenticated users */}
-      <Route
-        path="/creator/phyllo/callback"
-        element={
-          <ProtectedRoute>
-            <PhylloCallback />
-          </ProtectedRoute>
-        }
-      />
       
       {/* Role-based routes */}
       <Route path="/admin/*" element={<ProtectedRoute requiredRole="admin"><AdminRoutes /></ProtectedRoute>} />

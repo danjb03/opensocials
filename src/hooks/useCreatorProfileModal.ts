@@ -52,7 +52,7 @@ export const useCreatorProfileModal = () => {
       const { data, error } = await supabase
         .from('creator_profiles')
         .select('*')
-        .eq('user_id', creatorId)
+        .eq('user_id', creatorId.toString())
         .single();
 
       if (error) {
