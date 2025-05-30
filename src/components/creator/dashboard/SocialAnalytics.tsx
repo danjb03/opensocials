@@ -104,7 +104,7 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
         />
       )}
 
-      {(socialConnections.twitter || getPlatformData('twitter')?.data) && (
+      {getPlatformData('twitter')?.data && (
         <AnalyticsModule 
           platform="Twitter" 
           metrics={getAnalyticsData('twitter')}

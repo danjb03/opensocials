@@ -5,7 +5,7 @@ import {
   validateUrl,
   sanitizeUrl,
   validateSocialHandle,
-} from '../../shared/security.ts';
+} from '../../../shared/security.ts';
 
 export { validateEmail, sanitizeString, validateUrl, sanitizeUrl, validateSocialHandle };
 
