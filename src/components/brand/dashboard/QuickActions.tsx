@@ -8,9 +8,9 @@ const QuickActions: React.FC = () => {
   const navigate = useNavigate();
   
   return (
-    <div className="flex flex-wrap gap-3 mb-6">
+    <div className="flex flex-wrap gap-3">
       <Button 
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 bg-black text-white hover:bg-gray-800 shadow-sm hover:shadow-md transition-all"
         onClick={() => navigate('/brand/projects?action=create')}
       >
         <Plus className="h-4 w-4" />
@@ -19,11 +19,11 @@ const QuickActions: React.FC = () => {
       
       <Button 
         variant="outline" 
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 shadow-sm hover:shadow-md transition-all"
         onClick={() => navigate('/brand/orders')}
       >
         <FileText className="h-4 w-4" />
-        View Proposals
+        View Campaigns
       </Button>
     </div>
   );

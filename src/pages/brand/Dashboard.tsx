@@ -101,9 +101,11 @@ const Dashboard = () => {
   if (introLoading) {
     return (
       <BrandLayout>
-        <div className="container mx-auto p-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="min-h-screen bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
           </div>
         </div>
       </BrandLayout>
@@ -123,66 +125,70 @@ const Dashboard = () => {
   return (
     <>
       <BrandLayout>
-        <div className="container mx-auto p-6 space-y-8">
-          {/* Header Section */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <h1 className="text-4xl font-bold tracking-tight">
-                  {getWelcomeMessage()}, {brandName}!
-                </h1>
-                <p className="text-xl text-muted-foreground">
-                  Welcome back to your Brand Dashboard
-                </p>
+        <div className="min-h-screen bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Header Section */}
+            <div className="flex items-start justify-between mb-8">
+              <div className="flex-1">
+                <div className="mb-6">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    {getWelcomeMessage()}, {brandName}!
+                  </h1>
+                  <p className="text-lg text-gray-600 mb-4">
+                    Welcome back to your Brand Dashboard
+                  </p>
+                  
+                  <div className="max-w-3xl">
+                    <p className="text-base text-gray-600 leading-relaxed">
+                      Connect with top creators, manage campaigns seamlessly, and grow your brand's reach. 
+                      Your dashboard gives you complete control over your influencer marketing campaigns, 
+                      from discovery to delivery.
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Quick Actions */}
+                <QuickActions />
               </div>
               
-              <div className="max-w-2xl">
-                <p className="text-base text-muted-foreground leading-relaxed">
-                  Connect with top creators, manage campaigns seamlessly, and grow your brand's reach. 
-                  Your dashboard gives you complete control over your influencer marketing campaigns, 
-                  from discovery to delivery.
-                </p>
-              </div>
+              {/* Show the back button if either condition is true */}
+              {(isSuperAdmin || role === 'super_admin') && (
+                <div className="ml-6">
+                  <Button 
+                    variant="outline" 
+                    onClick={handleBackToSuperAdmin} 
+                    className="flex items-center gap-2 bg-white shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Super Admin
+                  </Button>
+                </div>
+              )}
             </div>
-            
-            {/* Show the back button if either condition is true */}
-            {(isSuperAdmin || role === 'super_admin') && (
-              <Button 
-                variant="outline" 
-                onClick={handleBackToSuperAdmin} 
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Super Admin
-              </Button>
+
+            {isLoading ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {/* Stats Section */}
+                <BrandDashboardStats 
+                  totalProjects={projectStats.totalProjects}
+                  activeProjects={projectStats.activeProjects}
+                  completedProjects={projectStats.completedProjects}
+                />
+                
+                {/* Main Content Sections */}
+                <div className="space-y-8">
+                  <BrandCampaignTable />
+                  
+                  {/* Todo Panel */}
+                  <TodoPanel items={todoItems} />
+                </div>
+              </div>
             )}
           </div>
-
-          {isLoading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-          ) : (
-            <div className="space-y-8">
-              {/* Quick Actions - Moved here for better placement */}
-              <QuickActions />
-              
-              {/* Stats Section */}
-              <BrandDashboardStats 
-                totalProjects={projectStats.totalProjects}
-                activeProjects={projectStats.activeProjects}
-                completedProjects={projectStats.completedProjects}
-              />
-              
-              {/* Main Content Sections */}
-              <div className="space-y-8">
-                <BrandCampaignTable />
-                
-                {/* Todo Panel - Now takes full width */}
-                <TodoPanel items={todoItems} />
-              </div>
-            </div>
-          )}
         </div>
       </BrandLayout>
 

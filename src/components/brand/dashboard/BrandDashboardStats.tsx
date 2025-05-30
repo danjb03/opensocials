@@ -15,37 +15,37 @@ const BrandDashboardStats: React.FC<BrandDashboardStatsProps> = ({
   completedProjects 
 }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-lg font-medium">Total Projects</CardTitle>
-          <FileText className="h-5 w-5 text-muted-foreground" />
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <Card className="bg-white shadow-sm hover:shadow-md transition-shadow border-0">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+          <CardTitle className="text-sm font-medium text-gray-600">Total Projects</CardTitle>
+          <FileText className="h-5 w-5 text-gray-400" />
         </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold">{totalProjects}</div>
-          <p className="text-sm text-muted-foreground">All campaigns</p>
+        <CardContent className="pt-0">
+          <div className="text-2xl font-bold text-gray-900">{totalProjects}</div>
+          <p className="text-xs text-gray-500 mt-1">All campaigns</p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-lg font-medium">Active Projects</CardTitle>
-          <Play className="h-5 w-5 text-muted-foreground" />
+      <Card className="bg-white shadow-sm hover:shadow-md transition-shadow border-0">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+          <CardTitle className="text-sm font-medium text-gray-600">Active Projects</CardTitle>
+          <Play className="h-5 w-5 text-blue-500" />
         </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold">{activeProjects}</div>
-          <p className="text-sm text-muted-foreground">Ready to go</p>
+        <CardContent className="pt-0">
+          <div className="text-2xl font-bold text-gray-900">{activeProjects}</div>
+          <p className="text-xs text-gray-500 mt-1">Ready to go</p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-lg font-medium">Completed Projects</CardTitle>
-          <CheckCircle className="h-5 w-5 text-muted-foreground" />
+      <Card className="bg-white shadow-sm hover:shadow-md transition-shadow border-0">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+          <CardTitle className="text-sm font-medium text-gray-600">Completed Projects</CardTitle>
+          <CheckCircle className="h-5 w-5 text-green-500" />
         </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold">{completedProjects}</div>
-          <p className="text-sm text-muted-foreground">Successfully executed</p>
+        <CardContent className="pt-0">
+          <div className="text-2xl font-bold text-gray-900">{completedProjects}</div>
+          <p className="text-xs text-gray-500 mt-1">Successfully executed</p>
         </CardContent>
       </Card>
     </div>
