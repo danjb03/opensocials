@@ -54,7 +54,7 @@ export function CreatorTypeDropdown({
   return <div className="space-y-4">
       <div>
         <Label htmlFor="creator-type">Creator Type *</Label>
-        <p className="text-muted-foreground mt-1 text-xs font-normal">Choose the role that best reflects your content style.</p>
+        <p className="text-muted-foreground mt-1 text-xs font-normal">Choose the role that best reflects your content style, this helps us match you with the right campaigns, faster.</p>
       </div>
       
       <Select value={selected} onValueChange={setSelected}>
