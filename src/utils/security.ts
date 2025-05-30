@@ -1,42 +1,24 @@
 import DOMPurify from 'isomorphic-dompurify';
+import {
+  validateEmail,
+  sanitizeString as baseSanitizeString,
+  validateUrl,
+  sanitizeUrl,
+  validateSocialHandle
+} from '../../shared/security';
+export { validateEmail, validateUrl, sanitizeUrl, validateSocialHandle };
 
-// Enhanced email validation with additional security checks
-export const validateEmail = (email: string): boolean => {
-  if (!email || typeof email !== 'string') return false;
-  
-  // Basic format validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) return false;
-  
-  // Length validation (RFC 5321 limit)
-  if (email.length > 254) return false;
-  
-  // Check for suspicious patterns
-  const suspiciousPatterns = [
-    /javascript:/i,
-    /data:/i,
-    /vbscript:/i,
-    /<script/i,
-    /on\w+\s*=/i
-  ];
-  
-  return !suspiciousPatterns.some(pattern => pattern.test(email));
-};
 
-// Enhanced string sanitization with XSS protection
 export const sanitizeString = (input: string, maxLength: number = 255): string => {
-  if (!input || typeof input !== 'string') return '';
-  
-  // Remove any HTML tags and decode entities
-  const cleaned = DOMPurify.sanitize(input, { 
+  if (!input || typeof input !== "string") return "";
+  const cleaned = DOMPurify.sanitize(input, {
     ALLOWED_TAGS: [],
     ALLOWED_ATTR: [],
-    KEEP_CONTENT: true
+    KEEP_CONTENT: true,
   });
-  
-  // Trim whitespace and limit length
-  return cleaned.trim().slice(0, maxLength);
+  return baseSanitizeString(cleaned, maxLength);
 };
+
 
 // Enhanced HTML sanitization for rich content
 export const sanitizeHtml = (html: string, options: {
@@ -60,66 +42,6 @@ export const sanitizeHtml = (html: string, options: {
   return cleaned.slice(0, maxLength);
 };
 
-// Enhanced URL validation with protocol checking
-export const validateUrl = (url: string): boolean => {
-  if (!url || typeof url !== 'string') return true; // Empty URLs are allowed
-  
-  try {
-    const parsed = new URL(url);
-    const allowedProtocols = ['http:', 'https:'];
-    
-    // Check protocol
-    if (!allowedProtocols.includes(parsed.protocol)) return false;
-    
-    // Check for suspicious patterns
-    const suspiciousPatterns = [
-      /javascript:/i,
-      /data:/i,
-      /vbscript:/i,
-      /<script/i
-    ];
-    
-    return !suspiciousPatterns.some(pattern => pattern.test(url));
-  } catch {
-    return false;
-  }
-};
-
-// Sanitize URL with validation
-export const sanitizeUrl = (url: string): string => {
-  if (!validateUrl(url)) return '';
-  try {
-    return new URL(url).toString();
-  } catch {
-    return '';
-  }
-};
-
-// Enhanced social handle validation with XSS protection
-export const validateSocialHandle = (handle: string): boolean => {
-  if (!handle || typeof handle !== 'string') return true; // Empty handles are allowed
-  
-  // Remove @ prefix if present
-  const clean = handle.replace(/^@/, '');
-  
-  // Length validation
-  if (clean.length > 30) return false;
-  
-  // Character validation (alphanumeric, dots, underscores only)
-  if (!/^[a-zA-Z0-9._]+$/.test(clean)) return false;
-  
-  // Check for suspicious patterns
-  const suspiciousPatterns = [
-    /javascript/i,
-    /script/i,
-    /alert/i,
-    /on\w+/i
-  ];
-  
-  return !suspiciousPatterns.some(pattern => pattern.test(clean));
-};
-
-// Sanitize social handle
 export const sanitizeSocialHandle = (handle: string): string => {
   if (!handle || typeof handle !== 'string') return '';
   

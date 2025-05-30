@@ -1,4 +1,14 @@
 
+import {
+  validateEmail,
+  sanitizeString,
+  validateUrl,
+  sanitizeUrl,
+  validateSocialHandle,
+} from '../../shared/security.ts';
+
+export { validateEmail, sanitizeString, validateUrl, sanitizeUrl, validateSocialHandle };
+
 // Shared security utilities for Edge Functions
 export interface RateLimitConfig {
   identifier: string;
@@ -16,35 +26,6 @@ export interface SecurityAuditLog {
   user_agent?: string;
 }
 
-export const validateEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email) && email.length <= 254;
-};
-
-export const sanitizeString = (input: string, maxLength: number = 255): string => {
-  if (!input || typeof input !== 'string') return '';
-  return input.trim().slice(0, maxLength).replace(/[<>]/g, '');
-};
-
-export const validateUrl = (url: string): boolean => {
-  if (!url) return true;
-  try {
-    const parsed = new URL(url);
-    return ['http:', 'https:'].includes(parsed.protocol);
-  } catch {
-    return false;
-  }
-};
-
-export const sanitizeUrl = (url: string): string => {
-  return validateUrl(url) ? new URL(url).toString() : '';
-};
-
-export const validateSocialHandle = (handle: string): boolean => {
-  if (!handle) return true;
-  const clean = handle.replace(/^@/, '');
-  return clean.length <= 30 && /^[a-zA-Z0-9._]+$/.test(clean);
-};
 
 export const checkRateLimit = async (supabase: any, config: RateLimitConfig): Promise<boolean> => {
   const windowStart = new Date();
