@@ -100,3 +100,4 @@ get-creator-leaderboard = {}
 seed-mock-data = {}
 fetch-insightiq-data = {}
 refresh-insightiq = { schedule = "0 0 * * *" }
+insightiq = {}
