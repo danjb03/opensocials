@@ -99,3 +99,4 @@ http = true
 get-creator-leaderboard = {}
 seed-mock-data = {}
 fetch-insightiq-data = {}
+insightiq = {}
