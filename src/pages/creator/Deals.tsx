@@ -11,9 +11,7 @@ const CreatorDeals = () => {
       <div className="container mx-auto p-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2">Paid Opportunities</h1>
-          <p className="text-muted-foreground">
-            Manage your campaign invitations and track your collaboration deals.
-          </p>
+          <p className="text-muted-foreground">Quick responses lead to quicker payouts. Monitor paid brand deals from invite to final payout.</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={value => setActiveTab(value as any)} className="w-full">
