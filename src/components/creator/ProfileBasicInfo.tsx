@@ -49,7 +49,7 @@ export const ProfileBasicInfo = ({ formData, onInputChange }: ProfileBasicInfoPr
           id="bio"
           value={formData.bio}
           onChange={(e) => onInputChange('bio', e.target.value)}
-          placeholder="Tell us about yourself..."
+          placeholder="Tell brands who you are"
           rows={3}
         />
       </div>

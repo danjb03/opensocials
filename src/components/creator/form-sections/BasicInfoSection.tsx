@@ -54,7 +54,7 @@ export function BasicInfoSection({
             id="bio"
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            placeholder="Tell brands a bit about yourself..."
+            placeholder="Tell brands who you are"
             rows={4}
           />
         </div>
