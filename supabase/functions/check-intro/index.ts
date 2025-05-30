@@ -7,7 +7,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders, status: 204 });
   }
@@ -29,9 +29,20 @@ serve(async (req) => {
     );
   }
 
+  const { intro_type } = await req.json().catch(() => ({ intro_type: null }));
+
+  if (!intro_type || !["brand", "creator"].includes(intro_type)) {
+    return new Response(
+      JSON.stringify({ error: "Invalid intro_type" }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 },
+    );
+  }
+
+  const column = intro_type === "brand" ? "has_seen_intro" : "has_seen_creator_intro";
+
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("has_seen_intro")
+    .select(column)
     .eq("id", user.id)
     .maybeSingle();
 
@@ -42,7 +53,7 @@ serve(async (req) => {
     );
   }
 
-  const showIntro = !profile?.has_seen_intro;
+  const showIntro = !profile?.[column];
 
   return new Response(
     JSON.stringify({ showIntro }),

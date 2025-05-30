@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
-import { supabase } from '@/integrations/supabase/client';
+import { checkIntro } from '@/utils/intro';
 
 export const useBrandIntro = () => {
   const [showIntro, setShowIntro] = useState(false);
@@ -9,34 +9,18 @@ export const useBrandIntro = () => {
   const { user, role } = useAuth();
 
   useEffect(() => {
-    const checkBrandIntro = async () => {
+    const loadIntro = async () => {
       if (!user || role !== 'brand') {
         setIsLoading(false);
         return;
       }
 
-      try {
-        const { data, error } = await supabase.functions.invoke('check-brand-intro', {
-          headers: {
-            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          },
-        });
-
-        if (error) {
-          console.error('Error checking brand intro:', error);
-          setIsLoading(false);
-          return;
-        }
-
-        setShowIntro(data?.showIntro || false);
-      } catch (error) {
-        console.error('Error checking brand intro:', error);
-      } finally {
-        setIsLoading(false);
-      }
+      const shouldShow = await checkIntro('brand');
+      setShowIntro(shouldShow);
+      setIsLoading(false);
     };
 
-    checkBrandIntro();
+    loadIntro();
   }, [user, role]);
 
   const dismissIntro = () => {
