@@ -139,7 +139,7 @@ const CreatorSearch = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold mb-2">Find Creators</h1>
-            <p className="text-slate-300">Instantly see who’s right for your campaign</p>
+            <p className="text-slate-950">Instantly see who’s right for your campaign</p>
           </div>
           
           <ViewToggle viewMode={viewMode} onViewChange={setViewMode} />
