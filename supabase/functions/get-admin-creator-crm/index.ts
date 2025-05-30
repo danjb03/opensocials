@@ -1,43 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-// Define CORS headers for browser requests
-const corsHeaders = {
-  "Content-Type": "application/json",
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-// Helper function to validate admin role
-async function validateSuperAdmin(supabase, token) {
-  try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
-    if (authError || !user) {
-      return { isValid: false, status: 401, message: "Authentication failed" };
-    }
-    
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-      
-    if (profileError) {
-      return { isValid: false, status: 500, message: "Failed to fetch user profile" };
-    }
-    
-    if (!profile || (profile.role !== "super_admin" && profile.role !== "admin")) {
-      return { isValid: false, status: 403, message: "Unauthorized: Admin access required" };
-    }
-    
-    return { isValid: true, userId: user.id };
-  } catch (err) {
-    return { isValid: false, status: 500, message: `Authentication error: ${err.message}` };
-  }
-}
+import { corsHeaders, validateSuperAdmin } from "../shared/admin-crm-utils.ts";
 
 serve(async (req) => {
   // Handle CORS preflight requests

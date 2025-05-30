@@ -26,6 +26,23 @@ export const sanitizeString = (input: string, maxLength: number = 255): string =
   return input.trim().slice(0, maxLength).replace(/[<>]/g, '');
 };
 
+export const sanitizeUrl = (url: string): string => {
+  if (!url) return '';
+  try {
+    const parsed = new URL(url);
+    if (!['http:', 'https:'].includes(parsed.protocol)) return '';
+    return parsed.toString();
+  } catch {
+    return '';
+  }
+};
+
+export const validateSocialHandle = (handle: string): boolean => {
+  if (!handle) return true; // optional
+  const clean = handle.replace(/^@/, '');
+  return clean.length <= 30 && /^[a-zA-Z0-9._]+$/.test(clean);
+};
+
 export const checkRateLimit = async (supabase: any, config: RateLimitConfig): Promise<boolean> => {
   const windowStart = new Date();
   windowStart.setMinutes(windowStart.getMinutes() - config.windowMinutes);

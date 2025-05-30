@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AuthContext, type UserRole } from '@/lib/auth';
 import { toast } from 'sonner';
+import { fetchUserRole } from '@/utils/authHelpers';
 
 export const useSecureAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -26,54 +27,6 @@ export const useSecureAuth = () => {
     });
   };
 
-  // Security: Enhanced role fetching with better error handling
-  const fetchUserRole = async (userId: string) => {
-    try {
-      setAuthError(null);
-      
-      // First try to get role from user_roles table
-      const { data: roleData, error: roleError } = await supabase
-        .from('user_roles')
-        .select('role, status')
-        .eq('user_id', userId)
-        .eq('status', 'approved')
-        .maybeSingle();
-      
-      if (roleError) {
-        console.error('❌ Error fetching user role:', roleError);
-        setAuthError('Failed to verify user permissions');
-        setRole(null);
-        return;
-      }
-      
-      if (roleData) {
-        setRole(roleData.role as UserRole);
-      } else {
-        // Fallback to checking profiles table
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', userId)
-          .maybeSingle();
-          
-        if (profileError) {
-          console.error('❌ Error fetching profile role:', profileError);
-          setAuthError('Failed to verify user permissions');
-          setRole(null);
-          return;
-        }
-        
-        setRole(profileData?.role as UserRole || null);
-      }
-      
-    } catch (err) {
-      console.error('❌ Failed to fetch user role:', err);
-      setAuthError('Authentication error occurred');
-      setRole(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Security: Enhanced session validation
   const validateSession = async (session: any) => {
@@ -150,9 +103,11 @@ export const useSecureAuth = () => {
           
           // Defer role fetching to prevent deadlocks
           if (validatedSession.user) {
-            setTimeout(() => {
+            setTimeout(async () => {
               if (mounted) {
-                fetchUserRole(validatedSession.user.id);
+                const r = await fetchUserRole(validatedSession.user.id);
+                setRole(r);
+                setIsLoading(false);
               }
             }, 0);
           }
@@ -179,7 +134,10 @@ export const useSecureAuth = () => {
           setSession(validatedSession);
           setUser(validatedSession.user ?? null);
           setEmailConfirmed(!!validatedSession.user?.email_confirmed_at);
-          fetchUserRole(validatedSession.user.id);
+          fetchUserRole(validatedSession.user.id).then(r => {
+            setRole(r);
+            setIsLoading(false);
+          });
         } else {
           // Invalid session
           await supabase.auth.signOut();

@@ -1,14 +1,7 @@
 
 // @ts-ignore
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const SUPABASE_URL = "https://pcnrnciwgdrukzciwexi.supabase.co";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders, deleteSocialAccount } from "../shared/meta-utils.ts";
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -30,15 +23,7 @@ serve(async (req) => {
       );
     }
 
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/social_accounts?profile_id=eq.${user_id}`, {
-      method: "DELETE",
-      headers: {
-        "apikey": SUPABASE_SERVICE_ROLE_KEY,
-        "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        "Content-Type": "application/json",
-        "Prefer": "return=representation"
-      }
-    });
+    const res = await deleteSocialAccount(user_id);
 
     if (!res.ok) {
       const error = await res.text();

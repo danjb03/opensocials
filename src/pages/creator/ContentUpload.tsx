@@ -191,25 +191,22 @@ const ContentUpload = () => {
       
       const contentId = contentData[0].id;
       
-      // Then upload each file
-      for (const file of files) {
+      await Promise.all(files.map(async (file) => {
         const fileExt = file.name.split('.').pop();
         const fileName = `${contentId}/${Date.now()}.${fileExt}`;
-        
+
         const { error: uploadError } = await supabase
           .storage
           .from('campaign-content')
           .upload(fileName, file);
-        
+
         if (uploadError) throw uploadError;
-        
-        // Get the URL of the uploaded file
+
         const { data: fileData } = supabase
           .storage
           .from('campaign-content')
           .getPublicUrl(fileName);
-        
-        // Link the file to the content record
+
         await supabase
           .from('campaign_content_files')
           .insert({
@@ -220,7 +217,7 @@ const ContentUpload = () => {
             file_type: file.type,
             file_size: file.size,
           });
-      }
+      }));
       
       toast.success('Content uploaded successfully');
       navigate(`/creator/campaigns/${id}`);

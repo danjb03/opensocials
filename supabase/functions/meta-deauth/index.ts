@@ -1,15 +1,9 @@
 // @ts-ignore
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { decode } from "https://deno.land/x/djwt@v2.7/mod.ts";
+import { corsHeaders, deleteSocialAccount, logDeauth, SUPABASE_SERVICE_ROLE_KEY } from "../shared/meta-utils.ts";
 
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const SUPABASE_URL = "https://pcnrnciwgdrukzciwexi.supabase.co";
 const IG_CLIENT_SECRET = Deno.env.get("INSTAGRAM_APP_SECRET")!;
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
 
 function parseSignedRequest(signedRequest: string) {
   const [encodedSig, payload] = signedRequest.split(".");
@@ -41,35 +35,14 @@ serve(async (req) => {
     console.log(`Meta deauthorization received for user_id: ${userId}`);
 
     // Delete the social account from the database
-    const deleteRes = await fetch(`${SUPABASE_URL}/rest/v1/social_accounts?account_id=eq.${userId}`, {
-      method: "DELETE",
-      headers: {
-        "apikey": SUPABASE_SERVICE_ROLE_KEY,
-        "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        "Content-Type": "application/json",
-        "Prefer": "return=representation"
-      }
-    });
+    const deleteRes = await deleteSocialAccount(userId);
 
     if (!deleteRes.ok) {
       const err = await deleteRes.text();
       console.error(`Error deleting social account: ${err}`);
       
       // Log the deauthorization attempt even if deletion failed
-      await fetch(`${SUPABASE_URL}/rest/v1/deauth_logs`, {
-        method: "POST",
-        headers: {
-          "apikey": SUPABASE_SERVICE_ROLE_KEY,
-          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          platform: "meta",
-          account_id: userId,
-          status: "failed",
-          error_message: err
-        })
-      });
+      await logDeauth("meta", userId, "failed", err);
       
       // Still return 200 to Meta so they don't keep retrying
       return new Response(
@@ -82,19 +55,7 @@ serve(async (req) => {
     }
 
     // Log successful deauthorization
-    await fetch(`${SUPABASE_URL}/rest/v1/deauth_logs`, {
-      method: "POST",
-      headers: {
-        "apikey": SUPABASE_SERVICE_ROLE_KEY,
-        "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        platform: "meta",
-        account_id: userId,
-        status: "success"
-      })
-    });
+    await logDeauth("meta", userId, "success");
 
     return new Response(
       JSON.stringify({ status: "success", message: "Deauthorized successfully" }),

@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
+import { validateEmail } from '@/utils/security';
 
 interface SignInParams {
   email: string;
@@ -8,11 +9,7 @@ interface SignInParams {
   setIsLoading: (isLoading: boolean) => void;
 }
 
-// Enhanced email validation
-const validateEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email) && email.length <= 254;
-};
+
 
 export function useSignIn() {
   const handleSignIn = async ({ email, password, setIsLoading }: SignInParams) => {

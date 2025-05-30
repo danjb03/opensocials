@@ -21,16 +21,14 @@ export const useUserRequests = (filter: string) => {
         return;
       }
       
-      const processedRequests: UserRequest[] = [];
-      
-      for (const item of roleData) {
+      const processedRequests = await Promise.all(roleData.map(async (item) => {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('first_name, last_name')
           .eq('id', item.user_id)
           .single();
-        
-        processedRequests.push({
+
+        return {
           id: item.id,
           user_id: item.user_id,
           role: item.role,
@@ -41,9 +39,9 @@ export const useUserRequests = (filter: string) => {
             last_name: profileData?.last_name || null,
             email: null
           }
-        });
-      }
-      
+        } as UserRequest;
+      }));
+
       setUserRequests(processedRequests);
     } catch (error) {
       toast.error('Error fetching user requests', {
