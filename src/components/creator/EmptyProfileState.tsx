@@ -32,7 +32,7 @@ const EmptyProfileState: React.FC<EmptyProfileStateProps> = ({
           </div>
           <div className="border rounded-lg p-4 bg-white">
             <h3 className="font-medium text-lg">2. Connect Socials</h3>
-            <p className="text-sm text-muted-foreground">Link your social media accounts</p>
+            <p className="text-sm text-muted-foreground">Connect your audience. Prove your reach. Own your value.</p>
           </div>
           <div className="border rounded-lg p-4 bg-white">
             <h3 className="font-medium text-lg">3. Get Discovered</h3>
