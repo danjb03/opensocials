@@ -993,6 +993,42 @@ export type Database = {
         }
         Relationships: []
       }
+      social_profiles: {
+        Row: {
+          creator_id: string | null
+          engagement_rate: number | null
+          error_message: string | null
+          follower_count: number | null
+          id: string
+          last_synced: string | null
+          platform: string
+          status: string | null
+          username: string
+        }
+        Insert: {
+          creator_id?: string | null
+          engagement_rate?: number | null
+          error_message?: string | null
+          follower_count?: number | null
+          id?: string
+          last_synced?: string | null
+          platform: string
+          status?: string | null
+          username: string
+        }
+        Update: {
+          creator_id?: string | null
+          engagement_rate?: number | null
+          error_message?: string | null
+          follower_count?: number | null
+          id?: string
+          last_synced?: string | null
+          platform?: string
+          status?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null

@@ -47,7 +47,7 @@ export const useInsightIQData = () => {
     }));
 
     try {
-      const { data, error } = await supabase.functions.invoke('fetch-insightiq-data', {
+      const { data, error } = await supabase.functions.invoke('insightiq', {
         body: { platform: platform.toLowerCase(), username }
       });
 
