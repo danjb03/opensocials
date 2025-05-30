@@ -1,4 +1,3 @@
-
 import DOMPurify from 'isomorphic-dompurify';
 
 // Enhanced email validation with additional security checks
@@ -55,10 +54,7 @@ export const sanitizeHtml = (html: string, options: {
   
   const cleaned = DOMPurify.sanitize(html, {
     ALLOWED_TAGS: allowedTags,
-    ALLOWED_ATTR: allowedAttributes,
-    REMOVE_DATA_ATTR: true,
-    REMOVE_UNKNOWN_PROTOCOL: true,
-    USE_PROFILES: { html: true }
+    ALLOWED_ATTR: allowedAttributes
   });
   
   return cleaned.slice(0, maxLength);
