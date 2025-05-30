@@ -77,7 +77,8 @@ const BrandsCRM = () => {
     }
     
     // Build the URL with query parameters
-    const url = new URL('/functions/v1/get-admin-brand-crm', window.location.origin);
+    const url = new URL('/functions/v1/get-admin-crm', window.location.origin);
+    url.searchParams.append('type', 'brand');
     url.searchParams.append('page', page.toString());
     url.searchParams.append('pageSize', pageSize.toString());
     url.searchParams.append('orderBy', orderBy);
