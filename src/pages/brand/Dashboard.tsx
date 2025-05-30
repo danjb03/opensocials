@@ -2,7 +2,6 @@
 import BrandLayout from '@/components/layouts/BrandLayout';
 import BrandDashboardStats from '@/components/brand/dashboard/BrandDashboardStats';
 import TodoPanel from '@/components/brand/dashboard/TodoPanel';
-import CreatorList from '@/components/brand/dashboard/CreatorList';
 import QuickActions from '@/components/brand/dashboard/QuickActions';
 import BrandCampaignTable from '@/components/brand/dashboard/BrandCampaignTable';
 import { BrandIntroModal } from '@/components/brand/BrandIntroModal';
@@ -32,8 +31,7 @@ const Dashboard = () => {
   const { 
     isLoading,
     projectStats,
-    todoItems,
-    creators
+    todoItems
   } = useBrandDashboard();
 
   // Check if user has super_admin role directly from the database
@@ -180,10 +178,8 @@ const Dashboard = () => {
               <div className="space-y-8">
                 <BrandCampaignTable />
                 
-                <div className="grid gap-8 lg:grid-cols-2">
-                  <TodoPanel items={todoItems} />
-                  <CreatorList creators={creators} />
-                </div>
+                {/* Todo Panel - Now takes full width */}
+                <TodoPanel items={todoItems} />
               </div>
             </div>
           )}
