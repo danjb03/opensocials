@@ -1,3 +1,4 @@
+
 import BrandLayout from '@/components/layouts/BrandLayout';
 import BrandDashboardStats from '@/components/brand/dashboard/BrandDashboardStats';
 import TodoPanel from '@/components/brand/dashboard/TodoPanel';
@@ -14,11 +15,13 @@ import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect } from 'react';
+import { useBrandProfile } from '@/hooks/useBrandProfile';
 
 const Dashboard = () => {
   const { user, role } = useAuth();
   const navigate = useNavigate();
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const { profile } = useBrandProfile();
   
   // Initialize user data synchronization
   const { refreshUserData } = useUserDataSync();
@@ -109,12 +112,40 @@ const Dashboard = () => {
     );
   }
 
+  // Get welcome message based on time of day
+  const getWelcomeMessage = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+
+  const brandName = profile?.company_name || 'there';
+
   return (
     <>
       <BrandLayout>
-        <div className="container mx-auto p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold">Brand Dashboard</h1>
+        <div className="container mx-auto p-6 space-y-8">
+          {/* Header Section */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h1 className="text-4xl font-bold tracking-tight">
+                  {getWelcomeMessage()}, {brandName}!
+                </h1>
+                <p className="text-xl text-muted-foreground">
+                  Welcome back to your Brand Dashboard
+                </p>
+              </div>
+              
+              <div className="max-w-2xl">
+                <p className="text-base text-muted-foreground leading-relaxed">
+                  Connect with top creators, manage campaigns seamlessly, and grow your brand's reach. 
+                  Your dashboard gives you complete control over your influencer marketing campaigns, 
+                  from discovery to delivery.
+                </p>
+              </div>
+            </div>
             
             {/* Show the back button if either condition is true */}
             {(isSuperAdmin || role === 'super_admin') && (
@@ -128,29 +159,33 @@ const Dashboard = () => {
               </Button>
             )}
           </div>
-          
+
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           ) : (
-            <>
+            <div className="space-y-8">
+              {/* Quick Actions - Moved here for better placement */}
               <QuickActions />
               
+              {/* Stats Section */}
               <BrandDashboardStats 
                 totalProjects={projectStats.totalProjects}
                 activeProjects={projectStats.activeProjects}
                 completedProjects={projectStats.completedProjects}
               />
               
-              <div className="space-y-6">
+              {/* Main Content Sections */}
+              <div className="space-y-8">
                 <BrandCampaignTable />
                 
-                <TodoPanel items={todoItems} />
-                
-                <CreatorList creators={creators} />
+                <div className="grid gap-8 lg:grid-cols-2">
+                  <TodoPanel items={todoItems} />
+                  <CreatorList creators={creators} />
+                </div>
               </div>
-            </>
+            </div>
           )}
         </div>
       </BrandLayout>
