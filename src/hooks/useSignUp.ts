@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { UserRole } from '@/lib/auth';
+import { sanitizeString, validateEmail } from '@/utils/security';
 
 interface SignUpParams {
   email: string;
@@ -13,12 +14,6 @@ interface SignUpParams {
   resetForm: () => void;
 }
 
-// Enhanced email validation
-const validateEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email) && email.length <= 254;
-};
-
 // Password strength validation
 const validatePassword = (password: string): boolean => {
   return password.length >= 8 && 
@@ -27,11 +22,6 @@ const validatePassword = (password: string): boolean => {
          /[0-9]/.test(password);
 };
 
-// Input sanitization
-const sanitizeString = (input: string, maxLength: number = 255): string => {
-  if (!input || typeof input !== 'string') return '';
-  return input.trim().slice(0, maxLength).replace(/[<>]/g, '');
-};
 
 export function useSignUp() {
   const handleSignUp = async ({
