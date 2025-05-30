@@ -18,11 +18,12 @@ export function useProjectDetails() {
   const navigate = useNavigate();
 
   // Import functionality from smaller hooks
-  const { 
-    briefFiles, 
-    isUploading, 
+  const {
+    briefFiles,
+    isUploading,
+    uploadProgress,
     handleFileChange,
-    uploadBriefFiles 
+    uploadBriefFiles
   } = useBriefFiles(id);
   
   const { 
@@ -129,6 +130,7 @@ export function useProjectDetails() {
     currentStep,
     briefFiles,
     isUploading,
+    uploadProgress,
     briefUploaded,
     nextStepBlocked,
     showBlockedAlert,
