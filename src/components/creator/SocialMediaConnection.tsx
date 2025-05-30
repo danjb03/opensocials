@@ -1,57 +1,64 @@
 
 import React from 'react';
-import { useAuth } from '@/lib/auth';
-import { usePhylloConnect } from '@/hooks/usePhylloConnect';
-import { PhylloConnector } from './phyllo/PhylloConnector';
-import { sanitizeString } from '@/utils/security';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { LinkIcon, Instagram, Youtube, Twitter } from 'lucide-react';
 
 interface SocialMediaConnectionProps {
   onConnectionSuccess?: () => void;
 }
 
 export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnectionProps) => {
-  const { user } = useAuth();
-  const { isPhylloLoading, initializePhylloConnect } = usePhylloConnect(
-    user?.id,
-    user?.email,
-    onConnectionSuccess
-  );
-
-  if (!user) {
-    return (
-      <div className="border-t pt-6">
-        <div className="space-y-4">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold mb-2">Connect Your Social Media</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Please log in to connect your social media accounts.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const platforms = [
+    { name: 'Instagram', icon: Instagram, color: 'bg-gradient-to-r from-purple-500 to-pink-500' },
+    { name: 'YouTube', icon: Youtube, color: 'bg-red-500' },
+    { name: 'TikTok', icon: LinkIcon, color: 'bg-black' },
+    { name: 'Twitter', icon: Twitter, color: 'bg-blue-500' }
+  ];
 
   const handleConnect = (platform: string) => {
-    // Security: Sanitize platform input
-    const sanitizedPlatform = sanitizeString(platform, 20);
-    
-    // Validate platform against allowed list
-    const allowedPlatforms = [
-      'instagram', 'tiktok', 'youtube', 'twitch', 'linkedin', 
-      'twitter', 'reddit', 'patreon', 'spotify', 'facebook', 
-      'discord', 'pinterest', 'shopify'
-    ];
-    
-    if (!allowedPlatforms.includes(sanitizedPlatform)) {
-      console.error('Invalid platform:', platform);
-      return;
-    }
-    
-    initializePhylloConnect(sanitizedPlatform);
+    // TODO: Implement InsightIQ API integration
+    console.log(`Connecting to ${platform} via InsightIQ API`);
   };
 
   return (
-    <PhylloConnector onConnect={handleConnect} isLoading={isPhylloLoading} />
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <LinkIcon className="h-5 w-5" />
+          Connect Your Social Media
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Enter your username to connect your social media accounts and showcase your reach to brands.
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {platforms.map((platform) => {
+              const IconComponent = platform.icon;
+              return (
+                <Button
+                  key={platform.name}
+                  variant="outline"
+                  onClick={() => handleConnect(platform.name)}
+                  className="flex items-center gap-2 h-12"
+                >
+                  <div className={`p-1 rounded ${platform.color}`}>
+                    <IconComponent className="h-4 w-4 text-white" />
+                  </div>
+                  {platform.name}
+                </Button>
+              );
+            })}
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-muted-foreground">
+              New simplified connection system coming soon - no OAuth required!
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };

@@ -7,7 +7,6 @@ import CreatorDeals from "@/pages/creator/Deals";
 import CreatorCampaigns from "@/pages/creator/Campaigns";
 import CampaignDetail from "@/pages/creator/CampaignDetail";
 import ContentUpload from "@/pages/creator/ContentUpload";
-import PhylloCallback from "@/pages/creator/phyllo/Callback";
 import ProfileSetup from "@/pages/creator/profile/Setup";
 
 export const CreatorRoutes = () => {
@@ -71,16 +70,6 @@ export const CreatorRoutes = () => {
             <ContentUpload />
           </ProtectedRoute>
         } 
-      />
-      
-      {/* Social Media Connection Callback */}
-      <Route
-        path="phyllo/callback"
-        element={
-          <ProtectedRoute requiredRole="creator">
-            <PhylloCallback />
-          </ProtectedRoute>
-        }
       />
     </Routes>
   );

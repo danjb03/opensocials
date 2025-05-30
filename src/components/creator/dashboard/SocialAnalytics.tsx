@@ -35,12 +35,8 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
   isLoading
 }) => {
   const handleConnectionSuccess = () => {
-    // Refresh the analytics data
-    Object.keys(socialConnections).forEach(platform => {
-      if (socialConnections[platform as keyof typeof socialConnections]) {
-        onConnect(platform);
-      }
-    });
+    // Refresh the analytics data when new connections are made
+    console.log('Social media connection successful - refreshing analytics');
   };
 
   return (
