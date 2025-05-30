@@ -98,3 +98,4 @@ http = true
 [functions]
 get-creator-leaderboard = {}
 seed-mock-data = {}
+fetch-insightiq-data = {}
