@@ -1,31 +1,21 @@
 
+import React from 'react';
 import { format } from "date-fns";
-import { CalendarIcon } from 'lucide-react';
-import { useFormContext } from "react-hook-form";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { CalendarIcon } from "lucide-react";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useFormContext } from "react-hook-form";
 import { cn } from "@/lib/utils";
-import type { ProjectFormValues } from '@/hooks/useProjectForm2';
 
 interface ExecutionDateFieldProps {
   calculateDaysRemaining: (date: Date | null) => number;
 }
 
 export function ExecutionDateField({ calculateDaysRemaining }: ExecutionDateFieldProps) {
-  const form = useFormContext<ProjectFormValues>();
-  
+  const form = useFormContext();
+
   return (
     <FormField
       control={form.control}
@@ -39,45 +29,35 @@ export function ExecutionDateField({ calculateDaysRemaining }: ExecutionDateFiel
                 <Button
                   variant={"outline"}
                   className={cn(
-                    "w-full pl-3 text-left font-normal flex justify-between",
+                    "w-full pl-3 text-left font-normal",
                     !field.value && "text-muted-foreground"
                   )}
                 >
                   {field.value ? (
-                    <span className="flex items-center gap-2">
-                      <CalendarIcon className="h-4 w-4 text-gray-500" />
-                      {format(field.value, "PPP")}
-                      <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                        {calculateDaysRemaining(field.value)} days remaining
-                      </span>
-                    </span>
+                    format(field.value, "PPP")
                   ) : (
-                    <span className="flex items-center gap-2">
-                      <CalendarIcon className="h-4 w-4 text-gray-500" />
-                      Select execution date
-                    </span>
+                    <span>Pick an execution date</span>
                   )}
+                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                 </Button>
               </FormControl>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
               <Calendar
                 mode="single"
-                selected={field.value || undefined}
-                onSelect={(date) => {
-                  // Handle both selection and deselection
-                  field.onChange(date || null);
-                }}
-                disabled={(date) => {
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  return date < today;
-                }}
+                selected={field.value}
+                onSelect={(date) => field.onChange(date)}
+                disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                 initialFocus
-                className={cn("p-3 pointer-events-auto")}
+                className="pointer-events-auto"
               />
             </PopoverContent>
           </Popover>
+          {field.value && (
+            <p className="text-sm text-muted-foreground">
+              {calculateDaysRemaining(field.value)} days remaining
+            </p>
+          )}
           <FormMessage />
         </FormItem>
       )}
