@@ -20,18 +20,8 @@ interface CreatorInviteSystemProps {
 interface CreatorCandidate {
   id: string;
   user_id: string;
-  name: string;
-  email: string;
-  instagram_handle?: string;
-  tiktok_handle?: string;
-  youtube_handle?: string;
-  primary_platform: string;
-  follower_count?: number;
-  engagement_rate?: number;
-  profiles?: {
-    avatar_url?: string;
-    full_name?: string;
-  };
+  name: string | null;
+  email: string | null;
 }
 
 const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
@@ -56,22 +46,12 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
           id,
           user_id,
           name,
-          email,
-          instagram_handle,
-          tiktok_handle,
-          youtube_handle,
-          primary_platform,
-          follower_count,
-          engagement_rate,
-          profiles!creator_profiles_user_id_fkey (
-            avatar_url,
-            full_name
-          )
+          email
         `)
         .limit(20);
 
       if (searchTerm) {
-        query = query.or(`name.ilike.%${searchTerm}%,instagram_handle.ilike.%${searchTerm}%,tiktok_handle.ilike.%${searchTerm}%`);
+        query = query.or(`name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
       }
 
       const { data, error } = await query;

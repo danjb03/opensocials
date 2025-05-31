@@ -8,17 +8,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run dev` - Start development server with hot reload at localhost:8080
 - `npm run build` - Production build with Vite
 - `npm run build:dev` - Development build
-- `npm run lint` - Run ESLint (expect ~80 TypeScript errors, down from 190)
+- `npm run lint` - Run ESLint (currently ~120 TypeScript errors, mostly `any` types)
 - `npm run preview` - Preview production build locally
-- `npx update-browserslist-db@latest` - Update browser compatibility database
 
-### Supabase Local Development
-- `supabase start` - Start local Supabase stack
-- `supabase stop` - Stop local Supabase stack
-- `supabase db reset` - Reset local database and apply migrations
-- `supabase migration new <name>` - Create new migration file
-- `supabase functions deploy <function-name>` - Deploy individual Edge Function
-- Local services run on ports 54321-54328
+### Database & Schema Management
+- Database uses PostgreSQL via Supabase with comprehensive migrations
+- Key tables: `projects_new`, `creator_profiles`, `brand_profiles`, `project_creators`, `project_content`
+- When working with database queries, use `Database['public']['Tables']['table_name']['Row']` type pattern
+- Avoid `Tables<'table_name'>` syntax which can cause TypeScript resolution issues
 
 ### Performance & Bundle Analysis
 - Build creates optimized vendor chunks (react-vendor, ui-vendor, etc.)
@@ -111,13 +108,19 @@ Backend logic in Supabase Edge Functions (`/supabase/functions/`):
 - **Feature Flags**: A/B testing capabilities via `secure-update-feature-flags`
 
 ### Campaign Wizard & Rolling Payments System
-The platform now supports a comprehensive campaign creation and management flow:
+The platform supports a comprehensive campaign creation and management flow:
 
 #### Campaign Creation Flow
 1. **Multi-step Wizard**: CampaignWizard component with 5 steps (basics, content, budget, creators, review)
 2. **Draft System**: Real-time saving to `project_drafts` table with localStorage fallback
 3. **25% Platform Margin**: Transparent budget breakdown showing gross/net amounts
 4. **Creator Selection**: Integration with live creator database for real invitations
+5. **Database Creation**: Uses `create-campaign-with-deals` edge function to create `projects_new` records
+
+#### Project Creation System
+- **Working System**: Use Campaign Wizard at `/brand/create-campaign` for functional project creation
+- **Legacy Form**: ProjectForm component in Projects page is non-functional (only simulates creation)
+- **Navigation**: Projects page "Create Project" button correctly redirects to working Campaign Wizard
 
 #### Rolling Creator Invitations
 - **Dynamic Invitations**: Brands can invite additional creators after campaign launch
@@ -156,9 +159,10 @@ New users must complete role-specific profile setup before accessing main featur
 - CORS headers standardized across functions (stored in `admin-utils.ts`)
 
 ### UI/UX Conventions
-- **Design System**: Monochrome (black/white) with minimal grays
+- **Design System**: Professional monochrome aesthetic (black/white) with minimal grays - NO EMOJIS
+- **Icons**: Use Lucide React icons exclusively for professional appearance
 - **Layout**: Role-specific layouts with collapsible sidebars
-- **Forms**: Multi-step forms for complex workflows (see `components/brand/project-form/`)
+- **Forms**: Multi-step forms for complex workflows (see `components/brand/campaign-wizard/`)
 - **Loading States**: Consistent skeleton and loading patterns with async imports
 - **Performance**: Extensive use of React.memo, useMemo, and useCallback
 
@@ -175,3 +179,29 @@ New users must complete role-specific profile setup before accessing main featur
 - RLS policies enforce data access boundaries
 - Rate limiting and input sanitization in Edge Functions
 - Creator financial data protection (gross amounts never exposed)
+
+## TypeScript & Development Notes
+
+### Database Type Patterns
+- Use `Database['public']['Tables']['table_name']['Row']` for table types
+- Avoid `Tables<'table_name'>` syntax to prevent TypeScript resolution issues
+- Creator profiles have limited fields: `id`, `user_id`, `name`, `email` only
+- When querying creator_profiles, avoid referencing non-existent columns
+
+### React Hook Form Patterns
+- Use `name: 'fieldName' as const` for useFieldArray to fix type inference
+- Access field array values with `watch(\`arrayName.${index}\`)` pattern
+- ContentRequirements forms use Zod validation with proper TypeScript inference
+
+### Common Fixes
+- Build errors often relate to database schema mismatches
+- Check that queries only select columns that exist in database
+- Update component interfaces to match actual database schema
+- Simplify creator data structures to available fields only
+
+## Content Management
+See `CONTENT_SUBMISSION_SYSTEM.md` for comprehensive content workflow documentation including:
+- Creator content submission via `submit-content` edge function
+- Brand review workflow via `review-content` edge function  
+- Proof tracking and AI content detection
+- Campaign analytics and reporting system

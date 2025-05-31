@@ -30,15 +30,7 @@ const useCreatorDetails = (creatorIds: string[]) => {
           id,
           user_id,
           name,
-          email,
-          instagram_handle,
-          tiktok_handle,
-          youtube_handle,
-          primary_platform,
-          profiles!creator_profiles_user_id_fkey (
-            avatar_url,
-            full_name
-          )
+          email
         `)
         .in('user_id', creatorIds);
       
@@ -254,26 +246,19 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
               <div className="space-y-3">
                 {selectedCreators.map(creatorData => {
                   const creator = creatorDetails?.find(c => c.user_id === creatorData.creator_id);
-                  const creatorName = creator?.profiles?.full_name || creator?.name || 'Unknown Creator';
-                  const creatorHandle = creator?.instagram_handle 
-                    ? `@${creator.instagram_handle}` 
-                    : creator?.tiktok_handle 
-                    ? `@${creator.tiktok_handle}` 
-                    : creator?.youtube_handle 
-                    ? `@${creator.youtube_handle}`
-                    : '@creator';
+                  const creatorName = creator?.name || 'Unknown Creator';
+                  const creatorHandle = creator?.email || '@creator';
                   
                   return (
                     <div key={creatorData.creator_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={creator?.profiles?.avatar_url} alt={creatorName} />
                           <AvatarFallback>{creatorName.slice(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div>
                           <p className="font-medium">{creatorName}</p>
                           <p className="text-sm text-gray-600">{creatorHandle}</p>
-                          <p className="text-xs text-blue-600 capitalize">{creator?.primary_platform || 'Multi-platform'}</p>
+                          <p className="text-xs text-blue-600">Creator</p>
                         </div>
                       </div>
                       <div className="text-right">

@@ -77,17 +77,17 @@ const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
 
   const { fields: hashtagFields, append: appendHashtag, remove: removeHashtag } = useFieldArray({
     control,
-    name: 'hashtags'
+    name: 'hashtags' as const
   });
 
   const { fields: mentionFields, append: appendMention, remove: removeMention } = useFieldArray({
     control,
-    name: 'mentions'
+    name: 'mentions' as const
   });
 
   const { fields: restrictionFields, append: appendRestriction, remove: removeRestriction } = useFieldArray({
     control,
-    name: 'restrictions'
+    name: 'restrictions' as const
   });
 
   const watchedPlatforms = watch('platforms');
@@ -244,7 +244,7 @@ const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
             <div className="flex flex-wrap gap-2">
               {hashtagFields.map((field, index) => (
                 <Badge key={field.id} variant="secondary" className="pl-3 pr-1">
-                  #{field.value}
+                  #{watch(`hashtags.${index}`)}
                   <Button
                     type="button"
                     variant="ghost"

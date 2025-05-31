@@ -5,10 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, ArrowRight, AlertCircle } from 'lucide-react';
 import { statusColors, type ProjectStatus } from '@/types/projects';
-import { Tables } from '@/integrations/supabase/types';
+import { Database } from '@/integrations/supabase/types';
 
 interface ProjectHeaderProps {
-  project: Tables<'projects_new'>;
+  project: Database['public']['Tables']['projects_new']['Row'];
   nextStepBlocked: boolean;
   showBlockedAlert: boolean;
   isUploading: boolean;
