@@ -352,10 +352,13 @@ export type Database = {
           created_at: string | null
           creator_type: string | null
           display_name: string | null
+          email: string | null
           engagement_rate: number | null
           follower_count: number | null
           headline: string | null
+          id: string | null
           industries: string[] | null
+          name: string | null
           platform_types: string[] | null
           primary_platform: string | null
           rate_card_url: string | null
@@ -373,10 +376,13 @@ export type Database = {
           created_at?: string | null
           creator_type?: string | null
           display_name?: string | null
+          email?: string | null
           engagement_rate?: number | null
           follower_count?: number | null
           headline?: string | null
+          id?: string | null
           industries?: string[] | null
+          name?: string | null
           platform_types?: string[] | null
           primary_platform?: string | null
           rate_card_url?: string | null
@@ -394,10 +400,13 @@ export type Database = {
           created_at?: string | null
           creator_type?: string | null
           display_name?: string | null
+          email?: string | null
           engagement_rate?: number | null
           follower_count?: number | null
           headline?: string | null
+          id?: string | null
           industries?: string[] | null
+          name?: string | null
           platform_types?: string[] | null
           primary_platform?: string | null
           rate_card_url?: string | null
@@ -583,11 +592,13 @@ export type Database = {
           industries: string[] | null
           industry: string | null
           instagram_connected: boolean | null
+          instagram_handle: string | null
           is_complete: boolean | null
           is_profile_complete: boolean | null
           last_name: string | null
           linkedin_connected: boolean | null
           logo_url: string | null
+          name: string | null
           primary_platform: string | null
           profile_type: string | null
           r4_recommendations: Json | null
@@ -601,10 +612,12 @@ export type Database = {
           show_youtube: boolean | null
           status: string | null
           tiktok_connected: boolean | null
+          tiktok_handle: string | null
           updated_at: string | null
           version: number | null
           website: string | null
           youtube_connected: boolean | null
+          youtube_handle: string | null
         }
         Insert: {
           audience_location?: Json | null
@@ -632,11 +645,13 @@ export type Database = {
           industries?: string[] | null
           industry?: string | null
           instagram_connected?: boolean | null
+          instagram_handle?: string | null
           is_complete?: boolean | null
           is_profile_complete?: boolean | null
           last_name?: string | null
           linkedin_connected?: boolean | null
           logo_url?: string | null
+          name?: string | null
           primary_platform?: string | null
           profile_type?: string | null
           r4_recommendations?: Json | null
@@ -650,10 +665,12 @@ export type Database = {
           show_youtube?: boolean | null
           status?: string | null
           tiktok_connected?: boolean | null
+          tiktok_handle?: string | null
           updated_at?: string | null
           version?: number | null
           website?: string | null
           youtube_connected?: boolean | null
+          youtube_handle?: string | null
         }
         Update: {
           audience_location?: Json | null
@@ -681,11 +698,13 @@ export type Database = {
           industries?: string[] | null
           industry?: string | null
           instagram_connected?: boolean | null
+          instagram_handle?: string | null
           is_complete?: boolean | null
           is_profile_complete?: boolean | null
           last_name?: string | null
           linkedin_connected?: boolean | null
           logo_url?: string | null
+          name?: string | null
           primary_platform?: string | null
           profile_type?: string | null
           r4_recommendations?: Json | null
@@ -699,12 +718,149 @@ export type Database = {
           show_youtube?: boolean | null
           status?: string | null
           tiktok_connected?: boolean | null
+          tiktok_handle?: string | null
           updated_at?: string | null
           version?: number | null
           website?: string | null
           youtube_connected?: boolean | null
+          youtube_handle?: string | null
         }
         Relationships: []
+      }
+      project_creators: {
+        Row: {
+          agreed_amount: number | null
+          approved_content_count: number | null
+          content_requirements: Json | null
+          contract_signed_date: string | null
+          created_at: string | null
+          creator_id: string | null
+          currency: string | null
+          id: string
+          invitation_date: string | null
+          notes: string | null
+          payment_structure: Json | null
+          project_id: string | null
+          response_date: string | null
+          status: string | null
+          submitted_content_count: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          agreed_amount?: number | null
+          approved_content_count?: number | null
+          content_requirements?: Json | null
+          contract_signed_date?: string | null
+          created_at?: string | null
+          creator_id?: string | null
+          currency?: string | null
+          id?: string
+          invitation_date?: string | null
+          notes?: string | null
+          payment_structure?: Json | null
+          project_id?: string | null
+          response_date?: string | null
+          status?: string | null
+          submitted_content_count?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          agreed_amount?: number | null
+          approved_content_count?: number | null
+          content_requirements?: Json | null
+          contract_signed_date?: string | null
+          created_at?: string | null
+          creator_id?: string | null
+          currency?: string | null
+          id?: string
+          invitation_date?: string | null
+          notes?: string | null
+          payment_structure?: Json | null
+          project_id?: string | null
+          response_date?: string | null
+          status?: string | null
+          submitted_content_count?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_creators_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "project_creators_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_creators_view"
+            referencedColumns: ["creator_id"]
+          },
+          {
+            foreignKeyName: "project_creators_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_creators_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_drafts: {
+        Row: {
+          brand_id: string | null
+          created_at: string | null
+          current_step: number | null
+          draft_data: Json | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          brand_id?: string | null
+          created_at?: string | null
+          current_step?: number | null
+          draft_data?: Json | null
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          brand_id?: string | null
+          created_at?: string | null
+          current_step?: number | null
+          draft_data?: Json | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_drafts_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "project_drafts_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_creators_view"
+            referencedColumns: ["creator_id"]
+          },
+          {
+            foreignKeyName: "project_drafts_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       projects: {
         Row: {
@@ -783,6 +939,91 @@ export type Database = {
           whitelisting?: boolean | null
         }
         Relationships: []
+      }
+      projects_new: {
+        Row: {
+          brand_id: string | null
+          budget: number | null
+          campaign_type: string | null
+          content_requirements: Json | null
+          created_at: string | null
+          currency: string | null
+          current_step: number | null
+          deliverables: Json | null
+          description: string | null
+          end_date: string | null
+          id: string
+          messaging_guidelines: string | null
+          name: string
+          objective: string | null
+          platforms: string[] | null
+          start_date: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          brand_id?: string | null
+          budget?: number | null
+          campaign_type?: string | null
+          content_requirements?: Json | null
+          created_at?: string | null
+          currency?: string | null
+          current_step?: number | null
+          deliverables?: Json | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          messaging_guidelines?: string | null
+          name: string
+          objective?: string | null
+          platforms?: string[] | null
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          brand_id?: string | null
+          budget?: number | null
+          campaign_type?: string | null
+          content_requirements?: Json | null
+          created_at?: string | null
+          currency?: string | null
+          current_step?: number | null
+          deliverables?: Json | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          messaging_guidelines?: string | null
+          name?: string
+          objective?: string | null
+          platforms?: string[] | null
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_new_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "projects_new_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_creators_view"
+            referencedColumns: ["creator_id"]
+          },
+          {
+            foreignKeyName: "projects_new_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       r4_enforcement_logs: {
         Row: {

@@ -25,10 +25,8 @@ interface CreatorCandidate {
   follower_count?: number;
   engagement_rate?: number;
   bio?: string;
-  profiles?: {
-    avatar_url?: string;
-    email?: string;
-  };
+  avatar_url?: string;
+  email?: string;
 }
 
 const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
@@ -43,33 +41,43 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
 
   const inviteCreatorMutation = useInviteCreatorToProject();
 
-  // Fetch available creators using the correct schema
+  // Fetch available creators from profiles table (simplified approach)
   const { data: availableCreators, isLoading } = useQuery({
     queryKey: ['available-creators', searchTerm],
     queryFn: async (): Promise<CreatorCandidate[]> => {
       let query = supabase
-        .from('creator_profiles')
+        .from('profiles')
         .select(`
-          user_id,
-          display_name,
+          id,
+          first_name,
+          last_name,
+          email,
+          avatar_url,
+          bio,
           primary_platform,
           follower_count,
-          engagement_rate,
-          bio,
-          profiles!creator_profiles_user_id_fkey (
-            avatar_url,
-            email
-          )
+          engagement_rate
         `)
+        .eq('role', 'creator')
         .limit(20);
 
       if (searchTerm) {
-        query = query.or(`display_name.ilike.%${searchTerm}%,bio.ilike.%${searchTerm}%`);
+        query = query.or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,bio.ilike.%${searchTerm}%`);
       }
 
       const { data, error } = await query;
       if (error) throw error;
-      return data || [];
+      
+      return (data || []).map(profile => ({
+        user_id: profile.id,
+        display_name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Creator',
+        primary_platform: profile.primary_platform || 'Multi-platform',
+        follower_count: typeof profile.follower_count === 'string' ? parseInt(profile.follower_count) : profile.follower_count,
+        engagement_rate: typeof profile.engagement_rate === 'string' ? parseFloat(profile.engagement_rate) : profile.engagement_rate,
+        bio: profile.bio,
+        avatar_url: profile.avatar_url,
+        email: profile.email
+      }));
     },
     enabled: true
   });
@@ -215,7 +223,7 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
                   }`}
                 >
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={creator.profiles?.avatar_url} alt={creatorName} />
+                    <AvatarImage src={creator.avatar_url} alt={creatorName} />
                     <AvatarFallback>{creatorName?.slice(0, 2).toUpperCase()}</AvatarFallback>
                   </Avatar>
                   

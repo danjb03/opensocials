@@ -1,264 +1,218 @@
-import { useState, useCallback, useEffect } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useToast } from '@/hooks/use-toast';
 import { CampaignWizardData } from '@/types/campaignWizard';
-import { toast } from 'sonner';
+import { useAuth } from '@/lib/auth';
 
-export const useCampaignDraft = (draftId?: string) => {
-  const { brandProfile } = useUnifiedAuth();
-  const queryClient = useQueryClient();
-  
-  const [draftData, setDraftData] = useState<Partial<CampaignWizardData>>({});
-  const [currentStep, setCurrentStep] = useState(1);
+interface ProjectDraft {
+  id: string;
+  brand_id: string;
+  draft_data: CampaignWizardData;
+  current_step: number;
+  created_at: string;
+  updated_at: string;
+}
 
-  // Auto-save timer
+export function useCampaignDraft() {
+  const [draft, setDraft] = useState<ProjectDraft | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
+
   useEffect(() => {
-    if (!draftData || Object.keys(draftData).length === 0) return;
+    if (user?.id) {
+      loadDraft();
+    }
+  }, [user?.id]);
+
+  const loadDraft = async () => {
+    if (!user?.id) return;
     
-    const timer = setTimeout(() => {
-      saveDraftMutation.mutate({ 
-        data: draftData, 
-        step: currentStep,
-        silent: true 
-      });
-    }, 30000); // Auto-save every 30 seconds
-
-    return () => clearTimeout(timer);
-  }, [draftData, currentStep]);
-
-  // Save draft mutation - now using real database
-  const saveDraftMutation = useMutation({
-    mutationFn: async ({ 
-      data, 
-      step, 
-      silent = false 
-    }: { 
-      data: Partial<CampaignWizardData>; 
-      step: number; 
-      silent?: boolean;
-    }) => {
-      if (!brandProfile?.id) throw new Error('Brand profile required');
-
-      // Try to save to database first
-      try {
-        let savedDraft;
-        
-        if (draftId) {
-          // Update existing draft
-          const { data: updateData, error } = await supabase
-            .from('project_drafts')
-            .update({
-              draft_data: data,
-              current_step: step,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', draftId)
-            .eq('brand_id', brandProfile.id)
-            .select()
-            .single();
-          
-          if (error) throw error;
-          savedDraft = updateData;
-        } else {
-          // Create new draft
-          const { data: insertData, error } = await supabase
-            .from('project_drafts')
-            .insert({
-              brand_id: brandProfile.id,
-              draft_data: data,
-              current_step: step
-            })
-            .select()
-            .single();
-          
-          if (error) throw error;
-          savedDraft = insertData;
-        }
-
-        if (!silent) {
-          toast.success('Draft saved successfully');
-        }
-        
-        return savedDraft;
-      } catch (error) {
-        console.warn('Database save failed, falling back to localStorage:', error);
-        
-        // Fallback to localStorage
-        const draftKey = `campaign_draft_${brandProfile?.user_id || 'temp'}`;
-        const fallbackData = {
-          data,
-          current_step: step,
-          updated_at: new Date().toISOString()
-        };
-        
-        localStorage.setItem(draftKey, JSON.stringify(fallbackData));
-
-        if (!silent) {
-          toast.success('Draft saved locally');
-        }
-        
-        return fallbackData;
-      }
-    },
-    onError: (error) => {
-      console.error('Draft save error:', error);
-      toast.error('Failed to save draft');
-    }
-  });
-
-  // Create final project mutation - using edge function
-  const createProjectMutation = useMutation({
-    mutationFn: async (campaignData: CampaignWizardData) => {
-      if (!brandProfile?.user_id) throw new Error('Brand profile required');
-
-      // Call edge function to create campaign with deals
-      const { data, error } = await supabase.functions.invoke('create-campaign-with-deals', {
-        body: {
-          name: campaignData.name,
-          objective: campaignData.objective,
-          campaign_type: campaignData.campaign_type,
-          description: campaignData.description,
-          content_requirements: campaignData.content_requirements,
-          messaging_guidelines: campaignData.messaging_guidelines,
-          total_budget: campaignData.total_budget,
-          deliverables: campaignData.deliverables,
-          start_date: campaignData.timeline.start_date?.toISOString().split('T')[0],
-          end_date: campaignData.timeline.end_date?.toISOString().split('T')[0],
-          selected_creators: campaignData.selected_creators || []
-        }
-      });
-
-      if (error) throw error;
-      return data.project_id;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['brand-projects'] });
-      toast.success('🚀 Campaign created successfully!');
-    },
-    onError: (error) => {
-      console.error('Project creation error:', error);
-      toast.error('Failed to create campaign');
-    }
-  });
-
-  // Delete draft mutation
-  const deleteDraftMutation = useMutation({
-    mutationFn: async () => {
-      if (!draftId) return;
-      
-      try {
-        // Try to delete from database
-        const { error } = await supabase
-          .from('project_drafts')
-          .delete()
-          .eq('id', draftId)
-          .eq('brand_id', brandProfile?.id);
-        
-        if (error) throw error;
-      } catch (error) {
-        console.warn('Database delete failed, removing from localStorage:', error);
-      }
-      
-      // Always clean up localStorage as well
-      const draftKey = `campaign_draft_${brandProfile?.user_id || 'temp'}`;
-      localStorage.removeItem(draftKey);
-    }
-  });
-
-  // Load draft data from database or localStorage
-  const loadDraft = useCallback(async () => {
-    if (!brandProfile?.id) return;
-    
+    setIsLoading(true);
     try {
-      if (draftId) {
-        // Load specific draft from database
-        const { data: draftRecord, error } = await supabase
-          .from('project_drafts')
-          .select('*')
-          .eq('id', draftId)
-          .eq('brand_id', brandProfile.id)
-          .single();
-        
-        if (error) throw error;
-        
-        if (draftRecord) {
-          setDraftData(draftRecord.draft_data || {});
-          setCurrentStep(draftRecord.current_step || 1);
-          return;
-        }
-      } else {
-        // Load latest draft for this brand
-        const { data: latestDraft, error } = await supabase
-          .from('project_drafts')
-          .select('*')
-          .eq('brand_id', brandProfile.id)
-          .order('updated_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        
-        if (error) throw error;
-        
-        if (latestDraft) {
-          setDraftData(latestDraft.draft_data || {});
-          setCurrentStep(latestDraft.current_step || 1);
-          return;
-        }
+      // For now, we'll use the regular projects table since project_drafts might not be in types yet
+      // This is a temporary workaround until the database types are regenerated
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('brand_id', user.id)
+        .eq('status', 'draft')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+        throw error;
+      }
+
+      if (data) {
+        // Transform the project data to match our draft format
+        const draftData: CampaignWizardData = {
+          campaign_name: data.name,
+          campaign_type: data.campaign_type,
+          objective: data.objective || 'brand_awareness',
+          description: data.description || '',
+          content_requirements: data.content_requirements || {},
+          messaging_guidelines: data.messaging_guidelines || '',
+          start_date: data.start_date || '',
+          end_date: data.end_date || '',
+          total_budget: data.budget || 0,
+          currency: data.currency || 'USD',
+          deliverables: data.deliverables || {},
+          selected_creators: []
+        };
+
+        setDraft({
+          id: data.id,
+          brand_id: data.brand_id,
+          draft_data: draftData,
+          current_step: data.current_step || 1,
+          created_at: data.created_at,
+          updated_at: data.updated_at
+        });
       }
     } catch (error) {
-      console.warn('Database load failed, trying localStorage:', error);
+      console.error('Error loading draft:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load campaign draft',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const saveDraft = async (data: Partial<CampaignWizardData>, currentStep: number) => {
+    if (!user?.id) return;
     
-    // Fallback to localStorage
-    const draftKey = `campaign_draft_${brandProfile?.user_id || 'temp'}`;
-    const savedDraft = localStorage.getItem(draftKey);
-    
-    if (savedDraft) {
-      try {
-        const parsed = JSON.parse(savedDraft);
-        setDraftData(parsed.data || {});
-        setCurrentStep(parsed.current_step || 1);
-      } catch (error) {
-        console.error('Failed to parse saved draft:', error);
+    try {
+      if (draft) {
+        // Update existing draft
+        const updatedData = { ...draft.draft_data, ...data };
+        
+        const { error } = await supabase
+          .from('projects')
+          .update({
+            name: updatedData.campaign_name,
+            campaign_type: updatedData.campaign_type,
+            objective: updatedData.objective,
+            description: updatedData.description,
+            content_requirements: updatedData.content_requirements,
+            messaging_guidelines: updatedData.messaging_guidelines,
+            start_date: updatedData.start_date,
+            end_date: updatedData.end_date,
+            budget: updatedData.total_budget,
+            currency: updatedData.currency,
+            deliverables: updatedData.deliverables,
+            current_step: currentStep,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', draft.id);
+
+        if (error) throw error;
+
+        setDraft({
+          ...draft,
+          draft_data: updatedData,
+          current_step: currentStep
+        });
+      } else {
+        // Create new draft
+        const newData: CampaignWizardData = {
+          campaign_name: data.campaign_name || '',
+          campaign_type: data.campaign_type || 'Single',
+          objective: data.objective || 'brand_awareness',
+          description: data.description || '',
+          content_requirements: data.content_requirements || {},
+          messaging_guidelines: data.messaging_guidelines || '',
+          start_date: data.start_date || '',
+          end_date: data.end_date || '',
+          total_budget: data.total_budget || 0,
+          currency: data.currency || 'USD',
+          deliverables: data.deliverables || {},
+          selected_creators: data.selected_creators || []
+        };
+
+        const { data: newDraft, error } = await supabase
+          .from('projects')
+          .insert({
+            brand_id: user.id,
+            name: newData.campaign_name,
+            campaign_type: newData.campaign_type,
+            objective: newData.objective,
+            description: newData.description,
+            content_requirements: newData.content_requirements,
+            messaging_guidelines: newData.messaging_guidelines,
+            start_date: newData.start_date,
+            end_date: newData.end_date,
+            budget: newData.total_budget,
+            currency: newData.currency,
+            deliverables: newData.deliverables,
+            current_step: currentStep,
+            status: 'draft'
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        setDraft({
+          id: newDraft.id,
+          brand_id: newDraft.brand_id,
+          draft_data: newData,
+          current_step: currentStep,
+          created_at: newDraft.created_at,
+          updated_at: newDraft.updated_at
+        });
       }
+
+      toast({
+        title: 'Draft saved',
+        description: 'Your campaign progress has been saved',
+      });
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save campaign draft',
+        variant: 'destructive',
+      });
     }
-  }, [brandProfile?.id, brandProfile?.user_id, draftId]);
+  };
 
-  // Save draft function
-  const saveDraft = useCallback(
-    async (data: Partial<CampaignWizardData>, step: number, silent = false) => {
-      return saveDraftMutation.mutateAsync({ data, step, silent });
-    },
-    [saveDraftMutation]
-  );
+  const clearDraft = async () => {
+    if (!draft) return;
+    
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', draft.id);
 
-  // Create project function
-  const createProject = useCallback(
-    async (data: CampaignWizardData) => {
-      return createProjectMutation.mutateAsync(data);
-    },
-    [createProjectMutation]
-  );
+      if (error) throw error;
 
-  // Delete draft function
-  const deleteDraft = useCallback(
-    async () => {
-      return deleteDraftMutation.mutateAsync();
-    },
-    [deleteDraftMutation]
-  );
+      setDraft(null);
+      toast({
+        title: 'Draft cleared',
+        description: 'Campaign draft has been removed',
+      });
+    } catch (error) {
+      console.error('Error clearing draft:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to clear campaign draft',
+        variant: 'destructive',
+      });
+    }
+  };
 
   return {
-    draftData,
-    setDraftData,
-    currentStep,
-    setCurrentStep,
-    isLoading: saveDraftMutation.isPending || createProjectMutation.isPending,
-    loadDraft,
+    draft,
+    isLoading,
     saveDraft,
-    createProject,
-    deleteDraft,
-    isCreatingProject: createProjectMutation.isPending,
-    draftId
+    clearDraft,
+    loadDraft
   };
-};
+}

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -93,9 +94,20 @@ const SecurePendingDeals = () => {
     updateDealMutation.mutate({ dealId, action: 'decline', feedback });
   };
 
+  // Helper function to safely access JSON properties
+  const getJsonProperty = (obj: Json, key: string): any => {
+    if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+      return (obj as Record<string, any>)[key];
+    }
+    return undefined;
+  };
+
   // Convert secure deals to legacy format for DealDetailDialog compatibility
   const convertDealForDialog = (deal: CreatorDealSecure | null) => {
     if (!deal) return null;
+    
+    const contentRequirements = deal.project?.content_requirements;
+    const deliverables = deal.project?.deliverables;
     
     return {
       id: deal.id,
@@ -105,17 +117,17 @@ const SecurePendingDeals = () => {
       status: deal.status,
       feedback: deal.creator_feedback || '',
       creator_id: deal.creator_id,
-      brand_id: deal.project?.brand_profile?.id || '',
+      brand_id: 'unknown', // Not available in new structure
       created_at: deal.created_at,
       updated_at: deal.updated_at,
       deadline: deal.project?.end_date || null,
       project_brief: deal.project?.description || null,
-      campaign_goals: deal.project?.content_requirements?.messaging_guidelines || null,
+      campaign_goals: getJsonProperty(contentRequirements, 'messaging_guidelines') || null,
       target_audience: null, // Not available in new structure
-      deliverables: deal.project?.deliverables ? [
-        ...(deal.project.deliverables.posts_count ? [`${deal.project.deliverables.posts_count} posts`] : []),
-        ...(deal.project.deliverables.stories_count ? [`${deal.project.deliverables.stories_count} stories`] : []),
-        ...(deal.project.deliverables.reels_count ? [`${deal.project.deliverables.reels_count} reels`] : [])
+      deliverables: deliverables ? [
+        ...(getJsonProperty(deliverables, 'posts_count') ? [`${getJsonProperty(deliverables, 'posts_count')} posts`] : []),
+        ...(getJsonProperty(deliverables, 'stories_count') ? [`${getJsonProperty(deliverables, 'stories_count')} stories`] : []),
+        ...(getJsonProperty(deliverables, 'reels_count') ? [`${getJsonProperty(deliverables, 'reels_count')} reels`] : [])
       ] : [],
       profiles: {
         company_name: deal.project?.brand_profile?.company_name || 'Unknown Brand',

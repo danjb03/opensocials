@@ -1,21 +1,19 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Rocket, Calendar, DollarSign, Users, Target, CheckCircle, AlertCircle } from 'lucide-react';
-import { format } from 'date-fns';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { ArrowLeft, ArrowRight, Users, Calendar, DollarSign, Target, Rocket } from 'lucide-react';
 import { CampaignWizardData } from '@/types/campaignWizard';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ReviewLaunchStepProps {
-  data?: Partial<CampaignWizardData>;
-  onBack?: () => void;
-  onLaunch: () => void;
-  isSubmitting?: boolean;
+  data: CampaignWizardData;
+  onBack: () => void;
+  onComplete: () => void;
+  isLoading?: boolean;
 }
 
 interface CreatorDetail {
@@ -23,378 +21,288 @@ interface CreatorDetail {
   display_name?: string;
   primary_platform?: string;
   bio?: string;
-  profiles?: {
-    avatar_url?: string;
-    email?: string;
-  };
+  avatar_url?: string;
+  email?: string;
 }
-
-// Hook to fetch creator details
-const useCreatorDetails = (creatorIds: string[]) => {
-  return useQuery({
-    queryKey: ['creator-details', creatorIds],
-    queryFn: async (): Promise<CreatorDetail[]> => {
-      if (creatorIds.length === 0) return [];
-      
-      const { data, error } = await supabase
-        .from('creator_profiles')
-        .select(`
-          user_id,
-          display_name,
-          primary_platform,
-          bio,
-          profiles!creator_profiles_user_id_fkey (
-            avatar_url,
-            email
-          )
-        `)
-        .in('user_id', creatorIds);
-      
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: creatorIds.length > 0
-  });
-};
 
 const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
   data,
   onBack,
-  onLaunch,
-  isSubmitting
+  onComplete,
+  isLoading
 }) => {
+  const [isLaunching, setIsLaunching] = useState(false);
 
-  const selectedCreators = data?.selected_creators || [];
-  const totalCreatorBudget = selectedCreators.reduce((sum, creator) => sum + creator.individual_budget, 0);
-  
-  // Fetch creator details
-  const creatorIds = selectedCreators.map(c => c.creator_id);
-  const { data: creatorDetails, isLoading: creatorsLoading } = useCreatorDetails(creatorIds);
-  
-  if (!data) return null;
-  
-  // Calculate budget breakdown with 25% margin system
-  const totalGrossBudget = data.total_budget || 0;
-  const platformMargin = totalGrossBudget * 0.25;
-  const totalNetBudget = totalGrossBudget - platformMargin;
-  const estimatedReach = selectedCreators.length * 50000; // Mock calculation
-  const campaignDuration = data.timeline?.start_date && data.timeline?.end_date 
-    ? Math.ceil((data.timeline.end_date.getTime() - data.timeline.start_date.getTime()) / (1000 * 60 * 60 * 24))
-    : 0;
+  // Fetch creators if any are selected
+  const { data: selectedCreators } = useQuery({
+    queryKey: ['selected-creators', data.selected_creators],
+    queryFn: async (): Promise<CreatorDetail[]> => {
+      if (!data.selected_creators || data.selected_creators.length === 0) {
+        return [];
+      }
 
-  const readinessChecks = [
-    {
-      label: 'Campaign details complete',
-      complete: !!(data.name && data.objective && data.description),
-      icon: <Target className="h-4 w-4" />
+      const { data: creators, error } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          first_name,
+          last_name,
+          email,
+          avatar_url,
+          bio,
+          primary_platform
+        `)
+        .in('id', data.selected_creators);
+
+      if (error) throw error;
+      
+      return (creators || []).map(profile => ({
+        user_id: profile.id,
+        display_name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Creator',
+        primary_platform: profile.primary_platform || 'Multi-platform',
+        bio: profile.bio,
+        avatar_url: profile.avatar_url,
+        email: profile.email
+      }));
     },
-    {
-      label: 'Content requirements defined',
-      complete: !!(data.content_requirements?.platforms?.length && data.content_requirements?.content_types?.length),
-      icon: <Target className="h-4 w-4" />
-    },
-    {
-      label: 'Budget and timeline set',
-      complete: !!(data.total_budget && data.timeline?.start_date && data.timeline?.end_date),
-      icon: <DollarSign className="h-4 w-4" />
-    },
-    {
-      label: 'Creators selected',
-      complete: selectedCreators.length > 0,
-      icon: <Users className="h-4 w-4" />
+    enabled: !!data.selected_creators && data.selected_creators.length > 0
+  });
+
+  const handleLaunch = async () => {
+    setIsLaunching(true);
+    try {
+      await onComplete();
+    } finally {
+      setIsLaunching(false);
     }
-  ];
+  };
 
-  const allChecksComplete = readinessChecks.every(check => check.complete);
+  const formatCurrency = (amount: number, currency: string = 'USD') => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency,
+    }).format(amount);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
 
   return (
     <div className="space-y-6">
-      {/* Campaign Overview */}
+      <div className="text-center space-y-2">
+        <div className="flex justify-center">
+          <div className="rounded-full bg-blue-100 p-3">
+            <Rocket className="h-8 w-8 text-blue-600" />
+          </div>
+        </div>
+        <h2 className="text-2xl font-bold">Review & Launch Campaign</h2>
+        <p className="text-gray-600">
+          Review all campaign details before launching. Once launched, invitations will be sent to selected creators.
+        </p>
+      </div>
+
+      {/* Campaign Summary */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            🚀 Review & Launch Campaign
+            <Target className="h-5 w-5" />
+            Campaign Overview
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Readiness Checklist */}
-          <div className="space-y-3">
-            <h3 className="font-semibold text-gray-900">Launch Readiness</h3>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h3 className="font-semibold text-lg">{data.campaign_name}</h3>
+              <p className="text-gray-600">{data.description}</p>
+            </div>
             <div className="space-y-2">
-              {readinessChecks.map((check, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  {check.complete ? (
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                  ) : (
-                    <AlertCircle className="h-5 w-5 text-yellow-600" />
-                  )}
-                  <span className={check.complete ? 'text-gray-900' : 'text-gray-600'}>
-                    {check.label}
-                  </span>
-                  {check.complete && <Badge variant="secondary" className="ml-auto">Complete</Badge>}
+              <div className="flex justify-between">
+                <span className="text-gray-600">Campaign Type:</span>
+                <Badge variant="outline">{data.campaign_type}</Badge>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Objective:</span>
+                <Badge variant="secondary">{data.objective}</Badge>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Timeline & Budget */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Timeline
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Start Date:</span>
+              <span className="font-medium">{data.start_date ? formatDate(data.start_date) : 'Not set'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">End Date:</span>
+              <span className="font-medium">{data.end_date ? formatDate(data.end_date) : 'Not set'}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Budget
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Total Budget:</span>
+              <span className="font-medium text-lg">{formatCurrency(data.total_budget || 0, data.currency)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Currency:</span>
+              <span className="font-medium">{data.currency}</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Content Requirements */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Content Requirements</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <h4 className="font-medium mb-2">Platforms</h4>
+            <div className="flex flex-wrap gap-2">
+              {data.content_requirements?.platforms?.map((platform) => (
+                <Badge key={platform} variant="outline" className="capitalize">
+                  {platform}
+                </Badge>
+              )) || <span className="text-gray-500">No platforms specified</span>}
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-medium mb-2">Content Types</h4>
+            <div className="flex flex-wrap gap-2">
+              {data.content_requirements?.content_types?.map((type) => (
+                <Badge key={type} variant="secondary" className="capitalize">
+                  {type.replace('_', ' ')}
+                </Badge>
+              )) || <span className="text-gray-500">No content types specified</span>}
+            </div>
+          </div>
+
+          {data.messaging_guidelines && (
+            <div>
+              <h4 className="font-medium mb-2">Messaging Guidelines</h4>
+              <p className="text-gray-600 bg-gray-50 p-3 rounded-md">
+                {data.messaging_guidelines}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Deliverables */}
+      {data.deliverables && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Deliverables</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {data.deliverables.posts_count > 0 && (
+                <div className="text-center p-3 bg-blue-50 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">{data.deliverables.posts_count}</div>
+                  <div className="text-sm text-gray-600">Posts</div>
+                </div>
+              )}
+              {data.deliverables.stories_count > 0 && (
+                <div className="text-center p-3 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">{data.deliverables.stories_count}</div>
+                  <div className="text-sm text-gray-600">Stories</div>
+                </div>
+              )}
+              {data.deliverables.reels_count > 0 && (
+                <div className="text-center p-3 bg-purple-50 rounded-lg">
+                  <div className="text-2xl font-bold text-purple-600">{data.deliverables.reels_count}</div>
+                  <div className="text-sm text-gray-600">Reels</div>
+                </div>
+              )}
+              {data.deliverables.video_length_minutes > 0 && (
+                <div className="text-center p-3 bg-orange-50 rounded-lg">
+                  <div className="text-2xl font-bold text-orange-600">{data.deliverables.video_length_minutes}min</div>
+                  <div className="text-sm text-gray-600">Video Content</div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Selected Creators */}
+      {selectedCreators && selectedCreators.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Selected Creators ({selectedCreators.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {selectedCreators.map((creator) => (
+                <div key={creator.user_id} className="flex items-center gap-3 p-3 border rounded-lg">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={creator.avatar_url} alt={creator.display_name} />
+                    <AvatarFallback>{creator.display_name?.slice(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <h4 className="font-medium">{creator.display_name}</h4>
+                    <p className="text-sm text-gray-600">{creator.primary_platform}</p>
+                  </div>
+                  <Badge variant="outline">{creator.primary_platform}</Badge>
                 </div>
               ))}
             </div>
-          </div>
-
-          <Separator />
-
-          {/* Campaign Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h3 className="font-semibold text-gray-900">Campaign Details</h3>
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Campaign Name</Label>
-                  <p className="font-medium">{data.name}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Objective</Label>
-                  <Badge variant="outline" className="ml-2">
-                    {data.objective?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                  </Badge>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Campaign Type</Label>
-                  <p className="font-medium">{data.campaign_type}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Description</Label>
-                  <p className="text-sm text-gray-700 line-clamp-3">{data.description}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="font-semibold text-gray-900">Timeline & Budget</h3>
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-400" />
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Duration</Label>
-                    <p className="font-medium">
-                      {data.timeline?.start_date && data.timeline?.end_date ? (
-                        <>
-                          {format(data.timeline.start_date, 'MMM d')} - {format(data.timeline.end_date, 'MMM d, yyyy')}
-                          <span className="text-sm text-gray-500 ml-2">({campaignDuration} days)</span>
-                        </>
-                      ) : 'Not set'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-gray-400" />
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Total Budget</Label>
-                    <p className="font-medium">${(data.total_budget || 0).toFixed(2)}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-gray-400" />
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Estimated Reach</Label>
-                    <p className="font-medium">{estimatedReach.toLocaleString()} people</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Content Requirements */}
-          <div className="space-y-3">
-            <h3 className="font-semibold text-gray-900">Content Requirements</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-sm font-medium text-gray-600">Platforms</Label>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {data.content_requirements?.platforms?.map(platform => (
-                    <Badge key={platform} variant="outline" className="text-xs">
-                      {platform}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-gray-600">Content Types</Label>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {data.content_requirements?.content_types?.map(type => (
-                    <Badge key={type} variant="outline" className="text-xs">
-                      {type}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div>
-              <Label className="text-sm font-medium text-gray-600">Deliverables</Label>
-              <div className="flex gap-4 mt-1 text-sm">
-                <span>{data.deliverables?.posts_count || 0} posts</span>
-                {(data.deliverables?.stories_count || 0) > 0 && (
-                  <span>{data.deliverables.stories_count} stories</span>
-                )}
-                {(data.deliverables?.reels_count || 0) > 0 && (
-                  <span>{data.deliverables.reels_count} reels</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Selected Creators */}
-          <div className="space-y-3">
-            <h3 className="font-semibold text-gray-900">Selected Creators ({selectedCreators.length})</h3>
-            {creatorsLoading ? (
-              <div className="space-y-3">
-                {[...Array(selectedCreators.length)].map((_, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-gray-200 rounded animate-pulse" />
-                      <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {selectedCreators.map(creatorData => {
-                  const creator = creatorDetails?.find(c => c.user_id === creatorData.creator_id);
-                  const creatorName = creator?.display_name || 'Unknown Creator';
-                  const creatorPlatform = creator?.primary_platform || 'Multi-platform';
-                  
-                  return (
-                    <div key={creatorData.creator_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={creator?.profiles?.avatar_url} alt={creatorName} />
-                          <AvatarFallback>{creatorName.slice(0, 2).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{creatorName}</p>
-                          <p className="text-sm text-gray-600">{creator?.bio ? creator.bio.slice(0, 50) + '...' : 'Creator'}</p>
-                          <p className="text-xs text-blue-600 capitalize">{creatorPlatform}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">${creatorData.individual_budget}</p>
-                        <p className="text-sm text-gray-600">creator payout</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          <Separator />
-
-          {/* Budget Breakdown */}
-          <div className="space-y-3">
-            <h3 className="font-semibold text-gray-900">Budget Breakdown</h3>
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Total Campaign Budget:</span>
-                <span className="font-medium">${totalGrossBudget.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm text-gray-600">
-                <span className="flex items-center gap-1">
-                  Platform Margin (25%):
-                  <span className="text-xs bg-blue-100 text-blue-700 px-1 rounded">includes fees & support</span>
-                </span>
-                <span>-${platformMargin.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Creator Pool Budget:</span>
-                <span className="font-medium text-green-600">${totalNetBudget.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Currently Allocated:</span>
-                <span>${totalCreatorBudget.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Remaining for Rolling Invites:</span>
-                <span className="font-medium text-blue-600">${(totalNetBudget - totalCreatorBudget).toFixed(2)}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between font-medium text-lg">
-                <span>Total Investment:</span>
-                <span>${totalGrossBudget.toFixed(2)}</span>
-              </div>
-            </div>
-            <div className="text-xs text-gray-500 bg-blue-50 p-3 rounded-lg">
-              💡 <strong>Rolling Creator System:</strong> You can invite additional creators later if some decline or if you want to expand reach, using your remaining budget pool.
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* What Happens Next */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">🎯 What Happens Next?</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3 text-sm">
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-medium">1</div>
-              <p>Selected creators will receive campaign invitations immediately</p>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-medium">2</div>
-              <p>Creators have 48 hours to accept or decline the collaboration</p>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-medium">3</div>
-              <p>You'll receive notifications as creators respond to your campaign</p>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-medium">4</div>
-              <p>Campaign tracking and analytics become available once creators start posting</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Navigation */}
       <div className="flex justify-between">
         <Button
+          type="button"
           variant="outline"
           onClick={onBack}
+          disabled={isLaunching}
           className="flex items-center gap-2"
-          disabled={isSubmitting}
         >
           <ArrowLeft className="h-4 w-4" />
           Back
         </Button>
         <Button 
-          onClick={onLaunch}
-          disabled={!allChecksComplete || isSubmitting}
-          className="flex items-center gap-2"
-          size="lg"
+          onClick={handleLaunch}
+          disabled={isLaunching || isLoading}
+          className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
         >
-          {isSubmitting ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-              Launching Campaign...
-            </>
-          ) : (
-            <>
-              <Rocket className="h-4 w-4" />
-              Launch Campaign
-            </>
-          )}
+          {isLaunching ? 'Launching...' : 'Launch Campaign'}
+          <Rocket className="h-4 w-4" />
         </Button>
       </div>
     </div>
   );
 };
-
-// Helper component for labels
-const Label: React.FC<{ className?: string; children: React.ReactNode }> = ({ className = '', children }) => (
-  <span className={`text-sm font-medium text-gray-600 ${className}`}>{children}</span>
-);
 
 export default ReviewLaunchStep;
