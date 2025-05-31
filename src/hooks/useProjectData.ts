@@ -36,42 +36,31 @@ export const useProjectData = () => {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  console.log('🎯 useProjectData initialized for user:', user?.id);
-
   // Single query for all project data
   const { data: rawProjects = [], isLoading, error, refetch } = useScalableQuery<Project[]>({
     baseKey: ['projects', filters],
     customQueryFn: async (): Promise<Project[]> => {
       if (!user?.id) {
-        console.log('🚫 No user found, returning empty array');
         return [];
       }
-      
-      console.log('🔍 Fetching projects for user:', user.id);
-      console.log('🔍 Applied filters:', filters);
       
       try {
         const projectsData = await import('@/lib/userDataStore').then(({ userDataStore }) => 
           userDataStore.executeUserQuery('projects', '*', {})
         );
 
-        console.log('📊 Raw projects data from database:', projectsData);
-
         // Validate the response structure
         if (!projectsData || typeof projectsData === 'string') {
-          console.error('❌ Invalid projects data:', projectsData);
           return [];
         }
 
         // Check if it's an error response
         if ((projectsData as any)?.error) {
-          console.error('❌ Error in projects data:', projectsData);
           return [];
         }
 
         // Ensure projectsData is an array
         if (!Array.isArray(projectsData)) {
-          console.error('❌ Projects data is not an array:', projectsData);
           return [];
         }
 
@@ -114,10 +103,9 @@ export const useProjectData = () => {
           }
         }
 
-        console.log('✅ Projects validated and transformed:', validProjects.length, 'projects');
         return validProjects;
       } catch (error) {
-        console.error('❌ Error fetching projects:', error);
+        console.error('Error fetching projects:', error);
         return [];
       }
     },
@@ -127,7 +115,6 @@ export const useProjectData = () => {
 
   // Handle error
   if (error) {
-    console.error('❌ Error in useProjectData:', error);
     toast({
       title: "Error",
       description: "Failed to load projects. Please try again.",
@@ -200,13 +187,10 @@ export const useProjectData = () => {
 
   // Action handlers
   const handleFiltersChange = (newFilters: ProjectFilters) => {
-    console.log('🔧 Filters changed:', newFilters);
     setFilters(newFilters);
   };
 
   const handleProjectCreated = (newProject: any) => {
-    console.log('🎉 Project created callback triggered:', newProject);
-    
     setIsDialogOpen(false);
     
     toast({
@@ -216,7 +200,6 @@ export const useProjectData = () => {
 
     // Force a manual refetch to ensure we see the new project immediately
     setTimeout(() => {
-      console.log('🔄 Force refetching projects after creation');
       refetch();
     }, 1000);
   };
@@ -235,17 +218,8 @@ export const useProjectData = () => {
   };
 
   const refreshProjects = () => {
-    console.log('🔄 Refreshing projects data');
     refetch();
   };
-
-  console.log('🎯 useProjectData final state:', {
-    isLoading,
-    error: error?.message,
-    projectsCount: filteredProjects?.length || 0,
-    ordersCount: orders?.length || 0,
-    campaignRowsCount: campaignRows?.length || 0
-  });
 
   return {
     // Raw data
@@ -275,6 +249,6 @@ export const useProjectData = () => {
     setActiveStage,
     
     // Legacy compatibility (will be removed after refactoring)
-    setOrders: () => console.log('Note: Direct state updates will not persist to the database.'),
+    setOrders: () => {},
   };
 };

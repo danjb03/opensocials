@@ -1,25 +1,27 @@
 
-import { useState } from 'react';
+import { useState, memo, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Logo from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
-import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ChartLine, DollarSign, FileText, User } from 'lucide-react';
 import SidebarToggle from './SidebarToggle';
 import Footer from './Footer';
+import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
 
 interface CreatorLayoutProps {
   children: React.ReactNode;
 }
 
-const CreatorLayout = ({ children }: CreatorLayoutProps) => {
-  const { user } = useAuth();
+const CreatorLayout = memo(({ children }: CreatorLayoutProps) => {
+  const { user } = useCreatorAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => 
+    localStorage.getItem('creator-sidebar-collapsed') === 'true'
+  );
 
   const handleSignOut = async () => {
     try {
@@ -35,6 +37,24 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
     }
   };
 
+  const toggleSidebar = useMemo(() => {
+    return () => {
+      const newCollapsed = !isSidebarCollapsed;
+      setIsSidebarCollapsed(newCollapsed);
+      localStorage.setItem('creator-sidebar-collapsed', newCollapsed.toString());
+    };
+  }, [isSidebarCollapsed]);
+
+  // Memoize active route calculation
+  const isActiveRoute = useMemo(() => {
+    return (path: string, exact = false) => {
+      if (exact) {
+        return location.pathname === path;
+      }
+      return location.pathname.startsWith(path);
+    };
+  }, [location.pathname]);
+
   return (
     <div className="min-h-screen flex">
       <aside className={`relative bg-sidebar text-sidebar-foreground transition-all duration-300 ${
@@ -42,7 +62,7 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
       }`}>
         <SidebarToggle 
           isCollapsed={isSidebarCollapsed} 
-          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          onClick={toggleSidebar}
         />
         
         <div className="p-4 flex flex-col h-full">
@@ -54,7 +74,7 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
             <Button 
               variant="ghost" 
               className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent ${
-                location.pathname === '/creator' ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
+                isActiveRoute('/creator', true) ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
               }`}
               asChild
             >
@@ -67,7 +87,7 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
             <Button 
               variant="ghost" 
               className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent ${
-                location.pathname === '/creator/analytics' ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
+                isActiveRoute('/creator/analytics') ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
               }`}
               asChild
             >
@@ -80,7 +100,7 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
             <Button 
               variant="ghost" 
               className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent ${
-                location.pathname === '/creator/deals' ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
+                isActiveRoute('/creator/deals') ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
               }`}
               asChild
             >
@@ -93,7 +113,7 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
             <Button 
               variant="ghost" 
               className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent ${
-                location.pathname.startsWith('/creator/campaigns') ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
+                isActiveRoute('/creator/campaigns') ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
               }`}
               asChild
             >
@@ -130,6 +150,8 @@ const CreatorLayout = ({ children }: CreatorLayoutProps) => {
       </main>
     </div>
   );
-};
+});
+
+CreatorLayout.displayName = 'CreatorLayout';
 
 export default CreatorLayout;

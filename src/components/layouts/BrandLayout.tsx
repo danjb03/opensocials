@@ -1,12 +1,11 @@
 
-import { useState } from 'react';
+import { useState, memo, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/ui/logo";
-import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useBrandProfile } from '@/hooks/useBrandProfile';
+import { useBrandAuth } from '@/hooks/useUnifiedAuth';
 import { Home, Search, Package, Calendar, Settings, BarChart2 } from 'lucide-react';
 import SidebarToggle from './SidebarToggle';
 import Footer from './Footer';
@@ -15,13 +14,14 @@ interface BrandLayoutProps {
   children: React.ReactNode;
 }
 
-const BrandLayout = ({ children }: BrandLayoutProps) => {
-  const { user } = useAuth();
+const BrandLayout = memo(({ children }: BrandLayoutProps) => {
+  const { user, profile } = useBrandAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { profile } = useBrandProfile();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => 
+    localStorage.getItem('brand-sidebar-collapsed') === 'true'
+  );
 
   const handleSignOut = async () => {
     try {
@@ -44,6 +44,14 @@ const BrandLayout = ({ children }: BrandLayoutProps) => {
     }
   };
 
+  const toggleSidebar = useMemo(() => {
+    return () => {
+      const newCollapsed = !isSidebarCollapsed;
+      setIsSidebarCollapsed(newCollapsed);
+      localStorage.setItem('brand-sidebar-collapsed', newCollapsed.toString());
+    };
+  }, [isSidebarCollapsed]);
+
   return (
     <div className="min-h-screen flex">
       <aside className={`relative bg-sidebar text-sidebar-foreground transition-all duration-300 ${
@@ -51,7 +59,7 @@ const BrandLayout = ({ children }: BrandLayoutProps) => {
       }`}>
         <SidebarToggle 
           isCollapsed={isSidebarCollapsed} 
-          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          onClick={toggleSidebar}
         />
         
         <div className="p-4 flex flex-col h-full">
@@ -130,6 +138,8 @@ const BrandLayout = ({ children }: BrandLayoutProps) => {
       </main>
     </div>
   );
-};
+});
+
+BrandLayout.displayName = 'BrandLayout';
 
 export default BrandLayout;

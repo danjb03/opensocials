@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -10,14 +10,13 @@ import { useToast } from '@/hooks/use-toast';
 import { useProjectData } from '@/hooks/useProjectData';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
-const CampaignAnalyticsList = () => {
+const CampaignAnalyticsList = memo(() => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { projects: campaigns, isLoading, error } = useProjectData();
 
   useEffect(() => {
     if (error) {
-      console.error('Error loading campaigns for analytics:', error);
       toast({
         title: 'Error',
         description: 'Could not load campaigns',
@@ -26,8 +25,8 @@ const CampaignAnalyticsList = () => {
     }
   }, [error, toast]);
 
-  // Mock analytics data for demonstration
-  const getAnalyticsSummary = (campaign: any) => {
+  // Memoize analytics calculation to prevent re-calculation on every render
+  const getAnalyticsSummary = useCallback((campaign: any) => {
     // Simulated data based on campaign id to ensure consistent mock data
     const campaignIdSum = campaign.id.split('-')[0].split('').reduce((sum: number, char: string) => sum + char.charCodeAt(0), 0);
     
@@ -36,7 +35,12 @@ const CampaignAnalyticsList = () => {
       engagementRate: (3 + (campaignIdSum % 5)).toFixed(1),
       clicks: Math.floor(2000 + (campaignIdSum * 100)),
     };
-  };
+  }, []);
+
+  // Memoize navigation handler
+  const handleViewAnalytics = useCallback((campaignId: string) => {
+    navigate(`/brand/projects/analytics/${campaignId}`);
+  }, [navigate]);
 
   return (
     <ErrorBoundary>
@@ -83,7 +87,7 @@ const CampaignAnalyticsList = () => {
                           <TableCell>
                             <Button 
                               size="sm" 
-                              onClick={() => navigate(`/brand/projects/analytics/${campaign.id}`)}
+                              onClick={() => handleViewAnalytics(campaign.id)}
                               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
                             >
                               <BarChart2 className="mr-1 h-4 w-4" /> 
@@ -109,6 +113,8 @@ const CampaignAnalyticsList = () => {
       </BrandLayout>
     </ErrorBoundary>
   );
-};
+});
+
+CampaignAnalyticsList.displayName = 'CampaignAnalyticsList';
 
 export default CampaignAnalyticsList;

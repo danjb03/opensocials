@@ -1,4 +1,5 @@
 
+import { useState, useEffect, memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar } from 'recharts';
@@ -11,15 +12,37 @@ const fallbackEngagementData = [
   { name: 'Week 4', likes: 2200, comments: 250, shares: 140 }
 ];
 
-export const EngagementTab = () => {
-  // Try to import mock data, fallback to local data if it fails
-  let engagementData = fallbackEngagementData;
+export const EngagementTab = memo(() => {
+  const [engagementData, setEngagementData] = useState(fallbackEngagementData);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
-  try {
-    const mockData = require('./mock-data');
-    engagementData = mockData.engagementData || fallbackEngagementData;
-  } catch (error) {
-    console.warn('Engagement mock data not found, using fallback data');
+  useEffect(() => {
+    const loadMockData = async () => {
+      try {
+        const mockData = await import('./mock-data');
+        setEngagementData(mockData.engagementData || fallbackEngagementData);
+      } catch (error) {
+        // Fallback data is already set in state
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    loadMockData();
+  }, []);
+
+  if (isLoadingData) {
+    return (
+      <Card className="overflow-hidden">
+        <CardHeader>
+          <div className="h-6 bg-gray-200 rounded animate-pulse mb-2" />
+          <div className="h-4 bg-gray-100 rounded animate-pulse w-2/3" />
+        </CardHeader>
+        <CardContent className="pt-6 pb-8">
+          <div className="h-[450px] bg-gray-50 rounded animate-pulse" />
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -76,4 +99,4 @@ export const EngagementTab = () => {
       </CardContent>
     </Card>
   );
-};
+});

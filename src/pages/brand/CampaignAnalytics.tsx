@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, memo } from 'react';
 import { useParams } from 'react-router-dom';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,18 +14,19 @@ import { EngagementTab } from '@/components/brand/analytics/EngagementTab';
 import { CreatorsTab } from '@/components/brand/analytics/CreatorsTab';
 import { ContentTab } from '@/components/brand/analytics/ContentTab';
 
-const CampaignAnalytics = () => {
+const CampaignAnalytics = memo(() => {
   const { id } = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState('overview');
   const { projects, isLoading, error } = useProjectData();
   const { toast } = useToast();
 
-  // Find the specific project by ID
-  const project = projects.find(p => p.id === id);
+  // Memoize project lookup to prevent unnecessary re-calculations
+  const project = useMemo(() => {
+    return projects.find(p => p.id === id) || null;
+  }, [projects, id]);
 
   useEffect(() => {
     if (error) {
-      console.error('Error loading project analytics:', error);
       toast({
         title: 'Error',
         description: 'Could not load project analytics',
@@ -76,25 +77,25 @@ const CampaignAnalytics = () => {
 
             <TabsContent value="overview" className="space-y-4">
               <ErrorBoundary>
-                <OverviewTab />
+                {activeTab === 'overview' && <OverviewTab />}
               </ErrorBoundary>
             </TabsContent>
 
             <TabsContent value="engagement" className="space-y-4">
               <ErrorBoundary>
-                <EngagementTab />
+                {activeTab === 'engagement' && <EngagementTab />}
               </ErrorBoundary>
             </TabsContent>
 
             <TabsContent value="creators" className="space-y-4">
               <ErrorBoundary>
-                <CreatorsTab />
+                {activeTab === 'creators' && <CreatorsTab />}
               </ErrorBoundary>
             </TabsContent>
 
             <TabsContent value="content" className="space-y-4">
               <ErrorBoundary>
-                <ContentTab />
+                {activeTab === 'content' && <ContentTab />}
               </ErrorBoundary>
             </TabsContent>
           </Tabs>
@@ -102,6 +103,8 @@ const CampaignAnalytics = () => {
       </BrandLayout>
     </ErrorBoundary>
   );
-};
+});
+
+CampaignAnalytics.displayName = 'CampaignAnalytics';
 
 export default CampaignAnalytics;

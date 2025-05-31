@@ -1,4 +1,5 @@
 
+import { useState, useEffect, memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line } from 'recharts';
@@ -27,26 +28,67 @@ const fallbackReachData = [
   { name: 'Week 4', reach: 22000, impressions: 35000 }
 ];
 
-export const OverviewTab = () => {
-  // Try to import mock data, fallback to local data if it fails
-  let audienceData = fallbackAudienceData;
-  let platformData = fallbackPlatformData;
-  let reachData = fallbackReachData;
+export const OverviewTab = memo(() => {
+  const [audienceData, setAudienceData] = useState(fallbackAudienceData);
+  const [platformData, setPlatformData] = useState(fallbackPlatformData);
+  const [reachData, setReachData] = useState(fallbackReachData);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
-  try {
-    const mockData = require('./mock-data');
-    audienceData = mockData.audienceData || fallbackAudienceData;
-    platformData = mockData.platformData || fallbackPlatformData;
-    reachData = mockData.reachData || fallbackReachData;
-  } catch (error) {
-    console.warn('Mock data not found, using fallback data');
-  }
+  useEffect(() => {
+    const loadMockData = async () => {
+      try {
+        const mockData = await import('./mock-data');
+        setAudienceData(mockData.audienceData || fallbackAudienceData);
+        setPlatformData(mockData.platformData || fallbackPlatformData);
+        setReachData(mockData.reachData || fallbackReachData);
+      } catch (error) {
+        // Fallback data is already set in state
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    loadMockData();
+  }, []);
 
   // Create a copy of audience data without percentages in labels
   const formattedAudienceData = audienceData.map(item => ({
     ...item,
     name: item.name.replace(/: \d+%/, '') // Remove the percentage from the name
   }));
+
+  if (isLoadingData) {
+    return (
+      <div className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="pb-2">
+                <div className="h-4 bg-gray-200 rounded animate-pulse" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 bg-gray-200 rounded animate-pulse mb-2" />
+                <div className="h-3 bg-gray-100 rounded animate-pulse" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i} className="overflow-hidden">
+              <CardHeader>
+                <div className="h-6 bg-gray-200 rounded animate-pulse mb-2" />
+                <div className="h-4 bg-gray-100 rounded animate-pulse w-2/3" />
+              </CardHeader>
+              <CardContent className="pt-6 pb-8">
+                <div className="h-[450px] bg-gray-50 rounded animate-pulse" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -238,4 +280,4 @@ export const OverviewTab = () => {
       </div>
     </div>
   );
-};
+});
