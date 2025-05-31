@@ -1,4 +1,3 @@
-
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
@@ -9,20 +8,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run dev` - Start development server with hot reload at localhost:8080
 - `npm run build` - Production build with Vite
 - `npm run build:dev` - Development build
-- `npm run lint` - Run ESLint (expect ~190 TypeScript errors due to legacy `any` types)
+- `npm run lint` - Run ESLint (expect ~80 TypeScript errors, down from 190)
 - `npm run preview` - Preview production build locally
 - `npx update-browserslist-db@latest` - Update browser compatibility database
 
 ### Supabase Local Development
 - `supabase start` - Start local Supabase stack
 - `supabase stop` - Stop local Supabase stack
-- `supabase db reset` - Reset local database
+- `supabase db reset` - Reset local database and apply migrations
+- `supabase migration new <name>` - Create new migration file
+- `supabase functions deploy <function-name>` - Deploy individual Edge Function
 - Local services run on ports 54321-54328
 
 ### Performance & Bundle Analysis
-- Build warnings about 500KB+ chunks are expected
-- Dynamic imports in `mock-data.ts` and `userDataStore.ts` are intentional optimizations
-- Run builds to verify TypeScript compilation after major changes
+- Build creates optimized vendor chunks (react-vendor, ui-vendor, etc.)
+- Manual chunking configured in vite.config.ts for better loading performance
+- Bundle size warnings are expected for feature-rich chunks
+- Dynamic imports optimized for better code splitting
 
 ## Architecture Overview
 
@@ -72,6 +74,9 @@ Business logic encapsulated in domain-specific hooks:
 - `useProjectData()` - Campaign/project data management
 - `useBrandDashboard()` - Derives dashboard data from project data
 - `useCreatorInvitations()` - Creator invitation management
+- `useProjectCreators()` - Rolling payments and creator relationships
+- `useProjectContent()` - Content submission and review workflows
+- `useProjectPayments()` - Individual creator payment tracking
 
 #### Edge Function Architecture
 Backend logic in Supabase Edge Functions (`/supabase/functions/`):
@@ -79,6 +84,7 @@ Backend logic in Supabase Edge Functions (`/supabase/functions/`):
 - External API integrations (InsightIQ for creator analytics)
 - Email sending via Resend API and invite management
 - CRM operations and data transformations
+- Content submission and review workflows
 - Admin validation with shared utilities in `/supabase/functions/shared/`
 
 ### Database Architecture
@@ -92,24 +98,38 @@ Backend logic in Supabase Edge Functions (`/supabase/functions/`):
 - **deals**: Deal tracking and creator earnings
 - **brand_creator_connections**: Brand-creator relationships (invitation system)
 
+#### Rolling Payments Architecture (NEW)
+- **project_creators**: Junction table for campaign-creator relationships with status tracking
+- **project_creator_payments**: Individual payment tracking with milestone-based payments
+- **project_content**: Content submissions with review workflow and performance metrics
+- **project_drafts**: Campaign draft system for save/resume functionality
+
 #### Security Features
 - **Row Level Security (RLS)**: Database-level access control
 - **R4 Rule Engine**: Custom business rule enforcement
 - **Audit Logging**: Security and action tracking via `security_audit_log`
 - **Feature Flags**: A/B testing capabilities via `secure-update-feature-flags`
 
-### Campaign-Creator Relationship Model (ARCHITECTURAL GAP)
-**Current Limitation**: The platform lacks direct campaign-creator relationships:
-- Projects and creators are managed separately
-- No campaign-specific creator assignments
-- Payment system disconnected from campaigns
-- Mock creator data generated in `orderUtils.ts`
+### Campaign Wizard & Rolling Payments System
+The platform now supports a comprehensive campaign creation and management flow:
 
-**Known Issue**: To support rolling creator acceptance and individual payments, the system requires:
-- New `project_creators` junction table
-- Campaign-specific invitation system
-- Per-creator payment tracking
-- See `/database-migration-rolling-payments.sql` for required schema changes
+#### Campaign Creation Flow
+1. **Multi-step Wizard**: CampaignWizard component with 5 steps (basics, content, budget, creators, review)
+2. **Draft System**: Real-time saving to `project_drafts` table with localStorage fallback
+3. **25% Platform Margin**: Transparent budget breakdown showing gross/net amounts
+4. **Creator Selection**: Integration with live creator database for real invitations
+
+#### Rolling Creator Invitations
+- **Dynamic Invitations**: Brands can invite additional creators after campaign launch
+- **Budget Pool Management**: Remaining budget allocated for rolling invitations
+- **Real-time Status**: Track invitation responses and creator onboarding
+- **Individual Agreements**: Per-creator budgets and content requirements
+
+#### Payment Architecture
+- **Milestone Payments**: Support for contract signing, content submission, completion payments
+- **Gross/Net Separation**: Platform takes 25% margin, creators see net amounts only
+- **Payment Tracking**: Individual payment status and provider integration ready
+- **Creator Transparency**: Creators never see gross amounts, only their net compensation
 
 ### Role Resolution Hierarchy
 When determining user roles, the system checks:
@@ -121,6 +141,12 @@ When determining user roles, the system checks:
 New users must complete role-specific profile setup before accessing main features:
 - **Brands**: Company info, logo upload, industry selection
 - **Creators**: Social handles, content types, audience demographics
+
+### Performance Optimizations
+- **React Memoization**: Extensive use of React.memo, useMemo, useCallback on dashboard and table components
+- **Bundle Splitting**: Vendor chunking and feature-based code splitting
+- **Type Safety**: Systematic replacement of legacy `any` types with proper interfaces
+- **Dynamic Imports**: Optimized loading patterns for analytics and mock data
 
 ### Supabase Integration
 - Local development uses ports 54321-54328
@@ -136,9 +162,16 @@ New users must complete role-specific profile setup before accessing main featur
 - **Loading States**: Consistent skeleton and loading patterns with async imports
 - **Performance**: Extensive use of React.memo, useMemo, and useCallback
 
+### Content Management System
+- **Submission Workflow**: Creators upload content through structured forms
+- **Review Process**: Brand approval workflow with feedback capabilities
+- **Performance Tracking**: Post-publication metrics collection
+- **File Management**: Secure upload handling with thumbnail generation
+
 ### Security Considerations
 - Multiple authentication layers with role-based permissions
 - Profile completion checks before feature access
 - Secure file upload handling for user assets
 - RLS policies enforce data access boundaries
 - Rate limiting and input sanitization in Edge Functions
+- Creator financial data protection (gross amounts never exposed)
