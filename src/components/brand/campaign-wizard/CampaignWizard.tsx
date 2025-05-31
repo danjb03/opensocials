@@ -160,26 +160,26 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
     <BrandLayout>
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Create New Campaign
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Follow the steps below to create an engaging campaign
-              </p>
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  Create New Campaign
+                </h1>
+                <p className="text-gray-600 mt-1">
+                  Follow the steps below to create an engaging campaign
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={handleSaveAndExit}
+                className="flex items-center gap-2"
+              >
+                <Save className="h-4 w-4" />
+                Save & Exit
+              </Button>
             </div>
-            <Button
-              variant="outline"
-              onClick={handleSaveAndExit}
-              className="flex items-center gap-2"
-            >
-              <Save className="h-4 w-4" />
-              Save & Exit
-            </Button>
-          </div>
 
           {/* Progress Bar */}
           <div className="space-y-4">
@@ -241,50 +241,51 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
               </motion.div>
             ))}
           </div>
-        </div>
-
-        {/* Step Content */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            {renderCurrentStep()}
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Navigation */}
-        <div className="flex justify-between items-center mt-8 pt-6 border-t">
-          <Button
-            variant="outline"
-            onClick={handlePreviousStep}
-            disabled={currentStep === 1}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Previous
-          </Button>
-
-          <div className="flex items-center gap-4">
-            <Badge variant="secondary" className="px-3 py-1">
-              Auto-save enabled
-            </Badge>
-            
-            {currentStep < 5 && (
-              <Button
-                onClick={() => setCurrentStep(currentStep + 1)}
-                className="flex items-center gap-2"
-                disabled={!draftData || Object.keys(draftData).length === 0}
-              >
-                Next
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            )}
           </div>
-        </div>
+
+          {/* Step Content */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="mt-8"
+            >
+              {renderCurrentStep()}
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Navigation */}
+          <div className="flex justify-between items-center mt-8 pt-6 border-t">
+            <Button
+              variant="outline"
+              onClick={handlePreviousStep}
+              disabled={currentStep === 1}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Previous
+            </Button>
+
+            <div className="flex items-center gap-4">
+              <Badge variant="secondary" className="px-3 py-1">
+                Auto-save enabled
+              </Badge>
+              
+              {currentStep < 5 && (
+                <Button
+                  onClick={() => setCurrentStep(currentStep + 1)}
+                  className="flex items-center gap-2"
+                  disabled={!draftData || Object.keys(draftData).length === 0}
+                >
+                  Next
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </BrandLayout>
