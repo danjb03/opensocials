@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useCreatorProfile } from '@/hooks/useCreatorProfile';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
 import CreatorProfileHeader from '@/components/creator/CreatorProfileHeader';
 import VisibilityControls from '@/components/creator/VisibilityControls';
@@ -9,16 +10,28 @@ import { useCreatorIntro } from '@/hooks/creator/useCreatorIntro';
 import { InsightIQProvider } from '@/components/creator/InsightIQProvider';
 
 const CreatorDashboard = () => {
-  const { user, creatorProfile: profile, isLoading } = useUnifiedAuth();
-  const [isEditing, setIsEditing] = useState(false);
-  const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  
-  // Note: updateProfile, uploadAvatar, toggleVisibilitySetting, connectSocialPlatform, platformAnalytics
-  // will need to be implemented if these features are used in the component
+  const { user, creatorProfile: unifiedProfile, isLoading: authLoading } = useUnifiedAuth();
+  const { 
+    profile, 
+    isLoading: profileLoading,
+    isEditing,
+    setIsEditing,
+    isPreviewMode,
+    setIsPreviewMode,
+    isUploading,
+    updateProfile,
+    uploadAvatar,
+    toggleVisibilitySetting,
+    connectSocialPlatform,
+    platformAnalytics
+  } = useCreatorProfile();
 
   // Creator intro modal logic
   const { showIntro, isLoading: introLoading, dismissIntro } = useCreatorIntro();
+  
+  // Use unified profile as fallback if creator profile hook doesn't have data
+  const activeProfile = profile || unifiedProfile;
+  const isLoading = authLoading || profileLoading;
 
   const handleProfileSubmit = async (values: any) => {
     try {
@@ -48,7 +61,6 @@ const CreatorDashboard = () => {
       });
       
       console.log('Profile submitted successfully, setting editing to false');
-      setIsEditing(false);
     } catch (error) {
       console.error('Failed to update profile:', error);
       // Error is already handled in updateProfile
@@ -116,14 +128,14 @@ const CreatorDashboard = () => {
       <CreatorLayout>
         <InsightIQProvider>
           <div className="container mx-auto p-6 space-y-6">
-            {profile && profile.isProfileComplete && !isEditing && (
+            {activeProfile && activeProfile.isProfileComplete && !isEditing && (
               <CreatorProfileHeader 
-                name={`${profile.firstName} ${profile.lastName}`}
-                imageUrl={profile?.avatarUrl || undefined}
-                bannerUrl={profile?.bannerUrl || undefined}
-                bio={profile?.bio || 'No bio yet. Add one to complete your profile.'}
-                platform={profile?.primaryPlatform}
-                followers={profile?.followerCount}
+                name={`${activeProfile.firstName} ${activeProfile.lastName}`}
+                imageUrl={activeProfile?.avatarUrl || undefined}
+                bannerUrl={activeProfile?.bannerUrl || undefined}
+                bio={activeProfile?.bio || 'No bio yet. Add one to complete your profile.'}
+                platform={activeProfile?.primaryPlatform}
+                followers={activeProfile?.followerCount}
                 isEditable={true}
                 onEditProfile={handleEditProfile}
                 onTogglePreview={handleTogglePreview}
@@ -136,7 +148,7 @@ const CreatorDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               <div className="lg:col-span-3">
                 <DashboardContent 
-                  profile={profile}
+                  profile={activeProfile}
                   isLoading={isLoading}
                   isEditing={isEditing}
                   isPreviewMode={isPreviewMode}
@@ -158,9 +170,9 @@ const CreatorDashboard = () => {
               </div>
               
               <div className="lg:col-span-1">
-                {profile && profile.isProfileComplete && !isEditing && (
+                {activeProfile && activeProfile.isProfileComplete && !isEditing && (
                   <VisibilityControls 
-                    visibilitySettings={profile?.visibilitySettings || {
+                    visibilitySettings={activeProfile?.visibilitySettings || {
                       showInstagram: true,
                       showTiktok: true,
                       showYoutube: true,

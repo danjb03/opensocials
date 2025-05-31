@@ -188,15 +188,15 @@ export const CAMPAIGN_STEPS: CampaignStep[] = [
   {
     id: 1,
     title: "Campaign Basics",
-    icon: "🎯",
+    icon: "target",
     description: "Name your campaign and set objectives",
     complete: false,
     current: false
   },
   {
     id: 2,
-    title: "Content Requirements",
-    icon: "📱",
+    title: "Content Requirements", 
+    icon: "smartphone",
     description: "Define what content you need",
     complete: false,
     current: false
@@ -204,7 +204,7 @@ export const CAMPAIGN_STEPS: CampaignStep[] = [
   {
     id: 3,
     title: "Budget & Deliverables",
-    icon: "💰",
+    icon: "dollar-sign",
     description: "Set budget and timeline",
     complete: false,
     current: false
@@ -212,7 +212,7 @@ export const CAMPAIGN_STEPS: CampaignStep[] = [
   {
     id: 4,
     title: "Select Creators",
-    icon: "👥",
+    icon: "users",
     description: "Choose your creator partners",
     complete: false,
     current: false
@@ -220,7 +220,7 @@ export const CAMPAIGN_STEPS: CampaignStep[] = [
   {
     id: 5,
     title: "Review & Launch",
-    icon: "🚀",
+    icon: "rocket",
     description: "Review and launch your campaign",
     complete: false,
     current: false

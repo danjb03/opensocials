@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Check, Save, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Check, Save, ArrowLeft, ArrowRight, Target, Smartphone, DollarSign, Users, Rocket } from 'lucide-react';
 import { toast } from 'sonner';
+import BrandLayout from '@/components/layouts/BrandLayout';
 
 import { CampaignWizardData, CampaignStep, CAMPAIGN_STEPS } from '@/types/campaignWizard';
 import { useCampaignDraft } from '@/hooks/useCampaignDraft';
@@ -25,6 +26,19 @@ interface CampaignWizardProps {
 
 const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) => {
   const navigate = useNavigate();
+  
+  // Icon mapping for campaign steps
+  const getStepIcon = (iconName: string) => {
+    const iconMap = {
+      'target': Target,
+      'smartphone': Smartphone,
+      'dollar-sign': DollarSign,
+      'users': Users,
+      'rocket': Rocket
+    };
+    const IconComponent = iconMap[iconName as keyof typeof iconMap];
+    return IconComponent ? <IconComponent className="h-6 w-6" /> : null;
+  };
   const { 
     draftData, 
     setDraftData, 
@@ -65,7 +79,7 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
     await saveDraft(updatedData, currentStep);
     
     // Show completion animation
-    toast.success(`Step ${currentStep} Complete! 🎉`, {
+    toast.success(`Step ${currentStep} Complete`, {
       description: `${CAMPAIGN_STEPS[currentStep - 1].title} saved successfully`
     });
 
@@ -99,7 +113,7 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
         await deleteDraft();
       }
       
-      toast.success('🚀 Campaign launched successfully!', {
+      toast.success('Campaign launched successfully', {
         description: 'Creator invitations are being sent out now.'
       });
       
@@ -143,8 +157,9 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
   const progressPercentage = ((currentStep - 1) / (CAMPAIGN_STEPS.length - 1)) * 100;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
+    <BrandLayout>
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -210,7 +225,7 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
                       <Check className="h-6 w-6" />
                     </motion.div>
                   ) : (
-                    step.icon
+                    getStepIcon(step.icon)
                   )}
                 </div>
                 <div className="text-center">
@@ -270,8 +285,9 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
             )}
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </BrandLayout>
   );
 };
 

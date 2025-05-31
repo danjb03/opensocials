@@ -1,9 +1,7 @@
 
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import BrandLayout from '@/components/layouts/BrandLayout';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ProjectForm } from '@/components/brand/ProjectForm';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { ProjectsTable } from '@/components/brand/projects';
 import { ProjectsHeader } from '@/components/brand/ProjectsHeader';
@@ -14,26 +12,25 @@ import { Card, CardContent } from '@/components/ui/card';
 const Projects = () => {
   const { user } = useUnifiedAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const { 
     projects, 
     isLoading, 
     filters, 
-    isDialogOpen,
-    setIsDialogOpen,
-    handleFiltersChange,
-    handleProjectCreated
+    handleFiltersChange
   } = useProjectData();
 
-  // Check for query parameter to open the dialog automatically
+  // Check for query parameter to redirect to campaign wizard
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     if (searchParams.get('action') === 'create') {
-      setIsDialogOpen(true);
-      // Clean up the URL after processing the action
-      const newUrl = location.pathname;
-      window.history.replaceState({}, '', newUrl);
+      navigate('/brand/create-campaign');
     }
-  }, [location, setIsDialogOpen]);
+  }, [location, navigate]);
+
+  const handleCreateProject = () => {
+    navigate('/brand/create-campaign');
+  };
 
   return (
     <BrandLayout>
@@ -41,34 +38,19 @@ const Projects = () => {
         <ProjectsHeader 
           filters={filters}
           onFiltersChange={handleFiltersChange}
-          onCreateProject={() => setIsDialogOpen(true)}
+          onCreateProject={handleCreateProject}
         />
         
         {/* Projects Content */}
         <Card className="overflow-hidden border-slate-200">
           <CardContent className="p-0">
             {!isLoading && projects.length === 0 ? (
-              <EmptyProjectsState onCreateProject={() => setIsDialogOpen(true)} />
+              <EmptyProjectsState onCreateProject={handleCreateProject} />
             ) : (
               <ProjectsTable projects={projects} isLoading={isLoading} />
             )}
           </CardContent>
         </Card>
-        
-        {/* Create Project Dialog */}
-        <Dialog 
-          open={isDialogOpen} 
-          onOpenChange={setIsDialogOpen}
-        >
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
-            <DialogHeader className="p-6 bg-slate-50 border-b">
-              <DialogTitle className="text-2xl font-semibold">Create New Project</DialogTitle>
-            </DialogHeader>
-            <div className="p-6">
-              <ProjectForm onSuccess={handleProjectCreated} />
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     </BrandLayout>
   );

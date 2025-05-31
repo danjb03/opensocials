@@ -134,7 +134,7 @@ export const useCampaignDraft = (draftId?: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['brand-projects'] });
-      toast.success('🚀 Campaign created successfully!');
+      toast.success('Campaign created successfully');
     },
     onError: (error) => {
       console.error('Project creation error:', error);

@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ArrowRight, Target, Zap, TrendingUp, Heart, ShoppingCart } from 'lucide-react';
+import { ArrowRight, Target, Zap, TrendingUp, Heart, ShoppingCart, Lightbulb } from 'lucide-react';
 import { CampaignWizardData, CampaignObjective } from '@/types/campaignWizard';
 
 const campaignBasicsSchema = z.object({
@@ -106,7 +106,7 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            🎯 Campaign Basics
+            <Target className="h-5 w-5" />Campaign Basics
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -198,7 +198,9 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
 
           {/* Quick Tips */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-medium text-blue-900 mb-2">💡 Quick Tips</h4>
+            <h4 className="font-medium text-blue-900 mb-2 flex items-center gap-2">
+              <Lightbulb className="h-4 w-4" />Quick Tips
+            </h4>
             <ul className="text-sm text-blue-800 space-y-1">
               <li>• Choose a clear, memorable campaign name that reflects your goal</li>
               <li>• Your objective will help us recommend the best creators for your needs</li>

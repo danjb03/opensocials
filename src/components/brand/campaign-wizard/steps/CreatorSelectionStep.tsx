@@ -151,7 +151,7 @@ const CreatorSelectionStep: React.FC<CreatorSelectionStepProps> = ({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            👥 Select Creators
+            <Users className="h-5 w-5" />Select Creators
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">

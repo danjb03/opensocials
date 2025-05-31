@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Rocket, Calendar, DollarSign, Users, Target, CheckCircle, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Rocket, Calendar, DollarSign, Users, Target, CheckCircle, AlertCircle, Lightbulb } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -105,7 +105,7 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            🚀 Review & Launch Campaign
+            <Rocket className="h-5 w-5" />Review & Launch Campaign
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -322,8 +322,9 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
                 <span>${totalGrossBudget.toFixed(2)}</span>
               </div>
             </div>
-            <div className="text-xs text-gray-500 bg-blue-50 p-3 rounded-lg">
-              💡 <strong>Rolling Creator System:</strong> You can invite additional creators later if some decline or if you want to expand reach, using your remaining budget pool.
+            <div className="text-xs text-gray-500 bg-blue-50 p-3 rounded-lg flex items-start gap-2">
+              <Lightbulb className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span><strong>Rolling Creator System:</strong> You can invite additional creators later if some decline or if you want to expand reach, using your remaining budget pool.</span>
             </div>
           </div>
         </CardContent>
@@ -332,7 +333,9 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
       {/* What Happens Next */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">🎯 What Happens Next?</CardTitle>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Target className="h-5 w-5" />What Happens Next?
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3 text-sm">

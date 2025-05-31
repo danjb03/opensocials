@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, ArrowLeft, Plus, X, Instagram, Video, Image, PlayCircle, Zap } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Plus, X, Instagram, Video, Image, PlayCircle, Zap, Smartphone } from 'lucide-react';
 import { CampaignWizardData, Platform, ContentType } from '@/types/campaignWizard';
 
 const contentRequirementsSchema = z.object({
@@ -132,7 +132,7 @@ const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            📱 Content Requirements
+            <Smartphone className="h-5 w-5" />Content Requirements
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">

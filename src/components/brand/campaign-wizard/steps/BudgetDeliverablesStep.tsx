@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowRight, ArrowLeft, Calendar as CalendarIcon, DollarSign, Target, Clock } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Calendar as CalendarIcon, DollarSign, Target, Clock, Lightbulb } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { CampaignWizardData } from '@/types/campaignWizard';
@@ -95,7 +95,7 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            💰 Budget & Deliverables
+            <DollarSign className="h-5 w-5" />Budget & Deliverables
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -294,7 +294,9 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
 
           {/* Quick Tips */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h4 className="font-medium text-yellow-900 mb-2">💡 Budget Tips</h4>
+            <h4 className="font-medium text-yellow-900 mb-2 flex items-center gap-2">
+              <Lightbulb className="h-4 w-4" />Budget Tips
+            </h4>
             <ul className="text-sm text-yellow-800 space-y-1">
               <li>• Higher budgets attract premium creators with larger audiences</li>
               <li>• Consider your cost per engagement when setting budgets</li>
