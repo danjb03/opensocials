@@ -12,8 +12,9 @@ import { supabase } from '@/integrations/supabase/client';
 interface ReviewLaunchStepProps {
   data: CampaignWizardData;
   onBack: () => void;
-  onComplete: () => void;
+  onComplete: () => Promise<void>;
   isLoading?: boolean;
+  isSubmitting?: boolean;
 }
 
 interface CreatorDetail {
@@ -29,15 +30,23 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
   data,
   onBack,
   onComplete,
-  isLoading
+  isLoading,
+  isSubmitting
 }) => {
   const [isLaunching, setIsLaunching] = useState(false);
 
+  // Extract creator IDs from selected_creators
+  const creatorIds = Array.isArray(data.selected_creators) 
+    ? data.selected_creators.map(creator => 
+        typeof creator === 'string' ? creator : creator.creator_id
+      ).filter(Boolean)
+    : [];
+
   // Fetch creators if any are selected
   const { data: selectedCreators } = useQuery({
-    queryKey: ['selected-creators', data.selected_creators],
+    queryKey: ['selected-creators', creatorIds],
     queryFn: async (): Promise<CreatorDetail[]> => {
-      if (!data.selected_creators || data.selected_creators.length === 0) {
+      if (creatorIds.length === 0) {
         return [];
       }
 
@@ -52,7 +61,7 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
           bio,
           primary_platform
         `)
-        .in('id', data.selected_creators);
+        .in('id', creatorIds);
 
       if (error) throw error;
       
@@ -65,7 +74,7 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
         email: profile.email
       }));
     },
-    enabled: !!data.selected_creators && data.selected_creators.length > 0
+    enabled: creatorIds.length > 0
   });
 
   const handleLaunch = async () => {
@@ -92,6 +101,10 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
     });
   };
 
+  const campaignName = data.campaign_name || data.name || 'Untitled Campaign';
+  const budget = data.total_budget || data.budget || 0;
+  const currency = data.currency || 'USD';
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
@@ -117,7 +130,7 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <h3 className="font-semibold text-lg">{data.campaign_name}</h3>
+              <h3 className="font-semibold text-lg">{campaignName}</h3>
               <p className="text-gray-600">{data.description}</p>
             </div>
             <div className="space-y-2">
@@ -165,11 +178,11 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
           <CardContent className="space-y-2">
             <div className="flex justify-between">
               <span className="text-gray-600">Total Budget:</span>
-              <span className="font-medium text-lg">{formatCurrency(data.total_budget || 0, data.currency)}</span>
+              <span className="font-medium text-lg">{formatCurrency(budget, currency)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Currency:</span>
-              <span className="font-medium">{data.currency}</span>
+              <span className="font-medium">{currency}</span>
             </div>
           </CardContent>
         </Card>
@@ -228,19 +241,19 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
                   <div className="text-sm text-gray-600">Posts</div>
                 </div>
               )}
-              {data.deliverables.stories_count > 0 && (
+              {data.deliverables.stories_count && data.deliverables.stories_count > 0 && (
                 <div className="text-center p-3 bg-green-50 rounded-lg">
                   <div className="text-2xl font-bold text-green-600">{data.deliverables.stories_count}</div>
                   <div className="text-sm text-gray-600">Stories</div>
                 </div>
               )}
-              {data.deliverables.reels_count > 0 && (
+              {data.deliverables.reels_count && data.deliverables.reels_count > 0 && (
                 <div className="text-center p-3 bg-purple-50 rounded-lg">
                   <div className="text-2xl font-bold text-purple-600">{data.deliverables.reels_count}</div>
                   <div className="text-sm text-gray-600">Reels</div>
                 </div>
               )}
-              {data.deliverables.video_length_minutes > 0 && (
+              {data.deliverables.video_length_minutes && data.deliverables.video_length_minutes > 0 && (
                 <div className="text-center p-3 bg-orange-50 rounded-lg">
                   <div className="text-2xl font-bold text-orange-600">{data.deliverables.video_length_minutes}min</div>
                   <div className="text-sm text-gray-600">Video Content</div>
@@ -286,7 +299,7 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
           type="button"
           variant="outline"
           onClick={onBack}
-          disabled={isLaunching}
+          disabled={isLaunching || isSubmitting}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -294,10 +307,10 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
         </Button>
         <Button 
           onClick={handleLaunch}
-          disabled={isLaunching || isLoading}
+          disabled={isLaunching || isLoading || isSubmitting}
           className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
         >
-          {isLaunching ? 'Launching...' : 'Launch Campaign'}
+          {isLaunching || isSubmitting ? 'Launching...' : 'Launch Campaign'}
           <Rocket className="h-4 w-4" />
         </Button>
       </div>

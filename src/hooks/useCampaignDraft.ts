@@ -2,20 +2,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { CampaignWizardData } from '@/types/campaignWizard';
+import { CampaignWizardData, ProjectDraft } from '@/types/campaignWizard';
 import { useAuth } from '@/lib/auth';
 
-interface ProjectDraft {
-  id: string;
-  brand_id: string;
-  draft_data: CampaignWizardData;
-  current_step: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export function useCampaignDraft() {
+export function useCampaignDraft(draftId?: string) {
   const [draft, setDraft] = useState<ProjectDraft | null>(null);
+  const [draftData, setDraftData] = useState<CampaignWizardData>({});
+  const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -24,53 +17,51 @@ export function useCampaignDraft() {
     if (user?.id) {
       loadDraft();
     }
-  }, [user?.id]);
+  }, [user?.id, draftId]);
 
   const loadDraft = async () => {
     if (!user?.id) return;
     
     setIsLoading(true);
     try {
-      // For now, we'll use the regular projects table since project_drafts might not be in types yet
-      // This is a temporary workaround until the database types are regenerated
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('brand_id', user.id)
-        .eq('status', 'draft')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+      if (draftId) {
+        // Load specific draft
+        const { data, error } = await supabase
+          .from('project_drafts')
+          .select('*')
+          .eq('id', draftId)
+          .single();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
-        throw error;
-      }
+        if (error && error.code !== 'PGRST116') {
+          throw error;
+        }
 
-      if (data) {
-        // Transform the project data to match our draft format
-        const draftData: CampaignWizardData = {
-          campaign_name: data.name,
-          campaign_type: data.campaign_type,
-          objective: data.objective || 'brand_awareness',
-          description: data.description || '',
-          content_requirements: data.content_requirements || {},
-          messaging_guidelines: data.messaging_guidelines || '',
-          start_date: data.start_date || '',
-          end_date: data.end_date || '',
-          total_budget: data.budget || 0,
-          currency: data.currency || 'USD',
-          deliverables: data.deliverables || {},
-          selected_creators: []
-        };
+        if (data) {
+          const draftData = data.draft_data as CampaignWizardData;
+          setDraft(data);
+          setDraftData(draftData);
+          setCurrentStep(data.current_step || 1);
+        }
+      } else {
+        // Load latest draft for user
+        const { data, error } = await supabase
+          .from('project_drafts')
+          .select('*')
+          .eq('brand_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-        setDraft({
-          id: data.id,
-          brand_id: data.brand_id,
-          draft_data: draftData,
-          current_step: data.current_step || 1,
-          created_at: data.created_at,
-          updated_at: data.updated_at
-        });
+        if (error) {
+          throw error;
+        }
+
+        if (data) {
+          const draftData = data.draft_data as CampaignWizardData;
+          setDraft(data);
+          setDraftData(draftData);
+          setCurrentStep(data.current_step || 1);
+        }
       }
     } catch (error) {
       console.error('Error loading draft:', error);
@@ -84,29 +75,21 @@ export function useCampaignDraft() {
     }
   };
 
-  const saveDraft = async (data: Partial<CampaignWizardData>, currentStep: number) => {
+  const saveDraft = async (data: Partial<CampaignWizardData>, step: number) => {
     if (!user?.id) return;
     
     try {
+      const updatedData = { ...draftData, ...data };
+      setDraftData(updatedData);
+      setCurrentStep(step);
+
       if (draft) {
         // Update existing draft
-        const updatedData = { ...draft.draft_data, ...data };
-        
         const { error } = await supabase
-          .from('projects')
+          .from('project_drafts')
           .update({
-            name: updatedData.campaign_name,
-            campaign_type: updatedData.campaign_type,
-            objective: updatedData.objective,
-            description: updatedData.description,
-            content_requirements: updatedData.content_requirements,
-            messaging_guidelines: updatedData.messaging_guidelines,
-            start_date: updatedData.start_date,
-            end_date: updatedData.end_date,
-            budget: updatedData.total_budget,
-            currency: updatedData.currency,
-            deliverables: updatedData.deliverables,
-            current_step: currentStep,
+            draft_data: updatedData,
+            current_step: step,
             updated_at: new Date().toISOString()
           })
           .eq('id', draft.id);
@@ -116,56 +99,23 @@ export function useCampaignDraft() {
         setDraft({
           ...draft,
           draft_data: updatedData,
-          current_step: currentStep
+          current_step: step
         });
       } else {
         // Create new draft
-        const newData: CampaignWizardData = {
-          campaign_name: data.campaign_name || '',
-          campaign_type: data.campaign_type || 'Single',
-          objective: data.objective || 'brand_awareness',
-          description: data.description || '',
-          content_requirements: data.content_requirements || {},
-          messaging_guidelines: data.messaging_guidelines || '',
-          start_date: data.start_date || '',
-          end_date: data.end_date || '',
-          total_budget: data.total_budget || 0,
-          currency: data.currency || 'USD',
-          deliverables: data.deliverables || {},
-          selected_creators: data.selected_creators || []
-        };
-
         const { data: newDraft, error } = await supabase
-          .from('projects')
+          .from('project_drafts')
           .insert({
             brand_id: user.id,
-            name: newData.campaign_name,
-            campaign_type: newData.campaign_type,
-            objective: newData.objective,
-            description: newData.description,
-            content_requirements: newData.content_requirements,
-            messaging_guidelines: newData.messaging_guidelines,
-            start_date: newData.start_date,
-            end_date: newData.end_date,
-            budget: newData.total_budget,
-            currency: newData.currency,
-            deliverables: newData.deliverables,
-            current_step: currentStep,
-            status: 'draft'
+            draft_data: updatedData,
+            current_step: step
           })
           .select()
           .single();
 
         if (error) throw error;
 
-        setDraft({
-          id: newDraft.id,
-          brand_id: newDraft.brand_id,
-          draft_data: newData,
-          current_step: currentStep,
-          created_at: newDraft.created_at,
-          updated_at: newDraft.updated_at
-        });
+        setDraft(newDraft);
       }
 
       toast({
@@ -182,18 +132,55 @@ export function useCampaignDraft() {
     }
   };
 
+  const createProject = async (data: CampaignWizardData): Promise<string> => {
+    if (!user?.id) throw new Error('User not authenticated');
+
+    try {
+      // Create project in projects_new table
+      const { data: newProject, error } = await supabase
+        .from('projects_new')
+        .insert({
+          brand_id: user.id,
+          name: data.campaign_name || data.name || 'Untitled Campaign',
+          campaign_type: data.campaign_type || 'Single',
+          objective: data.objective,
+          description: data.description,
+          content_requirements: data.content_requirements as any,
+          messaging_guidelines: data.messaging_guidelines,
+          start_date: data.start_date,
+          end_date: data.end_date,
+          budget: data.total_budget || data.budget,
+          currency: data.currency || 'USD',
+          deliverables: data.deliverables as any,
+          status: 'active'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return newProject.id;
+    } catch (error) {
+      console.error('Error creating project:', error);
+      throw error;
+    }
+  };
+
   const clearDraft = async () => {
     if (!draft) return;
     
     try {
       const { error } = await supabase
-        .from('projects')
+        .from('project_drafts')
         .delete()
         .eq('id', draft.id);
 
       if (error) throw error;
 
       setDraft(null);
+      setDraftData({});
+      setCurrentStep(1);
+      
       toast({
         title: 'Draft cleared',
         description: 'Campaign draft has been removed',
@@ -208,11 +195,21 @@ export function useCampaignDraft() {
     }
   };
 
+  const deleteDraft = async () => {
+    return clearDraft();
+  };
+
   return {
     draft,
+    draftData,
+    setDraftData,
+    currentStep,
+    setCurrentStep,
     isLoading,
     saveDraft,
     clearDraft,
-    loadDraft
+    loadDraft,
+    createProject,
+    deleteDraft
   };
 }

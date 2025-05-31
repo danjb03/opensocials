@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -26,6 +27,7 @@ interface CampaignWizardProps {
 const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) => {
   const navigate = useNavigate();
   const { 
+    draft,
     draftData, 
     setDraftData, 
     saveDraft, 
@@ -45,7 +47,7 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
     if (draftId) {
       loadDraft();
     }
-  }, [draftId, loadDraft]);
+  }, [draftId]);
 
   // Update step completion status
   useEffect(() => {
@@ -95,7 +97,7 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
       const projectId = await createProject(draftData as CampaignWizardData);
       
       // Clean up draft
-      if (draftId) {
+      if (draft) {
         await deleteDraft();
       }
       
@@ -134,7 +136,7 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
       case 4:
         return <CreatorSelectionStep {...stepProps} />;
       case 5:
-        return <ReviewLaunchStep {...stepProps} onLaunch={handleFinalSubmit} isSubmitting={isSubmitting} />;
+        return <ReviewLaunchStep {...stepProps} onComplete={handleFinalSubmit} isSubmitting={isSubmitting} />;
       default:
         return null;
     }

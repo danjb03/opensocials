@@ -51,6 +51,7 @@ export interface ContentRequirements {
   mentions?: string[];
   style_preferences?: string;
   restrictions?: string[];
+  [key: string]: any; // Allow additional properties for JSON compatibility
 }
 
 export interface Deliverables {
@@ -60,6 +61,7 @@ export interface Deliverables {
   video_length_minutes?: number;
   live_sessions?: number;
   custom_deliverables?: string[];
+  [key: string]: any; // Allow additional properties for JSON compatibility
 }
 
 export interface EnhancedProject {
@@ -137,7 +139,7 @@ export interface CreatorDealView {
 export interface ProjectDraft {
   id: string;
   brand_id: string;
-  draft_data: Partial<CampaignWizardData>;
+  draft_data: CampaignWizardData;
   current_step: number;
   created_at: string;
   updated_at: string;
@@ -145,29 +147,30 @@ export interface ProjectDraft {
 
 export interface CampaignWizardData {
   // Step 1: Campaign Basics
-  name: string;
+  campaign_name?: string;
+  name?: string; // Alternative name field
   objective?: CampaignObjective;
-  campaign_type: string;
+  campaign_type?: string;
   
   // Step 2: Content Requirements
   description?: string;
-  content_requirements: ContentRequirements;
+  content_requirements?: ContentRequirements;
   messaging_guidelines?: string;
   
   // Step 3: Budget & Deliverables  
-  total_budget: number; // Gross budget
-  deliverables: Deliverables;
-  timeline: { 
-    start_date?: Date; 
-    end_date?: Date; 
-  };
+  total_budget?: number;
+  budget?: number; // Alternative budget field
+  currency?: string;
+  deliverables?: Deliverables;
+  start_date?: string;
+  end_date?: string;
   
   // Step 4: Creator Selection
-  selected_creators: Array<{
+  selected_creators?: Array<{
     creator_id: string;
-    individual_budget: number; // Per creator gross amount
+    individual_budget: number;
     custom_requirements?: Json;
-  }>;
+  }> | string[]; // Support both formats
   
   // Step 5: Review data (computed from above)
   total_creators?: number;
