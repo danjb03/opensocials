@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Calendar, BarChart2, Plus } from "lucide-react";
+import { Search, Calendar, BarChart2, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const QuickActions = () => {
@@ -17,9 +17,9 @@ const QuickActions = () => {
     },
     {
       title: "Create Campaign",
-      description: "Launch a new influencer marketing campaign",
-      icon: Plus,
-      onClick: () => navigate('/brand/projects'),
+      description: "Step-by-step campaign creation with creator selection",
+      icon: Zap,
+      onClick: () => navigate('/brand/create-campaign'),
       buttonText: "Start Campaign"
     },
     {

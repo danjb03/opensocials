@@ -12,6 +12,7 @@ import EditCampaign from '@/pages/brand/EditCampaign';
 import ManageBudget from '@/pages/brand/ManageBudget';
 import CampaignAnalytics from '@/pages/brand/CampaignAnalytics';
 import CampaignAnalyticsList from '@/pages/brand/CampaignAnalyticsList';
+import CampaignWizard from '@/components/brand/campaign-wizard/CampaignWizard';
 
 export const BrandRoutes = () => {
   return (
@@ -31,6 +32,16 @@ export const BrandRoutes = () => {
       <Route path="projects" element={<BrandGuard><Projects /></BrandGuard>} />
       <Route path="creators" element={<BrandGuard><CreatorSearch /></BrandGuard>} />
       <Route path="orders" element={<BrandGuard><BrandOrders /></BrandGuard>} />
+      
+      {/* New Campaign Wizard */}
+      <Route 
+        path="create-campaign" 
+        element={
+          <BrandGuard>
+            <CampaignWizard />
+          </BrandGuard>
+        } 
+      />
       
       {/* Brand Project Routes with Regular Brand Guard */}
       <Route 

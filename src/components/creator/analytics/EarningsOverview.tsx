@@ -2,20 +2,15 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, TrendingUp, Handshake, Target } from 'lucide-react';
+import { useCreatorDealStats } from '@/hooks/useCreatorDealsSecure';
 
-interface EarningsOverviewProps {
-  totalEarnings: number;
-  completedDeals: number;
-  activeDeals: number;
-  pipelineValue: number;
-}
-
-const EarningsOverview: React.FC<EarningsOverviewProps> = ({
-  totalEarnings,
-  completedDeals,
-  activeDeals,
-  pipelineValue
-}) => {
+const EarningsOverview: React.FC = () => {
+  const { 
+    totalEarnings, 
+    completedDeals, 
+    activeDeals, 
+    pipelineValue 
+  } = useCreatorDealStats();
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
@@ -26,7 +21,7 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({
         <CardContent>
           <div className="text-2xl font-bold">${totalEarnings.toLocaleString()}</div>
           <p className="text-xs text-muted-foreground">
-            Lifetime earnings
+            Your total earnings
           </p>
         </CardContent>
       </Card>
@@ -65,7 +60,7 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({
         <CardContent>
           <div className="text-2xl font-bold">${pipelineValue.toLocaleString()}</div>
           <p className="text-xs text-muted-foreground">
-            Potential earnings
+            Your potential earnings
           </p>
         </CardContent>
       </Card>
