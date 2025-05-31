@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,19 +19,15 @@ interface CreatorInviteSystemProps {
 }
 
 interface CreatorCandidate {
-  id: string;
   user_id: string;
-  name: string;
-  email: string;
-  instagram_handle?: string;
-  tiktok_handle?: string;
-  youtube_handle?: string;
-  primary_platform: string;
+  display_name?: string;
+  primary_platform?: string;
   follower_count?: number;
   engagement_rate?: number;
+  bio?: string;
   profiles?: {
     avatar_url?: string;
-    full_name?: string;
+    email?: string;
   };
 }
 
@@ -46,32 +43,28 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
 
   const inviteCreatorMutation = useInviteCreatorToProject();
 
-  // Fetch available creators
+  // Fetch available creators using the correct schema
   const { data: availableCreators, isLoading } = useQuery({
     queryKey: ['available-creators', searchTerm],
     queryFn: async (): Promise<CreatorCandidate[]> => {
       let query = supabase
         .from('creator_profiles')
         .select(`
-          id,
           user_id,
-          name,
-          email,
-          instagram_handle,
-          tiktok_handle,
-          youtube_handle,
+          display_name,
           primary_platform,
           follower_count,
           engagement_rate,
+          bio,
           profiles!creator_profiles_user_id_fkey (
             avatar_url,
-            full_name
+            email
           )
         `)
         .limit(20);
 
       if (searchTerm) {
-        query = query.or(`name.ilike.%${searchTerm}%,instagram_handle.ilike.%${searchTerm}%,tiktok_handle.ilike.%${searchTerm}%`);
+        query = query.or(`display_name.ilike.%${searchTerm}%,bio.ilike.%${searchTerm}%`);
       }
 
       const { data, error } = await query;
@@ -162,7 +155,7 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
         {/* Search */}
         <div className="flex gap-2">
           <Input
-            placeholder="Search creators by name or handle..."
+            placeholder="Search creators by name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="flex-1"
@@ -211,18 +204,12 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
           ) : availableCreators && availableCreators.length > 0 ? (
             availableCreators.map((creator) => {
               const isSelected = selectedCreators.includes(creator.user_id);
-              const creatorName = creator.profiles?.full_name || creator.name;
-              const handle = creator.instagram_handle 
-                ? `@${creator.instagram_handle}` 
-                : creator.tiktok_handle 
-                ? `@${creator.tiktok_handle}`
-                : creator.youtube_handle 
-                ? `@${creator.youtube_handle}`
-                : '@creator';
+              const creatorName = creator.display_name || 'Creator';
+              const platform = creator.primary_platform || 'Multi-platform';
 
               return (
                 <div 
-                  key={creator.id} 
+                  key={creator.user_id} 
                   className={`flex items-center gap-3 p-3 border rounded-lg transition-all ${
                     isSelected ? 'border-blue-500 bg-blue-50' : 'hover:border-gray-300'
                   }`}
@@ -236,10 +223,10 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
                     <div className="flex items-center gap-2">
                       <h4 className="font-medium">{creatorName}</h4>
                       <Badge variant="outline" className="text-xs">
-                        {creator.primary_platform}
+                        {platform}
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-600">{handle}</p>
+                    {creator.bio && <p className="text-sm text-gray-600 truncate">{creator.bio}</p>}
                     <div className="flex items-center gap-4 text-xs text-gray-500">
                       {creator.follower_count && (
                         <span>{creator.follower_count.toLocaleString()} followers</span>

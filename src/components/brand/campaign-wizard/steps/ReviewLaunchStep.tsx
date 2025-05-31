@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,27 +18,34 @@ interface ReviewLaunchStepProps {
   isSubmitting?: boolean;
 }
 
+interface CreatorDetail {
+  user_id: string;
+  display_name?: string;
+  primary_platform?: string;
+  bio?: string;
+  profiles?: {
+    avatar_url?: string;
+    email?: string;
+  };
+}
+
 // Hook to fetch creator details
 const useCreatorDetails = (creatorIds: string[]) => {
   return useQuery({
     queryKey: ['creator-details', creatorIds],
-    queryFn: async () => {
+    queryFn: async (): Promise<CreatorDetail[]> => {
       if (creatorIds.length === 0) return [];
       
       const { data, error } = await supabase
         .from('creator_profiles')
         .select(`
-          id,
           user_id,
-          name,
-          email,
-          instagram_handle,
-          tiktok_handle,
-          youtube_handle,
+          display_name,
           primary_platform,
+          bio,
           profiles!creator_profiles_user_id_fkey (
             avatar_url,
-            full_name
+            email
           )
         `)
         .in('user_id', creatorIds);
@@ -254,14 +262,8 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
               <div className="space-y-3">
                 {selectedCreators.map(creatorData => {
                   const creator = creatorDetails?.find(c => c.user_id === creatorData.creator_id);
-                  const creatorName = creator?.profiles?.full_name || creator?.name || 'Unknown Creator';
-                  const creatorHandle = creator?.instagram_handle 
-                    ? `@${creator.instagram_handle}` 
-                    : creator?.tiktok_handle 
-                    ? `@${creator.tiktok_handle}` 
-                    : creator?.youtube_handle 
-                    ? `@${creator.youtube_handle}`
-                    : '@creator';
+                  const creatorName = creator?.display_name || 'Unknown Creator';
+                  const creatorPlatform = creator?.primary_platform || 'Multi-platform';
                   
                   return (
                     <div key={creatorData.creator_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -272,8 +274,8 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
                         </Avatar>
                         <div>
                           <p className="font-medium">{creatorName}</p>
-                          <p className="text-sm text-gray-600">{creatorHandle}</p>
-                          <p className="text-xs text-blue-600 capitalize">{creator?.primary_platform || 'Multi-platform'}</p>
+                          <p className="text-sm text-gray-600">{creator?.bio ? creator.bio.slice(0, 50) + '...' : 'Creator'}</p>
+                          <p className="text-xs text-blue-600 capitalize">{creatorPlatform}</p>
                         </div>
                       </div>
                       <div className="text-right">

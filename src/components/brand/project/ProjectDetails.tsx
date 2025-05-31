@@ -8,7 +8,7 @@ import { FileText, CheckCircle } from 'lucide-react';
 import { Tables } from '@/integrations/supabase/types';
 
 interface ProjectDetailsProps {
-  project: Tables<'projects_new'>;
+  project: Tables<'projects'>;
 }
 
 export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {

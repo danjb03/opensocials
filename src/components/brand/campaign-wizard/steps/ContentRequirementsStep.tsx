@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,9 +18,9 @@ const contentRequirementsSchema = z.object({
   platforms: z.array(z.string()).min(1, 'Select at least one platform'),
   content_types: z.array(z.string()).min(1, 'Select at least one content type'),
   messaging_guidelines: z.string().optional(),
-  hashtags: z.array(z.string()).optional(),
-  mentions: z.array(z.string()).optional(),
-  restrictions: z.array(z.string()).optional(),
+  hashtags: z.array(z.object({ value: z.string() })).optional(),
+  mentions: z.array(z.object({ value: z.string() })).optional(),
+  restrictions: z.array(z.object({ value: z.string() })).optional(),
 });
 
 type ContentRequirementsForm = z.infer<typeof contentRequirementsSchema>;
@@ -68,9 +69,9 @@ const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
       platforms: data?.content_requirements?.platforms || [],
       content_types: data?.content_requirements?.content_types || [],
       messaging_guidelines: data?.messaging_guidelines || '',
-      hashtags: data?.content_requirements?.hashtags || [],
-      mentions: data?.content_requirements?.mentions || [],
-      restrictions: data?.content_requirements?.restrictions || []
+      hashtags: data?.content_requirements?.hashtags?.map(tag => ({ value: tag })) || [],
+      mentions: data?.content_requirements?.mentions?.map(mention => ({ value: mention })) || [],
+      restrictions: data?.content_requirements?.restrictions?.map(restriction => ({ value: restriction })) || []
     },
     mode: 'onChange'
   });
@@ -115,9 +116,9 @@ const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
     const content_requirements = {
       platforms: formData.platforms as Platform[],
       content_types: formData.content_types as ContentType[],
-      hashtags: formData.hashtags || [],
-      mentions: formData.mentions || [],
-      restrictions: formData.restrictions || []
+      hashtags: formData.hashtags?.map(h => h.value) || [],
+      mentions: formData.mentions?.map(m => m.value) || [],
+      restrictions: formData.restrictions?.map(r => r.value) || []
     };
 
     onComplete({
@@ -260,7 +261,7 @@ const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => appendHashtag('')}
+                onClick={() => appendHashtag({ value: '' })}
                 className="h-6"
               >
                 <Plus className="h-3 w-3" />

@@ -8,7 +8,7 @@ import { statusColors, type ProjectStatus } from '@/types/projects';
 import { Tables } from '@/integrations/supabase/types';
 
 interface ProjectHeaderProps {
-  project: Tables<'projects_new'>;
+  project: Tables<'projects'>;
   nextStepBlocked: boolean;
   showBlockedAlert: boolean;
   isUploading: boolean;
