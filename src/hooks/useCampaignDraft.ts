@@ -27,7 +27,7 @@ export const useCampaignDraft = (draftId?: string) => {
     return () => clearTimeout(timer);
   }, [draftData, currentStep]);
 
-  // Save draft mutation - using localStorage for now since tables don't exist yet
+  // Save draft mutation - now using real database
   const saveDraftMutation = useMutation({
     mutationFn: async ({ 
       data, 
@@ -38,21 +38,68 @@ export const useCampaignDraft = (draftId?: string) => {
       step: number; 
       silent?: boolean;
     }) => {
-      // For now, save to localStorage until database tables are ready
-      const draftKey = `campaign_draft_${brandProfile?.user_id || 'temp'}`;
-      const draftData = {
-        data,
-        current_step: step,
-        updated_at: new Date().toISOString()
-      };
-      
-      localStorage.setItem(draftKey, JSON.stringify(draftData));
+      if (!brandProfile?.id) throw new Error('Brand profile required');
 
-      if (!silent) {
-        toast.success('Draft saved successfully');
+      // Try to save to database first
+      try {
+        let savedDraft;
+        
+        if (draftId) {
+          // Update existing draft
+          const { data: updateData, error } = await supabase
+            .from('project_drafts')
+            .update({
+              draft_data: data,
+              current_step: step,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', draftId)
+            .eq('brand_id', brandProfile.id)
+            .select()
+            .single();
+          
+          if (error) throw error;
+          savedDraft = updateData;
+        } else {
+          // Create new draft
+          const { data: insertData, error } = await supabase
+            .from('project_drafts')
+            .insert({
+              brand_id: brandProfile.id,
+              draft_data: data,
+              current_step: step
+            })
+            .select()
+            .single();
+          
+          if (error) throw error;
+          savedDraft = insertData;
+        }
+
+        if (!silent) {
+          toast.success('Draft saved successfully');
+        }
+        
+        return savedDraft;
+      } catch (error) {
+        console.warn('Database save failed, falling back to localStorage:', error);
+        
+        // Fallback to localStorage
+        const draftKey = `campaign_draft_${brandProfile?.user_id || 'temp'}`;
+        const fallbackData = {
+          data,
+          current_step: step,
+          updated_at: new Date().toISOString()
+        };
+        
+        localStorage.setItem(draftKey, JSON.stringify(fallbackData));
+
+        if (!silent) {
+          toast.success('Draft saved locally');
+        }
+        
+        return fallbackData;
       }
-      
-      return draftData;
     },
     onError: (error) => {
       console.error('Draft save error:', error);
@@ -100,14 +147,69 @@ export const useCampaignDraft = (draftId?: string) => {
     mutationFn: async () => {
       if (!draftId) return;
       
-      // For now, delete from localStorage
+      try {
+        // Try to delete from database
+        const { error } = await supabase
+          .from('project_drafts')
+          .delete()
+          .eq('id', draftId)
+          .eq('brand_id', brandProfile?.id);
+        
+        if (error) throw error;
+      } catch (error) {
+        console.warn('Database delete failed, removing from localStorage:', error);
+      }
+      
+      // Always clean up localStorage as well
       const draftKey = `campaign_draft_${brandProfile?.user_id || 'temp'}`;
       localStorage.removeItem(draftKey);
     }
   });
 
-  // Load draft data from localStorage
-  const loadDraft = useCallback(() => {
+  // Load draft data from database or localStorage
+  const loadDraft = useCallback(async () => {
+    if (!brandProfile?.id) return;
+    
+    try {
+      if (draftId) {
+        // Load specific draft from database
+        const { data: draftRecord, error } = await supabase
+          .from('project_drafts')
+          .select('*')
+          .eq('id', draftId)
+          .eq('brand_id', brandProfile.id)
+          .single();
+        
+        if (error) throw error;
+        
+        if (draftRecord) {
+          setDraftData(draftRecord.draft_data || {});
+          setCurrentStep(draftRecord.current_step || 1);
+          return;
+        }
+      } else {
+        // Load latest draft for this brand
+        const { data: latestDraft, error } = await supabase
+          .from('project_drafts')
+          .select('*')
+          .eq('brand_id', brandProfile.id)
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        if (error) throw error;
+        
+        if (latestDraft) {
+          setDraftData(latestDraft.draft_data || {});
+          setCurrentStep(latestDraft.current_step || 1);
+          return;
+        }
+      }
+    } catch (error) {
+      console.warn('Database load failed, trying localStorage:', error);
+    }
+    
+    // Fallback to localStorage
     const draftKey = `campaign_draft_${brandProfile?.user_id || 'temp'}`;
     const savedDraft = localStorage.getItem(draftKey);
     
@@ -120,7 +222,7 @@ export const useCampaignDraft = (draftId?: string) => {
         console.error('Failed to parse saved draft:', error);
       }
     }
-  }, [brandProfile?.user_id]);
+  }, [brandProfile?.id, brandProfile?.user_id, draftId]);
 
   // Save draft function
   const saveDraft = useCallback(

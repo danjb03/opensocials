@@ -154,6 +154,230 @@ export type Database = {
         }
         Relationships: []
       }
+      project_content: {
+        Row: {
+          comments: number | null
+          content_type: string | null
+          created_at: string | null
+          description: string | null
+          engagement_rate: number | null
+          file_size: number | null
+          file_type: string | null
+          file_url: string | null
+          id: string
+          likes: number | null
+          platform: string | null
+          project_creator_id: string | null
+          published_date: string | null
+          published_url: string | null
+          review_date: string | null
+          review_notes: string | null
+          reviewer_id: string | null
+          shares: number | null
+          status: Database["public"]["Enums"]["content_status"] | null
+          thumbnail_url: string | null
+          title: string | null
+          updated_at: string | null
+          views: number | null
+        }
+        Insert: {
+          comments?: number | null
+          content_type?: string | null
+          created_at?: string | null
+          description?: string | null
+          engagement_rate?: number | null
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          likes?: number | null
+          platform?: string | null
+          project_creator_id?: string | null
+          published_date?: string | null
+          published_url?: string | null
+          review_date?: string | null
+          review_notes?: string | null
+          reviewer_id?: string | null
+          shares?: number | null
+          status?: Database["public"]["Enums"]["content_status"] | null
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string | null
+          views?: number | null
+        }
+        Update: {
+          comments?: number | null
+          content_type?: string | null
+          created_at?: string | null
+          description?: string | null
+          engagement_rate?: number | null
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          likes?: number | null
+          platform?: string | null
+          project_creator_id?: string | null
+          published_date?: string | null
+          published_url?: string | null
+          review_date?: string | null
+          review_notes?: string | null
+          reviewer_id?: string | null
+          shares?: number | null
+          status?: Database["public"]["Enums"]["content_status"] | null
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string | null
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_content_project_creator_id_fkey"
+            columns: ["project_creator_id"]
+            isOneToOne: false
+            referencedRelation: "project_creators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_content_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_creator_payments: {
+        Row: {
+          amount: number
+          completed_date: string | null
+          created_at: string | null
+          currency: string | null
+          id: string
+          milestone: string | null
+          payment_method: string | null
+          payment_provider_id: string | null
+          payment_provider_status: string | null
+          processed_date: string | null
+          project_creator_id: string | null
+          scheduled_date: string | null
+          status: Database["public"]["Enums"]["payment_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          completed_date?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          milestone?: string | null
+          payment_method?: string | null
+          payment_provider_id?: string | null
+          payment_provider_status?: string | null
+          processed_date?: string | null
+          project_creator_id?: string | null
+          scheduled_date?: string | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          completed_date?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          milestone?: string | null
+          payment_method?: string | null
+          payment_provider_id?: string | null
+          payment_provider_status?: string | null
+          processed_date?: string | null
+          project_creator_id?: string | null
+          scheduled_date?: string | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_creator_payments_project_creator_id_fkey"
+            columns: ["project_creator_id"]
+            isOneToOne: false
+            referencedRelation: "project_creators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_creators: {
+        Row: {
+          agreed_amount: number | null
+          approved_content_count: number | null
+          content_requirements: Json | null
+          contract_signed_date: string | null
+          created_at: string | null
+          creator_id: string | null
+          currency: string | null
+          id: string
+          invitation_date: string | null
+          notes: string | null
+          payment_structure: Json | null
+          project_id: string | null
+          response_date: string | null
+          status: Database["public"]["Enums"]["project_creator_status"] | null
+          submitted_content_count: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          agreed_amount?: number | null
+          approved_content_count?: number | null
+          content_requirements?: Json | null
+          contract_signed_date?: string | null
+          created_at?: string | null
+          creator_id?: string | null
+          currency?: string | null
+          id?: string
+          invitation_date?: string | null
+          notes?: string | null
+          payment_structure?: Json | null
+          project_id?: string | null
+          response_date?: string | null
+          status?: Database["public"]["Enums"]["project_creator_status"] | null
+          submitted_content_count?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          agreed_amount?: number | null
+          approved_content_count?: number | null
+          content_requirements?: Json | null
+          contract_signed_date?: string | null
+          created_at?: string | null
+          creator_id?: string | null
+          currency?: string | null
+          id?: string
+          invitation_date?: string | null
+          notes?: string | null
+          payment_structure?: Json | null
+          project_id?: string | null
+          response_date?: string | null
+          status?: Database["public"]["Enums"]["project_creator_status"] | null
+          submitted_content_count?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_creators_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_creators_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_new"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_drafts: {
         Row: {
           brand_id: string | null
@@ -191,6 +415,8 @@ export type Database = {
       }
       projects_new: {
         Row: {
+          allocated_budget: number | null
+          allows_rolling_invitations: boolean | null
           brand_id: string | null
           campaign_type: string | null
           content_requirements: Json | null
@@ -203,13 +429,18 @@ export type Database = {
           messaging_guidelines: string | null
           name: string
           objective: Database["public"]["Enums"]["campaign_objective"] | null
+          payment_terms: Json | null
           platforms: string[] | null
+          remaining_budget: number | null
           start_date: string | null
           status: Database["public"]["Enums"]["project_status"] | null
           total_budget: number | null
+          total_creator_budget: number | null
           updated_at: string | null
         }
         Insert: {
+          allocated_budget?: number | null
+          allows_rolling_invitations?: boolean | null
           brand_id?: string | null
           campaign_type?: string | null
           content_requirements?: Json | null
@@ -222,13 +453,17 @@ export type Database = {
           messaging_guidelines?: string | null
           name: string
           objective?: Database["public"]["Enums"]["campaign_objective"] | null
+          payment_terms?: Json | null
           platforms?: string[] | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["project_status"] | null
           total_budget?: number | null
+          total_creator_budget?: number | null
           updated_at?: string | null
         }
         Update: {
+          allocated_budget?: number | null
+          allows_rolling_invitations?: boolean | null
           brand_id?: string | null
           campaign_type?: string | null
           content_requirements?: Json | null
@@ -241,10 +476,12 @@ export type Database = {
           messaging_guidelines?: string | null
           name?: string
           objective?: Database["public"]["Enums"]["campaign_objective"] | null
+          payment_terms?: Json | null
           platforms?: string[] | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["project_status"] | null
           total_budget?: number | null
+          total_creator_budget?: number | null
           updated_at?: string | null
         }
         Relationships: [
@@ -336,6 +573,14 @@ export type Database = {
         | "sales_drive"
         | "engagement"
         | "conversions"
+      content_status:
+        | "draft"
+        | "submitted"
+        | "under_review"
+        | "approved"
+        | "rejected"
+        | "published"
+        | "archived"
       deal_status:
         | "pending"
         | "invited"
@@ -343,7 +588,16 @@ export type Database = {
         | "declined"
         | "completed"
         | "cancelled"
-      payment_status: "pending" | "processing" | "paid" | "failed"
+      payment_status: "pending" | "processing" | "paid" | "failed" | "completed" | "cancelled"
+      project_creator_status:
+        | "invited"
+        | "accepted"
+        | "declined"
+        | "contracted"
+        | "in_progress"
+        | "submitted"
+        | "completed"
+        | "cancelled"
       project_status: "draft" | "active" | "paused" | "completed" | "cancelled"
     }
     CompositeTypes: {
@@ -886,6 +1140,15 @@ export const Constants = {
         "engagement",
         "conversions",
       ],
+      content_status: [
+        "draft",
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+        "published",
+        "archived",
+      ],
       deal_status: [
         "pending",
         "invited",
@@ -894,7 +1157,17 @@ export const Constants = {
         "completed",
         "cancelled",
       ],
-      payment_status: ["pending", "processing", "paid", "failed"],
+      payment_status: ["pending", "processing", "paid", "failed", "completed", "cancelled"],
+      project_creator_status: [
+        "invited",
+        "accepted",
+        "declined",
+        "contracted",
+        "in_progress",
+        "submitted",
+        "completed",
+        "cancelled",
+      ],
       project_status: ["draft", "active", "paused", "completed", "cancelled"],
     },
   },

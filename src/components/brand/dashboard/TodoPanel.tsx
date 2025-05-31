@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Bell, ArrowRight, Clock } from 'lucide-react';
@@ -20,12 +20,12 @@ interface TodoPanelProps {
   items: TodoItem[];
 }
 
-const TodoPanel: React.FC<TodoPanelProps> = ({ items }) => {
+const TodoPanel: React.FC<TodoPanelProps> = React.memo(({ items }) => {
   const navigate = useNavigate();
 
-  const handleActionClick = (projectId: string) => {
+  const handleActionClick = useCallback((projectId: string) => {
     navigate(`/brand/orders?projectId=${projectId}`);
-  };
+  }, [navigate]);
 
   if (items.length === 0) {
     return (
@@ -105,6 +105,8 @@ const TodoPanel: React.FC<TodoPanelProps> = ({ items }) => {
       </CardContent>
     </Card>
   );
-};
+});
+
+TodoPanel.displayName = 'TodoPanel';
 
 export default TodoPanel;

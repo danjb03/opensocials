@@ -8,6 +8,36 @@ import {
   Card,
   CardContent,
 } from '@/components/ui/card';
+import { Json } from '@/integrations/supabase/types';
+
+interface CreatorDealSecure {
+  id: string;
+  project_id: string;
+  creator_id: string;
+  deal_value: number;
+  individual_requirements: Json;
+  status: 'pending' | 'invited' | 'accepted' | 'declined' | 'completed' | 'cancelled';
+  invited_at: string;
+  responded_at?: string;
+  creator_feedback?: string;
+  payment_status: 'pending' | 'processing' | 'paid' | 'failed';
+  paid_at?: string;
+  created_at: string;
+  updated_at: string;
+  project?: {
+    name: string;
+    description?: string;
+    campaign_type: string;
+    start_date?: string;
+    end_date?: string;
+    content_requirements: Json;
+    deliverables: Json;
+    brand_profile?: {
+      company_name: string;
+      logo_url?: string;
+    };
+  };
+}
 
 const SecurePendingDeals = () => {
   const queryClient = useQueryClient();
@@ -15,7 +45,7 @@ const SecurePendingDeals = () => {
   const { acceptDeal, declineDeal } = useCreatorDealActions();
   
   const [expandedDealId, setExpandedDealId] = useState<string | null>(null);
-  const [selectedDeal, setSelectedDeal] = useState<any | null>(null);
+  const [selectedDeal, setSelectedDeal] = useState<CreatorDealSecure | null>(null);
 
   const updateDealMutation = useMutation({
     mutationFn: async ({ 
@@ -47,7 +77,7 @@ const SecurePendingDeals = () => {
     setExpandedDealId(prevId => prevId === dealId ? null : dealId);
   };
 
-  const handleViewDealDetails = (deal: any) => {
+  const handleViewDealDetails = (deal: CreatorDealSecure) => {
     setSelectedDeal(deal);
   };
 
@@ -64,7 +94,7 @@ const SecurePendingDeals = () => {
   };
 
   // Convert secure deals to legacy format for DealDetailDialog compatibility
-  const convertDealForDialog = (deal: any) => {
+  const convertDealForDialog = (deal: CreatorDealSecure | null) => {
     if (!deal) return null;
     
     return {

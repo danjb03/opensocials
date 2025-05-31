@@ -6,6 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Rocket, Calendar, DollarSign, Users, Target, CheckCircle, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { CampaignWizardData } from '@/types/campaignWizard';
 
 interface ReviewLaunchStepProps {
@@ -15,13 +17,37 @@ interface ReviewLaunchStepProps {
   isSubmitting?: boolean;
 }
 
-// Mock creator data - in real app this would come from API
-const mockCreators = [
-  { id: '1', name: 'Sarah Johnson', handle: '@sarahjstyle', avatar: '/placeholder.svg' },
-  { id: '2', name: 'Mike Chen', handle: '@mikecooks', avatar: '/placeholder.svg' },
-  { id: '3', name: 'Emma Davis', handle: '@emmafitness', avatar: '/placeholder.svg' },
-  { id: '4', name: 'Alex Rivera', handle: '@alextech', avatar: '/placeholder.svg' }
-];
+// Hook to fetch creator details
+const useCreatorDetails = (creatorIds: string[]) => {
+  return useQuery({
+    queryKey: ['creator-details', creatorIds],
+    queryFn: async () => {
+      if (creatorIds.length === 0) return [];
+      
+      const { data, error } = await supabase
+        .from('creator_profiles')
+        .select(`
+          id,
+          user_id,
+          name,
+          email,
+          instagram_handle,
+          tiktok_handle,
+          youtube_handle,
+          primary_platform,
+          profiles!creator_profiles_user_id_fkey (
+            avatar_url,
+            full_name
+          )
+        `)
+        .in('user_id', creatorIds);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: creatorIds.length > 0
+  });
+};
 
 const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
   data,
@@ -29,11 +55,20 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
   onLaunch,
   isSubmitting
 }) => {
-  if (!data) return null;
 
-  const selectedCreators = data.selected_creators || [];
+  const selectedCreators = data?.selected_creators || [];
   const totalCreatorBudget = selectedCreators.reduce((sum, creator) => sum + creator.individual_budget, 0);
-  const platformFee = (data.total_budget || 0) * 0.25;
+  
+  // Fetch creator details
+  const creatorIds = selectedCreators.map(c => c.creator_id);
+  const { data: creatorDetails, isLoading: creatorsLoading } = useCreatorDetails(creatorIds);
+  
+  if (!data) return null;
+  
+  // Calculate budget breakdown with 25% margin system
+  const totalGrossBudget = data.total_budget || 0;
+  const platformMargin = totalGrossBudget * 0.25;
+  const totalNetBudget = totalGrossBudget - platformMargin;
   const estimatedReach = selectedCreators.length * 50000; // Mock calculation
   const campaignDuration = data.timeline?.start_date && data.timeline?.end_date 
     ? Math.ceil((data.timeline.end_date.getTime() - data.timeline.start_date.getTime()) / (1000 * 60 * 60 * 24))
@@ -203,29 +238,53 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
           {/* Selected Creators */}
           <div className="space-y-3">
             <h3 className="font-semibold text-gray-900">Selected Creators ({selectedCreators.length})</h3>
-            <div className="space-y-3">
-              {selectedCreators.map(creatorData => {
-                const creator = mockCreators.find(c => c.id === creatorData.creator_id);
-                return creator ? (
-                  <div key={creator.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={creator.avatar} alt={creator.name} />
-                        <AvatarFallback>{creator.name.slice(0, 2)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{creator.name}</p>
-                        <p className="text-sm text-gray-600">{creator.handle}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">${creatorData.individual_budget}</p>
-                      <p className="text-sm text-gray-600">per creator</p>
+            {creatorsLoading ? (
+              <div className="space-y-3">
+                {[...Array(selectedCreators.length)].map((_, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse" />
+                      <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4" />
                     </div>
                   </div>
-                ) : null;
-              })}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {selectedCreators.map(creatorData => {
+                  const creator = creatorDetails?.find(c => c.user_id === creatorData.creator_id);
+                  const creatorName = creator?.profiles?.full_name || creator?.name || 'Unknown Creator';
+                  const creatorHandle = creator?.instagram_handle 
+                    ? `@${creator.instagram_handle}` 
+                    : creator?.tiktok_handle 
+                    ? `@${creator.tiktok_handle}` 
+                    : creator?.youtube_handle 
+                    ? `@${creator.youtube_handle}`
+                    : '@creator';
+                  
+                  return (
+                    <div key={creatorData.creator_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={creator?.profiles?.avatar_url} alt={creatorName} />
+                          <AvatarFallback>{creatorName.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{creatorName}</p>
+                          <p className="text-sm text-gray-600">{creatorHandle}</p>
+                          <p className="text-xs text-blue-600 capitalize">{creator?.primary_platform || 'Multi-platform'}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">${creatorData.individual_budget}</p>
+                        <p className="text-sm text-gray-600">creator payout</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <Separator />
@@ -235,18 +294,36 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
             <h3 className="font-semibold text-gray-900">Budget Breakdown</h3>
             <div className="bg-gray-50 rounded-lg p-4 space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Creator Payments:</span>
-                <span className="font-medium">${totalCreatorBudget.toFixed(2)}</span>
+                <span>Total Campaign Budget:</span>
+                <span className="font-medium">${totalGrossBudget.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm text-gray-600">
+                <span className="flex items-center gap-1">
+                  Platform Margin (25%):
+                  <span className="text-xs bg-blue-100 text-blue-700 px-1 rounded">includes fees & support</span>
+                </span>
+                <span>-${platformMargin.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Platform Fee (25%):</span>
-                <span className="font-medium">${platformFee.toFixed(2)}</span>
+                <span>Creator Pool Budget:</span>
+                <span className="font-medium text-green-600">${totalNetBudget.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Currently Allocated:</span>
+                <span>${totalCreatorBudget.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Remaining for Rolling Invites:</span>
+                <span className="font-medium text-blue-600">${(totalNetBudget - totalCreatorBudget).toFixed(2)}</span>
               </div>
               <Separator />
-              <div className="flex justify-between font-medium">
-                <span>Total Budget:</span>
-                <span>${(data.total_budget || 0).toFixed(2)}</span>
+              <div className="flex justify-between font-medium text-lg">
+                <span>Total Investment:</span>
+                <span>${totalGrossBudget.toFixed(2)}</span>
               </div>
+            </div>
+            <div className="text-xs text-gray-500 bg-blue-50 p-3 rounded-lg">
+              💡 <strong>Rolling Creator System:</strong> You can invite additional creators later if some decline or if you want to expand reach, using your remaining budget pool.
             </div>
           </div>
         </CardContent>

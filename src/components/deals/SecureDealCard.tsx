@@ -9,13 +9,14 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
+import { Json } from '@/integrations/supabase/types';
 
 interface SecureDeal {
   id: string;
   project_id: string;
   creator_id: string;
   deal_value: number; // Net value only (after 25% margin deduction)
-  individual_requirements: Record<string, any>;
+  individual_requirements: Json;
   status: 'pending' | 'invited' | 'accepted' | 'declined' | 'completed' | 'cancelled';
   invited_at: string;
   responded_at?: string;
@@ -30,8 +31,8 @@ interface SecureDeal {
     campaign_type: string;
     start_date?: string;
     end_date?: string;
-    content_requirements: any;
-    deliverables: any;
+    content_requirements: Json;
+    deliverables: Json;
     brand_profile?: {
       company_name: string;
       logo_url?: string;

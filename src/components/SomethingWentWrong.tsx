@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface SomethingWentWrongProps {
-  error?: any;
+  error?: Error | string | null;
   resetErrorBoundary?: () => void;
 }
 

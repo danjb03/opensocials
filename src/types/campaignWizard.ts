@@ -1,3 +1,5 @@
+import { Json } from '../integrations/supabase/types';
+
 export type CampaignObjective = 
   | 'brand_awareness' 
   | 'product_launch' 
@@ -100,7 +102,7 @@ export interface CreatorDeal {
   // Deal-specific data
   gross_value?: number; // Internal only - brands see this
   net_value: number; // Creator sees this (gross_value * 0.75)
-  individual_requirements: Record<string, any>;
+  individual_requirements: Json;
   
   // Deal workflow
   status: DealStatus;
@@ -121,7 +123,7 @@ export interface CreatorDealView {
   project_id: string;
   creator_id: string;
   deal_value: number; // Net value only (renamed from net_value)
-  individual_requirements: Record<string, any>;
+  individual_requirements: Json;
   status: DealStatus;
   invited_at: string;
   responded_at?: string;
@@ -164,7 +166,7 @@ export interface CampaignWizardData {
   selected_creators: Array<{
     creator_id: string;
     individual_budget: number; // Per creator gross amount
-    custom_requirements?: Record<string, any>;
+    custom_requirements?: Json;
   }>;
   
   // Step 5: Review data (computed from above)

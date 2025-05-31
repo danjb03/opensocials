@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, TrendingUp, Users } from 'lucide-react';
 
@@ -13,11 +13,25 @@ interface DashboardStatsProps {
   };
 }
 
-const DashboardStats: React.FC<DashboardStatsProps> = ({ 
+const DashboardStats: React.FC<DashboardStatsProps> = React.memo(({ 
   totalEarnings, 
   pipelineValue, 
   connectionStats 
 }) => {
+  const totalConnections = useMemo(() => 
+    connectionStats.outreach + connectionStats.in_talks + connectionStats.working,
+    [connectionStats.outreach, connectionStats.in_talks, connectionStats.working]
+  );
+
+  const formattedEarnings = useMemo(() => 
+    totalEarnings.toLocaleString(),
+    [totalEarnings]
+  );
+
+  const formattedPipelineValue = useMemo(() => 
+    pipelineValue.toLocaleString(),
+    [pipelineValue]
+  );
   return (
     <div className="grid gap-4 md:grid-cols-3">
       <Card>
@@ -26,7 +40,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
           <DollarSign className="h-5 w-5 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">${totalEarnings.toLocaleString()}</p>
+          <p className="text-2xl font-bold">${formattedEarnings}</p>
           <p className="text-sm text-muted-foreground">Lifetime earnings</p>
         </CardContent>
       </Card>
@@ -37,7 +51,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
           <TrendingUp className="h-5 w-5 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">${pipelineValue.toLocaleString()}</p>
+          <p className="text-2xl font-bold">${formattedPipelineValue}</p>
           <p className="text-sm text-muted-foreground">In pending deals</p>
         </CardContent>
       </Card>
@@ -48,9 +62,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
           <Users className="h-5 w-5 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{
-            connectionStats.outreach + connectionStats.in_talks + connectionStats.working
-          }</div>
+          <div className="text-2xl font-bold">{totalConnections}</div>
           <p className="text-sm text-muted-foreground">
             {connectionStats.working} active collaborations
           </p>
@@ -58,6 +70,8 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
       </Card>
     </div>
   );
-};
+});
+
+DashboardStats.displayName = 'DashboardStats';
 
 export default DashboardStats;

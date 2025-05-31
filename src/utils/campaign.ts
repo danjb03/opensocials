@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Delete a campaign by ID.
- * Returns { success: boolean, error?: any }
+ * Returns { success: boolean, error?: Error }
  */
 export const deleteCampaign = async (campaignId: string) => {
   const { error } = await supabase

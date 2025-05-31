@@ -30,7 +30,7 @@ export interface ContentRequirements {
   posts?: { quantity: number };
   brief_uploaded?: boolean;
   brief_files?: string[];
-  [key: string]: any; // Add index signature to make it compatible with Json type
+  [key: string]: unknown; // Add index signature to make it compatible with Json type
 }
 
 // Add CampaignStep type to fix the error

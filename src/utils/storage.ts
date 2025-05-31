@@ -26,8 +26,9 @@ export const uploadFile = async (bucketName: string, path: string, file: File): 
       .getPublicUrl(path);
 
     return urlData?.publicUrl || null;
-  } catch (error: any) {
-    toast.error(`Failed to upload file: ${error.message || 'Unknown error'}`);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    toast.error(`Failed to upload file: ${errorMessage}`);
     return null;
   }
 };
@@ -50,8 +51,9 @@ export const deleteFile = async (bucketName: string, path: string): Promise<bool
     }
 
     return true;
-  } catch (error: any) {
-    toast.error(`Failed to delete file: ${error.message || 'Unknown error'}`);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    toast.error(`Failed to delete file: ${errorMessage}`);
     return false;
   }
 };
@@ -74,8 +76,9 @@ export const listFiles = async (bucketName: string, path: string) => {
     }
 
     return data || [];
-  } catch (error: any) {
-    toast.error(`Failed to list files: ${error.message || 'Unknown error'}`);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    toast.error(`Failed to list files: ${errorMessage}`);
     return [];
   }
 };

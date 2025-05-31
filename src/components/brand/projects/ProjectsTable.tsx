@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Table,
@@ -20,20 +20,24 @@ interface ProjectsTableProps {
   isLoading: boolean;
 }
 
-export const ProjectsTable = ({ projects, isLoading }: ProjectsTableProps) => {
+export const ProjectsTable = React.memo<ProjectsTableProps>(({ projects, isLoading }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [priorityCount, setPriorityCount] = useState<number>(
-    projects.filter(p => p.is_priority).length
+  
+  const initialPriorityCount = useMemo(() => 
+    projects.filter(p => p.is_priority).length,
+    [projects]
   );
+  
+  const [priorityCount, setPriorityCount] = useState<number>(initialPriorityCount);
   const [tableProjects, setTableProjects] = useState<Project[]>(projects);
 
   // Navigate to project pipeline view with consistent parameter naming
-  const handleViewProject = (projectId: string) => {
+  const handleViewProject = useCallback((projectId: string) => {
     navigate(`/brand/orders?projectId=${projectId}`);
-  };
+  }, [navigate]);
 
-  const handleTogglePriority = async (project: Project) => {
+  const handleTogglePriority = useCallback(async (project: Project) => {
     const newPriorityValue = !project.is_priority;
     
     // Check if we're trying to add a new priority and already have 5
@@ -82,10 +86,10 @@ export const ProjectsTable = ({ projects, isLoading }: ProjectsTableProps) => {
         variant: "destructive"
       });
     }
-  };
+  }, [priorityCount, toast]);
 
   // Handle project deletion and update the UI
-  const handleProjectDeleted = (projectId: string) => {
+  const handleProjectDeleted = useCallback((projectId: string) => {
     // Remove the project from the local state
     setTableProjects(prev => prev.filter(p => p.id !== projectId));
     
@@ -94,7 +98,22 @@ export const ProjectsTable = ({ projects, isLoading }: ProjectsTableProps) => {
     if (deletedProject?.is_priority) {
       setPriorityCount(prev => prev - 1);
     }
-  };
+  }, [projects]);
+
+  // Memoize the sorted projects to avoid recalculation on every render
+  const sortedProjects = useMemo(() => {
+    // Separate priority and non-priority projects
+    const priorityProjects = tableProjects.filter(project => project.is_priority);
+    const regularProjects = tableProjects.filter(project => !project.is_priority);
+    
+    // Combine them with priority projects first
+    return [...priorityProjects, ...regularProjects];
+  }, [tableProjects]);
+
+  const priorityProjectsCount = useMemo(() => 
+    sortedProjects.filter(project => project.is_priority).length,
+    [sortedProjects]
+  );
 
   // Show loading or empty state
   if (isLoading) {
@@ -113,13 +132,6 @@ export const ProjectsTable = ({ projects, isLoading }: ProjectsTableProps) => {
   if (tableProjects.length === 0) {
     return null; // EmptyState component will be shown by the parent
   }
-
-  // Separate priority and non-priority projects
-  const priorityProjects = tableProjects.filter(project => project.is_priority);
-  const regularProjects = tableProjects.filter(project => !project.is_priority);
-  
-  // Combine them with priority projects first
-  const sortedProjects = [...priorityProjects, ...regularProjects];
 
   return (
     <div className="rounded-md border overflow-hidden">
@@ -158,9 +170,9 @@ export const ProjectsTable = ({ projects, isLoading }: ProjectsTableProps) => {
         <TableBody>
           {sortedProjects.map((project, index) => {
             // Add a separator between priority and regular projects
-            const isPrioritySeparator = priorityProjects.length > 0 && 
-                                      index === priorityProjects.length && 
-                                      regularProjects.length > 0;
+            const isPrioritySeparator = priorityProjectsCount > 0 && 
+                                      index === priorityProjectsCount && 
+                                      (sortedProjects.length - priorityProjectsCount) > 0;
             
             return (
               <>
@@ -188,4 +200,6 @@ export const ProjectsTable = ({ projects, isLoading }: ProjectsTableProps) => {
       </Table>
     </div>
   );
-};
+});
+
+ProjectsTable.displayName = 'ProjectsTable';

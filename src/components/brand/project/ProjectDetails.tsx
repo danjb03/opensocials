@@ -5,9 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/utils/project';
 import { ContentRequirements } from '@/types/project';
 import { FileText, CheckCircle } from 'lucide-react';
+import { Tables } from '@/integrations/supabase/types';
 
 interface ProjectDetailsProps {
-  project: any;
+  project: Tables<'projects_new'>;
 }
 
 export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {

@@ -8,6 +8,16 @@ import { FileText, Eye, Upload } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
+interface UploadItem {
+  id: string;
+  filename: string;
+  url: string;
+  uploadedAt: string;
+  status?: 'pending' | 'approved' | 'rejected';
+  title?: string;
+  created_at: string;
+}
+
 interface CampaignUploadsProps {
   campaign: Campaign;
   isCompleted: boolean;
@@ -31,7 +41,7 @@ export const CampaignUploads = ({ campaign, isCompleted }: CampaignUploadsProps)
       
       {campaign.uploads && campaign.uploads.length > 0 ? (
         <div className="grid grid-cols-1 gap-4">
-          {campaign.uploads.map((upload: any) => (
+          {campaign.uploads.map((upload: UploadItem) => (
             <Card key={upload.id}>
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">

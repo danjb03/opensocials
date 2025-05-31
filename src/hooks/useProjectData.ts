@@ -45,9 +45,8 @@ export const useProjectData = () => {
       }
       
       try {
-        const projectsData = await import('@/lib/userDataStore').then(({ userDataStore }) => 
-          userDataStore.executeUserQuery('projects', '*', {})
-        );
+        const { userDataStore } = await import('@/lib/userDataStore');
+        const projectsData = await userDataStore.executeUserQuery('projects', '*', {});
 
         // Validate the response structure
         if (!projectsData || typeof projectsData === 'string') {

@@ -49,8 +49,26 @@ export interface CreatorProfileRecord {
   industries?: string[] | null;
   categories?: string[] | null;
   platform_types?: string[] | null;
-  social_links?: any | null;
-  audience_stats?: any | null;
+  social_links?: {
+    instagram?: string;
+    tiktok?: string;
+    youtube?: string;
+    twitter?: string;
+    linkedin?: string;
+    facebook?: string;
+  } | null;
+  audience_stats?: {
+    follower_count?: number;
+    engagement_rate?: number;
+    avg_views?: number;
+    avg_likes?: number;
+    growth_trend?: 'up' | 'down' | 'stable';
+    audience_location?: {
+      primary: string;
+      secondary?: string[];
+      countries?: { name: string; percentage: number }[];
+    };
+  } | null;
   headline?: string | null;
   rate_card_url?: string | null;
   created_at?: string | null;

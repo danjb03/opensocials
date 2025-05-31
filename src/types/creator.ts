@@ -6,7 +6,15 @@ export interface Campaign {
   startDate: string;
   endDate: string;
   status: string;
-  contentRequirements: Record<string, any>;
+  contentRequirements: {
+    content_types?: string[];
+    platforms?: string[];
+    messaging_guidelines?: string;
+    hashtags?: string[];
+    mentions?: string[];
+    style_preferences?: string;
+    restrictions?: string[];
+  };
   brandId: string;
   platforms: string[];
   dealId: string;
@@ -14,7 +22,13 @@ export interface Campaign {
   deadline: string;
   brandName: string;
   brandLogo: string | null;
-  uploads: any[];
+  uploads: {
+    id: string;
+    filename: string;
+    url: string;
+    uploadedAt: string;
+    status?: 'pending' | 'approved' | 'rejected';
+  }[];
 }
 
 export interface Creator {

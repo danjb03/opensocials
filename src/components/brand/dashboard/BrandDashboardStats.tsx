@@ -9,7 +9,7 @@ interface BrandDashboardStatsProps {
   completedProjects: number;
 }
 
-const BrandDashboardStats: React.FC<BrandDashboardStatsProps> = ({ 
+const BrandDashboardStats: React.FC<BrandDashboardStatsProps> = React.memo(({ 
   totalProjects, 
   activeProjects, 
   completedProjects 
@@ -50,6 +50,8 @@ const BrandDashboardStats: React.FC<BrandDashboardStatsProps> = ({
       </Card>
     </div>
   );
-};
+});
+
+BrandDashboardStats.displayName = 'BrandDashboardStats';
 
 export default BrandDashboardStats;

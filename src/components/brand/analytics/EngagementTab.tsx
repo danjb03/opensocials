@@ -3,6 +3,7 @@ import { useState, useEffect, memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar } from 'recharts';
+import { engagementData as mockEngagementData } from './mock-data';
 
 // Fallback engagement data
 const fallbackEngagementData = [
@@ -17,10 +18,9 @@ export const EngagementTab = memo(() => {
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   useEffect(() => {
-    const loadMockData = async () => {
+    const loadMockData = () => {
       try {
-        const mockData = await import('./mock-data');
-        setEngagementData(mockData.engagementData || fallbackEngagementData);
+        setEngagementData(mockEngagementData || fallbackEngagementData);
       } catch (error) {
         // Fallback data is already set in state
       } finally {

@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { Json } from '@/integrations/supabase/types';
 
 interface CreatorDealSecure {
   id: string;
   project_id: string;
   creator_id: string;
   deal_value: number; // Net value only (after 25% margin)
-  individual_requirements: Record<string, any>;
+  individual_requirements: Json;
   status: 'pending' | 'invited' | 'accepted' | 'declined' | 'completed' | 'cancelled';
   invited_at: string;
   responded_at?: string;
@@ -23,8 +24,8 @@ interface CreatorDealSecure {
     campaign_type: string;
     start_date?: string;
     end_date?: string;
-    content_requirements: any;
-    deliverables: any;
+    content_requirements: Json;
+    deliverables: Json;
     brand_profile?: {
       company_name: string;
       logo_url?: string;

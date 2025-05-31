@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line } from 'recharts';
 import { Bar, BarChart } from 'recharts';
+import { audienceData as mockAudienceData, platformData as mockPlatformData, reachData as mockReachData } from './mock-data';
 
 // Fallback data in case mock-data import fails
 const fallbackAudienceData = [
@@ -35,12 +36,11 @@ export const OverviewTab = memo(() => {
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   useEffect(() => {
-    const loadMockData = async () => {
+    const loadMockData = () => {
       try {
-        const mockData = await import('./mock-data');
-        setAudienceData(mockData.audienceData || fallbackAudienceData);
-        setPlatformData(mockData.platformData || fallbackPlatformData);
-        setReachData(mockData.reachData || fallbackReachData);
+        setAudienceData(mockAudienceData || fallbackAudienceData);
+        setPlatformData(mockPlatformData || fallbackPlatformData);
+        setReachData(mockReachData || fallbackReachData);
       } catch (error) {
         // Fallback data is already set in state
       } finally {
