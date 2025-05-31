@@ -503,6 +503,9 @@ const calculateBudgetAllocation = (
 /**
  * Main function: Processes campaign input and returns creator allocation
  * This is production-ready code that handles £1M+/month in creator spend
+ * 
+ * NOTE: Platform takes 25% margin. Creators see NET budget (75% of gross).
+ * input.campaign_total_budget should be the GROSS amount (what brand pays).
  */
 export const processCampaignCreatorAllocation = (
   input: CampaignInput,
@@ -516,10 +519,14 @@ export const processCampaignCreatorAllocation = (
     };
   }
 
-  // Step 1: Filter eligible creators based on criteria
+  // Step 1: Apply 25% platform margin - creators only see NET budget (75%)
+  const platformMargin = 0.25;
+  const netBudgetForCreators = input.campaign_total_budget * (1 - platformMargin);
+
+  // Step 2: Filter eligible creators based on criteria
   let eligibleCreators = filterEligibleCreators(input);
 
-  // Step 2: Apply fallback selection if no specific filters provided
+  // Step 3: Apply fallback selection if no specific filters provided
   const hasSpecificFilters = input.platform || 
                             input.audience_filters || 
                             (input.interest_tags && input.interest_tags.length > 0);
@@ -528,10 +535,10 @@ export const processCampaignCreatorAllocation = (
     eligibleCreators = applyFallbackSelection(eligibleCreators);
   }
 
-  // Step 3: Calculate budget allocation
+  // Step 4: Calculate budget allocation using NET budget (post-margin)
   const result = calculateBudgetAllocation(
     eligibleCreators,
-    input.campaign_total_budget,
+    netBudgetForCreators, // Use NET budget, not gross
     input.max_creator_price,
     campaignId
   );
