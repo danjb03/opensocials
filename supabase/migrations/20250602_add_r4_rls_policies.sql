@@ -1,25 +1,49 @@
 -- Enable RLS and create policies for r4 tables
 
 -- r4_rules table
-alter table if exists public.r4_rules enable row level security;
+DO $$ BEGIN
+  IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'r4_rules') THEN
+    ALTER TABLE public.r4_rules ENABLE ROW LEVEL SECURITY;
+    
+    BEGIN
+      CREATE POLICY "Allow read for admins or service role" ON public.r4_rules
+        FOR SELECT
+        USING (auth.role() = 'service_role' OR public.is_admin_user());
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END;
 
-create policy if not exists "Allow read for admins or service role" on public.r4_rules
-  for select
-  using (auth.role() = 'service_role' or public.is_admin_user());
-
-create policy if not exists "Allow write for admins or service role" on public.r4_rules
-  for all
-  using (auth.role() = 'service_role' or public.is_admin_user())
-  with check (auth.role() = 'service_role' or public.is_admin_user());
+    BEGIN
+      CREATE POLICY "Allow write for admins or service role" ON public.r4_rules
+        FOR ALL
+        USING (auth.role() = 'service_role' OR public.is_admin_user())
+        WITH CHECK (auth.role() = 'service_role' OR public.is_admin_user());
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END;
+  END IF;
+END $$;
 
 -- r4_enforcement_logs table
-alter table if exists public.r4_enforcement_logs enable row level security;
+DO $$ BEGIN
+  IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'r4_enforcement_logs') THEN
+    ALTER TABLE public.r4_enforcement_logs ENABLE ROW LEVEL SECURITY;
+    
+    BEGIN
+      CREATE POLICY "Allow insert for service role" ON public.r4_enforcement_logs
+        FOR INSERT
+        WITH CHECK (auth.role() = 'service_role');
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END;
 
-create policy if not exists "Allow insert for service role" on public.r4_enforcement_logs
-  for insert
-  with check (auth.role() = 'service_role');
-
-create policy if not exists "Allow admin or service role read" on public.r4_enforcement_logs
-  for select
-  using (auth.role() = 'service_role' or public.is_admin_user());
+    BEGIN
+      CREATE POLICY "Allow admin or service role read" ON public.r4_enforcement_logs
+        FOR SELECT
+        USING (auth.role() = 'service_role' OR public.is_admin_user());
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END;
+  END IF;
+END $$;
 

@@ -17,8 +17,6 @@ max_rows = 1000
 [db]
 # Port to use for the local database URL.
 port = 54322
-# Port used by prisma studio.
-studio_port = 54323
 
 [studio]
 # Port to use for Supabase Studio.
@@ -90,14 +88,10 @@ vector_port = 54328
 backend = "postgres"
 
 # Enable, disable, or configure Postgres extensions.
-[extensions]
-# Enables the "http" extension. This extension is enabled by default. This extension allows you to
-# call HTTP endpoints using SQL functions like `http_get` and `http_post`.
-http = true
 
 [functions]
 get-creator-leaderboard = {}
 seed-mock-data = {}
 fetch-insightiq-data = {}
-refresh-insightiq = { schedule = "0 0 * * *" }
+refresh-insightiq = {}
 insightiq = {}

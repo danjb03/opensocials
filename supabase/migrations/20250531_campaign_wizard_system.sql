@@ -1,11 +1,50 @@
 -- Campaign Wizard System Migration
 -- Creates enhanced schema for multi-step campaign creation with creator deals
 
--- Create enums for the new system
-CREATE TYPE campaign_objective AS ENUM ('brand_awareness', 'product_launch', 'sales_drive', 'engagement', 'conversions');
-CREATE TYPE deal_status AS ENUM ('pending', 'invited', 'accepted', 'declined', 'completed', 'cancelled');
-CREATE TYPE payment_status AS ENUM ('pending', 'processing', 'paid', 'failed');
-CREATE TYPE project_status AS ENUM ('draft', 'active', 'paused', 'completed', 'cancelled');
+-- Create enums for the new system (only if they don't exist)
+DO $$ BEGIN
+    CREATE TYPE campaign_objective AS ENUM ('brand_awareness', 'product_launch', 'sales_drive', 'engagement', 'conversions');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE deal_status AS ENUM ('pending', 'invited', 'accepted', 'declined', 'completed', 'cancelled');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE payment_status AS ENUM ('pending', 'processing', 'paid', 'failed');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE project_status AS ENUM ('draft', 'active', 'paused', 'completed', 'cancelled');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+-- Create brand_profiles table if it doesn't exist (basic version)
+CREATE TABLE IF NOT EXISTS brand_profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID UNIQUE NOT NULL,
+  company_name TEXT,
+  logo_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create creator_profiles table if it doesn't exist (basic version)
+CREATE TABLE IF NOT EXISTS creator_profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID UNIQUE NOT NULL,
+  name TEXT,
+  email TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
 
 -- Enhanced projects table for campaign management
 CREATE TABLE IF NOT EXISTS projects_new (
@@ -15,7 +54,7 @@ CREATE TABLE IF NOT EXISTS projects_new (
   -- Step 1: Campaign Name + Objective
   name TEXT NOT NULL,
   objective campaign_objective,
-  campaign_type campaign_type DEFAULT 'Single',
+  campaign_type TEXT DEFAULT 'Single',
   
   -- Step 2: Content Requirements  
   description TEXT,
