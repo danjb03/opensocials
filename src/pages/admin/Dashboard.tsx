@@ -1,5 +1,4 @@
-import { useAuth } from '@/lib/auth';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,8 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/components/ui/sonner';
 
 const AdminDashboard = () => {
-  const { user, role } = useAuth();
-  const { role: userRole } = useUserRole(user?.id);
+  const { user, role } = useUnifiedAuth();
   const navigate = useNavigate();
   const [userFilter, setUserFilter] = useState('all');
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
@@ -23,10 +21,10 @@ const AdminDashboard = () => {
     const isSuperAdminRoute = window.location.pathname.includes('/super-admin');
     setIsStandalone(!isSuperAdminRoute);
 
-    if (role === 'super_admin' || userRole === 'super_admin') {
+    if (role === 'super_admin') {
       setIsSuperAdmin(true);
     }
-  }, [role, userRole, window.location.pathname]);
+  }, [role, window.location.pathname]);
 
   const revenueData = [
     { month: 'Jan', revenue: 4000 },

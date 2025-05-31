@@ -1,4 +1,4 @@
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Navigate } from 'react-router-dom';
@@ -9,7 +9,7 @@ import { toast } from '@/components/ui/sonner';
 import Logo from '@/components/ui/logo';
 
 const Index = () => {
-  const { user, role, isLoading } = useAuth();
+  const { user, role, isLoading } = useUnifiedAuth();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {

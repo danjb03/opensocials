@@ -1,13 +1,14 @@
 
-import { useUserRole } from '@/hooks/useUserRole';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { Badge } from '@/components/ui/badge';
 
 interface RoleDisplayProps {
-  userId: string;
+  userId?: string; // Made optional since unified auth uses current user
 }
 
 export const RoleDisplay = ({ userId }: RoleDisplayProps) => {
-  const { role, isLoading, error } = useUserRole(userId);
+  const { role, isLoading } = useUnifiedAuth();
+  const error = null; // Unified auth handles errors internally
 
   if (isLoading) {
     return <div>Loading role...</div>;

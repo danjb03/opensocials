@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Instagram, Youtube } from 'lucide-react';
 import { TikTokIcon } from '@/components/icons/TikTokIcon';
@@ -28,7 +28,7 @@ export interface Campaign {
 
 export const useCampaignDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user } = useUnifiedAuth();
   const [activeTab, setActiveTab] = useState('overview');
 
   const getPlatformIcon = (platform: string) => {

@@ -1,30 +1,21 @@
 import { useState } from 'react';
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
 import CreatorProfileHeader from '@/components/creator/CreatorProfileHeader';
 import VisibilityControls from '@/components/creator/VisibilityControls';
 import DashboardContent from '@/components/creator/dashboard/DashboardContent';
 import { CreatorIntroModal } from '@/components/creator/CreatorIntroModal';
-import { useCreatorProfile } from '@/hooks/useCreatorProfile';
 import { useCreatorIntro } from '@/hooks/creator/useCreatorIntro';
 import { InsightIQProvider } from '@/components/creator/InsightIQProvider';
 
 const CreatorDashboard = () => {
-  const { user } = useAuth();
-  const { 
-    profile, 
-    isLoading, 
-    isEditing, 
-    setIsEditing,
-    isPreviewMode,
-    setIsPreviewMode,
-    isUploading,
-    updateProfile,
-    uploadAvatar,
-    toggleVisibilitySetting,
-    connectSocialPlatform,
-    platformAnalytics
-  } = useCreatorProfile();
+  const { user, creatorProfile: profile, isLoading } = useUnifiedAuth();
+  const [isEditing, setIsEditing] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  // Note: updateProfile, uploadAvatar, toggleVisibilitySetting, connectSocialPlatform, platformAnalytics
+  // will need to be implemented if these features are used in the component
 
   // Creator intro modal logic
   const { showIntro, isLoading: introLoading, dismissIntro } = useCreatorIntro();

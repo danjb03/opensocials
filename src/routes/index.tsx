@@ -1,6 +1,6 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "@/lib/auth";
+import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 import Index from "@/pages/Index";
 import AuthPage from "@/pages/auth";
 import ForgotPassword from "@/pages/auth/ForgotPassword";
@@ -20,7 +20,7 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
-  const { user, role, isLoading } = useAuth();
+  const { user, role, isLoading } = useUnifiedAuth();
 
   if (isLoading) {
     return <div>Loading...</div>;

@@ -4,7 +4,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { CheckCircle, Zap, Users } from 'lucide-react';
 
 interface BrandIntroModalProps {
@@ -15,7 +15,7 @@ interface BrandIntroModalProps {
 export const BrandIntroModal = ({ isOpen, onClose }: BrandIntroModalProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useUnifiedAuth();
 
   const handleDismiss = async () => {
     if (!user) return;

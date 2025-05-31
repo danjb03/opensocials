@@ -11,16 +11,14 @@ import { useBrandIntro } from '@/hooks/brand/useBrandIntro';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect } from 'react';
-import { useBrandProfile } from '@/hooks/useBrandProfile';
 
 const Dashboard = () => {
-  const { user, role } = useAuth();
+  const { user, role, brandProfile: profile } = useUnifiedAuth();
   const navigate = useNavigate();
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-  const { profile } = useBrandProfile();
   
   // Initialize user data synchronization
   const { refreshUserData } = useUserDataSync();

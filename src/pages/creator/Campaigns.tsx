@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, CheckCircle, Circle, Clock, Upload, XCircle } from 'lucide-react';
@@ -32,7 +32,7 @@ interface Campaign {
 }
 
 const CreatorCampaigns = () => {
-  const { user } = useAuth();
+  const { user } = useUnifiedAuth();
   const [activeTab, setActiveTab] = useState<'active' | 'upcoming' | 'completed'>('active');
   const navigate = useNavigate();
 

@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ProjectForm } from '@/components/brand/ProjectForm';
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { ProjectsTable } from '@/components/brand/projects';
 import { ProjectsHeader } from '@/components/brand/ProjectsHeader';
 import { EmptyProjectsState } from '@/components/brand/EmptyProjectsState';
@@ -12,7 +12,7 @@ import { useProjectData } from '@/hooks/useProjectData';
 import { Card, CardContent } from '@/components/ui/card';
 
 const Projects = () => {
-  const { user } = useAuth();
+  const { user } = useUnifiedAuth();
   const location = useLocation();
   const { 
     projects, 

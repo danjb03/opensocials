@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { toast } from '@/components/ui/sonner';
 
 interface BrandGuardProps {
@@ -11,7 +11,7 @@ interface BrandGuardProps {
 }
 
 const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
-  const { user, role, isLoading: authLoading } = useAuth();
+  const { user, role, isLoading: authLoading } = useUnifiedAuth();
   const [isChecking, setIsChecking] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();

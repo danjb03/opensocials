@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
 import EarningsOverview from '@/components/creator/analytics/EarningsOverview';
 import PerformanceMetrics from '@/components/creator/analytics/PerformanceMetrics';
@@ -11,7 +11,7 @@ import EarningsChart from '@/components/creator/dashboard/EarningsChart';
 const CreatorAnalytics = () => {
   const {
     user
-  } = useAuth();
+  } = useUnifiedAuth();
   const {
     data: earnings,
     isLoading: earningsLoading

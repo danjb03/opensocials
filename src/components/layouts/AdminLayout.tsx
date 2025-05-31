@@ -1,5 +1,5 @@
 
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import Logo from "@/components/ui/logo";
 import { useToast } from '@/hooks/use-toast';
 import { Navigate, Outlet, Link } from 'react-router-dom';
@@ -10,7 +10,7 @@ import SidebarToggle from './SidebarToggle';
 import Footer from './Footer';
 
 const AdminLayout = ({ children }: { children?: React.ReactNode }) => {
-  const { user, role } = useAuth();
+  const { user, role } = useUnifiedAuth();
   const { toast } = useToast();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 

@@ -16,11 +16,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useAuth } from "@/lib/auth";
+import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 
 const DataDeletion = () => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useUnifiedAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isMetaLoading, setIsMetaLoading] = useState(false);
 

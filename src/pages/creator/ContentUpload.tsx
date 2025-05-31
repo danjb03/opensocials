@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,7 +37,7 @@ interface ProjectData {
 const ContentUpload = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useUnifiedAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [contentType, setContentType] = useState('');
