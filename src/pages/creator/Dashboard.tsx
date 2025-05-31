@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
@@ -14,7 +15,10 @@ const CreatorDashboard = () => {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   
-  // Note: updateProfile, uploadAvatar, toggleVisibilitySetting, connectSocialPlatform, platformAnalytics
+  // Initialize platformAnalytics as empty object
+  const platformAnalytics = {};
+  
+  // Note: updateProfile, uploadAvatar, toggleVisibilitySetting, connectSocialPlatform
   // will need to be implemented if these features are used in the component
 
   // Creator intro modal logic
@@ -79,6 +83,27 @@ const CreatorDashboard = () => {
     } catch (error) {
       console.error(`Failed to connect ${platform}:`, error);
     }
+  };
+
+  // Placeholder functions for missing dependencies
+  const updateProfile = async (data: any) => {
+    console.log('updateProfile called with:', data);
+    // This should be implemented with actual profile update logic
+  };
+
+  const uploadAvatar = async (file: File) => {
+    console.log('uploadAvatar called with:', file);
+    // This should be implemented with actual avatar upload logic
+  };
+
+  const toggleVisibilitySetting = async (setting: string) => {
+    console.log('toggleVisibilitySetting called with:', setting);
+    // This should be implemented with actual visibility toggle logic
+  };
+
+  const connectSocialPlatform = async (platform: string) => {
+    console.log('connectSocialPlatform called with:', platform);
+    // This should be implemented with actual social platform connection logic
   };
 
   console.log('Dashboard render - profile:', profile, 'isLoading:', isLoading, 'isEditing:', isEditing);
