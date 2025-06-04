@@ -41,23 +41,23 @@ const Dashboard = () => {
     );
   }
 
-  // Create a safe profile object with default values
+  // Create a safe profile object using the correct property names from CreatorProfile interface
   const safeProfile = {
-    is_profile_complete: profile?.is_profile_complete || false,
-    first_name: profile?.first_name || '',
-    last_name: profile?.last_name || '',
-    avatar_url: profile?.avatar_url || '',
-    banner_url: profile?.banner_url || '',
+    isProfileComplete: profile?.is_profile_complete || false,
+    firstName: profile?.first_name || '',
+    lastName: profile?.last_name || '',
+    avatarUrl: profile?.avatar_url || '',
+    bannerUrl: profile?.banner_url || '',
     bio: profile?.bio || '',
-    primary_platform: profile?.primary_platform || '',
-    follower_count: profile?.follower_count || 0,
-    engagement_rate: profile?.engagement_rate || 0,
-    content_types: profile?.content_types || [],
+    primaryPlatform: profile?.primary_platform || '',
+    followerCount: profile?.follower_count || 0,
+    engagementRate: profile?.engagement_rate || 0,
+    contentTypes: profile?.content_types || [],
     platforms: profile?.platforms || [],
     industries: profile?.industries || [],
-    social_handles: profile?.social_handles || {},
-    audience_location: profile?.audience_location || {},
-    visibility_settings: profile?.visibility_settings || {
+    socialHandles: profile?.social_handles || {},
+    audienceLocation: profile?.audience_location || {},
+    visibilitySettings: profile?.visibility_settings || {
       showTiktok: true,
       showYoutube: true,
       showLinkedin: true,
@@ -71,10 +71,24 @@ const Dashboard = () => {
     <>
       <CreatorLayout>
         <DashboardContent 
-          user={user}
           profile={safeProfile}
-          isProfileComplete={safeProfile.is_profile_complete}
-          visibilitySettings={safeProfile.visibility_settings}
+          isLoading={isLoading}
+          isEditing={false}
+          isPreviewMode={false}
+          totalEarnings={0}
+          pipelineValue={0}
+          connectionStats={{
+            outreach: 0,
+            in_talks: 0,
+            working: 0
+          }}
+          earningsData={[]}
+          platformAnalytics={{}}
+          onProfileSubmit={async () => {}}
+          onCancelEdit={() => {}}
+          onStartProfileSetup={() => {}}
+          onAvatarChange={() => {}}
+          onConnectPlatform={() => {}}
         />
       </CreatorLayout>
 
