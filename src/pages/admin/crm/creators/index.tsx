@@ -8,14 +8,29 @@ import { useCreatorCRM } from '@/hooks/admin/useCreatorCRM';
 import { Button } from '@/components/ui/button';
 
 export default function CreatorsCRM() {
-  const { creators, isLoading, isError, searchQuery, handleSearch } = useCreatorCRM();
+  const { creators, isLoading, error } = useCreatorCRM();
+
+  // Transform creators data to match expected interface
+  const transformedCreators = creators.map((creator: any) => ({
+    creator_id: creator.id || creator.creator_id || '',
+    first_name: creator.first_name || '',
+    last_name: creator.last_name || '',
+    email: creator.email || '',
+    primary_platform: creator.primary_platform || 'Instagram',
+    follower_count: creator.follower_count || '0',
+    engagement_rate: creator.engagement_rate || '0%',
+    status: creator.status || 'active',
+    total_deals: creator.total_deals || 0,
+    active_deals: creator.active_deals || 0,
+    last_active_at: creator.last_active_at || new Date().toISOString(),
+  }));
 
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Creator CRM</h1>
         <div className="flex items-center gap-4">
-          <CreatorCRMSearch onSearch={handleSearch} initialValue={searchQuery} />
+          <CreatorCRMSearch onSearch={() => {}} initialValue="" />
           <Button variant="outline" asChild>
             <Link to="/admin/crm/creators/leaderboard">View Leaderboard</Link>
           </Button>
@@ -28,13 +43,13 @@ export default function CreatorsCRM() {
         </div>
       )}
 
-      {isError && (
+      {error && (
         <div className="text-red-500 py-6">
           <p>Failed to load creator data. Please try again later.</p>
         </div>
       )}
 
-      {!isLoading && !isError && <CreatorCRMTable creators={creators} />}
+      {!isLoading && !error && <CreatorCRMTable creators={transformedCreators} />}
     </div>
   );
 }
