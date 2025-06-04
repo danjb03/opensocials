@@ -3,7 +3,8 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { PlusCircle, Info, Check, Briefcase } from 'lucide-react';
+import { PlusCircle, Info, Check, Briefcase, Heart } from 'lucide-react';
+import { useCreatorFavorites } from '@/hooks/useCreatorFavorites';
 
 type CreatorCardProps = {
   creator: {
@@ -42,6 +43,9 @@ type CreatorCardProps = {
 };
 
 export const CreatorCard = ({ creator, isSelected, onToggleSelect, onViewProfile }: CreatorCardProps) => {
+  const { isFavorite, toggleFavorite, isToggling } = useCreatorFavorites();
+  const creatorIsFavorite = isFavorite(creator.id.toString());
+
   return (
     <Card key={creator.id} className="overflow-hidden hover:shadow-sm transition-all duration-300 group border-gray-100">
       <div className="relative h-32">
@@ -56,6 +60,16 @@ export const CreatorCard = ({ creator, isSelected, onToggleSelect, onViewProfile
             {creator.matchScore}%
           </div>
         )}
+
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => toggleFavorite(creator.id.toString())}
+          disabled={isToggling}
+          className="absolute top-1 left-1 h-6 w-6 p-0 bg-white/80 hover:bg-white"
+        >
+          <Heart className={`h-3 w-3 ${creatorIsFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
+        </Button>
         
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-2">
           <div className="flex items-center">

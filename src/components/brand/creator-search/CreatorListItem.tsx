@@ -3,9 +3,10 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Info, Check, UserPlus } from 'lucide-react';
+import { PlusCircle, Info, Check, UserPlus, Heart } from 'lucide-react';
 import { Creator } from '@/types/creator';
 import { useCreatorInvitationActions } from '@/hooks/useCreatorInvitationActions';
+import { useCreatorFavorites } from '@/hooks/useCreatorFavorites';
 import { useToast } from '@/hooks/use-toast';
 
 type CreatorListItemProps = {
@@ -17,11 +18,13 @@ type CreatorListItemProps = {
 
 export const CreatorListItem = ({ creator, isSelected, onToggleSelect, onViewProfile }: CreatorListItemProps) => {
   const { handleInviteCreator, isLoading } = useCreatorInvitationActions();
+  const { isFavorite, toggleFavorite, isToggling } = useCreatorFavorites();
   const { toast } = useToast();
+
+  const creatorIsFavorite = isFavorite(creator.id.toString());
 
   const handleInvite = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Convert number to string for the invitation hook
     handleInviteCreator(creator.id.toString(), creator.name);
     toast({
       title: "Creator invited",
@@ -29,11 +32,15 @@ export const CreatorListItem = ({ creator, isSelected, onToggleSelect, onViewPro
     });
   };
 
+  const handleFavoriteToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleFavorite(creator.id.toString());
+  };
+
   return (
     <div 
       className="group rounded-md border border-gray-100 hover:border-primary/30 shadow-sm hover:shadow transition-all duration-300 overflow-hidden bg-white w-full"
     >
-      {/* Creator image */}
       <div className="flex items-center p-3">
         <div className="relative h-16 w-16 overflow-hidden rounded-md mr-4 flex-shrink-0">
           <img 
@@ -49,7 +56,6 @@ export const CreatorListItem = ({ creator, isSelected, onToggleSelect, onViewPro
           )}
         </div>
         
-        {/* Creator details - main content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center">
@@ -89,8 +95,17 @@ export const CreatorListItem = ({ creator, isSelected, onToggleSelect, onViewPro
           </div>
         </div>
         
-        {/* Actions section */}
         <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleFavoriteToggle}
+            disabled={isToggling}
+            className={`h-8 w-8 p-0 ${creatorIsFavorite ? 'text-red-500 hover:text-red-600' : 'text-gray-400 hover:text-red-500'}`}
+          >
+            <Heart className={`h-4 w-4 ${creatorIsFavorite ? 'fill-current' : ''}`} />
+          </Button>
+
           <Button
             size="sm"
             variant={isSelected ? "default" : "outline"}

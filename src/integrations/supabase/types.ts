@@ -7,304 +7,777 @@ export type Json =
   | Json[]
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          operationName?: string
-          query?: string
-          variables?: Json
-          extensions?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
-      brand_profiles: {
+      brand_creator_connections: {
         Row: {
-          company_name: string | null
+          brand_id: string
           created_at: string | null
+          creator_id: string
           id: string
-          logo_url: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          company_name?: string | null
-          created_at?: string | null
-          id?: string
-          logo_url?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          company_name?: string | null
-          created_at?: string | null
-          id?: string
-          logo_url?: string | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      creator_deals: {
-        Row: {
-          created_at: string | null
-          creator_feedback: string | null
-          creator_id: string | null
-          gross_value: number | null
-          id: string
-          individual_requirements: Json | null
-          invited_at: string | null
-          net_value: number | null
-          paid_at: string | null
-          payment_status: Database["public"]["Enums"]["payment_status"] | null
-          project_id: string | null
-          responded_at: string | null
-          status: Database["public"]["Enums"]["deal_status"] | null
+          status: string
           updated_at: string | null
         }
         Insert: {
+          brand_id: string
           created_at?: string | null
-          creator_feedback?: string | null
-          creator_id?: string | null
-          gross_value?: number | null
+          creator_id: string
           id?: string
-          individual_requirements?: Json | null
-          invited_at?: string | null
-          net_value?: number | null
-          paid_at?: string | null
-          payment_status?: Database["public"]["Enums"]["payment_status"] | null
-          project_id?: string | null
-          responded_at?: string | null
-          status?: Database["public"]["Enums"]["deal_status"] | null
+          status?: string
           updated_at?: string | null
         }
         Update: {
+          brand_id?: string
           created_at?: string | null
-          creator_feedback?: string | null
-          creator_id?: string | null
-          gross_value?: number | null
+          creator_id?: string
           id?: string
-          individual_requirements?: Json | null
-          invited_at?: string | null
-          net_value?: number | null
-          paid_at?: string | null
-          payment_status?: Database["public"]["Enums"]["payment_status"] | null
-          project_id?: string | null
-          responded_at?: string | null
-          status?: Database["public"]["Enums"]["deal_status"] | null
+          status?: string
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "creator_deals_creator_id_fkey"
+            foreignKeyName: "fk_creator"
             columns: ["creator_id"]
             isOneToOne: false
-            referencedRelation: "creator_profiles"
-            referencedColumns: ["id"]
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
           },
           {
-            foreignKeyName: "creator_deals_project_id_fkey"
-            columns: ["project_id"]
+            foreignKeyName: "fk_creator"
+            columns: ["creator_id"]
             isOneToOne: false
-            referencedRelation: "projects_new"
-            referencedColumns: ["id"]
+            referencedRelation: "admin_crm_creators_view"
+            referencedColumns: ["creator_id"]
           },
-        ]
-      }
-      creator_profiles: {
-        Row: {
-          created_at: string | null
-          email: string | null
-          id: string
-          name: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          email?: string | null
-          id?: string
-          name?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          email?: string | null
-          id?: string
-          name?: string | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      project_content: {
-        Row: {
-          comments: number | null
-          content_type: string | null
-          created_at: string | null
-          description: string | null
-          engagement_rate: number | null
-          file_size: number | null
-          file_type: string | null
-          file_url: string | null
-          id: string
-          likes: number | null
-          platform: string | null
-          project_creator_id: string | null
-          published_date: string | null
-          published_url: string | null
-          review_date: string | null
-          review_notes: string | null
-          reviewer_id: string | null
-          shares: number | null
-          status: Database["public"]["Enums"]["content_status"] | null
-          thumbnail_url: string | null
-          title: string | null
-          updated_at: string | null
-          views: number | null
-        }
-        Insert: {
-          comments?: number | null
-          content_type?: string | null
-          created_at?: string | null
-          description?: string | null
-          engagement_rate?: number | null
-          file_size?: number | null
-          file_type?: string | null
-          file_url?: string | null
-          id?: string
-          likes?: number | null
-          platform?: string | null
-          project_creator_id?: string | null
-          published_date?: string | null
-          published_url?: string | null
-          review_date?: string | null
-          review_notes?: string | null
-          reviewer_id?: string | null
-          shares?: number | null
-          status?: Database["public"]["Enums"]["content_status"] | null
-          thumbnail_url?: string | null
-          title?: string | null
-          updated_at?: string | null
-          views?: number | null
-        }
-        Update: {
-          comments?: number | null
-          content_type?: string | null
-          created_at?: string | null
-          description?: string | null
-          engagement_rate?: number | null
-          file_size?: number | null
-          file_type?: string | null
-          file_url?: string | null
-          id?: string
-          likes?: number | null
-          platform?: string | null
-          project_creator_id?: string | null
-          published_date?: string | null
-          published_url?: string | null
-          review_date?: string | null
-          review_notes?: string | null
-          reviewer_id?: string | null
-          shares?: number | null
-          status?: Database["public"]["Enums"]["content_status"] | null
-          thumbnail_url?: string | null
-          title?: string | null
-          updated_at?: string | null
-          views?: number | null
-        }
-        Relationships: [
           {
-            foreignKeyName: "project_content_project_creator_id_fkey"
-            columns: ["project_creator_id"]
+            foreignKeyName: "fk_creator"
+            columns: ["creator_id"]
             isOneToOne: false
-            referencedRelation: "project_creators"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "project_content_reviewer_id_fkey"
-            columns: ["reviewer_id"]
+            foreignKeyName: "fk_creator_id"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "fk_creator_id"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_creators_view"
+            referencedColumns: ["creator_id"]
+          },
+          {
+            foreignKeyName: "fk_creator_id"
+            columns: ["creator_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-      project_creator_payments: {
+      brand_creator_favorites: {
         Row: {
-          amount: number
-          completed_date: string | null
-          created_at: string | null
-          currency: string | null
+          brand_id: string
+          created_at: string
+          creator_id: string
           id: string
-          milestone: string | null
-          payment_method: string | null
-          payment_provider_id: string | null
-          payment_provider_status: string | null
-          processed_date: string | null
-          project_creator_id: string | null
-          scheduled_date: string | null
-          status: Database["public"]["Enums"]["payment_status"] | null
+        }
+        Insert: {
+          brand_id: string
+          created_at?: string
+          creator_id: string
+          id?: string
+        }
+        Update: {
+          brand_id?: string
+          created_at?: string
+          creator_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      brand_profiles: {
+        Row: {
+          brand_bio: string | null
+          brand_goal: string | null
+          budget_range: string | null
+          campaign_focus: string[] | null
+          company_name: string | null
+          created_at: string | null
+          feature_flags: Json | null
+          industry: string | null
+          logo_url: string | null
+          r4_spend_grade: string | null
+          updated_at: string | null
+          user_id: string
+          version: number | null
+          website_url: string | null
+        }
+        Insert: {
+          brand_bio?: string | null
+          brand_goal?: string | null
+          budget_range?: string | null
+          campaign_focus?: string[] | null
+          company_name?: string | null
+          created_at?: string | null
+          feature_flags?: Json | null
+          industry?: string | null
+          logo_url?: string | null
+          r4_spend_grade?: string | null
+          updated_at?: string | null
+          user_id: string
+          version?: number | null
+          website_url?: string | null
+        }
+        Update: {
+          brand_bio?: string | null
+          brand_goal?: string | null
+          budget_range?: string | null
+          campaign_focus?: string[] | null
+          company_name?: string | null
+          created_at?: string | null
+          feature_flags?: Json | null
+          industry?: string | null
+          logo_url?: string | null
+          r4_spend_grade?: string | null
+          updated_at?: string | null
+          user_id?: string
+          version?: number | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      campaign_content: {
+        Row: {
+          campaign_id: string
+          content_type: string
+          created_at: string | null
+          creator_id: string
+          description: string | null
+          feedback: string | null
+          id: string
+          platform: string
+          status: string
+          title: string
           updated_at: string | null
         }
         Insert: {
-          amount: number
-          completed_date?: string | null
+          campaign_id: string
+          content_type: string
           created_at?: string | null
-          currency?: string | null
+          creator_id: string
+          description?: string | null
+          feedback?: string | null
           id?: string
-          milestone?: string | null
-          payment_method?: string | null
-          payment_provider_id?: string | null
-          payment_provider_status?: string | null
-          processed_date?: string | null
-          project_creator_id?: string | null
-          scheduled_date?: string | null
-          status?: Database["public"]["Enums"]["payment_status"] | null
+          platform: string
+          status?: string
+          title: string
           updated_at?: string | null
         }
         Update: {
-          amount?: number
-          completed_date?: string | null
+          campaign_id?: string
+          content_type?: string
           created_at?: string | null
-          currency?: string | null
+          creator_id?: string
+          description?: string | null
+          feedback?: string | null
           id?: string
-          milestone?: string | null
-          payment_method?: string | null
-          payment_provider_id?: string | null
-          payment_provider_status?: string | null
-          processed_date?: string | null
-          project_creator_id?: string | null
-          scheduled_date?: string | null
-          status?: Database["public"]["Enums"]["payment_status"] | null
+          platform?: string
+          status?: string
+          title?: string
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "project_creator_payments_project_creator_id_fkey"
-            columns: ["project_creator_id"]
+            foreignKeyName: "campaign_content_campaign_id_fkey"
+            columns: ["campaign_id"]
             isOneToOne: false
-            referencedRelation: "project_creators"
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
+      }
+      campaign_content_files: {
+        Row: {
+          content_id: string
+          created_at: string | null
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          file_url: string
+          id: string
+        }
+        Insert: {
+          content_id: string
+          created_at?: string | null
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          file_url: string
+          id?: string
+        }
+        Update: {
+          content_id?: string
+          created_at?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          file_url?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_content_files_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      connected_accounts: {
+        Row: {
+          account_id: string
+          connected_at: string | null
+          id: string
+          platform: string
+          user_id: string
+          workplatform_id: string
+        }
+        Insert: {
+          account_id: string
+          connected_at?: string | null
+          id?: string
+          platform: string
+          user_id: string
+          workplatform_id: string
+        }
+        Update: {
+          account_id?: string
+          connected_at?: string | null
+          id?: string
+          platform?: string
+          user_id?: string
+          workplatform_id?: string
+        }
+        Relationships: []
+      }
+      creator_industries: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      creator_industry_tags: {
+        Row: {
+          creator_id: string | null
+          id: string
+          industry_id: string | null
+        }
+        Insert: {
+          creator_id?: string | null
+          id?: string
+          industry_id?: string | null
+        }
+        Update: {
+          creator_id?: string | null
+          id?: string
+          industry_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_industry_tags_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "creator_industry_tags_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_creators_view"
+            referencedColumns: ["creator_id"]
+          },
+          {
+            foreignKeyName: "creator_industry_tags_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_industry_tags_industry_id_fkey"
+            columns: ["industry_id"]
+            isOneToOne: false
+            referencedRelation: "creator_industries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_creator_industry_tags_creator"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "fk_creator_industry_tags_creator"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_creators_view"
+            referencedColumns: ["creator_id"]
+          },
+          {
+            foreignKeyName: "fk_creator_industry_tags_creator"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_creator_industry_tags_industry"
+            columns: ["industry_id"]
+            isOneToOne: false
+            referencedRelation: "creator_industries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_profiles: {
+        Row: {
+          audience_location: Json | null
+          audience_size: number | null
+          audience_type: string | null
+          avatar_url: string | null
+          banner_url: string | null
+          bio: string | null
+          content_type: string | null
+          content_types: string[] | null
+          created_at: string | null
+          creator_type: string | null
+          engagement_rate: number | null
+          first_name: string | null
+          follower_count: number | null
+          id: string
+          industries: string[] | null
+          is_profile_complete: boolean | null
+          last_name: string | null
+          platforms: string[] | null
+          primary_platform: string | null
+          social_connections: Json | null
+          social_handles: Json | null
+          updated_at: string | null
+          user_id: string
+          username: string | null
+          visibility_settings: Json | null
+        }
+        Insert: {
+          audience_location?: Json | null
+          audience_size?: number | null
+          audience_type?: string | null
+          avatar_url?: string | null
+          banner_url?: string | null
+          bio?: string | null
+          content_type?: string | null
+          content_types?: string[] | null
+          created_at?: string | null
+          creator_type?: string | null
+          engagement_rate?: number | null
+          first_name?: string | null
+          follower_count?: number | null
+          id?: string
+          industries?: string[] | null
+          is_profile_complete?: boolean | null
+          last_name?: string | null
+          platforms?: string[] | null
+          primary_platform?: string | null
+          social_connections?: Json | null
+          social_handles?: Json | null
+          updated_at?: string | null
+          user_id: string
+          username?: string | null
+          visibility_settings?: Json | null
+        }
+        Update: {
+          audience_location?: Json | null
+          audience_size?: number | null
+          audience_type?: string | null
+          avatar_url?: string | null
+          banner_url?: string | null
+          bio?: string | null
+          content_type?: string | null
+          content_types?: string[] | null
+          created_at?: string | null
+          creator_type?: string | null
+          engagement_rate?: number | null
+          first_name?: string | null
+          follower_count?: number | null
+          id?: string
+          industries?: string[] | null
+          is_profile_complete?: boolean | null
+          last_name?: string | null
+          platforms?: string[] | null
+          primary_platform?: string | null
+          social_connections?: Json | null
+          social_handles?: Json | null
+          updated_at?: string | null
+          user_id?: string
+          username?: string | null
+          visibility_settings?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "creator_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_crm_creators_view"
+            referencedColumns: ["creator_id"]
+          },
+          {
+            foreignKeyName: "creator_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_types: {
+        Row: {
+          description: string | null
+          id: string
+          slug: string
+          type_name: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          slug: string
+          type_name: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          slug?: string
+          type_name?: string
+        }
+        Relationships: []
+      }
+      deal_earnings: {
+        Row: {
+          amount: number
+          creator_id: string
+          deal_id: string
+          earned_at: string | null
+          id: string
+        }
+        Insert: {
+          amount: number
+          creator_id: string
+          deal_id: string
+          earned_at?: string | null
+          id?: string
+        }
+        Update: {
+          amount?: number
+          creator_id?: string
+          deal_id?: string
+          earned_at?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_earnings_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deals: {
+        Row: {
+          brand_id: string
+          created_at: string | null
+          creator_id: string
+          description: string | null
+          feedback: string | null
+          id: string
+          status: string
+          title: string
+          updated_at: string | null
+          value: number
+        }
+        Insert: {
+          brand_id: string
+          created_at?: string | null
+          creator_id: string
+          description?: string | null
+          feedback?: string | null
+          id?: string
+          status?: string
+          title: string
+          updated_at?: string | null
+          value: number
+        }
+        Update: {
+          brand_id?: string
+          created_at?: string | null
+          creator_id?: string
+          description?: string | null
+          feedback?: string | null
+          id?: string
+          status?: string
+          title?: string
+          updated_at?: string | null
+          value?: number
+        }
+        Relationships: []
+      }
+      deauth_logs: {
+        Row: {
+          account_id: string
+          created_at: string
+          error_message: string | null
+          id: string
+          platform: string
+          status: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          platform: string
+          status: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          platform?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      invite_logs: {
+        Row: {
+          email: string
+          error_message: string | null
+          id: string
+          role: string
+          sent_at: string | null
+          status: string
+          triggered_by: string | null
+        }
+        Insert: {
+          email: string
+          error_message?: string | null
+          id?: string
+          role: string
+          sent_at?: string | null
+          status?: string
+          triggered_by?: string | null
+        }
+        Update: {
+          email?: string
+          error_message?: string | null
+          id?: string
+          role?: string
+          sent_at?: string | null
+          status?: string
+          triggered_by?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          audience_location: Json | null
+          audience_type: string | null
+          avatar_url: string | null
+          banner_url: string | null
+          bio: string | null
+          brand_bio: string | null
+          brand_goal: string | null
+          budget_range: string | null
+          company_name: string | null
+          content_type: string | null
+          created_at: string | null
+          creator_type: string | null
+          display_name: string | null
+          email: string | null
+          engagement_rate: string | null
+          feature_flags: Json | null
+          first_name: string | null
+          flagged: boolean | null
+          follower_count: string | null
+          has_seen_creator_intro: boolean | null
+          has_seen_intro: boolean | null
+          id: string
+          industries: string[] | null
+          industry: string | null
+          instagram_connected: boolean | null
+          instagram_handle: string | null
+          is_complete: boolean | null
+          is_profile_complete: boolean | null
+          last_name: string | null
+          linkedin_connected: boolean | null
+          logo_url: string | null
+          name: string | null
+          primary_platform: string | null
+          profile_type: string | null
+          r4_recommendations: Json | null
+          r4_score: number | null
+          role: string | null
+          show_analytics: boolean | null
+          show_instagram: boolean | null
+          show_linkedin: boolean | null
+          show_location: boolean | null
+          show_tiktok: boolean | null
+          show_youtube: boolean | null
+          status: string | null
+          tiktok_connected: boolean | null
+          tiktok_handle: string | null
+          updated_at: string | null
+          version: number | null
+          website: string | null
+          youtube_connected: boolean | null
+          youtube_handle: string | null
+        }
+        Insert: {
+          audience_location?: Json | null
+          audience_type?: string | null
+          avatar_url?: string | null
+          banner_url?: string | null
+          bio?: string | null
+          brand_bio?: string | null
+          brand_goal?: string | null
+          budget_range?: string | null
+          company_name?: string | null
+          content_type?: string | null
+          created_at?: string | null
+          creator_type?: string | null
+          display_name?: string | null
+          email?: string | null
+          engagement_rate?: string | null
+          feature_flags?: Json | null
+          first_name?: string | null
+          flagged?: boolean | null
+          follower_count?: string | null
+          has_seen_creator_intro?: boolean | null
+          has_seen_intro?: boolean | null
+          id: string
+          industries?: string[] | null
+          industry?: string | null
+          instagram_connected?: boolean | null
+          instagram_handle?: string | null
+          is_complete?: boolean | null
+          is_profile_complete?: boolean | null
+          last_name?: string | null
+          linkedin_connected?: boolean | null
+          logo_url?: string | null
+          name?: string | null
+          primary_platform?: string | null
+          profile_type?: string | null
+          r4_recommendations?: Json | null
+          r4_score?: number | null
+          role?: string | null
+          show_analytics?: boolean | null
+          show_instagram?: boolean | null
+          show_linkedin?: boolean | null
+          show_location?: boolean | null
+          show_tiktok?: boolean | null
+          show_youtube?: boolean | null
+          status?: string | null
+          tiktok_connected?: boolean | null
+          tiktok_handle?: string | null
+          updated_at?: string | null
+          version?: number | null
+          website?: string | null
+          youtube_connected?: boolean | null
+          youtube_handle?: string | null
+        }
+        Update: {
+          audience_location?: Json | null
+          audience_type?: string | null
+          avatar_url?: string | null
+          banner_url?: string | null
+          bio?: string | null
+          brand_bio?: string | null
+          brand_goal?: string | null
+          budget_range?: string | null
+          company_name?: string | null
+          content_type?: string | null
+          created_at?: string | null
+          creator_type?: string | null
+          display_name?: string | null
+          email?: string | null
+          engagement_rate?: string | null
+          feature_flags?: Json | null
+          first_name?: string | null
+          flagged?: boolean | null
+          follower_count?: string | null
+          has_seen_creator_intro?: boolean | null
+          has_seen_intro?: boolean | null
+          id?: string
+          industries?: string[] | null
+          industry?: string | null
+          instagram_connected?: boolean | null
+          instagram_handle?: string | null
+          is_complete?: boolean | null
+          is_profile_complete?: boolean | null
+          last_name?: string | null
+          linkedin_connected?: boolean | null
+          logo_url?: string | null
+          name?: string | null
+          primary_platform?: string | null
+          profile_type?: string | null
+          r4_recommendations?: Json | null
+          r4_score?: number | null
+          role?: string | null
+          show_analytics?: boolean | null
+          show_instagram?: boolean | null
+          show_linkedin?: boolean | null
+          show_location?: boolean | null
+          show_tiktok?: boolean | null
+          show_youtube?: boolean | null
+          status?: string | null
+          tiktok_connected?: boolean | null
+          tiktok_handle?: string | null
+          updated_at?: string | null
+          version?: number | null
+          website?: string | null
+          youtube_connected?: boolean | null
+          youtube_handle?: string | null
+        }
+        Relationships: []
       }
       project_creators: {
         Row: {
@@ -321,7 +794,7 @@ export type Database = {
           payment_structure: Json | null
           project_id: string | null
           response_date: string | null
-          status: Database["public"]["Enums"]["project_creator_status"] | null
+          status: string | null
           submitted_content_count: number | null
           updated_at: string | null
         }
@@ -339,7 +812,7 @@ export type Database = {
           payment_structure?: Json | null
           project_id?: string | null
           response_date?: string | null
-          status?: Database["public"]["Enums"]["project_creator_status"] | null
+          status?: string | null
           submitted_content_count?: number | null
           updated_at?: string | null
         }
@@ -357,11 +830,25 @@ export type Database = {
           payment_structure?: Json | null
           project_id?: string | null
           response_date?: string | null
-          status?: Database["public"]["Enums"]["project_creator_status"] | null
+          status?: string | null
           submitted_content_count?: number | null
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "project_creators_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "project_creators_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_creators_view"
+            referencedColumns: ["creator_id"]
+          },
           {
             foreignKeyName: "project_creators_creator_id_fkey"
             columns: ["creator_id"]
@@ -373,7 +860,7 @@ export type Database = {
             foreignKeyName: "project_creators_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
-            referencedRelation: "projects_new"
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -408,19 +895,111 @@ export type Database = {
             foreignKeyName: "project_drafts_brand_id_fkey"
             columns: ["brand_id"]
             isOneToOne: false
-            referencedRelation: "brand_profiles"
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "project_drafts_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_creators_view"
+            referencedColumns: ["creator_id"]
+          },
+          {
+            foreignKeyName: "project_drafts_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
+      projects: {
+        Row: {
+          audience_focus: string | null
+          brand_id: string | null
+          budget: number | null
+          campaign_objective: string | null
+          campaign_type: string
+          content_requirements: Json | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          draft_approval: boolean | null
+          end_date: string
+          exclusivity: string | null
+          id: string
+          is_priority: boolean | null
+          is_template: boolean | null
+          name: string
+          payment_structure: string | null
+          platforms: string[] | null
+          start_date: string
+          status: string | null
+          submission_deadline: string | null
+          usage_duration: string | null
+          whitelisting: boolean | null
+        }
+        Insert: {
+          audience_focus?: string | null
+          brand_id?: string | null
+          budget?: number | null
+          campaign_objective?: string | null
+          campaign_type: string
+          content_requirements?: Json | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          draft_approval?: boolean | null
+          end_date: string
+          exclusivity?: string | null
+          id?: string
+          is_priority?: boolean | null
+          is_template?: boolean | null
+          name: string
+          payment_structure?: string | null
+          platforms?: string[] | null
+          start_date: string
+          status?: string | null
+          submission_deadline?: string | null
+          usage_duration?: string | null
+          whitelisting?: boolean | null
+        }
+        Update: {
+          audience_focus?: string | null
+          brand_id?: string | null
+          budget?: number | null
+          campaign_objective?: string | null
+          campaign_type?: string
+          content_requirements?: Json | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          draft_approval?: boolean | null
+          end_date?: string
+          exclusivity?: string | null
+          id?: string
+          is_priority?: boolean | null
+          is_template?: boolean | null
+          name?: string
+          payment_structure?: string | null
+          platforms?: string[] | null
+          start_date?: string
+          status?: string | null
+          submission_deadline?: string | null
+          usage_duration?: string | null
+          whitelisting?: boolean | null
+        }
+        Relationships: []
+      }
       projects_new: {
         Row: {
-          allocated_budget: number | null
-          allows_rolling_invitations: boolean | null
           brand_id: string | null
+          budget: number | null
           campaign_type: string | null
           content_requirements: Json | null
           created_at: string | null
+          currency: string | null
           current_step: number | null
           deliverables: Json | null
           description: string | null
@@ -428,23 +1007,19 @@ export type Database = {
           id: string
           messaging_guidelines: string | null
           name: string
-          objective: Database["public"]["Enums"]["campaign_objective"] | null
-          payment_terms: Json | null
+          objective: string | null
           platforms: string[] | null
-          remaining_budget: number | null
           start_date: string | null
-          status: Database["public"]["Enums"]["project_status"] | null
-          total_budget: number | null
-          total_creator_budget: number | null
+          status: string | null
           updated_at: string | null
         }
         Insert: {
-          allocated_budget?: number | null
-          allows_rolling_invitations?: boolean | null
           brand_id?: string | null
+          budget?: number | null
           campaign_type?: string | null
           content_requirements?: Json | null
           created_at?: string | null
+          currency?: string | null
           current_step?: number | null
           deliverables?: Json | null
           description?: string | null
@@ -452,22 +1027,19 @@ export type Database = {
           id?: string
           messaging_guidelines?: string | null
           name: string
-          objective?: Database["public"]["Enums"]["campaign_objective"] | null
-          payment_terms?: Json | null
+          objective?: string | null
           platforms?: string[] | null
           start_date?: string | null
-          status?: Database["public"]["Enums"]["project_status"] | null
-          total_budget?: number | null
-          total_creator_budget?: number | null
+          status?: string | null
           updated_at?: string | null
         }
         Update: {
-          allocated_budget?: number | null
-          allows_rolling_invitations?: boolean | null
           brand_id?: string | null
+          budget?: number | null
           campaign_type?: string | null
           content_requirements?: Json | null
           created_at?: string | null
+          currency?: string | null
           current_step?: number | null
           deliverables?: Json | null
           description?: string | null
@@ -475,13 +1047,10 @@ export type Database = {
           id?: string
           messaging_guidelines?: string | null
           name?: string
-          objective?: Database["public"]["Enums"]["campaign_objective"] | null
-          payment_terms?: Json | null
+          objective?: string | null
           platforms?: string[] | null
           start_date?: string | null
-          status?: Database["public"]["Enums"]["project_status"] | null
-          total_budget?: number | null
-          total_creator_budget?: number | null
+          status?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -489,90 +1058,363 @@ export type Database = {
             foreignKeyName: "projects_new_brand_id_fkey"
             columns: ["brand_id"]
             isOneToOne: false
-            referencedRelation: "brand_profiles"
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "projects_new_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_creators_view"
+            referencedColumns: ["creator_id"]
+          },
+          {
+            foreignKeyName: "projects_new_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-    }
-    Views: {
-      creator_deal_view: {
+      r4_enforcement_logs: {
+        Row: {
+          action_taken: Json | null
+          context: Json | null
+          id: string
+          rule_id: string | null
+          target_id: string
+          target_type: string
+          triggered_at: string | null
+        }
+        Insert: {
+          action_taken?: Json | null
+          context?: Json | null
+          id?: string
+          rule_id?: string | null
+          target_id: string
+          target_type: string
+          triggered_at?: string | null
+        }
+        Update: {
+          action_taken?: Json | null
+          context?: Json | null
+          id?: string
+          rule_id?: string | null
+          target_id?: string
+          target_type?: string
+          triggered_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "r4_enforcement_logs_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "r4_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      r4_flags: {
+        Row: {
+          description: string | null
+          key: string
+          updated_at: string | null
+          value: boolean | null
+        }
+        Insert: {
+          description?: string | null
+          key: string
+          updated_at?: string | null
+          value?: boolean | null
+        }
+        Update: {
+          description?: string | null
+          key?: string
+          updated_at?: string | null
+          value?: boolean | null
+        }
+        Relationships: []
+      }
+      r4_rule_sandbox: {
         Row: {
           created_at: string | null
-          creator_feedback: string | null
-          creator_id: string | null
-          deal_value: number | null
-          id: string | null
-          individual_requirements: Json | null
-          invited_at: string | null
-          paid_at: string | null
-          payment_status: Database["public"]["Enums"]["payment_status"] | null
-          project_id: string | null
-          responded_at: string | null
-          status: Database["public"]["Enums"]["deal_status"] | null
+          id: string
+          rule_action: Json
+          rule_condition: Json
+          rule_description: string | null
+          rule_name: string
+          test_result: Json | null
+          tested_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          rule_action: Json
+          rule_condition: Json
+          rule_description?: string | null
+          rule_name: string
+          test_result?: Json | null
+          tested_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          rule_action?: Json
+          rule_condition?: Json
+          rule_description?: string | null
+          rule_name?: string
+          test_result?: Json | null
+          tested_at?: string | null
+        }
+        Relationships: []
+      }
+      r4_rules: {
+        Row: {
+          created_at: string | null
+          enabled: boolean | null
+          id: string
+          priority: number | null
+          rule_action: Json
+          rule_condition: Json
+          rule_description: string | null
+          rule_name: string
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
-          creator_feedback?: string | null
-          creator_id?: string | null
-          deal_value?: number | null
-          id?: string | null
-          individual_requirements?: Json | null
-          invited_at?: string | null
-          paid_at?: string | null
-          payment_status?: Database["public"]["Enums"]["payment_status"] | null
-          project_id?: string | null
-          responded_at?: string | null
-          status?: Database["public"]["Enums"]["deal_status"] | null
+          enabled?: boolean | null
+          id?: string
+          priority?: number | null
+          rule_action: Json
+          rule_condition: Json
+          rule_description?: string | null
+          rule_name: string
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
-          creator_feedback?: string | null
-          creator_id?: string | null
-          deal_value?: number | null
-          id?: string | null
-          individual_requirements?: Json | null
-          invited_at?: string | null
-          paid_at?: string | null
-          payment_status?: Database["public"]["Enums"]["payment_status"] | null
-          project_id?: string | null
-          responded_at?: string | null
-          status?: Database["public"]["Enums"]["deal_status"] | null
+          enabled?: boolean | null
+          id?: string
+          priority?: number | null
+          rule_action?: Json
+          rule_condition?: Json
+          rule_description?: string | null
+          rule_name?: string
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "creator_deals_creator_id_fkey"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "creator_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "creator_deals_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects_new"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
+      }
+      rate_limits: {
+        Row: {
+          action: string
+          count: number
+          created_at: string | null
+          id: string
+          identifier: string
+          window_start: string
+        }
+        Insert: {
+          action: string
+          count?: number
+          created_at?: string | null
+          id?: string
+          identifier: string
+          window_start: string
+        }
+        Update: {
+          action?: string
+          count?: number
+          created_at?: string | null
+          id?: string
+          identifier?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
+      security_audit_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          resource_id: string | null
+          resource_type: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          resource_id?: string | null
+          resource_type: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      social_metrics: {
+        Row: {
+          data: Json
+          fetched_at: string | null
+          id: string
+          social_account_id: string | null
+        }
+        Insert: {
+          data: Json
+          fetched_at?: string | null
+          id?: string
+          social_account_id?: string | null
+        }
+        Update: {
+          data?: Json
+          fetched_at?: string | null
+          id?: string
+          social_account_id?: string | null
+        }
+        Relationships: []
+      }
+      social_profiles: {
+        Row: {
+          creator_id: string | null
+          engagement_rate: number | null
+          error_message: string | null
+          follower_count: number | null
+          id: string
+          last_synced: string | null
+          platform: string
+          status: string | null
+          username: string
+        }
+        Insert: {
+          creator_id?: string | null
+          engagement_rate?: number | null
+          error_message?: string | null
+          follower_count?: number | null
+          id?: string
+          last_synced?: string | null
+          platform: string
+          status?: string | null
+          username: string
+        }
+        Update: {
+          creator_id?: string | null
+          engagement_rate?: number | null
+          error_message?: string | null
+          follower_count?: number | null
+          id?: string
+          last_synced?: string | null
+          platform?: string
+          status?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      admin_crm_brands_view: {
+        Row: {
+          active_deals: number | null
+          brand_id: string | null
+          budget_range: string | null
+          company_name: string | null
+          created_at: string | null
+          email: string | null
+          industry: string | null
+          last_active_at: string | null
+          status: string | null
+          total_deals: number | null
+        }
+        Relationships: []
+      }
+      admin_crm_creators_view: {
+        Row: {
+          active_deals: number | null
+          created_at: string | null
+          creator_id: string | null
+          email: string | null
+          engagement_rate: string | null
+          first_name: string | null
+          follower_count: string | null
+          last_active_at: string | null
+          last_name: string | null
+          primary_platform: string | null
+          status: string | null
+          total_deals: number | null
+        }
+        Relationships: []
       }
     }
     Functions: {
-      send_email: {
-        Args: { to_email: string; email_subject: string; email_content: string }
+      create_user_role: {
+        Args: { user_id: string; role_type: string }
+        Returns: undefined
+      }
+      current_user_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      duplicate_project: {
+        Args:
+          | Record<PropertyKey, never>
+          | { original_project_id: string }
+          | {
+              original_project_id: string
+              new_start_date: string
+              new_end_date: string
+            }
+        Returns: string
+      }
+      has_role: {
+        Args: {
+          user_id: string
+          required_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
         Returns: boolean
       }
     }
     Enums: {
-      campaign_objective:
-        | "brand_awareness"
-        | "product_launch"
-        | "sales_drive"
-        | "engagement"
-        | "conversions"
+      app_role: "creator" | "brand" | "admin" | "super_admin"
       content_status:
         | "draft"
         | "submitted"
@@ -581,14 +1423,6 @@ export type Database = {
         | "rejected"
         | "published"
         | "archived"
-      deal_status:
-        | "pending"
-        | "invited"
-        | "accepted"
-        | "declined"
-        | "completed"
-        | "cancelled"
-      payment_status: "pending" | "processing" | "paid" | "failed" | "completed" | "cancelled"
       project_creator_status:
         | "invited"
         | "accepted"
@@ -598,423 +1432,6 @@ export type Database = {
         | "submitted"
         | "completed"
         | "cancelled"
-      project_status: "draft" | "active" | "paused" | "completed" | "cancelled"
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-  storage: {
-    Tables: {
-      buckets: {
-        Row: {
-          allowed_mime_types: string[] | null
-          avif_autodetection: boolean | null
-          created_at: string | null
-          file_size_limit: number | null
-          id: string
-          name: string
-          owner: string | null
-          owner_id: string | null
-          public: boolean | null
-          updated_at: string | null
-        }
-        Insert: {
-          allowed_mime_types?: string[] | null
-          avif_autodetection?: boolean | null
-          created_at?: string | null
-          file_size_limit?: number | null
-          id: string
-          name: string
-          owner?: string | null
-          owner_id?: string | null
-          public?: boolean | null
-          updated_at?: string | null
-        }
-        Update: {
-          allowed_mime_types?: string[] | null
-          avif_autodetection?: boolean | null
-          created_at?: string | null
-          file_size_limit?: number | null
-          id?: string
-          name?: string
-          owner?: string | null
-          owner_id?: string | null
-          public?: boolean | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      migrations: {
-        Row: {
-          executed_at: string | null
-          hash: string
-          id: number
-          name: string
-        }
-        Insert: {
-          executed_at?: string | null
-          hash: string
-          id: number
-          name: string
-        }
-        Update: {
-          executed_at?: string | null
-          hash?: string
-          id?: number
-          name?: string
-        }
-        Relationships: []
-      }
-      objects: {
-        Row: {
-          bucket_id: string | null
-          created_at: string | null
-          id: string
-          last_accessed_at: string | null
-          level: number | null
-          metadata: Json | null
-          name: string | null
-          owner: string | null
-          owner_id: string | null
-          path_tokens: string[] | null
-          updated_at: string | null
-          user_metadata: Json | null
-          version: string | null
-        }
-        Insert: {
-          bucket_id?: string | null
-          created_at?: string | null
-          id?: string
-          last_accessed_at?: string | null
-          level?: number | null
-          metadata?: Json | null
-          name?: string | null
-          owner?: string | null
-          owner_id?: string | null
-          path_tokens?: string[] | null
-          updated_at?: string | null
-          user_metadata?: Json | null
-          version?: string | null
-        }
-        Update: {
-          bucket_id?: string | null
-          created_at?: string | null
-          id?: string
-          last_accessed_at?: string | null
-          level?: number | null
-          metadata?: Json | null
-          name?: string | null
-          owner?: string | null
-          owner_id?: string | null
-          path_tokens?: string[] | null
-          updated_at?: string | null
-          user_metadata?: Json | null
-          version?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "objects_bucketId_fkey"
-            columns: ["bucket_id"]
-            isOneToOne: false
-            referencedRelation: "buckets"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      prefixes: {
-        Row: {
-          bucket_id: string
-          created_at: string | null
-          level: number
-          name: string
-          updated_at: string | null
-        }
-        Insert: {
-          bucket_id: string
-          created_at?: string | null
-          level?: number
-          name: string
-          updated_at?: string | null
-        }
-        Update: {
-          bucket_id?: string
-          created_at?: string | null
-          level?: number
-          name?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "prefixes_bucketId_fkey"
-            columns: ["bucket_id"]
-            isOneToOne: false
-            referencedRelation: "buckets"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      s3_multipart_uploads: {
-        Row: {
-          bucket_id: string
-          created_at: string
-          id: string
-          in_progress_size: number
-          key: string
-          owner_id: string | null
-          upload_signature: string
-          user_metadata: Json | null
-          version: string
-        }
-        Insert: {
-          bucket_id: string
-          created_at?: string
-          id: string
-          in_progress_size?: number
-          key: string
-          owner_id?: string | null
-          upload_signature: string
-          user_metadata?: Json | null
-          version: string
-        }
-        Update: {
-          bucket_id?: string
-          created_at?: string
-          id?: string
-          in_progress_size?: number
-          key?: string
-          owner_id?: string | null
-          upload_signature?: string
-          user_metadata?: Json | null
-          version?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "s3_multipart_uploads_bucket_id_fkey"
-            columns: ["bucket_id"]
-            isOneToOne: false
-            referencedRelation: "buckets"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      s3_multipart_uploads_parts: {
-        Row: {
-          bucket_id: string
-          created_at: string
-          etag: string
-          id: string
-          key: string
-          owner_id: string | null
-          part_number: number
-          size: number
-          upload_id: string
-          version: string
-        }
-        Insert: {
-          bucket_id: string
-          created_at?: string
-          etag: string
-          id?: string
-          key: string
-          owner_id?: string | null
-          part_number: number
-          size?: number
-          upload_id: string
-          version: string
-        }
-        Update: {
-          bucket_id?: string
-          created_at?: string
-          etag?: string
-          id?: string
-          key?: string
-          owner_id?: string | null
-          part_number?: number
-          size?: number
-          upload_id?: string
-          version?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "s3_multipart_uploads_parts_bucket_id_fkey"
-            columns: ["bucket_id"]
-            isOneToOne: false
-            referencedRelation: "buckets"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "s3_multipart_uploads_parts_upload_id_fkey"
-            columns: ["upload_id"]
-            isOneToOne: false
-            referencedRelation: "s3_multipart_uploads"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      add_prefixes: {
-        Args: { _bucket_id: string; _name: string }
-        Returns: undefined
-      }
-      can_insert_object: {
-        Args: { bucketid: string; name: string; owner: string; metadata: Json }
-        Returns: undefined
-      }
-      delete_prefix: {
-        Args: { _bucket_id: string; _name: string }
-        Returns: boolean
-      }
-      extension: {
-        Args: { name: string }
-        Returns: string
-      }
-      filename: {
-        Args: { name: string }
-        Returns: string
-      }
-      foldername: {
-        Args: { name: string }
-        Returns: string[]
-      }
-      get_level: {
-        Args: { name: string }
-        Returns: number
-      }
-      get_prefix: {
-        Args: { name: string }
-        Returns: string
-      }
-      get_prefixes: {
-        Args: { name: string }
-        Returns: string[]
-      }
-      get_size_by_bucket: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          size: number
-          bucket_id: string
-        }[]
-      }
-      list_multipart_uploads_with_delimiter: {
-        Args: {
-          bucket_id: string
-          prefix_param: string
-          delimiter_param: string
-          max_keys?: number
-          next_key_token?: string
-          next_upload_token?: string
-        }
-        Returns: {
-          key: string
-          id: string
-          created_at: string
-        }[]
-      }
-      list_objects_with_delimiter: {
-        Args: {
-          bucket_id: string
-          prefix_param: string
-          delimiter_param: string
-          max_keys?: number
-          start_after?: string
-          next_token?: string
-        }
-        Returns: {
-          name: string
-          id: string
-          metadata: Json
-          updated_at: string
-        }[]
-      }
-      operation: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      search: {
-        Args: {
-          prefix: string
-          bucketname: string
-          limits?: number
-          levels?: number
-          offsets?: number
-          search?: string
-          sortcolumn?: string
-          sortorder?: string
-        }
-        Returns: {
-          name: string
-          id: string
-          updated_at: string
-          created_at: string
-          last_accessed_at: string
-          metadata: Json
-        }[]
-      }
-      search_legacy_v1: {
-        Args: {
-          prefix: string
-          bucketname: string
-          limits?: number
-          levels?: number
-          offsets?: number
-          search?: string
-          sortcolumn?: string
-          sortorder?: string
-        }
-        Returns: {
-          name: string
-          id: string
-          updated_at: string
-          created_at: string
-          last_accessed_at: string
-          metadata: Json
-        }[]
-      }
-      search_v1_optimised: {
-        Args: {
-          prefix: string
-          bucketname: string
-          limits?: number
-          levels?: number
-          offsets?: number
-          search?: string
-          sortcolumn?: string
-          sortorder?: string
-        }
-        Returns: {
-          name: string
-          id: string
-          updated_at: string
-          created_at: string
-          last_accessed_at: string
-          metadata: Json
-        }[]
-      }
-      search_v2: {
-        Args: {
-          prefix: string
-          bucket_name: string
-          limits?: number
-          levels?: number
-          start_after?: string
-        }
-        Returns: {
-          key: string
-          name: string
-          id: string
-          updated_at: string
-          created_at: string
-          metadata: Json
-        }[]
-      }
-    }
-    Enums: {
-      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1128,18 +1545,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
-      campaign_objective: [
-        "brand_awareness",
-        "product_launch",
-        "sales_drive",
-        "engagement",
-        "conversions",
-      ],
+      app_role: ["creator", "brand", "admin", "super_admin"],
       content_status: [
         "draft",
         "submitted",
@@ -1149,15 +1557,6 @@ export const Constants = {
         "published",
         "archived",
       ],
-      deal_status: [
-        "pending",
-        "invited",
-        "accepted",
-        "declined",
-        "completed",
-        "cancelled",
-      ],
-      payment_status: ["pending", "processing", "paid", "failed", "completed", "cancelled"],
       project_creator_status: [
         "invited",
         "accepted",
@@ -1168,11 +1567,6 @@ export const Constants = {
         "completed",
         "cancelled",
       ],
-      project_status: ["draft", "active", "paused", "completed", "cancelled"],
     },
   },
-  storage: {
-    Enums: {},
-  },
 } as const
-
