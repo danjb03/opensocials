@@ -64,7 +64,7 @@ export const CreatorFavoritesModal: React.FC<CreatorFavoritesModalProps> = ({
               
               const displayName = creator.first_name && creator.last_name 
                 ? `${creator.first_name} ${creator.last_name}`
-                : creator.first_name || 'Unknown Creator';
+                : creator.first_name || creator.username || 'Unknown Creator';
               
               return (
                 <div 

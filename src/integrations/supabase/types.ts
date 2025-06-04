@@ -98,7 +98,22 @@ export type Database = {
           creator_id?: string
           id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_brand_creator_favorites_brand"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brand_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_brand_creator_favorites_creator"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       brand_profiles: {
         Row: {
@@ -268,6 +283,69 @@ export type Database = {
           workplatform_id?: string
         }
         Relationships: []
+      }
+      creator_deals: {
+        Row: {
+          created_at: string
+          creator_feedback: string | null
+          creator_id: string
+          deal_value: number
+          id: string
+          individual_requirements: Json | null
+          invited_at: string
+          paid_at: string | null
+          payment_status: string
+          project_id: string
+          responded_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_feedback?: string | null
+          creator_id: string
+          deal_value: number
+          id?: string
+          individual_requirements?: Json | null
+          invited_at?: string
+          paid_at?: string | null
+          payment_status?: string
+          project_id: string
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_feedback?: string | null
+          creator_id?: string
+          deal_value?: number
+          id?: string
+          individual_requirements?: Json | null
+          invited_at?: string
+          paid_at?: string | null
+          payment_status?: string
+          project_id?: string
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_deals_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "creator_deals_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_new"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       creator_industries: {
         Row: {
@@ -1379,6 +1457,69 @@ export type Database = {
           total_deals: number | null
         }
         Relationships: []
+      }
+      creator_deal_view: {
+        Row: {
+          created_at: string | null
+          creator_feedback: string | null
+          creator_id: string | null
+          deal_value: number | null
+          id: string | null
+          individual_requirements: Json | null
+          invited_at: string | null
+          paid_at: string | null
+          payment_status: string | null
+          project_id: string | null
+          responded_at: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          creator_feedback?: string | null
+          creator_id?: string | null
+          deal_value?: number | null
+          id?: string | null
+          individual_requirements?: Json | null
+          invited_at?: string | null
+          paid_at?: string | null
+          payment_status?: string | null
+          project_id?: string | null
+          responded_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          creator_feedback?: string | null
+          creator_id?: string | null
+          deal_value?: number | null
+          id?: string | null
+          individual_requirements?: Json | null
+          invited_at?: string | null
+          paid_at?: string | null
+          payment_status?: string | null
+          project_id?: string | null
+          responded_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_deals_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "creator_deals_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_new"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {

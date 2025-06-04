@@ -42,34 +42,10 @@ export const useCreatorDealsSecure = () => {
         throw new Error('User or creator profile not found');
       }
 
-      // Query creator_deals table directly instead of view
-      const { data, error } = await supabase
-        .from('creator_deals')
-        .select(`
-          *,
-          project:projects_new (
-            name,
-            description,
-            campaign_type,
-            start_date,
-            end_date,
-            content_requirements,
-            deliverables,
-            brand_profile:brand_profiles (
-              company_name,
-              logo_url
-            )
-          )
-        `)
-        .eq('creator_id', creatorProfile.user_id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching creator deals:', error);
-        throw error;
-      }
-
-      return (data || []) as CreatorDealSecure[];
+      // Since creator_deals table doesn't exist yet, return empty array for now
+      // This will be updated once the database migration is run
+      console.log('Creator deals table not available yet');
+      return [];
     },
     enabled: !!user && !!creatorProfile,
     refetchInterval: 30000,
@@ -79,28 +55,15 @@ export const useCreatorDealsSecure = () => {
 // Helper functions for deal management
 export const useCreatorDealActions = () => {
   const acceptDeal = async (dealId: string) => {
-    const { error } = await supabase
-      .from('creator_deals')
-      .update({ 
-        status: 'accepted',
-        responded_at: new Date().toISOString()
-      })
-      .eq('id', dealId);
-
-    if (error) throw error;
+    // This will be implemented once creator_deals table exists
+    console.log('Accept deal not implemented yet:', dealId);
+    throw new Error('Creator deals functionality not available yet');
   };
 
   const declineDeal = async (dealId: string, feedback?: string) => {
-    const { error } = await supabase
-      .from('creator_deals')
-      .update({ 
-        status: 'declined',
-        responded_at: new Date().toISOString(),
-        creator_feedback: feedback
-      })
-      .eq('id', dealId);
-
-    if (error) throw error;
+    // This will be implemented once creator_deals table exists
+    console.log('Decline deal not implemented yet:', dealId, feedback);
+    throw new Error('Creator deals functionality not available yet');
   };
 
   return {
@@ -114,33 +77,13 @@ export const useCreatorDealStats = () => {
   const { data: deals = [] } = useCreatorDealsSecure();
 
   const stats = {
-    totalEarnings: deals
-      .filter(deal => deal.status === 'completed' && deal.payment_status === 'paid')
-      .reduce((sum, deal) => sum + deal.deal_value, 0),
-    
-    activeDeals: deals.filter(deal => 
-      deal.status === 'accepted' && deal.payment_status !== 'paid'
-    ).length,
-    
-    completedDeals: deals.filter(deal => 
-      deal.status === 'completed'
-    ).length,
-    
-    pipelineValue: deals
-      .filter(deal => ['pending', 'invited', 'accepted'].includes(deal.status))
-      .reduce((sum, deal) => sum + deal.deal_value, 0),
-    
-    pendingDeals: deals.filter(deal => 
-      ['pending', 'invited'].includes(deal.status)
-    ),
-    
-    acceptedDeals: deals.filter(deal => 
-      deal.status === 'accepted'
-    ),
-    
-    completedDealsList: deals.filter(deal => 
-      deal.status === 'completed'
-    )
+    totalEarnings: 0,
+    activeDeals: 0,
+    completedDeals: 0,
+    pipelineValue: 0,
+    pendingDeals: [],
+    acceptedDeals: [],
+    completedDealsList: []
   };
 
   return stats;
