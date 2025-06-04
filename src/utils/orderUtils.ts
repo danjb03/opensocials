@@ -10,7 +10,8 @@ type ProjectCreatorRecord = {
   created_at: string | null;
   profiles: {
     id: string;
-    full_name: string | null;
+    first_name: string | null;
+    last_name: string | null;
     avatar_url: string | null;
   } | null;
   creator_profiles: {
@@ -33,7 +34,8 @@ type ContentRecord = {
     id: string;
     profiles: {
       id: string;
-      full_name: string | null;
+      first_name: string | null;
+      last_name: string | null;
     } | null;
   } | null;
 };
@@ -101,7 +103,8 @@ export const getProjectCreators = async (projectId: string): Promise<Creator[]> 
         created_at,
         profiles!project_creators_creator_id_fkey (
           id,
-          full_name,
+          first_name,
+          last_name,
           avatar_url
         ),
         creator_profiles!creator_profiles_user_id_fkey (
@@ -118,9 +121,9 @@ export const getProjectCreators = async (projectId: string): Promise<Creator[]> 
       return [];
     }
 
-    return data?.map((pc: ProjectCreatorRecord) => ({
+    return data?.map((pc: any) => ({
       id: pc.profiles?.id || pc.id,
-      name: pc.profiles?.full_name || 'Unknown Creator',
+      name: pc.profiles ? `${pc.profiles.first_name || ''} ${pc.profiles.last_name || ''}`.trim() || 'Unknown Creator' : 'Unknown Creator',
       platform: pc.creator_profiles?.primary_platform || 'Instagram',
       imageUrl: pc.profiles?.avatar_url || `https://i.pravatar.cc/150?img=${pc.id}`,
       status: pc.status as 'invited' | 'accepted' | 'declined' | 'completed',
@@ -145,48 +148,11 @@ export const generateMockCreators = (count: number = 3): Creator[] => {
   }));
 };
 
-// Fetch real content items for a project
+// Fetch real content items for a project - disabled due to missing table
 export const getProjectContent = async (projectId: string): Promise<ContentItem[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('project_content')
-      .select(`
-        id,
-        content_type,
-        platform,
-        title,
-        status,
-        created_at,
-        published_date,
-        project_creators!project_content_project_creator_id_fkey (
-          id,
-          profiles!project_creators_creator_id_fkey (
-            id,
-            full_name
-          )
-        )
-      `)
-      .eq('project_creators.project_id', projectId);
-
-    if (error) {
-      console.error('Error fetching project content:', error);
-      return [];
-    }
-
-    return data?.map((content: ContentRecord) => ({
-      id: content.id,
-      creatorId: content.project_creators?.profiles?.id || 'unknown',
-      creatorName: content.project_creators?.profiles?.full_name || 'Unknown Creator',
-      platform: content.platform || 'Instagram',
-      type: content.content_type as 'video' | 'post' | 'story',
-      status: content.status as 'draft' | 'submitted' | 'approved' | 'published',
-      submittedAt: content.status !== 'draft' ? content.created_at : undefined,
-      publishedAt: content.published_date || undefined,
-    })) || [];
-  } catch (error) {
-    console.error('Error in getProjectContent:', error);
-    return [];
-  }
+  // Table doesn't exist yet, return empty array
+  console.log('Project content table not available yet');
+  return [];
 };
 
 // Generate mock content items for testing (fallback)

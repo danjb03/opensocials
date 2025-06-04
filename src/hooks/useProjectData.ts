@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth';
 import { useScalableQuery } from '@/hooks/useScalableQuery';
 import { Project } from '@/types/projects';
 import { Order, OrderStage } from '@/types/orders';
-import { projectToOrder } from '@/utils/orderUtils';
+import { projectToOrderSync } from '@/utils/orderUtils';
 
 export type ProjectFilters = {
   campaignTypes: string[];
@@ -154,8 +154,8 @@ export const useProjectData = () => {
     return true;
   });
 
-  // Transform projects to orders for pipeline view - fix the async issue
-  const orders: Order[] = filteredProjects.map(project => projectToOrder(project));
+  // Transform projects to orders for pipeline view - using sync version to avoid Promise issues
+  const orders: Order[] = filteredProjects.map(project => projectToOrderSync(project));
 
   // Transform projects to campaign rows for dashboard
   const campaignRows = filteredProjects.map((project) => ({

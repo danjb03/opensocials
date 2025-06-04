@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth';
@@ -70,9 +71,26 @@ export const useUnifiedAuth = (): UnifiedAuthData => {
       const brandProfile = brandProfileResult.status === 'fulfilled' && brandProfileResult.value.data 
         ? brandProfileResult.value.data 
         : null;
-      const creatorProfile = creatorProfileResult.status === 'fulfilled' && creatorProfileResult.value.data 
-        ? creatorProfileResult.value.data 
-        : null;
+      
+      let creatorProfile = null;
+      if (creatorProfileResult.status === 'fulfilled' && creatorProfileResult.value.data) {
+        const rawProfile = creatorProfileResult.value.data;
+        // Transform the social_handles JSON to Record<string, string>
+        let socialHandles: Record<string, string> | null = null;
+        if (rawProfile.social_handles && typeof rawProfile.social_handles === 'object' && !Array.isArray(rawProfile.social_handles)) {
+          socialHandles = {};
+          Object.entries(rawProfile.social_handles).forEach(([key, value]) => {
+            if (typeof value === 'string') {
+              socialHandles![key] = value;
+            }
+          });
+        }
+        
+        creatorProfile = {
+          ...rawProfile,
+          social_handles: socialHandles
+        };
+      }
 
       return {
         role,
@@ -87,7 +105,11 @@ export const useUnifiedAuth = (): UnifiedAuthData => {
   });
 
   return {
-    user,
+    user: user ? {
+      id: user.id,
+      email: user.email,
+      ...user
+    } : null,
     role: data?.role || null,
     brandProfile: data?.brandProfile || null,
     creatorProfile: data?.creatorProfile || null,

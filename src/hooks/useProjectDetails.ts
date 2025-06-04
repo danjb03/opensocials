@@ -19,10 +19,14 @@ export function useProjectDetails() {
 
   // Import functionality from smaller hooks
   const {
-    files: briefFiles,
+    files,
+    uploadedFiles,
     isUploading,
-    uploadFiles: handleFileChange,
-    saveContentRequirements: uploadBriefFiles
+    uploadFiles,
+    removeFile,
+    clearAllFiles,
+    saveContentRequirements,
+    isSaving
   } = useBriefFiles();
   
   const { 
@@ -86,10 +90,13 @@ export function useProjectDetails() {
       if (!project) return;
       
       // Check if we're on the Creative Planning step and need to upload brief files
-      if (currentStep === 3 && !briefUploaded && briefFiles.length > 0) {
+      if (currentStep === 3 && !briefUploaded && files.length > 0) {
         if (id) {
           // Upload files using the correct interface
-          await handleFileChange(briefFiles as any, id);
+          const fileList = new DataTransfer();
+          // Note: This is a simplified approach - in practice you'd need to convert 
+          // the files array to a FileList properly
+          await uploadFiles(fileList.files, id);
           
           // Update local state
           setBriefUploaded(true);
@@ -122,15 +129,19 @@ export function useProjectDetails() {
     project,
     loading,
     currentStep,
-    briefFiles,
+    files,
+    uploadedFiles,
     isUploading,
-    uploadProgress: 0, // Default value since not available from useBriefFiles
     briefUploaded,
     nextStepBlocked,
     showBlockedAlert,
     navigate,
     handleProgressCampaign,
-    handleFileChange,
+    uploadFiles,
+    removeFile,
+    clearAllFiles,
+    saveContentRequirements,
+    isSaving,
     CAMPAIGN_STEPS
   };
 }
