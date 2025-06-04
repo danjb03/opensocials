@@ -2,11 +2,11 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { toast } from 'sonner';
 
 export const useCreatorFavorites = () => {
-  const { user } = useAuth();
+  const { user } = useUnifiedAuth();
   const queryClient = useQueryClient();
 
   // Fetch user's favorite creators
@@ -19,7 +19,7 @@ export const useCreatorFavorites = () => {
         .from('brand_creator_favorites')
         .select(`
           creator_id,
-          creator_profiles!brand_creator_favorites_creator_id_fkey (
+          creator_profiles!fk_brand_creator_favorites_creator (
             user_id,
             first_name,
             last_name,

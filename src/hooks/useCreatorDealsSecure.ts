@@ -2,14 +2,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
-import { Json } from '@/integrations/supabase/types';
 
 interface CreatorDealSecure {
   id: string;
   project_id: string;
   creator_id: string;
-  deal_value: number; // Net value only (after 25% margin)
-  individual_requirements: Json;
+  deal_value: number;
+  individual_requirements: any;
   status: 'pending' | 'invited' | 'accepted' | 'declined' | 'completed' | 'cancelled';
   invited_at: string;
   responded_at?: string;
@@ -18,15 +17,14 @@ interface CreatorDealSecure {
   paid_at?: string;
   created_at: string;
   updated_at: string;
-  // Project details
   project?: {
     name: string;
     description?: string;
     campaign_type: string;
     start_date?: string;
     end_date?: string;
-    content_requirements: Json;
-    deliverables: Json;
+    content_requirements: any;
+    deliverables: any;
     brand_profile?: {
       company_name: string;
       logo_url?: string;
@@ -39,7 +37,7 @@ export const useCreatorDealsSecure = () => {
 
   return useQuery({
     queryKey: ['creator-deals-secure', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<CreatorDealSecure[]> => {
       if (!user || !creatorProfile) {
         throw new Error('User or creator profile not found');
       }
@@ -63,7 +61,7 @@ export const useCreatorDealsSecure = () => {
             )
           )
         `)
-        .eq('creator_id', creatorProfile.id)
+        .eq('creator_id', creatorProfile.user_id)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -74,7 +72,7 @@ export const useCreatorDealsSecure = () => {
       return (data || []) as CreatorDealSecure[];
     },
     enabled: !!user && !!creatorProfile,
-    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
+    refetchInterval: 30000,
   });
 };
 
@@ -111,7 +109,7 @@ export const useCreatorDealActions = () => {
   };
 };
 
-// Helper to get deal statistics (all values are net amounts)
+// Helper to get deal statistics
 export const useCreatorDealStats = () => {
   const { data: deals = [] } = useCreatorDealsSecure();
 

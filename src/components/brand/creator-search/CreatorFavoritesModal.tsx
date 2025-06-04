@@ -104,7 +104,7 @@ export const CreatorFavoritesModal: React.FC<CreatorFavoritesModalProps> = ({
                       )}
                     </div>
                     
-                    {creator.industries && creator.industries.length > 0 && (
+                    {creator.industries && Array.isArray(creator.industries) && creator.industries.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
                         {creator.industries.slice(0, 3).map((industry, index) => (
                           <Badge key={index} variant="secondary" className="text-xs">

@@ -6,7 +6,7 @@ import { useBrandProfile } from '@/hooks/useBrandProfile';
 import { CampaignWizardData } from '@/types/campaignWizard';
 
 export const useCampaignDraft = () => {
-  const { brandProfile } = useBrandProfile();
+  const { profile: brandProfile } = useBrandProfile();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<Partial<CampaignWizardData>>({});
@@ -137,24 +137,24 @@ export const useCampaignDraft = () => {
     name: formData.name || '',
     description: formData.description || '',
     campaign_type: formData.campaign_type || 'Single',
-    start_date: formData.start_date || '',
-    end_date: formData.end_date || ''
+    timeline: formData.timeline || { start_date: undefined, end_date: undefined }
   });
 
   const getContentData = () => ({
     content_requirements: formData.content_requirements || {
+      content_types: [],
+      platforms: [],
       messaging_guidelines: '',
-      hashtag_requirements: '',
-      mention_requirements: '',
-      visual_guidelines: '',
-      caption_requirements: ''
+      hashtags: [],
+      mentions: [],
+      style_preferences: '',
+      restrictions: []
     },
-    platforms: formData.platforms || []
+    messaging_guidelines: formData.messaging_guidelines || ''
   });
 
   const getBudgetData = () => ({
-    budget: formData.budget || 0,
-    currency: formData.currency || 'USD',
+    total_budget: formData.total_budget || 0,
     deliverables: formData.deliverables || {
       posts_count: 0,
       stories_count: 0,
