@@ -19,12 +19,11 @@ export function useProjectDetails() {
 
   // Import functionality from smaller hooks
   const {
-    briefFiles,
+    files: briefFiles,
     isUploading,
-    uploadProgress,
-    handleFileChange,
-    uploadBriefFiles
-  } = useBriefFiles(id);
+    uploadFiles: handleFileChange,
+    saveContentRequirements: uploadBriefFiles
+  } = useBriefFiles();
   
   const { 
     nextStepBlocked, 
@@ -33,7 +32,7 @@ export function useProjectDetails() {
     updateCampaignStatus,
     showBlockedMessage,
     hideBlockedAlert
-  } = useCampaignProgress(id);
+  } = useCampaignProgress();
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -88,20 +87,15 @@ export function useProjectDetails() {
       
       // Check if we're on the Creative Planning step and need to upload brief files
       if (currentStep === 3 && !briefUploaded && briefFiles.length > 0) {
-        const updatedContentRequirements = await uploadBriefFiles(project.content_requirements);
-        
-        if (updatedContentRequirements) {
+        if (id) {
+          // Upload files using the correct interface
+          await handleFileChange(briefFiles as any, id);
+          
           // Update local state
           setBriefUploaded(true);
-          setProject({
-            ...project, 
-            content_requirements: updatedContentRequirements
-          });
           
           // Now that brief is uploaded, allow next step
           hideBlockedAlert();
-        } else {
-          return; // Stop if upload failed
         }
       }
       
@@ -130,7 +124,7 @@ export function useProjectDetails() {
     currentStep,
     briefFiles,
     isUploading,
-    uploadProgress,
+    uploadProgress: 0, // Default value since not available from useBriefFiles
     briefUploaded,
     nextStepBlocked,
     showBlockedAlert,

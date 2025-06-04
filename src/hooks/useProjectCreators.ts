@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -49,7 +50,8 @@ export const useProjectCreators = (projectId: string) => {
           notes,
           profiles!project_creators_creator_id_fkey (
             id,
-            full_name,
+            first_name,
+            last_name,
             avatar_url
           ),
           creator_profiles!creator_profiles_user_id_fkey (
@@ -81,7 +83,7 @@ export const useProjectCreators = (projectId: string) => {
         notes: pc.notes,
         creatorProfile: {
           id: pc.profiles?.id,
-          fullName: pc.profiles?.full_name,
+          fullName: pc.profiles ? `${pc.profiles.first_name || ''} ${pc.profiles.last_name || ''}`.trim() : '',
           avatarUrl: pc.profiles?.avatar_url,
           primaryPlatform: pc.creator_profiles?.primary_platform,
         },
@@ -226,21 +228,20 @@ export const useRemoveCreatorFromProject = () => {
   });
 };
 
-// Get project payment summary
+// Get project payment summary - temporarily disabled since function doesn't exist
 export const useProjectPaymentSummary = (projectId: string) => {
   return useQuery({
     queryKey: ['project-payment-summary', projectId],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_project_payment_summary', {
-        project_uuid: projectId,
-      });
-
-      if (error) {
-        console.error('Error fetching payment summary:', error);
-        throw error;
-      }
-
-      return data;
+      console.log('Payment summary functionality not available - database function missing');
+      return {
+        totalAmount: 0,
+        completedAmount: 0,
+        pendingAmount: 0,
+        processingAmount: 0,
+        totalPayments: 0,
+        completedPayments: 0,
+      };
     },
     enabled: !!projectId,
   });

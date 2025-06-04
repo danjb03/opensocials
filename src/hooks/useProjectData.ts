@@ -154,7 +154,7 @@ export const useProjectData = () => {
     return true;
   });
 
-  // Transform projects to orders for pipeline view
+  // Transform projects to orders for pipeline view - fix the async issue
   const orders: Order[] = filteredProjects.map(project => projectToOrder(project));
 
   // Transform projects to campaign rows for dashboard

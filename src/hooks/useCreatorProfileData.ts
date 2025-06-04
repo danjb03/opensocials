@@ -42,31 +42,52 @@ export const useCreatorProfileData = () => {
         }
 
         if (creatorData) {
+          // Parse social_handles safely
+          let socialLinks = null;
+          if (creatorData.social_handles && typeof creatorData.social_handles === 'object') {
+            socialLinks = creatorData.social_handles as Record<string, any>;
+            // Ensure it matches the expected structure
+            const validSocialLinks: { [key: string]: string } = {};
+            Object.entries(socialLinks).forEach(([key, value]) => {
+              if (typeof value === 'string') {
+                validSocialLinks[key] = value;
+              }
+            });
+            socialLinks = validSocialLinks;
+          }
+
+          // Parse audience_location safely
+          let audienceLocation = 'Global';
+          if (typeof creatorData.audience_location === 'string') {
+            audienceLocation = creatorData.audience_location;
+          } else if (creatorData.audience_location && typeof creatorData.audience_location === 'object') {
+            const locationObj = creatorData.audience_location as any;
+            audienceLocation = locationObj.primary || 'Global';
+          }
+
           // Transform the data to match CreatorProfileRecord interface
           const transformedData = {
             user_id: creatorData.user_id,
             display_name: creatorData.first_name && creatorData.last_name 
               ? `${creatorData.first_name} ${creatorData.last_name}` 
-              : creatorData.username || null,
-            bio: creatorData.bio,
-            follower_count: creatorData.follower_count,
-            engagement_rate: creatorData.engagement_rate,
-            primary_platform: creatorData.primary_platform,
-            content_type: creatorData.content_type,
-            audience_type: creatorData.audience_type,
-            audience_location: typeof creatorData.audience_location === 'string' 
-              ? creatorData.audience_location 
-              : JSON.stringify(creatorData.audience_location || {}),
-            creator_type: creatorData.creator_type,
-            industries: creatorData.industries,
-            categories: creatorData.content_types,
-            platform_types: creatorData.platforms,
-            social_links: creatorData.social_handles || null,
+              : creatorData.username || '',
+            bio: creatorData.bio || null,
+            follower_count: creatorData.follower_count || null,
+            engagement_rate: creatorData.engagement_rate || null,
+            primary_platform: creatorData.primary_platform || null,
+            content_type: creatorData.content_type || null,
+            audience_type: creatorData.audience_type || null,
+            audience_location: audienceLocation,
+            creator_type: creatorData.creator_type || null,
+            industries: creatorData.industries || null,
+            categories: creatorData.content_types || null,
+            platform_types: creatorData.platforms || null,
+            social_links: socialLinks,
             audience_stats: null,
             headline: null,
             rate_card_url: null,
-            created_at: creatorData.created_at,
-            updated_at: creatorData.updated_at
+            created_at: creatorData.created_at || null,
+            updated_at: creatorData.updated_at || null
           };
           
           const transformedProfile = transformCreatorProfile(transformedData);
