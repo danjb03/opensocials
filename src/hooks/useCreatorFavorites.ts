@@ -19,10 +19,11 @@ export const useCreatorFavorites = () => {
         .from('brand_creator_favorites')
         .select(`
           creator_id,
-          creator_profiles (
+          creator_profiles!inner (
             id,
             user_id,
-            display_name,
+            first_name,
+            last_name,
             bio,
             primary_platform,
             follower_count,

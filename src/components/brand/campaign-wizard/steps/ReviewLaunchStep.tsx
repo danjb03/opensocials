@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,8 +30,8 @@ const useCreatorDetails = (creatorIds: string[]) => {
         .select(`
           id,
           user_id,
-          name,
-          email
+          first_name,
+          last_name
         `)
         .in('user_id', creatorIds);
       
@@ -246,8 +247,9 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
               <div className="space-y-3">
                 {selectedCreators.map(creatorData => {
                   const creator = creatorDetails?.find(c => c.user_id === creatorData.creator_id);
-                  const creatorName = creator?.name || 'Unknown Creator';
-                  const creatorHandle = creator?.email || '@creator';
+                  const creatorName = creator?.first_name && creator?.last_name 
+                    ? `${creator.first_name} ${creator.last_name}`
+                    : creator?.first_name || 'Unknown Creator';
                   
                   return (
                     <div key={creatorData.creator_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -257,7 +259,7 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
                         </Avatar>
                         <div>
                           <p className="font-medium">{creatorName}</p>
-                          <p className="text-sm text-gray-600">{creatorHandle}</p>
+                          <p className="text-sm text-gray-600">@creator</p>
                           <p className="text-xs text-blue-600">Creator</p>
                         </div>
                       </div>

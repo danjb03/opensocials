@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { CalendarDays, Clock, Target, ListChecks, Users, ChevronDown, ChevronRight, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -112,6 +113,32 @@ const SecureDealCard: React.FC<SecureDealCardProps> = ({
 
   const brandProfile = deal.project?.brand_profile;
 
+  // Safe JSON parsing helpers
+  const getContentRequirements = () => {
+    try {
+      if (typeof deal.project?.content_requirements === 'object' && deal.project?.content_requirements !== null) {
+        return deal.project.content_requirements as any;
+      }
+      return {};
+    } catch {
+      return {};
+    }
+  };
+
+  const getDeliverables = () => {
+    try {
+      if (typeof deal.project?.deliverables === 'object' && deal.project?.deliverables !== null) {
+        return deal.project.deliverables as any;
+      }
+      return {};
+    } catch {
+      return {};
+    }
+  };
+
+  const contentRequirements = getContentRequirements();
+  const deliverables = getDeliverables();
+
   return (
     <Card className={`transition-all duration-300 ${getBorderColor()} hover:shadow-md`}>
       <CardHeader 
@@ -176,27 +203,27 @@ const SecureDealCard: React.FC<SecureDealCardProps> = ({
                 </div>
               )}
               
-              {deal.project?.content_requirements && (
+              {contentRequirements && (Object.keys(contentRequirements).length > 0) && (
                 <div>
                   <h4 className="text-sm font-medium flex items-center gap-2 mb-1">
                     <Target className="h-4 w-4" /> Content Requirements
                   </h4>
                   <div className="space-y-2">
-                    {deal.project.content_requirements.platforms && (
+                    {contentRequirements.platforms && Array.isArray(contentRequirements.platforms) && (
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">Platforms:</p>
                         <div className="flex flex-wrap gap-1">
-                          {deal.project.content_requirements.platforms.map((platform: string, idx: number) => (
+                          {contentRequirements.platforms.map((platform: string, idx: number) => (
                             <Badge key={idx} variant="outline" className="text-xs">{platform}</Badge>
                           ))}
                         </div>
                       </div>
                     )}
-                    {deal.project.content_requirements.content_types && (
+                    {contentRequirements.content_types && Array.isArray(contentRequirements.content_types) && (
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">Content Types:</p>
                         <div className="flex flex-wrap gap-1">
-                          {deal.project.content_requirements.content_types.map((type: string, idx: number) => (
+                          {contentRequirements.content_types.map((type: string, idx: number) => (
                             <Badge key={idx} variant="secondary" className="text-xs">{type}</Badge>
                           ))}
                         </div>
@@ -206,23 +233,23 @@ const SecureDealCard: React.FC<SecureDealCardProps> = ({
                 </div>
               )}
               
-              {deal.project?.deliverables && (
+              {deliverables && (Object.keys(deliverables).length > 0) && (
                 <div>
                   <h4 className="text-sm font-medium flex items-center gap-2 mb-1">
                     <ListChecks className="h-4 w-4" /> Deliverables
                   </h4>
                   <div className="text-sm text-muted-foreground space-y-1">
-                    {deal.project.deliverables.posts_count && (
-                      <p>• {deal.project.deliverables.posts_count} feed posts</p>
+                    {deliverables.posts_count && (
+                      <p>• {deliverables.posts_count} feed posts</p>
                     )}
-                    {deal.project.deliverables.stories_count && (
-                      <p>• {deal.project.deliverables.stories_count} stories</p>
+                    {deliverables.stories_count && (
+                      <p>• {deliverables.stories_count} stories</p>
                     )}
-                    {deal.project.deliverables.reels_count && (
-                      <p>• {deal.project.deliverables.reels_count} reels</p>
+                    {deliverables.reels_count && (
+                      <p>• {deliverables.reels_count} reels</p>
                     )}
-                    {deal.project.deliverables.video_length_minutes && (
-                      <p>• {deal.project.deliverables.video_length_minutes} minutes of video content</p>
+                    {deliverables.video_length_minutes && (
+                      <p>• {deliverables.video_length_minutes} minutes of video content</p>
                     )}
                   </div>
                 </div>

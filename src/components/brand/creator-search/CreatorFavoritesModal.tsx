@@ -62,21 +62,25 @@ export const CreatorFavoritesModal: React.FC<CreatorFavoritesModalProps> = ({
               const creator = favorite.creator_profiles;
               if (!creator) return null;
               
+              const displayName = creator.first_name && creator.last_name 
+                ? `${creator.first_name} ${creator.last_name}`
+                : creator.first_name || 'Unknown Creator';
+              
               return (
                 <div 
                   key={favorite.creator_id}
                   className="flex items-center gap-4 p-4 border rounded-lg hover:bg-gray-50"
                 >
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={creator.avatar_url || '/placeholder.svg'} alt={creator.display_name || 'Creator'} />
+                    <AvatarImage src={creator.avatar_url || '/placeholder.svg'} alt={displayName} />
                     <AvatarFallback>
-                      {(creator.display_name || 'U')?.slice(0, 2).toUpperCase()}
+                      {displayName.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium">{creator.display_name || 'Unknown Creator'}</h4>
+                      <h4 className="font-medium">{displayName}</h4>
                       {creator.primary_platform && (
                         <Badge variant="outline" className="text-xs">
                           {creator.primary_platform}
@@ -121,7 +125,7 @@ export const CreatorFavoritesModal: React.FC<CreatorFavoritesModalProps> = ({
                       <Button
                         size="sm"
                         variant="default"
-                        onClick={() => onInviteCreator(creator.user_id, creator.display_name || 'Creator')}
+                        onClick={() => onInviteCreator(creator.user_id, displayName)}
                         className="flex items-center gap-1"
                       >
                         <UserPlus className="h-3 w-3" />

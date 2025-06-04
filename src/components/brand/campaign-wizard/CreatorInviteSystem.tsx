@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,8 +21,8 @@ interface CreatorInviteSystemProps {
 interface CreatorCandidate {
   id: string;
   user_id: string;
-  name: string | null;
-  email: string | null;
+  first_name: string | null;
+  last_name: string | null;
 }
 
 const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
@@ -45,13 +46,13 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
         .select(`
           id,
           user_id,
-          name,
-          email
+          first_name,
+          last_name
         `)
         .limit(20);
 
       if (searchTerm) {
-        query = query.or(`name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
+        query = query.or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`);
       }
 
       const { data, error } = await query;
@@ -142,7 +143,7 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
         {/* Search */}
         <div className="flex gap-2">
           <Input
-            placeholder="Search creators by name or handle..."
+            placeholder="Search creators by name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="flex-1"
@@ -191,7 +192,9 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
           ) : availableCreators && availableCreators.length > 0 ? (
             availableCreators.map((creator) => {
               const isSelected = selectedCreators.includes(creator.user_id);
-              const creatorName = creator.name || 'Unknown Creator';
+              const creatorName = creator.first_name && creator.last_name 
+                ? `${creator.first_name} ${creator.last_name}`
+                : creator.first_name || 'Unknown Creator';
 
               return (
                 <div 
@@ -211,7 +214,7 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
                         Creator
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-600">{creator.email || 'No email'}</p>
+                    <p className="text-sm text-gray-600">Creator Profile</p>
                   </div>
 
                   <div className="flex items-center gap-2">
