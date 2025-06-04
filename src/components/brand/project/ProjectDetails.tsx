@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -133,8 +134,8 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, isExpanded, on
                   <p className="text-gray-900">{project.draft_approval ? 'Required' : 'Not Required'}</p>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-600">Whitelisting</span>
-                  <p className="text-gray-900">Not specified</p>
+                  <span className="text-sm font-medium text-gray-600">Content Guidelines</span>
+                  <p className="text-gray-900">Available in brief</p>
                 </div>
               </div>
             </div>

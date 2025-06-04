@@ -1,264 +1,233 @@
-import { useState, useCallback, useEffect } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useBrandProfile } from '@/hooks/useBrandProfile';
 import { CampaignWizardData } from '@/types/campaignWizard';
-import { toast } from 'sonner';
 
-export const useCampaignDraft = (draftId?: string) => {
-  const { brandProfile } = useUnifiedAuth();
+export const useCampaignDraft = () => {
+  const { brandProfile } = useBrandProfile();
   const queryClient = useQueryClient();
-  
-  const [draftData, setDraftData] = useState<Partial<CampaignWizardData>>({});
   const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState<Partial<CampaignWizardData>>({});
 
-  // Auto-save timer
-  useEffect(() => {
-    if (!draftData || Object.keys(draftData).length === 0) return;
-    
-    const timer = setTimeout(() => {
-      saveDraftMutation.mutate({ 
-        data: draftData, 
-        step: currentStep,
-        silent: true 
-      });
-    }, 30000); // Auto-save every 30 seconds
-
-    return () => clearTimeout(timer);
-  }, [draftData, currentStep]);
-
-  // Save draft mutation - now using real database
-  const saveDraftMutation = useMutation({
-    mutationFn: async ({ 
-      data, 
-      step, 
-      silent = false 
-    }: { 
-      data: Partial<CampaignWizardData>; 
-      step: number; 
-      silent?: boolean;
-    }) => {
-      if (!brandProfile?.id) throw new Error('Brand profile required');
-
-      // Try to save to database first
-      try {
-        let savedDraft;
-        
-        if (draftId) {
-          // Update existing draft
-          const { data: updateData, error } = await supabase
-            .from('project_drafts')
-            .update({
-              draft_data: data,
-              current_step: step,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', draftId)
-            .eq('brand_id', brandProfile.id)
-            .select()
-            .single();
-          
-          if (error) throw error;
-          savedDraft = updateData;
-        } else {
-          // Create new draft
-          const { data: insertData, error } = await supabase
-            .from('project_drafts')
-            .insert({
-              brand_id: brandProfile.id,
-              draft_data: data,
-              current_step: step
-            })
-            .select()
-            .single();
-          
-          if (error) throw error;
-          savedDraft = insertData;
-        }
-
-        if (!silent) {
-          toast.success('Draft saved successfully');
-        }
-        
-        return savedDraft;
-      } catch (error) {
-        console.warn('Database save failed, falling back to localStorage:', error);
-        
-        // Fallback to localStorage
-        const draftKey = `campaign_draft_${brandProfile?.user_id || 'temp'}`;
-        const fallbackData = {
-          data,
-          current_step: step,
-          updated_at: new Date().toISOString()
-        };
-        
-        localStorage.setItem(draftKey, JSON.stringify(fallbackData));
-
-        if (!silent) {
-          toast.success('Draft saved locally');
-        }
-        
-        return fallbackData;
-      }
-    },
-    onError: (error) => {
-      console.error('Draft save error:', error);
-      toast.error('Failed to save draft');
-    }
-  });
-
-  // Create final project mutation - using edge function
-  const createProjectMutation = useMutation({
-    mutationFn: async (campaignData: CampaignWizardData) => {
-      if (!brandProfile?.user_id) throw new Error('Brand profile required');
-
-      // Call edge function to create campaign with deals
-      const { data, error } = await supabase.functions.invoke('create-campaign-with-deals', {
-        body: {
-          name: campaignData.name,
-          objective: campaignData.objective,
-          campaign_type: campaignData.campaign_type,
-          description: campaignData.description,
-          content_requirements: campaignData.content_requirements,
-          messaging_guidelines: campaignData.messaging_guidelines,
-          total_budget: campaignData.total_budget,
-          deliverables: campaignData.deliverables,
-          start_date: campaignData.timeline.start_date?.toISOString().split('T')[0],
-          end_date: campaignData.timeline.end_date?.toISOString().split('T')[0],
-          selected_creators: campaignData.selected_creators || []
-        }
-      });
-
-      if (error) throw error;
-      return data.project_id;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['brand-projects'] });
-      toast.success('Campaign created successfully');
-    },
-    onError: (error) => {
-      console.error('Project creation error:', error);
-      toast.error('Failed to create campaign');
-    }
-  });
-
-  // Delete draft mutation
-  const deleteDraftMutation = useMutation({
-    mutationFn: async () => {
-      if (!draftId) return;
+  // Fetch existing draft
+  const { data: existingDraft, isLoading: isDraftLoading } = useQuery({
+    queryKey: ['campaign-draft', brandProfile?.user_id],
+    queryFn: async () => {
+      if (!brandProfile?.user_id) return null;
       
-      try {
-        // Try to delete from database
+      const { data, error } = await supabase
+        .from('project_drafts')
+        .select('*')
+        .eq('brand_id', brandProfile.user_id)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+
+      return data;
+    },
+    enabled: !!brandProfile?.user_id
+  });
+
+  // Save draft mutation
+  const saveDraftMutation = useMutation({
+    mutationFn: async (data: Partial<CampaignWizardData>) => {
+      if (!brandProfile?.user_id) throw new Error('No brand profile');
+
+      const draftData = JSON.stringify(data) as any;
+
+      if (existingDraft?.id) {
         const { error } = await supabase
           .from('project_drafts')
-          .delete()
-          .eq('id', draftId)
-          .eq('brand_id', brandProfile?.id);
-        
+          .update({
+            draft_data: draftData,
+            current_step: currentStep,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingDraft.id)
+          .eq('brand_id', brandProfile.user_id);
+
         if (error) throw error;
-      } catch (error) {
-        console.warn('Database delete failed, removing from localStorage:', error);
+      } else {
+        const { error } = await supabase
+          .from('project_drafts')
+          .insert({
+            brand_id: brandProfile.user_id,
+            draft_data: draftData,
+            current_step: currentStep
+          });
+
+        if (error) throw error;
       }
-      
-      // Always clean up localStorage as well
-      const draftKey = `campaign_draft_${brandProfile?.user_id || 'temp'}`;
-      localStorage.removeItem(draftKey);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['campaign-draft'] });
     }
   });
 
-  // Load draft data from database or localStorage
-  const loadDraft = useCallback(async () => {
-    if (!brandProfile?.id) return;
-    
-    try {
-      if (draftId) {
-        // Load specific draft from database
-        const { data: draftRecord, error } = await supabase
-          .from('project_drafts')
-          .select('*')
-          .eq('id', draftId)
-          .eq('brand_id', brandProfile.id)
-          .single();
-        
-        if (error) throw error;
-        
-        if (draftRecord) {
-          setDraftData(draftRecord.draft_data || {});
-          setCurrentStep(draftRecord.current_step || 1);
-          return;
-        }
-      } else {
-        // Load latest draft for this brand
-        const { data: latestDraft, error } = await supabase
-          .from('project_drafts')
-          .select('*')
-          .eq('brand_id', brandProfile.id)
-          .order('updated_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        
-        if (error) throw error;
-        
-        if (latestDraft) {
-          setDraftData(latestDraft.draft_data || {});
-          setCurrentStep(latestDraft.current_step || 1);
-          return;
-        }
-      }
-    } catch (error) {
-      console.warn('Database load failed, trying localStorage:', error);
+  // Auto-save when form data changes
+  useEffect(() => {
+    if (Object.keys(formData).length > 0) {
+      const timeoutId = setTimeout(() => {
+        saveDraftMutation.mutate(formData);
+      }, 2000); // Auto-save after 2 seconds of inactivity
+
+      return () => clearTimeout(timeoutId);
     }
-    
-    // Fallback to localStorage
-    const draftKey = `campaign_draft_${brandProfile?.user_id || 'temp'}`;
-    const savedDraft = localStorage.getItem(draftKey);
-    
-    if (savedDraft) {
+  }, [formData, saveDraftMutation]);
+
+  // Load existing draft data on mount
+  useEffect(() => {
+    if (existingDraft?.draft_data) {
       try {
-        const parsed = JSON.parse(savedDraft);
-        setDraftData(parsed.data || {});
-        setCurrentStep(parsed.current_step || 1);
+        const parsedData = typeof existingDraft.draft_data === 'string' 
+          ? JSON.parse(existingDraft.draft_data)
+          : existingDraft.draft_data;
+        
+        setFormData(parsedData);
+        setCurrentStep(existingDraft.current_step || 1);
       } catch (error) {
-        console.error('Failed to parse saved draft:', error);
+        console.error('Error parsing draft data:', error);
       }
     }
-  }, [brandProfile?.id, brandProfile?.user_id, draftId]);
+  }, [existingDraft]);
 
-  // Save draft function
-  const saveDraft = useCallback(
-    async (data: Partial<CampaignWizardData>, step: number, silent = false) => {
-      return saveDraftMutation.mutateAsync({ data, step, silent });
-    },
-    [saveDraftMutation]
-  );
+  const updateFormData = (updates: Partial<CampaignWizardData>) => {
+    setFormData(prev => ({ ...prev, ...updates }));
+  };
 
-  // Create project function
-  const createProject = useCallback(
-    async (data: CampaignWizardData) => {
-      return createProjectMutation.mutateAsync(data);
-    },
-    [createProjectMutation]
-  );
+  const nextStep = () => {
+    setCurrentStep(prev => Math.min(prev + 1, 5));
+  };
 
-  // Delete draft function
-  const deleteDraft = useCallback(
-    async () => {
-      return deleteDraftMutation.mutateAsync();
+  const prevStep = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
+
+  const goToStep = (step: number) => {
+    setCurrentStep(Math.max(1, Math.min(step, 5)));
+  };
+
+  // Clear draft when campaign is published
+  const clearDraft = async () => {
+    if (existingDraft?.id && brandProfile?.user_id) {
+      const { error } = await supabase
+        .from('project_drafts')
+        .delete()
+        .eq('id', existingDraft.id)
+        .eq('brand_id', brandProfile.user_id);
+
+      if (error) {
+        console.error('Error clearing draft:', error);
+      } else {
+        setFormData({});
+        setCurrentStep(1);
+        queryClient.invalidateQueries({ queryKey: ['campaign-draft'] });
+      }
+    }
+  };
+
+  // Get specific form sections
+  const getBasicsData = () => ({
+    name: formData.name || '',
+    description: formData.description || '',
+    campaign_type: formData.campaign_type || 'Single',
+    start_date: formData.start_date || '',
+    end_date: formData.end_date || ''
+  });
+
+  const getContentData = () => ({
+    content_requirements: formData.content_requirements || {
+      messaging_guidelines: '',
+      hashtag_requirements: '',
+      mention_requirements: '',
+      visual_guidelines: '',
+      caption_requirements: ''
     },
-    [deleteDraftMutation]
-  );
+    platforms: formData.platforms || []
+  });
+
+  const getBudgetData = () => ({
+    budget: formData.budget || 0,
+    currency: formData.currency || 'USD',
+    deliverables: formData.deliverables || {
+      posts_count: 0,
+      stories_count: 0,
+      reels_count: 0
+    }
+  });
+
+  const getReviewData = () => formData;
+
+  // Update specific sections
+  const updateBasicsData = (data: any) => {
+    updateFormData(data);
+  };
+
+  const updateContentData = (data: any) => {
+    updateFormData(data);
+  };
+
+  const updateBudgetData = (data: any) => {
+    updateFormData(data);
+  };
+
+  // Load existing draft from URL parameter if provided
+  const loadDraft = async (draftId: string) => {
+    if (!brandProfile?.user_id) return;
+    
+    const { data, error } = await supabase
+      .from('project_drafts')
+      .select('*')
+      .eq('id', draftId)
+      .eq('brand_id', brandProfile.user_id)
+      .single();
+
+    if (error) {
+      console.error('Error loading draft:', error);
+      return;
+    }
+
+    try {
+      const parsedData = typeof data.draft_data === 'string' 
+        ? JSON.parse(data.draft_data)
+        : data.draft_data;
+      
+      setFormData(parsedData);
+      setCurrentStep(data.current_step || 1);
+    } catch (error) {
+      console.error('Error parsing draft data:', error);
+    }
+  };
 
   return {
-    draftData,
-    setDraftData,
     currentStep,
-    setCurrentStep,
-    isLoading: saveDraftMutation.isPending || createProjectMutation.isPending,
+    formData,
+    isDraftLoading,
+    existingDraft,
+    updateFormData,
+    nextStep,
+    prevStep,
+    goToStep,
+    clearDraft,
     loadDraft,
-    saveDraft,
-    createProject,
-    deleteDraft,
-    isCreatingProject: createProjectMutation.isPending,
-    draftId
+    saveDraft: () => saveDraftMutation.mutate(formData),
+    isSaving: saveDraftMutation.isPending,
+    
+    // Section-specific getters
+    getBasicsData,
+    getContentData,
+    getBudgetData,
+    getReviewData,
+    
+    // Section-specific updaters
+    updateBasicsData,
+    updateContentData,
+    updateBudgetData
   };
 };

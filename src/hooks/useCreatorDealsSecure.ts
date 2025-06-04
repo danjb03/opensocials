@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
@@ -43,9 +44,9 @@ export const useCreatorDealsSecure = () => {
         throw new Error('User or creator profile not found');
       }
 
-      // Use the creator_deal_view which only exposes net values
+      // Query creator_deals table directly instead of view
       const { data, error } = await supabase
-        .from('creator_deal_view')
+        .from('creator_deals')
         .select(`
           *,
           project:projects_new (

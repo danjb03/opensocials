@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -136,12 +137,12 @@ const SecurePendingDeals = () => {
       updated_at: deal.updated_at,
       deadline: deal.project?.end_date || null,
       project_brief: deal.project?.description || null,
-      campaign_goals: contentRequirements?.messaging_guidelines || null,
+      campaign_goals: (contentRequirements as any)?.messaging_guidelines || null,
       target_audience: null, // Not available in new structure
       deliverables: deliverables ? [
-        ...(deliverables.posts_count ? [`${deliverables.posts_count} posts`] : []),
-        ...(deliverables.stories_count ? [`${deliverables.stories_count} stories`] : []),
-        ...(deliverables.reels_count ? [`${deliverables.reels_count} reels`] : [])
+        ...((deliverables as any)?.posts_count ? [`${(deliverables as any).posts_count} posts`] : []),
+        ...((deliverables as any)?.stories_count ? [`${(deliverables as any).stories_count} stories`] : []),
+        ...((deliverables as any)?.reels_count ? [`${(deliverables as any).reels_count} reels`] : [])
       ] : [],
       profiles: {
         company_name: deal.project?.brand_profile?.company_name || 'Unknown Brand',

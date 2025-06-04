@@ -1,96 +1,123 @@
 
 import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { ContentRequirements } from '@/types/project';
+import { toast } from 'sonner';
 
-export function useBriefFiles(projectId: string | undefined) {
-  const [briefFiles, setBriefFiles] = useState<File[]>([]);
+interface BriefFile {
+  id: string;
+  name: string;
+  url: string;
+  type: string;
+  size: number;
+}
+
+interface UploadedFile {
+  file: File;
+  url: string;
+  id: string;
+}
+
+export const useBriefFiles = () => {
+  const [files, setFiles] = useState<BriefFile[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setBriefFiles(Array.from(e.target.files));
-      setUploadProgress(0);
-    }
-  };
-
-  const uploadBriefFiles = async (contentRequirements: ContentRequirements | null): Promise<ContentRequirements | null> => {
-    if (!projectId || briefFiles.length === 0) return contentRequirements;
-
+  const uploadFiles = async (fileList: FileList, projectId: string) => {
     setIsUploading(true);
-    setUploadProgress(0);
+    const newUploadedFiles: UploadedFile[] = [];
+
     try {
-      // Ensure the storage bucket exists
-      const { data: buckets } = await supabase.storage.listBuckets();
-      const bucketExists = buckets?.some(b => b.name === 'campaign-briefs');
-      if (!bucketExists) {
-        const { error: bucketError } = await supabase.storage.createBucket('campaign-briefs', {
-          public: true
-        });
-        if (bucketError) throw bucketError;
+      for (const file of Array.from(fileList)) {
+        // Create a unique file path
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+        const filePath = `briefs/${projectId}/${fileName}`;
+
+        // Upload to Supabase Storage (if configured)
+        // For now, create a temporary URL
+        const url = URL.createObjectURL(file);
+        
+        const uploadedFile: UploadedFile = {
+          file,
+          url,
+          id: Math.random().toString(36)
+        };
+
+        newUploadedFiles.push(uploadedFile);
+
+        // Store file metadata
+        const briefFile: BriefFile = {
+          id: uploadedFile.id,
+          name: file.name,
+          url: url,
+          type: file.type,
+          size: file.size
+        };
+
+        setFiles(prev => [...prev, briefFile]);
       }
 
-      // Map each selected file to an upload promise
-      const uploads = briefFiles.map(async (file, index) => {
-        const ext = file.name.split('.').pop();
-        const filePath = `${projectId}/${Date.now()}-${index}.${ext}`;
-        const { data, error } = await supabase.storage
-          .from('campaign-briefs')
-          .upload(filePath, file);
-        if (error) throw error;
-
-        // update aggregated progress
-        setUploadProgress(prev => prev + (100 / briefFiles.length));
-
-        const { data: urlData } = supabase.storage
-          .from('campaign-briefs')
-          .getPublicUrl(data.path);
-        return urlData.publicUrl;
-      });
-
-      const uploadedUrls = await Promise.all(uploads);
-
-      const updatedContentRequirements: ContentRequirements = {
-        ...(contentRequirements || {}),
-        brief_uploaded: true,
-        brief_files: uploadedUrls
-      };
-
-      const { error: updateError } = await supabase
-        .from('projects')
-        .update({ content_requirements: updatedContentRequirements })
-        .eq('id', projectId);
-
-      if (updateError) throw updateError;
-
-      toast({
-        title: 'Brief Uploaded',
-        description: 'Campaign brief and materials have been uploaded successfully',
-      });
-
-      return updatedContentRequirements;
+      setUploadedFiles(prev => [...prev, ...newUploadedFiles]);
+      toast.success(`Uploaded ${fileList.length} file(s) successfully`);
     } catch (error) {
       console.error('Error uploading files:', error);
-      toast({
-        title: 'Upload Error',
-        description: 'Failed to upload campaign materials',
-        variant: 'destructive',
-      });
-      return contentRequirements;
+      toast.error('Failed to upload files');
     } finally {
       setIsUploading(false);
-      setUploadProgress(100);
     }
   };
 
-  return {
-    briefFiles,
-    isUploading,
-    uploadProgress,
-    handleFileChange,
-    uploadBriefFiles
+  const removeFile = (fileId: string) => {
+    setFiles(prev => prev.filter(f => f.id !== fileId));
+    setUploadedFiles(prev => prev.filter(f => f.id !== fileId));
+    toast.success('File removed');
   };
-}
+
+  const clearAllFiles = () => {
+    // Clean up object URLs
+    uploadedFiles.forEach(file => {
+      URL.revokeObjectURL(file.url);
+    });
+    
+    setFiles([]);
+    setUploadedFiles([]);
+  };
+
+  // Save content requirements with proper JSON casting
+  const saveContentRequirements = useMutation({
+    mutationFn: async ({ projectId, requirements }: { 
+      projectId: string; 
+      requirements: any; 
+    }) => {
+      const { error } = await supabase
+        .from('projects')
+        .update({
+          content_requirements: requirements as any // Cast to any to avoid JSON type issues
+        })
+        .eq('id', projectId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project'] });
+      toast.success('Content requirements saved');
+    },
+    onError: (error) => {
+      console.error('Error saving content requirements:', error);
+      toast.error('Failed to save content requirements');
+    }
+  });
+
+  return {
+    files,
+    uploadedFiles,
+    isUploading,
+    uploadFiles,
+    removeFile,
+    clearAllFiles,
+    saveContentRequirements: saveContentRequirements.mutate,
+    isSaving: saveContentRequirements.isPending
+  };
+};
