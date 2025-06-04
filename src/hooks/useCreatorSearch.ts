@@ -101,34 +101,48 @@ export const useCreatorSearch = () => {
 
         // Transform creator_profiles data to Creator interface
         const transformedCreators: Creator[] = (data || []).map((profile, index) => {
-          // Safely handle social_links JSON type
+          // Safely handle social_handles JSON type
           const socialLinks: Record<string, string> = {};
-          if (profile.social_links && typeof profile.social_links === 'object' && !Array.isArray(profile.social_links)) {
-            Object.entries(profile.social_links).forEach(([key, value]) => {
+          if (profile.social_handles && typeof profile.social_handles === 'object' && !Array.isArray(profile.social_handles)) {
+            Object.entries(profile.social_handles).forEach(([key, value]) => {
               if (typeof value === 'string') {
                 socialLinks[key] = value;
               }
             });
           }
 
+          // Safe display name construction
+          const displayName = profile.first_name && profile.last_name 
+            ? `${profile.first_name} ${profile.last_name}`
+            : profile.username || 'Unknown Creator';
+
+          // Safe location extraction
+          let locationString = 'Global';
+          if (typeof profile.audience_location === 'string') {
+            locationString = profile.audience_location;
+          } else if (profile.audience_location && typeof profile.audience_location === 'object') {
+            const locationObj = profile.audience_location as any;
+            locationString = locationObj.primary || 'Global';
+          }
+
           return {
             id: index + 1, // Use index as id since creator_profiles doesn't have numeric id
-            name: profile.display_name || 'Unknown Creator',
+            name: displayName,
             platform: profile.primary_platform || 'Unknown',
-            imageUrl: '/placeholder.svg', // Default image since not stored in creator_profiles
+            imageUrl: profile.avatar_url || '/placeholder.svg',
             followers: profile.follower_count?.toString() || '0',
             engagement: profile.engagement_rate ? `${profile.engagement_rate}%` : '0%',
             audience: profile.audience_type || 'Unknown',
             contentType: profile.content_type || 'Unknown',
-            location: profile.audience_location || 'Global',
+            location: locationString,
             bio: profile.bio || '',
             about: profile.bio || '',
-            skills: profile.categories || [],
+            skills: profile.content_types || [],
             priceRange: '$500 - $2,000', // Default since not in creator_profiles
-            bannerImageUrl: undefined,
+            bannerImageUrl: profile.banner_url || undefined,
             socialLinks,
             audienceLocation: {
-              primary: profile.audience_location || 'Global',
+              primary: locationString,
               secondary: [],
               countries: []
             },

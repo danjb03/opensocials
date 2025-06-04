@@ -88,34 +88,48 @@ export const useCreatorProfileModal = () => {
 
       if (data) {
         // Transform creator_profiles data to Creator interface
-        // Safely handle social_links JSON type
+        // Safely handle social_handles JSON type
         const socialLinks: Record<string, string> = {};
-        if (data.social_links && typeof data.social_links === 'object' && !Array.isArray(data.social_links)) {
-          Object.entries(data.social_links).forEach(([key, value]) => {
+        if (data.social_handles && typeof data.social_handles === 'object' && !Array.isArray(data.social_handles)) {
+          Object.entries(data.social_handles).forEach(([key, value]) => {
             if (typeof value === 'string') {
               socialLinks[key] = value;
             }
           });
         }
 
+        // Safe display name construction
+        const displayName = data.first_name && data.last_name 
+          ? `${data.first_name} ${data.last_name}`
+          : data.username || 'Unknown Creator';
+
+        // Safe location extraction
+        let locationString = 'Global';
+        if (typeof data.audience_location === 'string') {
+          locationString = data.audience_location;
+        } else if (data.audience_location && typeof data.audience_location === 'object') {
+          const locationObj = data.audience_location as any;
+          locationString = locationObj.primary || 'Global';
+        }
+
         const transformedCreator: Creator = {
           id: creatorId,
-          name: data.display_name || 'Unknown Creator',
+          name: displayName,
           platform: data.primary_platform || 'Unknown',
-          imageUrl: '/placeholder.svg',
+          imageUrl: data.avatar_url || '/placeholder.svg',
           followers: data.follower_count?.toString() || '0',
           engagement: data.engagement_rate ? `${data.engagement_rate}%` : '0%',
           audience: data.audience_type || 'Unknown',
           contentType: data.content_type || 'Unknown',
-          location: data.audience_location || 'Global',
+          location: locationString,
           bio: data.bio || '',
           about: data.bio || '',
-          skills: data.categories || [],
+          skills: data.content_types || [],
           priceRange: '$500 - $2,000',
-          bannerImageUrl: undefined,
+          bannerImageUrl: data.banner_url || undefined,
           socialLinks,
           audienceLocation: {
-            primary: data.audience_location || 'Global',
+            primary: locationString,
             secondary: [],
             countries: []
           },

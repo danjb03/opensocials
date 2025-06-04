@@ -42,7 +42,34 @@ export const useCreatorProfileData = () => {
         }
 
         if (creatorData) {
-          const transformedProfile = transformCreatorProfile(creatorData);
+          // Transform the data to match CreatorProfileRecord interface
+          const transformedData = {
+            user_id: creatorData.user_id,
+            display_name: creatorData.first_name && creatorData.last_name 
+              ? `${creatorData.first_name} ${creatorData.last_name}` 
+              : creatorData.username || null,
+            bio: creatorData.bio,
+            follower_count: creatorData.follower_count,
+            engagement_rate: creatorData.engagement_rate,
+            primary_platform: creatorData.primary_platform,
+            content_type: creatorData.content_type,
+            audience_type: creatorData.audience_type,
+            audience_location: typeof creatorData.audience_location === 'string' 
+              ? creatorData.audience_location 
+              : JSON.stringify(creatorData.audience_location || {}),
+            creator_type: creatorData.creator_type,
+            industries: creatorData.industries,
+            categories: creatorData.content_types,
+            platform_types: creatorData.platforms,
+            social_links: creatorData.social_handles || null,
+            audience_stats: null,
+            headline: null,
+            rate_card_url: null,
+            created_at: creatorData.created_at,
+            updated_at: creatorData.updated_at
+          };
+          
+          const transformedProfile = transformCreatorProfile(transformedData);
           
           // Add avatar URL from profiles table
           if (profileData?.avatar_url) {

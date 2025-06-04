@@ -60,7 +60,28 @@ export const useCreatorSearchNew = () => {
         }
 
         console.log('Raw creator profiles data:', data);
-        setCreators(data || []);
+        
+        // Transform data to match our Creator interface
+        const transformedData = (data || []).map(profile => ({
+          id: profile.id,
+          user_id: profile.user_id,
+          display_name: profile.first_name && profile.last_name 
+            ? `${profile.first_name} ${profile.last_name}`
+            : profile.username || null,
+          bio: profile.bio,
+          primary_platform: profile.primary_platform,
+          follower_count: profile.follower_count,
+          engagement_rate: profile.engagement_rate,
+          audience_type: profile.audience_type,
+          content_type: profile.content_type,
+          industries: profile.industries,
+          platforms: profile.platforms,
+          avatar_url: profile.avatar_url,
+          audience_location: profile.audience_location,
+          content_types: profile.content_types
+        }));
+        
+        setCreators(transformedData);
       } catch (error) {
         console.error('Error in fetchCreators:', error);
         toast.error('Failed to load creators');
