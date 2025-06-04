@@ -80,6 +80,25 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
       case 'contract_payment':
         return <ContractPaymentStage order={currentOrder} onComplete={handleMoveNext} />;
       case 'planning_creation':
+        return (
+          <div className="space-y-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">Planning & Creation Stage</h3>
+              <p className="text-blue-700 mb-4">
+                Creators are now working on content creation. You can track progress and communicate with creators.
+              </p>
+              <div className="flex gap-3">
+                <button 
+                  onClick={handleMoveNext}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                >
+                  Mark as Complete
+                </button>
+              </div>
+            </div>
+            <CampaignCreators creators={currentOrder.creators} orderId={currentOrder.id} />
+          </div>
+        );
       case 'content_performance':
         return <CampaignContent order={currentOrder} />;
       default:

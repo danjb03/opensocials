@@ -3,11 +3,13 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Order } from '@/types/orders';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Upload, CreditCard, Info, Check } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { FileText, Upload, CreditCard, Info, Check, Edit, Plus } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import BriefCreationForm, { BriefFormData } from './BriefCreationForm';
 
 interface ContractPaymentStageProps {
   order: Order;
@@ -23,6 +25,9 @@ const ContractPaymentStage: React.FC<ContractPaymentStageProps> = ({
   const [briefFiles, setBriefFiles] = useState<File[]>([]);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [isPaymentSuccessOpen, setIsPaymentSuccessOpen] = useState(false);
+  const [briefMethod, setBriefMethod] = useState<'form' | 'upload'>('form');
+  const [hasBrief, setHasBrief] = useState(false);
+  const [briefData, setBriefData] = useState<BriefFormData | null>(null);
   const { toast } = useToast();
 
   const handleContractFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,11 +42,22 @@ const ContractPaymentStage: React.FC<ContractPaymentStageProps> = ({
     }
   };
 
+  const handleBriefSave = (data: BriefFormData) => {
+    setBriefData(data);
+    setHasBrief(true);
+    toast({
+      title: "Brief Created",
+      description: "Campaign brief has been saved successfully."
+    });
+  };
+
   const initiatePayment = () => {
-    if (contractFiles.length === 0 || briefFiles.length === 0) {
+    const hasBriefContent = briefMethod === 'form' ? hasBrief : briefFiles.length > 0;
+    
+    if (contractFiles.length === 0 || !hasBriefContent) {
       toast({
-        title: "Files Required",
-        description: "Please upload both contract documents and campaign brief before proceeding to payment.",
+        title: "Requirements Missing",
+        description: "Please complete both contract documents and campaign brief before proceeding to payment.",
         variant: "destructive"
       });
       return;
@@ -77,50 +93,108 @@ const ContractPaymentStage: React.FC<ContractPaymentStageProps> = ({
         <CardContent className="p-6">
           <h3 className="text-xl font-bold text-gray-900 mb-6">Contract & Payment</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            {/* Campaign Brief Upload Section */}
-            <div className="space-y-3">
-              <h4 className="text-base font-semibold text-gray-800 mb-2">Campaign Brief</h4>
-              <p className="text-gray-600 text-sm mb-4">
-                Upload the campaign brief document with all project details
-              </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Campaign Brief Section */}
+            <div className="space-y-4">
+              <h4 className="text-base font-semibold text-gray-800">Campaign Brief</h4>
               
-              <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 bg-white hover:border-blue-300 transition-colors">
-                <div className="flex flex-col items-center justify-center text-center">
-                  <Upload className="h-10 w-10 text-blue-500 mb-4" />
-                  <p className="text-sm font-medium mb-2">Drag and drop or click to upload</p>
-                  <p className="text-xs text-gray-500 mb-4">PDF, DOCX, or PPT files</p>
-                  
-                  <label htmlFor="brief-upload">
-                    <Button variant="outline" className="bg-blue-600 hover:bg-blue-700 text-white border-0">
-                      <FileText className="mr-2 h-4 w-4" />
-                      Select Brief Files
-                    </Button>
-                    <input 
-                      id="brief-upload" 
-                      name="brief-upload" 
-                      type="file" 
-                      className="sr-only" 
-                      multiple
-                      onChange={handleBriefFileChange}
-                    />
-                  </label>
-                </div>
-              </div>
-              
-              {briefFiles.length > 0 && (
-                <div className="mt-4">
-                  <p className="text-sm font-medium mb-2">Selected Brief Files:</p>
-                  <div className="space-y-2">
-                    {briefFiles.map((file, index) => (
-                      <div key={index} className="flex items-center p-2 rounded-lg bg-white border border-gray-200 shadow-sm">
-                        <Check className="h-4 w-4 text-green-500 mr-2" />
-                        <span className="text-sm">{file.name}</span>
+              <Tabs value={briefMethod} onValueChange={(value) => setBriefMethod(value as 'form' | 'upload')}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="form" className="flex items-center gap-2">
+                    <Edit className="h-4 w-4" />
+                    Create Brief
+                  </TabsTrigger>
+                  <TabsTrigger value="upload" className="flex items-center gap-2">
+                    <Upload className="h-4 w-4" />
+                    Upload Brief
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="form" className="space-y-3">
+                  {!hasBrief ? (
+                    <div className="border border-blue-200 rounded-xl p-6 bg-blue-50">
+                      <div className="text-center space-y-3">
+                        <Plus className="h-10 w-10 text-blue-600 mx-auto" />
+                        <div>
+                          <h5 className="font-medium text-blue-900 mb-1">Create Campaign Brief</h5>
+                          <p className="text-sm text-blue-700 mb-4">
+                            Use our form to create a comprehensive brief with all campaign details
+                          </p>
+                        </div>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button className="bg-blue-600 hover:bg-blue-700">
+                              <Edit className="mr-2 h-4 w-4" />
+                              Start Creating Brief
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle>Create Campaign Brief</DialogTitle>
+                            </DialogHeader>
+                            <BriefCreationForm
+                              orderId={order.id}
+                              onSave={handleBriefSave}
+                              onCancel={() => {}}
+                            />
+                          </DialogContent>
+                        </Dialog>
                       </div>
-                    ))}
+                    </div>
+                  ) : (
+                    <div className="border border-green-200 rounded-xl p-4 bg-green-50">
+                      <div className="flex items-center gap-3">
+                        <Check className="h-8 w-8 text-green-600" />
+                        <div>
+                          <h5 className="font-medium text-green-900">Brief Created Successfully</h5>
+                          <p className="text-sm text-green-700">
+                            Campaign brief is ready with {briefData?.deliverables?.length || 0} deliverables
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="upload" className="space-y-3">
+                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 bg-white hover:border-blue-300 transition-colors">
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <Upload className="h-10 w-10 text-blue-500 mb-4" />
+                      <p className="text-sm font-medium mb-2">Drag and drop or click to upload</p>
+                      <p className="text-xs text-gray-500 mb-4">PDF, DOCX, or PPT files</p>
+                      
+                      <label htmlFor="brief-upload">
+                        <Button variant="outline" className="bg-blue-600 hover:bg-blue-700 text-white border-0">
+                          <FileText className="mr-2 h-4 w-4" />
+                          Select Brief Files
+                        </Button>
+                        <input 
+                          id="brief-upload" 
+                          name="brief-upload" 
+                          type="file" 
+                          className="sr-only" 
+                          multiple
+                          onChange={handleBriefFileChange}
+                        />
+                      </label>
+                    </div>
                   </div>
-                </div>
-              )}
+                  
+                  {briefFiles.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Selected Brief Files:</p>
+                      <div className="space-y-2">
+                        {briefFiles.map((file, index) => (
+                          <div key={index} className="flex items-center p-2 rounded-lg bg-white border border-gray-200 shadow-sm">
+                            <Check className="h-4 w-4 text-green-500 mr-2" />
+                            <span className="text-sm">{file.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </div>
             
             {/* Contract Documents Upload Section */}

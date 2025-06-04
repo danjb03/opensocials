@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Send, DollarSign, Users, TrendingUp } from 'lucide-react';
@@ -191,14 +191,7 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
           ) : availableCreators && availableCreators.length > 0 ? (
             availableCreators.map((creator) => {
               const isSelected = selectedCreators.includes(creator.user_id);
-              const creatorName = creator.profiles?.full_name || creator.name;
-              const handle = creator.instagram_handle 
-                ? `@${creator.instagram_handle}` 
-                : creator.tiktok_handle 
-                ? `@${creator.tiktok_handle}`
-                : creator.youtube_handle 
-                ? `@${creator.youtube_handle}`
-                : '@creator';
+              const creatorName = creator.name || 'Unknown Creator';
 
               return (
                 <div 
@@ -208,7 +201,6 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
                   }`}
                 >
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={creator.profiles?.avatar_url} alt={creatorName} />
                     <AvatarFallback>{creatorName?.slice(0, 2).toUpperCase()}</AvatarFallback>
                   </Avatar>
                   
@@ -216,18 +208,10 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
                     <div className="flex items-center gap-2">
                       <h4 className="font-medium">{creatorName}</h4>
                       <Badge variant="outline" className="text-xs">
-                        {creator.primary_platform}
+                        Creator
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-600">{handle}</p>
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      {creator.follower_count && (
-                        <span>{creator.follower_count.toLocaleString()} followers</span>
-                      )}
-                      {creator.engagement_rate && (
-                        <span>{creator.engagement_rate}% engagement</span>
-                      )}
-                    </div>
+                    <p className="text-sm text-gray-600">{creator.email || 'No email'}</p>
                   </div>
 
                   <div className="flex items-center gap-2">
