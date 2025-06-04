@@ -259,36 +259,6 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
               {renderCurrentStep()}
             </motion.div>
           </AnimatePresence>
-
-          {/* Navigation */}
-          <div className="flex justify-between items-center mt-8 pt-6 border-t">
-            <Button
-              variant="outline"
-              onClick={handlePreviousStep}
-              disabled={currentStep === 1}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Previous
-            </Button>
-
-            <div className="flex items-center gap-4">
-              <Badge variant="secondary" className="px-3 py-1">
-                Auto-save enabled
-              </Badge>
-              
-              {currentStep < 5 && (
-                <Button
-                  onClick={() => nextStep()}
-                  className="flex items-center gap-2"
-                  disabled={!formData || Object.keys(formData).length === 0}
-                >
-                  Next
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          </div>
         </div>
       </div>
     </BrandLayout>
