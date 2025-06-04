@@ -97,6 +97,32 @@ const SecurePendingDeals = () => {
   const convertDealForDialog = (deal: CreatorDealSecure | null) => {
     if (!deal) return null;
     
+    // Safe JSON parsing helpers
+    const getContentRequirements = () => {
+      try {
+        if (typeof deal.project?.content_requirements === 'object' && deal.project?.content_requirements !== null) {
+          return deal.project.content_requirements as any;
+        }
+        return {};
+      } catch {
+        return {};
+      }
+    };
+
+    const getDeliverables = () => {
+      try {
+        if (typeof deal.project?.deliverables === 'object' && deal.project?.deliverables !== null) {
+          return deal.project.deliverables as any;
+        }
+        return {};
+      } catch {
+        return {};
+      }
+    };
+
+    const contentRequirements = getContentRequirements();
+    const deliverables = getDeliverables();
+    
     return {
       id: deal.id,
       title: deal.project?.name || 'Campaign Offer',
@@ -105,17 +131,17 @@ const SecurePendingDeals = () => {
       status: deal.status,
       feedback: deal.creator_feedback || '',
       creator_id: deal.creator_id,
-      brand_id: deal.project?.brand_profile?.id || '',
+      brand_id: 'unknown', // Not available in new structure
       created_at: deal.created_at,
       updated_at: deal.updated_at,
       deadline: deal.project?.end_date || null,
       project_brief: deal.project?.description || null,
-      campaign_goals: deal.project?.content_requirements?.messaging_guidelines || null,
+      campaign_goals: contentRequirements?.messaging_guidelines || null,
       target_audience: null, // Not available in new structure
-      deliverables: deal.project?.deliverables ? [
-        ...(deal.project.deliverables.posts_count ? [`${deal.project.deliverables.posts_count} posts`] : []),
-        ...(deal.project.deliverables.stories_count ? [`${deal.project.deliverables.stories_count} stories`] : []),
-        ...(deal.project.deliverables.reels_count ? [`${deal.project.deliverables.reels_count} reels`] : [])
+      deliverables: deliverables ? [
+        ...(deliverables.posts_count ? [`${deliverables.posts_count} posts`] : []),
+        ...(deliverables.stories_count ? [`${deliverables.stories_count} stories`] : []),
+        ...(deliverables.reels_count ? [`${deliverables.reels_count} reels`] : [])
       ] : [],
       profiles: {
         company_name: deal.project?.brand_profile?.company_name || 'Unknown Brand',
