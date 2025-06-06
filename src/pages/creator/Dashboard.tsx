@@ -41,7 +41,7 @@ const Dashboard = () => {
     );
   }
 
-  // Create a safe profile object using the correct property names from CreatorProfile interface
+  // Create a safe profile object using the correct property names from database schema
   const safeProfile = {
     isProfileComplete: profile?.is_profile_complete || false,
     firstName: profile?.first_name || '',

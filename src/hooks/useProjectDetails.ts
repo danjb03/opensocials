@@ -36,7 +36,7 @@ export function useProjectDetails() {
     updateCampaignStatus,
     showBlockedMessage,
     hideBlockedAlert
-  } = useCampaignProgress();
+  } = useCampaignProgress(id || '');
 
   useEffect(() => {
     const fetchProject = async () => {
