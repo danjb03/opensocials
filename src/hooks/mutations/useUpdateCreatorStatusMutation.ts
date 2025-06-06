@@ -14,7 +14,7 @@ export const useUpdateCreatorInvitationStatus = () => {
       contractSignedDate,
     }: {
       projectCreatorId: string;
-      status: 'accepted' | 'declined' | 'contracted' | 'in_progress' | 'submitted' | 'completed' | 'cancelled';
+      status: 'invited' | 'accepted' | 'declined' | 'contracted' | 'in_progress' | 'submitted' | 'completed' | 'cancelled';
       responseDate?: string;
       contractSignedDate?: string;
     }) => {
