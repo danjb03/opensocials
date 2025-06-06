@@ -216,33 +216,13 @@ export const useRemoveCreatorFromProject = () => {
 
       return projectCreatorId;
     },
-    onSuccess: (_, projectCreatorId) => {
-      toast.success('Creator removed from project');
-      // Invalidate all project-creators queries since we don't have the project ID
+    onSuccess: () => {
+      toast.success('Creator removed successfully');
       queryClient.invalidateQueries({ queryKey: ['project-creators'] });
     },
     onError: (error) => {
       console.error('Failed to remove creator:', error);
       toast.error('Failed to remove creator. Please try again.');
     },
-  });
-};
-
-// Get project payment summary - temporarily disabled since function doesn't exist
-export const useProjectPaymentSummary = (projectId: string) => {
-  return useQuery({
-    queryKey: ['project-payment-summary', projectId],
-    queryFn: async () => {
-      console.log('Payment summary functionality not available - database function missing');
-      return {
-        totalAmount: 0,
-        completedAmount: 0,
-        pendingAmount: 0,
-        processingAmount: 0,
-        totalPayments: 0,
-        completedPayments: 0,
-      };
-    },
-    enabled: !!projectId,
   });
 };

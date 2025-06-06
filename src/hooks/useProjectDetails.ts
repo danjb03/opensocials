@@ -62,7 +62,7 @@ export function useProjectDetails() {
         const contentReqs = data.content_requirements as ContentRequirements | null;
         setBriefUploaded(contentReqs?.brief_uploaded || false);
         
-        // Check if next step should be blocked - pass the content requirements
+        // Check if next step should be blocked - pass the content requirements with default empty object
         checkStepBlocked(step, contentReqs || {});
       } catch (error) {
         console.error('Error fetching project:', error);
@@ -116,7 +116,7 @@ export function useProjectDetails() {
         setCurrentStep(newStep);
         setProject({...project, status: stepStatusMap[newStep]});
         
-        // Check if the new step should block progression
+        // Check if the new step should block progression with default empty object
         checkStepBlocked(newStep, project.content_requirements || {});
       }
     } catch (error) {

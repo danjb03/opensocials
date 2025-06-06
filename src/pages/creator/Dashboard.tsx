@@ -50,7 +50,7 @@ const Dashboard = () => {
     bannerUrl: profile?.banner_url || '',
     bio: profile?.bio || '',
     primaryPlatform: profile?.primary_platform || '',
-    followerCount: profile?.follower_count || 0,
+    followerCount: profile?.audience_size || 0,
     engagementRate: profile?.engagement_rate || 0,
     contentTypes: profile?.content_types || [],
     platforms: profile?.platforms || [],
