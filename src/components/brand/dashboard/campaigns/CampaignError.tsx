@@ -3,11 +3,10 @@ import React, { memo } from 'react';
 import { AlertTriangle, RefreshCw, Home, Wifi } from 'lucide-react';
 import { AccessibleButton } from '@/components/ui/accessible-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useRetry } from '@/hooks/useRetry';
 
 interface CampaignErrorProps {
   error: string;
-  onRetry: () => void;
+  onRetry: () => Promise<void> | void;
   onGoHome?: () => void;
   type?: 'network' | 'server' | 'permission' | 'general';
 }
@@ -18,10 +17,18 @@ const CampaignErrorMemo = memo(({
   onGoHome,
   type = 'general' 
 }: CampaignErrorProps) => {
-  const { retry: retryWithBackoff, isRetrying } = useRetry(onRetry, {
-    maxAttempts: 3,
-    initialDelay: 1000,
-  });
+  const [isRetrying, setIsRetrying] = React.useState(false);
+
+  const handleRetry = async () => {
+    setIsRetrying(true);
+    try {
+      await Promise.resolve(onRetry());
+    } catch (err) {
+      console.error('Retry failed:', err);
+    } finally {
+      setIsRetrying(false);
+    }
+  };
 
   const getErrorConfig = () => {
     switch (type) {
@@ -86,7 +93,7 @@ const CampaignErrorMemo = memo(({
           
           <div className="flex flex-col sm:flex-row gap-2">
             <AccessibleButton 
-              onClick={retryWithBackoff}
+              onClick={handleRetry}
               className="flex-1"
               variant="default"
               loading={isRetrying}

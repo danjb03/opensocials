@@ -13,6 +13,12 @@ import { ToastManager } from '@/components/ui/toast-manager';
 import { AccessibleButton } from '@/components/ui/accessible-button';
 import { Plus, Filter } from 'lucide-react';
 
+interface ProjectFilters {
+  search?: string;
+  status?: string;
+  dateRange?: { start: Date; end: Date };
+}
+
 const Projects = () => {
   const { user } = useUnifiedAuth();
   const location = useLocation();
@@ -41,14 +47,16 @@ const Projects = () => {
 
   const handleSearch = (value: string) => {
     setSearchQuery(value);
-    handleFiltersChange({ ...filters, search: value });
+    const updatedFilters: ProjectFilters = { ...filters, search: value };
+    handleFiltersChange(updatedFilters);
   };
 
   const filteredProjects = projects.filter(project => {
     if (!searchQuery) return true;
-    return project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           project.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    return project.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
+
+  const errorMessage = error instanceof Error ? error.message : error;
 
   return (
     <BrandLayout>
@@ -141,7 +149,7 @@ const Projects = () => {
 
         {/* Toast notifications */}
         <ToastManager 
-          error={error}
+          error={errorMessage}
           onErrorDismiss={() => {}}
         />
       </div>

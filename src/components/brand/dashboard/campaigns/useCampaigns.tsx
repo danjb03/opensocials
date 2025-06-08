@@ -81,24 +81,33 @@ export function useCampaigns(): UseCampaignsReturn {
       }
 
       // Transform data to match CampaignRow interface
-      const transformedCampaigns: CampaignRow[] = (data || []).map(project => ({
-        project_id: project.id,
-        project_name: project.name,
-        project_status: project.status || 'draft',
-        start_date: project.start_date,
-        end_date: project.end_date,
-        budget: project.budget || 0,
-        currency: project.currency || 'USD',
-        deal_id: project.creator_deals?.[0]?.id || null,
-        deal_status: project.creator_deals?.[0]?.status || null,
-        deal_value: project.creator_deals?.[0]?.deal_value || null,
-        creator_name: project.creator_deals?.[0]?.creator_profiles 
-          ? `${project.creator_deals[0].creator_profiles.first_name} ${project.creator_deals[0].creator_profiles.last_name}`
-          : null,
-        avatar_url: project.creator_deals?.[0]?.creator_profiles?.avatar_url || null,
-        engagement_rate: project.creator_deals?.[0]?.creator_profiles?.engagement_rate?.toString() || null,
-        primary_platform: project.creator_deals?.[0]?.creator_profiles?.primary_platform || null,
-      }));
+      const transformedCampaigns: CampaignRow[] = (data || []).map(project => {
+        // Get the first creator deal if available
+        const firstDeal = Array.isArray(project.creator_deals) && project.creator_deals.length > 0 
+          ? project.creator_deals[0] 
+          : null;
+
+        const creatorProfile = firstDeal?.creator_profiles;
+
+        return {
+          project_id: project.id,
+          project_name: project.name,
+          project_status: project.status || 'draft',
+          start_date: project.start_date,
+          end_date: project.end_date,
+          budget: project.budget || 0,
+          currency: project.currency || 'USD',
+          deal_id: firstDeal?.id || null,
+          deal_status: firstDeal?.status || null,
+          deal_value: firstDeal?.deal_value || null,
+          creator_name: creatorProfile 
+            ? `${creatorProfile.first_name} ${creatorProfile.last_name}`
+            : null,
+          avatar_url: creatorProfile?.avatar_url || null,
+          engagement_rate: creatorProfile?.engagement_rate?.toString() || null,
+          primary_platform: creatorProfile?.primary_platform || null,
+        };
+      });
 
       setCampaigns(transformedCampaigns);
       
