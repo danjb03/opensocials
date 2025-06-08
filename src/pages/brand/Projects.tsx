@@ -34,7 +34,7 @@ const Projects = () => {
 
   return (
     <BrandLayout>
-      <div className="container mx-auto p-6 max-w-7xl">
+      <div className="container mx-auto p-6 max-w-7xl animate-fade-in">
         <ProjectsHeader 
           filters={filters}
           onFiltersChange={handleFiltersChange}
@@ -42,12 +42,16 @@ const Projects = () => {
         />
         
         {/* Projects Content */}
-        <Card className="overflow-hidden border-slate-200">
+        <Card className="overflow-hidden border-slate-200 transition-all duration-300 hover:shadow-lg">
           <CardContent className="p-0">
             {!isLoading && projects.length === 0 ? (
-              <EmptyProjectsState onCreateProject={handleCreateProject} />
+              <div className="animate-scale-in">
+                <EmptyProjectsState onCreateProject={handleCreateProject} />
+              </div>
             ) : (
-              <ProjectsTable projects={projects} isLoading={isLoading} />
+              <div className="animate-slide-up">
+                <ProjectsTable projects={projects} isLoading={isLoading} />
+              </div>
             )}
           </CardContent>
         </Card>
