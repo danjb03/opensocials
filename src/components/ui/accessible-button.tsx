@@ -17,10 +17,33 @@ const AccessibleButton = forwardRef<HTMLButtonElement, AccessibleButtonProps>(
     loadingText = 'Loading...', 
     disabled,
     className,
+    asChild,
     ...props 
   }, ref) => {
     const isDisabled = disabled || loading;
 
+    // When using asChild, we can't modify children structure
+    // because it needs to be a single React element for Slot
+    if (asChild) {
+      return (
+        <Button
+          ref={ref}
+          disabled={isDisabled}
+          aria-disabled={isDisabled}
+          className={cn(
+            "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+            "disabled:opacity-50 disabled:cursor-not-allowed",
+            className
+          )}
+          asChild={asChild}
+          {...props}
+        >
+          {children}
+        </Button>
+      );
+    }
+
+    // Normal button behavior with loading states
     return (
       <Button
         ref={ref}
