@@ -1,7 +1,6 @@
 
 import { Loader } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import AdminLayout from '@/components/layouts/AdminLayout';
 import { CreatorCRMTable } from '@/components/admin/crm/creators/CreatorCRMTable';
 import { CreatorCRMSearch } from '@/components/admin/crm/creators/CreatorCRMSearch';
 import { useCreatorCRM } from '@/hooks/admin/useCreatorCRM';
@@ -26,15 +25,17 @@ export default function CreatorsCRM() {
   }));
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Creator CRM</h1>
-        <div className="flex items-center gap-4">
-          <CreatorCRMSearch onSearch={() => {}} initialValue="" />
-          <Button variant="outline" asChild>
-            <Link to="/admin/crm/creators/leaderboard">View Leaderboard</Link>
-          </Button>
-        </div>
+    <div className="container mx-auto p-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold mb-2">Creator CRM</h1>
+        <p className="text-muted-foreground">Manage and track creator relationships and performance.</p>
+      </div>
+
+      <div className="flex items-center justify-between mb-6">
+        <CreatorCRMSearch onSearch={() => {}} initialValue="" />
+        <Button variant="outline" asChild>
+          <Link to="/admin/crm/creators/leaderboard">View Leaderboard</Link>
+        </Button>
       </div>
 
       {isLoading && (

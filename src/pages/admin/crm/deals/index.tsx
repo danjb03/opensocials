@@ -63,14 +63,13 @@ export default function DealPipelinePage() {
     return matchSearch && matchStage && matchStatus;
   });
 
-  // Function to handle clearing a filter
-  const clearStage = () => setStage('');
-  const clearStatus = () => setStatus('');
-
   return (
     <AdminCRMLayout>
-      <div className="container mx-auto py-8 px-4">
-        <h1 className="text-2xl font-bold mb-6">Deal Pipeline</h1>
+      <div className="container mx-auto p-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2">Deal Pipeline</h1>
+          <p className="text-muted-foreground">Monitor and manage deal progress across all stages.</p>
+        </div>
 
         <div className="flex gap-4 mb-6">
           <Input
@@ -85,7 +84,6 @@ export default function DealPipelinePage() {
               <SelectValue placeholder="All Stages" />
             </SelectTrigger>
             <SelectContent>
-              {/* Removed empty value item and using placeholder instead */}
               <SelectItem value="briefed">Briefed</SelectItem>
               <SelectItem value="content">Content</SelectItem>
               <SelectItem value="review">Review</SelectItem>
@@ -98,7 +96,6 @@ export default function DealPipelinePage() {
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
-              {/* Removed empty value item and using placeholder instead */}
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="inactive">Inactive</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
