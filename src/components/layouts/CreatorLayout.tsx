@@ -5,6 +5,7 @@ import Logo from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { ChartLine, DollarSign, FileText, User } from 'lucide-react';
 import SidebarToggle from './SidebarToggle';
 import Footer from './Footer';
@@ -18,6 +19,7 @@ const CreatorLayout = memo(({ children }: CreatorLayoutProps) => {
   const { user } = useCreatorAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const isMobile = useIsMobile();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => 
     localStorage.getItem('creator-sidebar-collapsed') === 'true'
@@ -45,7 +47,6 @@ const CreatorLayout = memo(({ children }: CreatorLayoutProps) => {
     };
   }, [isSidebarCollapsed]);
 
-  // Memoize active route calculation
   const isActiveRoute = useMemo(() => {
     return (path: string, exact = false) => {
       if (exact) {
@@ -55,11 +56,15 @@ const CreatorLayout = memo(({ children }: CreatorLayoutProps) => {
     };
   }, [location.pathname]);
 
+  // Mobile layout adjustments
+  const sidebarWidth = isMobile ? (isSidebarCollapsed ? 'w-0' : 'w-64') : (isSidebarCollapsed ? 'w-16' : 'w-64');
+  const sidebarPosition = isMobile ? 'fixed' : 'relative';
+
   return (
-    <div className="min-h-screen flex">
-      <aside className={`relative bg-sidebar text-sidebar-foreground transition-all duration-300 ${
-        isSidebarCollapsed ? 'w-16' : 'w-64'
-      }`}>
+    <div className="min-h-screen flex w-full">
+      <aside className={`${sidebarPosition} ${sidebarWidth} bg-sidebar text-sidebar-foreground transition-all duration-300 ${
+        isMobile && !isSidebarCollapsed ? 'z-50' : ''
+      } ${isMobile && isSidebarCollapsed ? 'hidden' : ''}`}>
         <SidebarToggle 
           isCollapsed={isSidebarCollapsed} 
           onClick={toggleSidebar}
@@ -73,12 +78,12 @@ const CreatorLayout = memo(({ children }: CreatorLayoutProps) => {
           <nav className="space-y-1 flex-1">
             <Button 
               variant="ghost" 
-              className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent ${
+              className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent h-12 ${
                 isActiveRoute('/creator', true) ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
               }`}
               asChild
             >
-              <Link to="/creator" className="flex items-center gap-2">
+              <Link to="/creator" className="flex items-center gap-3">
                 <User className="h-5 w-5" />
                 {!isSidebarCollapsed && <span>Profile</span>}
               </Link>
@@ -86,12 +91,12 @@ const CreatorLayout = memo(({ children }: CreatorLayoutProps) => {
             
             <Button 
               variant="ghost" 
-              className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent ${
+              className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent h-12 ${
                 isActiveRoute('/creator/analytics') ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
               }`}
               asChild
             >
-              <Link to="/creator/analytics" className="flex items-center gap-2">
+              <Link to="/creator/analytics" className="flex items-center gap-3">
                 <ChartLine className="h-5 w-5" />
                 {!isSidebarCollapsed && <span>Analytics</span>}
               </Link>
@@ -99,12 +104,12 @@ const CreatorLayout = memo(({ children }: CreatorLayoutProps) => {
             
             <Button 
               variant="ghost" 
-              className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent ${
+              className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent h-12 ${
                 isActiveRoute('/creator/deals') ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
               }`}
               asChild
             >
-              <Link to="/creator/deals" className="flex items-center gap-2">
+              <Link to="/creator/deals" className="flex items-center gap-3">
                 <DollarSign className="h-5 w-5" />
                 {!isSidebarCollapsed && <span>Deals</span>}
               </Link>
@@ -112,12 +117,12 @@ const CreatorLayout = memo(({ children }: CreatorLayoutProps) => {
 
             <Button 
               variant="ghost" 
-              className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent ${
+              className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent h-12 ${
                 isActiveRoute('/creator/campaigns') ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
               }`}
               asChild
             >
-              <Link to="/creator/campaigns" className="flex items-center gap-2">
+              <Link to="/creator/campaigns" className="flex items-center gap-3">
                 <FileText className="h-5 w-5" />
                 {!isSidebarCollapsed && <span>Campaigns</span>}
               </Link>
@@ -126,7 +131,7 @@ const CreatorLayout = memo(({ children }: CreatorLayoutProps) => {
           
           <div className="mt-auto pt-4 border-t border-sidebar-border">
             {!isSidebarCollapsed && (
-              <div className="text-sm opacity-70 mb-2">
+              <div className="text-sm opacity-70 mb-2 truncate">
                 Logged in as {user?.email}
               </div>
             )}
@@ -134,7 +139,7 @@ const CreatorLayout = memo(({ children }: CreatorLayoutProps) => {
               variant="default" 
               onClick={handleSignOut} 
               disabled={isLoggingOut}
-              className="w-full"
+              className="w-full h-12"
             >
               {isLoggingOut ? "..." : isSidebarCollapsed ? "Out" : "Sign Out"}
             </Button>
@@ -142,7 +147,15 @@ const CreatorLayout = memo(({ children }: CreatorLayoutProps) => {
         </div>
       </aside>
       
-      <main className="flex-1 bg-background overflow-auto flex flex-col">
+      {/* Mobile overlay */}
+      {isMobile && !isSidebarCollapsed && (
+        <div 
+          className="fixed inset-0 bg-background/50 backdrop-blur-sm z-40"
+          onClick={toggleSidebar}
+        />
+      )}
+      
+      <main className="flex-1 bg-background overflow-auto flex flex-col min-w-0">
         <div className="flex-1">
           {children}
         </div>

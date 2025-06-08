@@ -1,5 +1,6 @@
 
 import { CampaignRow, type CampaignRow as CampaignRowType } from './CampaignRow';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CampaignListProps {
   campaigns: CampaignRowType[];
@@ -7,6 +8,7 @@ interface CampaignListProps {
 }
 
 export function CampaignList({ campaigns, onViewProject }: CampaignListProps) {
+  const isMobile = useIsMobile();
   console.log('CampaignList rendering with campaigns:', campaigns);
   
   if (!campaigns || campaigns.length === 0) {
@@ -18,13 +20,19 @@ export function CampaignList({ campaigns, onViewProject }: CampaignListProps) {
   }
 
   return (
-    <div className="divide-y divide-slate-100">
-      {campaigns.map((campaign) => (
-        <CampaignRow 
+    <div className={`${isMobile ? 'space-y-4 p-4' : 'divide-y divide-slate-100'}`}>
+      {campaigns.map((campaign, index) => (
+        <div 
           key={campaign.project_id}
-          campaign={campaign}
-          onViewProject={onViewProject}
-        />
+          className="animate-fade-in"
+          style={{ animationDelay: `${index * 100}ms` }}
+        >
+          <CampaignRow 
+            campaign={campaign}
+            onViewProject={onViewProject}
+            isMobile={isMobile}
+          />
+        </div>
       ))}
     </div>
   );
