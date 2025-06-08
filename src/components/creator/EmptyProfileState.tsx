@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,13 +16,18 @@ const EmptyProfileState: React.FC<EmptyProfileStateProps> = ({
   const location = useLocation();
 
   const handleStartSetup = () => {
+    console.log('Button clicked! Current location:', location.pathname);
+    
     if (onStartProfileSetup) {
+      console.log('Using custom onStartProfileSetup function');
       onStartProfileSetup();
     } else {
       // Check if we're in super admin context and navigate accordingly
       if (location.pathname.startsWith('/super-admin')) {
+        console.log('Navigating to super admin create profile route');
         navigate('/super-admin/creators/create-profile');
       } else {
+        console.log('Navigating to regular creator create profile route');
         navigate('/creator/create-profile');
       }
     }
