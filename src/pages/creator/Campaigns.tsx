@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,6 +7,7 @@ import CreatorLayout from '@/components/layouts/CreatorLayout';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, CheckCircle, Circle, Clock, Upload, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Card,
   CardContent,
@@ -102,117 +104,219 @@ const CreatorCampaigns = () => {
     }
   });
 
+  const activeCampaigns = campaigns.filter(campaign => {
+    const today = new Date();
+    const startDate = new Date(campaign.start_date);
+    const endDate = new Date(campaign.end_date);
+    return startDate <= today && endDate >= today && campaign.status === 'active';
+  });
+
+  const upcomingCampaigns = campaigns.filter(campaign => {
+    const today = new Date();
+    const startDate = new Date(campaign.start_date);
+    return startDate > today && campaign.status === 'upcoming';
+  });
+
+  const completedCampaigns = campaigns.filter(campaign => {
+    const today = new Date();
+    const endDate = new Date(campaign.end_date);
+    return endDate < today || campaign.status === 'completed';
+  });
+
   return (
     <CreatorLayout>
-      <section className="container space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-semibold">My Campaigns</h2>
+      <div className="container mx-auto p-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2">My Campaigns</h1>
+          <p className="text-muted-foreground">Manage your active campaigns and track your content delivery.</p>
         </div>
 
-        {/* Tabs */}
-        <div className="flex border-b">
-          <button
-            className={cn(
-              "py-2 px-4 font-medium",
-              activeTab === 'active' ? "border-b-2 border-primary text-primary" : "text-muted-foreground"
-            )}
-            onClick={() => setActiveTab('active')}
-          >
-            Active
-          </button>
-          <button
-            className={cn(
-              "py-2 px-4 font-medium",
-              activeTab === 'upcoming' ? "border-b-2 border-primary text-primary" : "text-muted-foreground"
-            )}
-            onClick={() => setActiveTab('upcoming')}
-          >
-            Upcoming
-          </button>
-          <button
-            className={cn(
-              "py-2 px-4 font-medium",
-              activeTab === 'completed' ? "border-b-2 border-primary text-primary" : "text-muted-foreground"
-            )}
-            onClick={() => setActiveTab('completed')}
-          >
-            Completed
-          </button>
-        </div>
+        <Tabs value={activeTab} onValueChange={value => setActiveTab(value as any)} className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsTrigger value="active" className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Active ({activeCampaigns.length})
+            </TabsTrigger>
+            <TabsTrigger value="upcoming" className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4" />
+              Upcoming ({upcomingCampaigns.length})
+            </TabsTrigger>
+            <TabsTrigger value="completed" className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4" />
+              Completed ({completedCampaigns.length})
+            </TabsTrigger>
+          </TabsList>
 
-        {isLoading ? (
-          <p>Loading campaigns...</p>
-        ) : filteredCampaigns.length > 0 ? (
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {filteredCampaigns.map((campaign) => (
-              <Card key={campaign.id} className="bg-white shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold">{campaign.name}</CardTitle>
-                  <CardDescription className="text-muted-foreground">
-                    {campaign.description || 'No description provided.'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm">
-                    <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                    <span>{new Date(campaign.start_date).toLocaleDateString()} - {new Date(campaign.end_date).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Circle className={`h-4 w-4 ${getCampaignStatusColor(campaign.status)}`} />
-                    <span>Status: {campaign.status || 'Unknown'}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span>Budget: {campaign.currency}{campaign.budget?.toLocaleString()}</span>
-                  </div>
-                </CardContent>
-                <CardFooter className="justify-between">
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(`/creator/campaigns/${campaign.id}`)}
-                  >
-                    View Details
-                  </Button>
-                  <Button 
-                    size="sm"
-                    onClick={() => navigate(`/creator/campaigns/${campaign.id}/upload`)}
-                  >
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload Content
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="rounded-full bg-gray-100 p-3 mb-3">
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="24" 
-                  height="24" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  className="text-muted-foreground"
-                >
-                  <path d="M2 12a10 10 0 1 0 20 0a10 10 0 1 0-20 0z" />
-                  <line x1="8" x2="16" y1="12" y2="12" />
-                </svg>
+          <TabsContent value="active">
+            {isLoading ? (
+              <div className="flex justify-center p-8">Loading campaigns...</div>
+            ) : filteredCampaigns.length > 0 ? (
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {filteredCampaigns.map((campaign) => (
+                  <Card key={campaign.id} className="bg-white shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="text-lg font-semibold">{campaign.name}</CardTitle>
+                      <CardDescription className="text-muted-foreground">
+                        {campaign.description || 'No description provided.'}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                        <span>{new Date(campaign.start_date).toLocaleDateString()} - {new Date(campaign.end_date).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Circle className={`h-4 w-4 ${getCampaignStatusColor(campaign.status)}`} />
+                        <span>Status: {campaign.status || 'Unknown'}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span>Budget: {campaign.currency}{campaign.budget?.toLocaleString()}</span>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="justify-between">
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/creator/campaigns/${campaign.id}`)}
+                      >
+                        View Details
+                      </Button>
+                      <Button 
+                        size="sm"
+                        onClick={() => navigate(`/creator/campaigns/${campaign.id}/upload`)}
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload Content
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
               </div>
-              <h3 className="font-medium text-base mb-1">No campaigns found</h3>
-              <p className="text-sm text-muted-foreground">
-                Check back later for new collaboration opportunities.
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </section>
+            ) : (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="rounded-full bg-gray-100 p-3 mb-3">
+                    <Circle className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <h3 className="font-medium text-base mb-1">No active campaigns</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Check back later for new collaboration opportunities.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="upcoming">
+            {isLoading ? (
+              <div className="flex justify-center p-8">Loading campaigns...</div>
+            ) : filteredCampaigns.length > 0 ? (
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {filteredCampaigns.map((campaign) => (
+                  <Card key={campaign.id} className="bg-white shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="text-lg font-semibold">{campaign.name}</CardTitle>
+                      <CardDescription className="text-muted-foreground">
+                        {campaign.description || 'No description provided.'}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                        <span>{new Date(campaign.start_date).toLocaleDateString()} - {new Date(campaign.end_date).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Circle className={`h-4 w-4 ${getCampaignStatusColor(campaign.status)}`} />
+                        <span>Status: {campaign.status || 'Unknown'}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span>Budget: {campaign.currency}{campaign.budget?.toLocaleString()}</span>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="justify-between">
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/creator/campaigns/${campaign.id}`)}
+                      >
+                        View Details
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="rounded-full bg-gray-100 p-3 mb-3">
+                    <CalendarDays className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <h3 className="font-medium text-base mb-1">No upcoming campaigns</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Check back later for new collaboration opportunities.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="completed">
+            {isLoading ? (
+              <div className="flex justify-center p-8">Loading campaigns...</div>
+            ) : filteredCampaigns.length > 0 ? (
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {filteredCampaigns.map((campaign) => (
+                  <Card key={campaign.id} className="bg-white shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="text-lg font-semibold">{campaign.name}</CardTitle>
+                      <CardDescription className="text-muted-foreground">
+                        {campaign.description || 'No description provided.'}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                        <span>{new Date(campaign.start_date).toLocaleDateString()} - {new Date(campaign.end_date).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Circle className={`h-4 w-4 ${getCampaignStatusColor(campaign.status)}`} />
+                        <span>Status: {campaign.status || 'Unknown'}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span>Budget: {campaign.currency}{campaign.budget?.toLocaleString()}</span>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="justify-between">
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/creator/campaigns/${campaign.id}`)}
+                      >
+                        View Details
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="rounded-full bg-gray-100 p-3 mb-3">
+                    <CheckCircle className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <h3 className="font-medium text-base mb-1">No completed campaigns</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Completed campaigns will appear here.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
     </CreatorLayout>
   );
 };
