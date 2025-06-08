@@ -1,8 +1,10 @@
 
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from "zod";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { SuccessAnimation } from "@/components/ui/success-animation";
 import { CampaignNameField } from './project-form/CampaignNameField';
 import { ExecutionDateField } from './project-form/ExecutionDateField';
 import { BudgetFields } from './project-form/BudgetFields';
@@ -35,37 +37,55 @@ const formSchema = z.object({
 
 export function ProjectForm({ onSuccess }: ProjectFormProps) {
   const navigate = useNavigate();
+  const [showSuccess, setShowSuccess] = useState(false);
+  
   const { 
     form, 
     currencies, 
     isSubmitting, 
-    onSubmit, 
+    onSubmit: originalOnSubmit, 
     calculateDaysRemaining
   } = useProjectForm2((values) => {
+    setShowSuccess(true);
+  });
+
+  const handleSuccessComplete = () => {
+    setShowSuccess(false);
     if (onSuccess) {
-      onSuccess(values);
+      onSuccess(form.getValues());
     } else {
       navigate('/brand/projects');
     }
-  });
+  };
+
+  const isFormValid = form.formState.isValid;
 
   return (
-    <Card className="w-full shadow-md">
-      <CardHeader className="bg-slate-50 border-b">
-        <CardTitle className="text-xl">Create New Campaign</CardTitle>
-        <CardDescription>Fill in the details for your new marketing campaign.</CardDescription>
-      </CardHeader>
-      <CardContent className="pt-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <CampaignNameField />
-            <ExecutionDateField calculateDaysRemaining={calculateDaysRemaining} />
-            <BudgetFields currencies={currencies} />
-            <DescriptionField />
-            <SubmitButton isSubmitting={isSubmitting} />
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+    <>
+      <Card className="w-full shadow-md">
+        <CardHeader className="bg-slate-50 border-b">
+          <CardTitle className="text-xl">Create New Campaign</CardTitle>
+          <CardDescription>Fill in the details for your new marketing campaign.</CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(originalOnSubmit)} className="space-y-6">
+              <CampaignNameField />
+              <ExecutionDateField calculateDaysRemaining={calculateDaysRemaining} />
+              <BudgetFields currencies={currencies} />
+              <DescriptionField />
+              <SubmitButton isSubmitting={isSubmitting} isValid={isFormValid} />
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+
+      <SuccessAnimation
+        show={showSuccess}
+        message="Campaign Created Successfully!"
+        onComplete={handleSuccessComplete}
+        duration={2500}
+      />
+    </>
   );
 }
