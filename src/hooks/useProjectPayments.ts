@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,6 +24,18 @@ export interface ProjectPayment {
     avatarUrl?: string;
     projectId: string;
   };
+}
+
+// Map database payment status to ProjectPayment status
+function mapPaymentStatus(dbStatus: string): ProjectPayment['status'] {
+  switch (dbStatus) {
+    case 'paid': return 'completed';
+    case 'processing': return 'processing';
+    case 'pending': return 'pending';
+    case 'failed': return 'failed';
+    case 'cancelled': return 'cancelled';
+    default: return 'pending';
+  }
 }
 
 // Fetch payments for a project
@@ -67,8 +78,7 @@ export const useProjectPayments = (projectId: string) => {
             amount: deal.deal_value,
             currency: 'USD',
             milestone: 'completion',
-            status: deal.payment_status === 'paid' ? 'completed' : 
-                    deal.payment_status === 'processing' ? 'processing' : 'pending',
+            status: mapPaymentStatus(deal.payment_status),
             scheduledDate: deal.created_at,
             processedDate: deal.payment_status === 'processing' ? deal.created_at : undefined,
             completedDate: deal.paid_at || undefined,
@@ -130,8 +140,7 @@ export const useProjectCreatorPayments = (projectCreatorId: string) => {
         amount: deal.deal_value,
         currency: 'USD',
         milestone: 'completion',
-        status: deal.payment_status === 'paid' ? 'completed' : 
-                deal.payment_status === 'processing' ? 'processing' : 'pending',
+        status: mapPaymentStatus(deal.payment_status),
         scheduledDate: deal.created_at,
         processedDate: deal.payment_status === 'processing' ? deal.created_at : undefined,
         completedDate: deal.paid_at || undefined,

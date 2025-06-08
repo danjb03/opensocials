@@ -9,17 +9,23 @@ import { MailPlus, Handshake, History } from 'lucide-react';
 import { useCreatorDealsSecure, useCreatorDealStats } from '@/hooks/useCreatorDealsSecure';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface SimpleDeal {
+interface Deal {
   id: string;
-  title: string;
-  description: string;
-  value: number;
+  project_id: string;
+  deal_value: number;
   status: string;
-  feedback?: string;
-  created_at: string;
-  updated_at: string;
-  brand_id: string;
-  creator_id: string;
+  invited_at: string;
+  project?: {
+    name: string;
+    description?: string;
+    campaign_type: string;
+    start_date?: string;
+    end_date?: string;
+    brand_profile?: {
+      company_name: string;
+      logo_url?: string;
+    };
+  };
 }
 
 const CreatorDeals = () => {
@@ -33,25 +39,28 @@ const CreatorDeals = () => {
     console.error('Error in CreatorDeals:', error);
   }
 
-  // Transform CreatorDealSecure to SimpleDeal format for components
-  const transformToSimpleDeals = (creatorDeals: typeof deals): SimpleDeal[] => {
+  // Transform CreatorDealSecure to Deal format for components
+  const transformToDeals = (creatorDeals: typeof deals): Deal[] => {
     return creatorDeals.map(deal => ({
       id: deal.id,
-      title: deal.project?.name || 'Untitled Campaign',
-      description: deal.project?.description || 'No description available',
-      value: deal.deal_value,
+      project_id: deal.project_id,
+      deal_value: deal.deal_value,
       status: deal.status,
-      feedback: deal.creator_feedback,
-      created_at: deal.created_at,
-      updated_at: deal.updated_at,
-      brand_id: deal.project_id, // Using project_id as brand_id for compatibility
-      creator_id: deal.creator_id
+      invited_at: deal.invited_at,
+      project: deal.project ? {
+        name: deal.project.name,
+        description: deal.project.description,
+        campaign_type: deal.project.campaign_type,
+        start_date: deal.project.start_date,
+        end_date: deal.project.end_date,
+        brand_profile: deal.project.brand_profile
+      } : undefined
     }));
   };
 
-  const transformedPendingDeals = transformToSimpleDeals(stats.pendingDeals);
-  const transformedAcceptedDeals = transformToSimpleDeals(stats.acceptedDeals);
-  const transformedCompletedDeals = transformToSimpleDeals(stats.completedDealsList);
+  const transformedPendingDeals = transformToDeals(stats.pendingDeals);
+  const transformedAcceptedDeals = transformToDeals(stats.acceptedDeals);
+  const transformedCompletedDeals = transformToDeals(stats.completedDealsList);
 
   return (
     <CreatorLayout>
