@@ -9,7 +9,7 @@ import { MailPlus, Handshake, History } from 'lucide-react';
 import { useCreatorDealsSecure, useCreatorDealStats } from '@/hooks/useCreatorDealsSecure';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface Deal {
+interface PendingDeal {
   id: string;
   project_id: string;
   deal_value: number;
@@ -28,6 +28,23 @@ interface Deal {
   };
 }
 
+interface PastDeal {
+  id: string;
+  title: string;
+  description: string | null;
+  value: number;
+  status: string;
+  feedback: string | null;
+  creator_id: string;
+  brand_id: string;
+  created_at: string | null;
+  updated_at: string | null;
+  profiles: {
+    company_name: string;
+    logo_url?: string;
+  };
+}
+
 const CreatorDeals = () => {
   const [activeTab, setActiveTab] = useState<'invitations' | 'pending' | 'past'>('invitations');
   const { data: deals = [], isLoading, error } = useCreatorDealsSecure();
@@ -39,8 +56,8 @@ const CreatorDeals = () => {
     console.error('Error in CreatorDeals:', error);
   }
 
-  // Transform CreatorDealSecure to Deal format for components
-  const transformToDeals = (creatorDeals: typeof deals): Deal[] => {
+  // Transform CreatorDealSecure to PendingDeal format for pending deals
+  const transformToPendingDeals = (creatorDeals: typeof deals): PendingDeal[] => {
     return creatorDeals.map(deal => ({
       id: deal.id,
       project_id: deal.project_id,
@@ -58,9 +75,29 @@ const CreatorDeals = () => {
     }));
   };
 
-  const transformedPendingDeals = transformToDeals(stats.pendingDeals);
-  const transformedAcceptedDeals = transformToDeals(stats.acceptedDeals);
-  const transformedCompletedDeals = transformToDeals(stats.completedDealsList);
+  // Transform CreatorDealSecure to PastDeal format for past deals
+  const transformToPastDeals = (creatorDeals: typeof deals): PastDeal[] => {
+    return creatorDeals.map(deal => ({
+      id: deal.id,
+      title: deal.project?.name || 'Untitled Campaign',
+      description: deal.project?.description || null,
+      value: deal.deal_value,
+      status: deal.status,
+      feedback: deal.creator_feedback || null,
+      creator_id: deal.creator_id,
+      brand_id: deal.project_id, // Using project_id as brand_id for compatibility
+      created_at: deal.created_at,
+      updated_at: deal.updated_at,
+      profiles: {
+        company_name: deal.project?.brand_profile?.company_name || 'Unknown Brand',
+        logo_url: deal.project?.brand_profile?.logo_url
+      }
+    }));
+  };
+
+  const transformedPendingDeals = transformToPendingDeals(stats.pendingDeals);
+  const transformedAcceptedDeals = transformToPendingDeals(stats.acceptedDeals);
+  const transformedCompletedDeals = transformToPastDeals(stats.completedDealsList);
 
   return (
     <CreatorLayout>
