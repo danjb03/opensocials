@@ -43,11 +43,7 @@ export const useProjectPayments = (projectId: string) => {
           paid_at,
           created_at,
           updated_at,
-          creator_profiles!creator_deals_creator_id_fkey (
-            first_name,
-            last_name,
-            user_id
-          )
+          creator_id
         `)
         .eq('project_id', projectId);
 
@@ -56,26 +52,38 @@ export const useProjectPayments = (projectId: string) => {
         throw error;
       }
 
-      // Transform deals to payment format
-      return (deals || []).map(deal => ({
-        id: deal.id,
-        projectCreatorId: deal.id, // Using deal id as project creator id
-        amount: deal.deal_value,
-        currency: 'USD',
-        milestone: 'completion',
-        status: deal.payment_status === 'paid' ? 'completed' : 
-                deal.payment_status === 'processing' ? 'processing' : 'pending',
-        scheduledDate: deal.created_at,
-        processedDate: deal.payment_status === 'processing' ? deal.created_at : undefined,
-        completedDate: deal.paid_at || undefined,
-        createdAt: deal.created_at,
-        updatedAt: deal.updated_at,
-        creatorInfo: {
-          id: deal.creator_profiles?.user_id || '',
-          name: `${deal.creator_profiles?.first_name || ''} ${deal.creator_profiles?.last_name || ''}`.trim() || 'Unknown Creator',
-          projectId: projectId
-        }
-      }));
+      // Fetch creator profiles separately
+      const paymentsWithCreators = await Promise.all(
+        (deals || []).map(async (deal) => {
+          const { data: creator } = await supabase
+            .from('creator_profiles')
+            .select('user_id, first_name, last_name')
+            .eq('user_id', deal.creator_id)
+            .single();
+
+          return {
+            id: deal.id,
+            projectCreatorId: deal.id, // Using deal id as project creator id
+            amount: deal.deal_value,
+            currency: 'USD',
+            milestone: 'completion',
+            status: deal.payment_status === 'paid' ? 'completed' : 
+                    deal.payment_status === 'processing' ? 'processing' : 'pending',
+            scheduledDate: deal.created_at,
+            processedDate: deal.payment_status === 'processing' ? deal.created_at : undefined,
+            completedDate: deal.paid_at || undefined,
+            createdAt: deal.created_at,
+            updatedAt: deal.updated_at,
+            creatorInfo: {
+              id: creator?.user_id || '',
+              name: creator ? `${creator.first_name || ''} ${creator.last_name || ''}`.trim() || 'Unknown Creator' : 'Unknown Creator',
+              projectId: projectId
+            }
+          };
+        })
+      );
+
+      return paymentsWithCreators;
     },
     enabled: !!projectId,
   });
@@ -97,11 +105,7 @@ export const useProjectCreatorPayments = (projectCreatorId: string) => {
           created_at,
           updated_at,
           project_id,
-          creator_profiles!creator_deals_creator_id_fkey (
-            first_name,
-            last_name,
-            user_id
-          )
+          creator_id
         `)
         .eq('id', projectCreatorId)
         .single();
@@ -112,6 +116,13 @@ export const useProjectCreatorPayments = (projectCreatorId: string) => {
       }
 
       if (!deal) return [];
+
+      // Fetch creator profile separately
+      const { data: creator } = await supabase
+        .from('creator_profiles')
+        .select('user_id, first_name, last_name')
+        .eq('user_id', deal.creator_id)
+        .single();
 
       return [{
         id: deal.id,
@@ -127,8 +138,8 @@ export const useProjectCreatorPayments = (projectCreatorId: string) => {
         createdAt: deal.created_at,
         updatedAt: deal.updated_at,
         creatorInfo: {
-          id: deal.creator_profiles?.user_id || '',
-          name: `${deal.creator_profiles?.first_name || ''} ${deal.creator_profiles?.last_name || ''}`.trim() || 'Unknown Creator',
+          id: creator?.user_id || '',
+          name: creator ? `${creator.first_name || ''} ${creator.last_name || ''}`.trim() || 'Unknown Creator' : 'Unknown Creator',
           projectId: deal.project_id
         }
       }];

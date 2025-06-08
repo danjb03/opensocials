@@ -9,6 +9,19 @@ import { MailPlus, Handshake, History } from 'lucide-react';
 import { useCreatorDealsSecure, useCreatorDealStats } from '@/hooks/useCreatorDealsSecure';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
+interface SimpleDeal {
+  id: string;
+  title: string;
+  description: string;
+  value: number;
+  status: string;
+  feedback?: string;
+  created_at: string;
+  updated_at: string;
+  brand_id: string;
+  creator_id: string;
+}
+
 const CreatorDeals = () => {
   const [activeTab, setActiveTab] = useState<'invitations' | 'pending' | 'past'>('invitations');
   const { data: deals = [], isLoading, error } = useCreatorDealsSecure();
@@ -20,33 +33,25 @@ const CreatorDeals = () => {
     console.error('Error in CreatorDeals:', error);
   }
 
-  // Transform CreatorDealSecure to Deal format for components
-  const transformedPendingDeals = stats.pendingDeals.map(deal => ({
-    id: deal.id,
-    project_id: deal.project_id,
-    deal_value: deal.deal_value,
-    status: deal.status,
-    invited_at: deal.invited_at,
-    project: deal.project
-  }));
+  // Transform CreatorDealSecure to SimpleDeal format for components
+  const transformToSimpleDeals = (creatorDeals: typeof deals): SimpleDeal[] => {
+    return creatorDeals.map(deal => ({
+      id: deal.id,
+      title: deal.project?.name || 'Untitled Campaign',
+      description: deal.project?.description || 'No description available',
+      value: deal.deal_value,
+      status: deal.status,
+      feedback: deal.creator_feedback,
+      created_at: deal.created_at,
+      updated_at: deal.updated_at,
+      brand_id: deal.project_id, // Using project_id as brand_id for compatibility
+      creator_id: deal.creator_id
+    }));
+  };
 
-  const transformedAcceptedDeals = stats.acceptedDeals.map(deal => ({
-    id: deal.id,
-    project_id: deal.project_id,
-    deal_value: deal.deal_value,
-    status: deal.status,
-    invited_at: deal.invited_at,
-    project: deal.project
-  }));
-
-  const transformedCompletedDeals = stats.completedDealsList.map(deal => ({
-    id: deal.id,
-    project_id: deal.project_id,
-    deal_value: deal.deal_value,
-    status: deal.status,
-    invited_at: deal.invited_at,
-    project: deal.project
-  }));
+  const transformedPendingDeals = transformToSimpleDeals(stats.pendingDeals);
+  const transformedAcceptedDeals = transformToSimpleDeals(stats.acceptedDeals);
+  const transformedCompletedDeals = transformToSimpleDeals(stats.completedDealsList);
 
   return (
     <CreatorLayout>

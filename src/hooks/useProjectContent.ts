@@ -41,14 +41,7 @@ export const useProjectContent = (projectId: string) => {
     queryFn: async (): Promise<ProjectContent[]> => {
       const { data: content, error } = await supabase
         .from('campaign_content')
-        .select(`
-          *,
-          creator_profiles!campaign_content_creator_id_fkey (
-            user_id,
-            first_name,
-            last_name
-          )
-        `)
+        .select('*')
         .eq('campaign_id', projectId);
 
       if (error) {
@@ -56,25 +49,38 @@ export const useProjectContent = (projectId: string) => {
         throw error;
       }
 
-      return (content || []).map(item => ({
-        id: item.id,
-        projectCreatorId: item.creator_id,
-        contentType: item.content_type as any,
-        platform: item.platform,
-        title: item.title,
-        description: item.description,
-        status: mapContentStatus(item.status),
-        views: 0,
-        likes: 0,
-        comments: 0,
-        shares: 0,
-        createdAt: item.created_at,
-        updatedAt: item.updated_at,
-        creatorInfo: {
-          id: item.creator_profiles?.user_id || '',
-          name: `${item.creator_profiles?.first_name || ''} ${item.creator_profiles?.last_name || ''}`.trim() || 'Unknown Creator'
-        }
-      }));
+      // Fetch creator info separately for each content item
+      const contentWithCreators = await Promise.all(
+        (content || []).map(async (item) => {
+          const { data: creator } = await supabase
+            .from('creator_profiles')
+            .select('user_id, first_name, last_name')
+            .eq('user_id', item.creator_id)
+            .single();
+
+          return {
+            id: item.id,
+            projectCreatorId: item.creator_id,
+            contentType: item.content_type as any,
+            platform: item.platform,
+            title: item.title,
+            description: item.description,
+            status: mapContentStatus(item.status),
+            views: 0,
+            likes: 0,
+            comments: 0,
+            shares: 0,
+            createdAt: item.created_at,
+            updatedAt: item.updated_at,
+            creatorInfo: {
+              id: creator?.user_id || '',
+              name: creator ? `${creator.first_name || ''} ${creator.last_name || ''}`.trim() || 'Unknown Creator' : 'Unknown Creator'
+            }
+          };
+        })
+      );
+
+      return contentWithCreators;
     },
     enabled: !!projectId,
   });
@@ -98,14 +104,7 @@ export const useProjectCreatorContent = (projectCreatorId: string) => {
     queryFn: async (): Promise<ProjectContent[]> => {
       const { data: content, error } = await supabase
         .from('campaign_content')
-        .select(`
-          *,
-          creator_profiles!campaign_content_creator_id_fkey (
-            user_id,
-            first_name,
-            last_name
-          )
-        `)
+        .select('*')
         .eq('creator_id', projectCreatorId);
 
       if (error) {
@@ -113,25 +112,38 @@ export const useProjectCreatorContent = (projectCreatorId: string) => {
         throw error;
       }
 
-      return (content || []).map(item => ({
-        id: item.id,
-        projectCreatorId: item.creator_id,
-        contentType: item.content_type as any,
-        platform: item.platform,
-        title: item.title,
-        description: item.description,
-        status: mapContentStatus(item.status),
-        views: 0,
-        likes: 0,
-        comments: 0,
-        shares: 0,
-        createdAt: item.created_at,
-        updatedAt: item.updated_at,
-        creatorInfo: {
-          id: item.creator_profiles?.user_id || '',
-          name: `${item.creator_profiles?.first_name || ''} ${item.creator_profiles?.last_name || ''}`.trim() || 'Unknown Creator'
-        }
-      }));
+      // Fetch creator info separately
+      const contentWithCreators = await Promise.all(
+        (content || []).map(async (item) => {
+          const { data: creator } = await supabase
+            .from('creator_profiles')
+            .select('user_id, first_name, last_name')
+            .eq('user_id', item.creator_id)
+            .single();
+
+          return {
+            id: item.id,
+            projectCreatorId: item.creator_id,
+            contentType: item.content_type as any,
+            platform: item.platform,
+            title: item.title,
+            description: item.description,
+            status: mapContentStatus(item.status),
+            views: 0,
+            likes: 0,
+            comments: 0,
+            shares: 0,
+            createdAt: item.created_at,
+            updatedAt: item.updated_at,
+            creatorInfo: {
+              id: creator?.user_id || '',
+              name: creator ? `${creator.first_name || ''} ${creator.last_name || ''}`.trim() || 'Unknown Creator' : 'Unknown Creator'
+            }
+          };
+        })
+      );
+
+      return contentWithCreators;
     },
     enabled: !!projectCreatorId,
   });

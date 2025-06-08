@@ -45,65 +45,79 @@ export const useCreatorDealsSecure = () => {
 
       console.log('Fetching creator deals for user:', user.id);
 
-      // Fetch deals with project and brand information
-      const { data: deals, error } = await supabase
+      // First fetch deals
+      const { data: deals, error: dealsError } = await supabase
         .from('creator_deals')
-        .select(`
-          *,
-          project:projects!creator_deals_project_id_fkey (
-            name,
-            description,
-            campaign_type,
-            start_date,
-            end_date,
-            content_requirements,
-            brand_profile:brand_profiles!projects_brand_id_fkey (
-              company_name,
-              logo_url
-            )
-          )
-        `)
+        .select('*')
         .eq('creator_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching creator deals:', error);
-        throw error;
+      if (dealsError) {
+        console.error('Error fetching creator deals:', dealsError);
+        throw dealsError;
       }
 
       console.log('Retrieved deals:', deals);
-      
-      // Transform the data to ensure proper typing
-      const transformedDeals: CreatorDealSecure[] = (deals || []).map(deal => ({
-        id: deal.id,
-        project_id: deal.project_id,
-        creator_id: deal.creator_id,
-        deal_value: deal.deal_value,
-        individual_requirements: deal.individual_requirements,
-        status: deal.status as CreatorDealSecure['status'],
-        invited_at: deal.invited_at,
-        responded_at: deal.responded_at || undefined,
-        creator_feedback: deal.creator_feedback || undefined,
-        payment_status: deal.payment_status as CreatorDealSecure['payment_status'],
-        paid_at: deal.paid_at || undefined,
-        created_at: deal.created_at,
-        updated_at: deal.updated_at,
-        project: deal.project ? {
-          name: deal.project.name,
-          description: deal.project.description || undefined,
-          campaign_type: deal.project.campaign_type,
-          start_date: deal.project.start_date || undefined,
-          end_date: deal.project.end_date || undefined,
-          content_requirements: deal.project.content_requirements,
-          deliverables: {},
-          brand_profile: deal.project.brand_profile ? {
-            company_name: deal.project.brand_profile.company_name,
-            logo_url: deal.project.brand_profile.logo_url || undefined
-          } : undefined
-        } : undefined
-      }));
 
-      return transformedDeals;
+      // Then fetch project and brand info separately for each deal
+      const dealsWithProjects = await Promise.all(
+        (deals || []).map(async (deal) => {
+          const { data: project } = await supabase
+            .from('projects')
+            .select(`
+              name,
+              description,
+              campaign_type,
+              start_date,
+              end_date,
+              content_requirements,
+              brand_id
+            `)
+            .eq('id', deal.project_id)
+            .single();
+
+          let brandProfile = null;
+          if (project?.brand_id) {
+            const { data: brand } = await supabase
+              .from('brand_profiles')
+              .select('company_name, logo_url')
+              .eq('user_id', project.brand_id)
+              .single();
+            brandProfile = brand;
+          }
+
+          return {
+            id: deal.id,
+            project_id: deal.project_id,
+            creator_id: deal.creator_id,
+            deal_value: deal.deal_value,
+            individual_requirements: deal.individual_requirements,
+            status: deal.status as CreatorDealSecure['status'],
+            invited_at: deal.invited_at,
+            responded_at: deal.responded_at || undefined,
+            creator_feedback: deal.creator_feedback || undefined,
+            payment_status: deal.payment_status as CreatorDealSecure['payment_status'],
+            paid_at: deal.paid_at || undefined,
+            created_at: deal.created_at,
+            updated_at: deal.updated_at,
+            project: project ? {
+              name: project.name,
+              description: project.description || undefined,
+              campaign_type: project.campaign_type,
+              start_date: project.start_date || undefined,
+              end_date: project.end_date || undefined,
+              content_requirements: project.content_requirements,
+              deliverables: {},
+              brand_profile: brandProfile ? {
+                company_name: brandProfile.company_name,
+                logo_url: brandProfile.logo_url || undefined
+              } : undefined
+            } : undefined
+          };
+        })
+      );
+
+      return dealsWithProjects;
     },
     enabled: !!user && !!creatorProfile,
     refetchInterval: 30000,
