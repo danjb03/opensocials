@@ -20,6 +20,34 @@ const CreatorDeals = () => {
     console.error('Error in CreatorDeals:', error);
   }
 
+  // Transform CreatorDealSecure to Deal format for components
+  const transformedPendingDeals = stats.pendingDeals.map(deal => ({
+    id: deal.id,
+    project_id: deal.project_id,
+    deal_value: deal.deal_value,
+    status: deal.status,
+    invited_at: deal.invited_at,
+    project: deal.project
+  }));
+
+  const transformedAcceptedDeals = stats.acceptedDeals.map(deal => ({
+    id: deal.id,
+    project_id: deal.project_id,
+    deal_value: deal.deal_value,
+    status: deal.status,
+    invited_at: deal.invited_at,
+    project: deal.project
+  }));
+
+  const transformedCompletedDeals = stats.completedDealsList.map(deal => ({
+    id: deal.id,
+    project_id: deal.project_id,
+    deal_value: deal.deal_value,
+    status: deal.status,
+    invited_at: deal.invited_at,
+    project: deal.project
+  }));
+
   return (
     <CreatorLayout>
       <div className="container mx-auto p-6">
@@ -68,15 +96,15 @@ const CreatorDeals = () => {
           <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="invitations" className="flex items-center gap-2">
               <MailPlus className="h-4 w-4" />
-              Invitations ({stats.pendingDeals.length})
+              Invitations ({transformedPendingDeals.length})
             </TabsTrigger>
             <TabsTrigger value="pending" className="flex items-center gap-2">
               <Handshake className="h-4 w-4" />
-              Active Deals ({stats.acceptedDeals.length})
+              Active Deals ({transformedAcceptedDeals.length})
             </TabsTrigger>
             <TabsTrigger value="past" className="flex items-center gap-2">
               <History className="h-4 w-4" />
-              Past Deals ({stats.completedDealsList.length})
+              Past Deals ({transformedCompletedDeals.length})
             </TabsTrigger>
           </TabsList>
 
@@ -84,7 +112,7 @@ const CreatorDeals = () => {
             {isLoading ? (
               <div className="flex justify-center p-8">Loading invitations...</div>
             ) : (
-              <PendingDeals deals={stats.pendingDeals} />
+              <PendingDeals deals={transformedPendingDeals} />
             )}
           </TabsContent>
 
@@ -92,7 +120,7 @@ const CreatorDeals = () => {
             {isLoading ? (
               <div className="flex justify-center p-8">Loading active deals...</div>
             ) : (
-              <PendingDeals deals={stats.acceptedDeals} />
+              <PendingDeals deals={transformedAcceptedDeals} />
             )}
           </TabsContent>
 
@@ -100,7 +128,7 @@ const CreatorDeals = () => {
             {isLoading ? (
               <div className="flex justify-center p-8">Loading past deals...</div>
             ) : (
-              <PastDeals deals={stats.completedDealsList} />
+              <PastDeals deals={transformedCompletedDeals} />
             )}
           </TabsContent>
         </Tabs>

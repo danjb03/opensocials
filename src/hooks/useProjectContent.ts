@@ -44,8 +44,9 @@ export const useProjectContent = (projectId: string) => {
         .select(`
           *,
           creator_profiles!campaign_content_creator_id_fkey (
-            display_name,
-            user_id
+            user_id,
+            first_name,
+            last_name
           )
         `)
         .eq('campaign_id', projectId);
@@ -71,7 +72,7 @@ export const useProjectContent = (projectId: string) => {
         updatedAt: item.updated_at,
         creatorInfo: {
           id: item.creator_profiles?.user_id || '',
-          name: item.creator_profiles?.display_name || 'Unknown Creator'
+          name: `${item.creator_profiles?.first_name || ''} ${item.creator_profiles?.last_name || ''}`.trim() || 'Unknown Creator'
         }
       }));
     },
@@ -100,8 +101,9 @@ export const useProjectCreatorContent = (projectCreatorId: string) => {
         .select(`
           *,
           creator_profiles!campaign_content_creator_id_fkey (
-            display_name,
-            user_id
+            user_id,
+            first_name,
+            last_name
           )
         `)
         .eq('creator_id', projectCreatorId);
@@ -127,7 +129,7 @@ export const useProjectCreatorContent = (projectCreatorId: string) => {
         updatedAt: item.updated_at,
         creatorInfo: {
           id: item.creator_profiles?.user_id || '',
-          name: item.creator_profiles?.display_name || 'Unknown Creator'
+          name: `${item.creator_profiles?.first_name || ''} ${item.creator_profiles?.last_name || ''}`.trim() || 'Unknown Creator'
         }
       }));
     },

@@ -72,7 +72,38 @@ export const useCreatorDealsSecure = () => {
       }
 
       console.log('Retrieved deals:', deals);
-      return deals || [];
+      
+      // Transform the data to ensure proper typing
+      const transformedDeals: CreatorDealSecure[] = (deals || []).map(deal => ({
+        id: deal.id,
+        project_id: deal.project_id,
+        creator_id: deal.creator_id,
+        deal_value: deal.deal_value,
+        individual_requirements: deal.individual_requirements,
+        status: deal.status as CreatorDealSecure['status'],
+        invited_at: deal.invited_at,
+        responded_at: deal.responded_at || undefined,
+        creator_feedback: deal.creator_feedback || undefined,
+        payment_status: deal.payment_status as CreatorDealSecure['payment_status'],
+        paid_at: deal.paid_at || undefined,
+        created_at: deal.created_at,
+        updated_at: deal.updated_at,
+        project: deal.project ? {
+          name: deal.project.name,
+          description: deal.project.description || undefined,
+          campaign_type: deal.project.campaign_type,
+          start_date: deal.project.start_date || undefined,
+          end_date: deal.project.end_date || undefined,
+          content_requirements: deal.project.content_requirements,
+          deliverables: {},
+          brand_profile: deal.project.brand_profile ? {
+            company_name: deal.project.brand_profile.company_name,
+            logo_url: deal.project.brand_profile.logo_url || undefined
+          } : undefined
+        } : undefined
+      }));
+
+      return transformedDeals;
     },
     enabled: !!user && !!creatorProfile,
     refetchInterval: 30000,

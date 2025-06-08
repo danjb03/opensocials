@@ -44,7 +44,8 @@ export const useProjectPayments = (projectId: string) => {
           created_at,
           updated_at,
           creator_profiles!creator_deals_creator_id_fkey (
-            display_name,
+            first_name,
+            last_name,
             user_id
           )
         `)
@@ -71,7 +72,7 @@ export const useProjectPayments = (projectId: string) => {
         updatedAt: deal.updated_at,
         creatorInfo: {
           id: deal.creator_profiles?.user_id || '',
-          name: deal.creator_profiles?.display_name || 'Unknown Creator',
+          name: `${deal.creator_profiles?.first_name || ''} ${deal.creator_profiles?.last_name || ''}`.trim() || 'Unknown Creator',
           projectId: projectId
         }
       }));
@@ -97,7 +98,8 @@ export const useProjectCreatorPayments = (projectCreatorId: string) => {
           updated_at,
           project_id,
           creator_profiles!creator_deals_creator_id_fkey (
-            display_name,
+            first_name,
+            last_name,
             user_id
           )
         `)
@@ -126,7 +128,7 @@ export const useProjectCreatorPayments = (projectCreatorId: string) => {
         updatedAt: deal.updated_at,
         creatorInfo: {
           id: deal.creator_profiles?.user_id || '',
-          name: deal.creator_profiles?.display_name || 'Unknown Creator',
+          name: `${deal.creator_profiles?.first_name || ''} ${deal.creator_profiles?.last_name || ''}`.trim() || 'Unknown Creator',
           projectId: deal.project_id
         }
       }];
