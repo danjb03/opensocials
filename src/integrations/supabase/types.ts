@@ -106,13 +106,6 @@ export type Database = {
             referencedRelation: "brand_profiles"
             referencedColumns: ["user_id"]
           },
-          {
-            foreignKeyName: "fk_brand_creator_favorites_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "creator_profiles"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       brand_profiles: {
@@ -331,13 +324,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "creator_deals_creator_id_fkey"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "creator_profiles"
-            referencedColumns: ["user_id"]
-          },
           {
             foreignKeyName: "creator_deals_project_id_fkey"
             columns: ["project_id"]
@@ -1505,13 +1491,6 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "creator_deals_creator_id_fkey"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "creator_profiles"
-            referencedColumns: ["user_id"]
-          },
           {
             foreignKeyName: "creator_deals_project_id_fkey"
             columns: ["project_id"]
