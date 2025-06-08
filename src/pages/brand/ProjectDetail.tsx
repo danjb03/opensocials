@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -11,7 +10,7 @@ import { ArrowLeft, Edit, Users, Plus, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/utils/currency';
 import CreatorInviteSystem from '@/components/brand/campaign-wizard/CreatorInviteSystem';
-import { useProjectPayments } from '@/hooks/useProjectPayments';
+import { useProjectPayments, useProjectPaymentSummary } from '@/hooks/useProjectPayments';
 
 const ProjectDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -59,7 +58,8 @@ const ProjectDetail = () => {
   });
 
   // Fetch payment information
-  const { data: payments = [], summary } = useProjectPayments(id || '');
+  const { data: payments = [] } = useProjectPayments(id || '');
+  const { summary } = useProjectPaymentSummary(id || '');
 
   // Process payment mutation
   const processPaymentMutation = useMutation({
