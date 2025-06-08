@@ -2,12 +2,17 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ArrowLeft, ChevronDown } from 'lucide-react';
 import { useCreateProfileForm } from '@/hooks/useCreateProfileForm';
 import { ProfileBasicInfo } from '@/components/creator/ProfileBasicInfo';
 import { ContentTypeSelection } from '@/components/creator/ContentTypeSelection';
 import { SocialMediaConnection } from '@/components/creator/SocialMediaConnection';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useNavigate } from 'react-router-dom';
+import Logo from '@/components/ui/logo';
 
 const CreateProfile = () => {
+  const navigate = useNavigate();
   const {
     formData,
     isLoading,
@@ -22,6 +27,50 @@ const CreateProfile = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Navigation Header */}
+      <div className="border-b bg-background">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Logo />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <span>Navigate</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                  <DropdownMenuItem onClick={() => navigate('/')}>
+                    Home Page
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/super-admin')}>
+                    Super Admin Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/super-admin/creators')}>
+                    Creator Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/admin')}>
+                    Admin Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/brand')}>
+                    Brand Dashboard
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate('/super-admin/creators')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Creators
+            </Button>
+          </div>
+        </div>
+      </div>
+
       <div className="container mx-auto py-8 px-4">
         <div className="max-w-3xl mx-auto space-y-8">
           <div className="text-center">
