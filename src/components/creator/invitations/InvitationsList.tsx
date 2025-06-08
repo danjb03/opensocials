@@ -1,25 +1,38 @@
 
 import React, { useState } from 'react';
 import { useCreatorInvitations } from '@/hooks/useCreatorInvitations';
+import { useProjectInvitations } from '@/hooks/queries/useProjectInvitations';
 import { InvitationCard } from './InvitationCard';
+import { ProjectInvitationCard } from './ProjectInvitationCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MailPlus, CheckCircle, XCircle } from 'lucide-react';
+import { MailPlus, CheckCircle, XCircle, Briefcase } from 'lucide-react';
 
 export const InvitationsList: React.FC = () => {
   const { 
     invitations, 
-    isLoading, 
+    isLoading: generalLoading, 
     actionLoading, 
     acceptInvitation, 
     declineInvitation 
   } = useCreatorInvitations();
   
-  const [activeTab, setActiveTab] = useState<'pending' | 'accepted' | 'declined'>('pending');
+  const { 
+    data: projectInvitations = [], 
+    isLoading: projectLoading 
+  } = useProjectInvitations();
+  
+  const [activeTab, setActiveTab] = useState<'projects' | 'general' | 'all'>('projects');
 
-  const pendingInvitations = invitations.filter(inv => inv.status === 'invited');
-  const acceptedInvitations = invitations.filter(inv => inv.status === 'accepted');
-  const declinedInvitations = invitations.filter(inv => inv.status === 'declined');
+  const isLoading = generalLoading || projectLoading;
+
+  const pendingProjectInvitations = projectInvitations.filter(inv => inv.status === 'invited');
+  const acceptedProjectInvitations = projectInvitations.filter(inv => inv.status === 'accepted');
+  const declinedProjectInvitations = projectInvitations.filter(inv => inv.status === 'declined');
+
+  const pendingGeneralInvitations = invitations.filter(inv => inv.status === 'invited');
+  const acceptedGeneralInvitations = invitations.filter(inv => inv.status === 'accepted');
+  const declinedGeneralInvitations = invitations.filter(inv => inv.status === 'declined');
 
   const EmptyState = ({ message, icon: Icon }: { message: string; icon: React.ElementType }) => (
     <Card>
@@ -51,73 +64,110 @@ export const InvitationsList: React.FC = () => {
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="pending" className="flex items-center gap-2">
+          <TabsTrigger value="projects" className="flex items-center gap-2">
+            <Briefcase className="h-4 w-4" />
+            Campaign Invites ({pendingProjectInvitations.length})
+          </TabsTrigger>
+          <TabsTrigger value="general" className="flex items-center gap-2">
             <MailPlus className="h-4 w-4" />
-            Pending ({pendingInvitations.length})
+            General Invites ({pendingGeneralInvitations.length})
           </TabsTrigger>
-          <TabsTrigger value="accepted" className="flex items-center gap-2">
+          <TabsTrigger value="all" className="flex items-center gap-2">
             <CheckCircle className="h-4 w-4" />
-            Accepted ({acceptedInvitations.length})
-          </TabsTrigger>
-          <TabsTrigger value="declined" className="flex items-center gap-2">
-            <XCircle className="h-4 w-4" />
-            Declined ({declinedInvitations.length})
+            All History
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="pending" className="space-y-4">
-          {pendingInvitations.length > 0 ? (
-            pendingInvitations.map((invitation) => (
-              <InvitationCard
-                key={invitation.id}
-                invitation={invitation}
-                onAccept={acceptInvitation}
-                onDecline={declineInvitation}
-                isLoading={actionLoading[invitation.id]}
-              />
-            ))
+        <TabsContent value="projects" className="space-y-4">
+          {pendingProjectInvitations.length > 0 ? (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Pending Campaign Invitations</h3>
+              {pendingProjectInvitations.map((invitation) => (
+                <ProjectInvitationCard
+                  key={invitation.id}
+                  invitation={invitation}
+                />
+              ))}
+            </div>
           ) : (
             <EmptyState 
               message="You don't have any pending campaign invitations."
+              icon={Briefcase}
+            />
+          )}
+        </TabsContent>
+
+        <TabsContent value="general" className="space-y-4">
+          {pendingGeneralInvitations.length > 0 ? (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Pending General Invitations</h3>
+              {pendingGeneralInvitations.map((invitation) => (
+                <InvitationCard
+                  key={invitation.id}
+                  invitation={invitation}
+                  onAccept={acceptInvitation}
+                  onDecline={declineInvitation}
+                  isLoading={actionLoading[invitation.id]}
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState 
+              message="You don't have any pending general invitations."
               icon={MailPlus}
             />
           )}
         </TabsContent>
 
-        <TabsContent value="accepted" className="space-y-4">
-          {acceptedInvitations.length > 0 ? (
-            acceptedInvitations.map((invitation) => (
-              <InvitationCard
-                key={invitation.id}
-                invitation={invitation}
-                onAccept={acceptInvitation}
-                onDecline={declineInvitation}
+        <TabsContent value="all" className="space-y-6">
+          {/* Project Invitations History */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Briefcase className="h-5 w-5" />
+              Campaign Invitations
+            </h3>
+            {projectInvitations.length > 0 ? (
+              <div className="space-y-4">
+                {projectInvitations.map((invitation) => (
+                  <ProjectInvitationCard
+                    key={invitation.id}
+                    invitation={invitation}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState 
+                message="No campaign invitations yet."
+                icon={Briefcase}
               />
-            ))
-          ) : (
-            <EmptyState 
-              message="You haven't accepted any campaign invitations yet."
-              icon={CheckCircle}
-            />
-          )}
-        </TabsContent>
+            )}
+          </div>
 
-        <TabsContent value="declined" className="space-y-4">
-          {declinedInvitations.length > 0 ? (
-            declinedInvitations.map((invitation) => (
-              <InvitationCard
-                key={invitation.id}
-                invitation={invitation}
-                onAccept={acceptInvitation}
-                onDecline={declineInvitation}
+          {/* General Invitations History */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <MailPlus className="h-5 w-5" />
+              General Invitations
+            </h3>
+            {invitations.length > 0 ? (
+              <div className="space-y-4">
+                {invitations.map((invitation) => (
+                  <InvitationCard
+                    key={invitation.id}
+                    invitation={invitation}
+                    onAccept={acceptInvitation}
+                    onDecline={declineInvitation}
+                    isLoading={actionLoading[invitation.id]}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState 
+                message="No general invitations yet."
+                icon={MailPlus}
               />
-            ))
-          ) : (
-            <EmptyState 
-              message="You haven't declined any campaign invitations."
-              icon={XCircle}
-            />
-          )}
+            )}
+          </div>
         </TabsContent>
       </Tabs>
     </div>

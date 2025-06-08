@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Plus, Send, DollarSign, Users, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useInviteCreatorToProject } from '@/hooks/useProjectCreators';
+import { useInviteCreatorToProject } from '@/hooks/mutations/useInviteCreatorToProject';
 
 interface CreatorInviteSystemProps {
   projectId: string;
