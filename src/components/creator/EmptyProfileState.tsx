@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { TikTokIcon, Instagram, Youtube } from '@/components/icons/SocialIcons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface EmptyProfileStateProps {
   onStartProfileSetup?: () => void;
@@ -13,13 +12,18 @@ const EmptyProfileState: React.FC<EmptyProfileStateProps> = ({
   onStartProfileSetup
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleStartSetup = () => {
     if (onStartProfileSetup) {
       onStartProfileSetup();
     } else {
-      // Navigate to the create profile page - works for both regular creators and super admin
-      navigate('/creator/create-profile');
+      // Check if we're in super admin context and navigate accordingly
+      if (location.pathname.startsWith('/super-admin')) {
+        navigate('/super-admin/creators/create-profile');
+      } else {
+        navigate('/creator/create-profile');
+      }
     }
   };
 
