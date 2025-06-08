@@ -20,17 +20,22 @@ interface ProjectsTableProps {
   isLoading: boolean;
 }
 
-export const ProjectsTable = React.memo<ProjectsTableProps>(({ projects, isLoading }) => {
+export const ProjectsTable = React.memo<ProjectsTableProps>(({ projects = [], isLoading }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
   const initialPriorityCount = useMemo(() => 
-    projects.filter(p => p.is_priority).length,
+    projects.filter(p => p?.is_priority).length,
     [projects]
   );
   
   const [priorityCount, setPriorityCount] = useState<number>(initialPriorityCount);
   const [tableProjects, setTableProjects] = useState<Project[]>(projects);
+
+  // Update table projects when props change
+  React.useEffect(() => {
+    setTableProjects(projects);
+  }, [projects]);
 
   // Navigate to project pipeline view with consistent parameter naming
   const handleViewProject = useCallback((projectId: string) => {
@@ -38,6 +43,8 @@ export const ProjectsTable = React.memo<ProjectsTableProps>(({ projects, isLoadi
   }, [navigate]);
 
   const handleTogglePriority = useCallback(async (project: Project) => {
+    if (!project?.id) return;
+    
     const newPriorityValue = !project.is_priority;
     
     // Check if we're trying to add a new priority and already have 5
@@ -102,16 +109,18 @@ export const ProjectsTable = React.memo<ProjectsTableProps>(({ projects, isLoadi
 
   // Memoize the sorted projects to avoid recalculation on every render
   const sortedProjects = useMemo(() => {
+    if (!Array.isArray(tableProjects)) return [];
+    
     // Separate priority and non-priority projects
-    const priorityProjects = tableProjects.filter(project => project.is_priority);
-    const regularProjects = tableProjects.filter(project => !project.is_priority);
+    const priorityProjects = tableProjects.filter(project => project?.is_priority);
+    const regularProjects = tableProjects.filter(project => !project?.is_priority);
     
     // Combine them with priority projects first
     return [...priorityProjects, ...regularProjects];
   }, [tableProjects]);
 
   const priorityProjectsCount = useMemo(() => 
-    sortedProjects.filter(project => project.is_priority).length,
+    sortedProjects.filter(project => project?.is_priority).length,
     [sortedProjects]
   );
 
@@ -129,7 +138,7 @@ export const ProjectsTable = React.memo<ProjectsTableProps>(({ projects, isLoadi
     );
   }
 
-  if (tableProjects.length === 0) {
+  if (!Array.isArray(sortedProjects) || sortedProjects.length === 0) {
     return null; // EmptyState component will be shown by the parent
   }
 
@@ -169,13 +178,15 @@ export const ProjectsTable = React.memo<ProjectsTableProps>(({ projects, isLoadi
         </TableHeader>
         <TableBody>
           {sortedProjects.map((project, index) => {
+            if (!project?.id) return null;
+            
             // Add a separator between priority and regular projects
             const isPrioritySeparator = priorityProjectsCount > 0 && 
                                       index === priorityProjectsCount && 
                                       (sortedProjects.length - priorityProjectsCount) > 0;
             
             return (
-              <>
+              <React.Fragment key={project.id}>
                 {isPrioritySeparator && (
                   <TableRow>
                     <TableCell colSpan={7} className="bg-gray-50">
@@ -187,13 +198,12 @@ export const ProjectsTable = React.memo<ProjectsTableProps>(({ projects, isLoadi
                 )}
                 
                 <ProjectRow 
-                  key={project.id}
                   project={project}
                   isPrioritySeparator={isPrioritySeparator}
                   onTogglePriority={handleTogglePriority}
                   onViewProject={handleViewProject}
                 />
-              </>
+              </React.Fragment>
             );
           })}
         </TableBody>

@@ -1,8 +1,9 @@
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/lib/auth';
-import { useScalableQuery } from '@/hooks/useScalableQuery';
+import { supabase } from '@/integrations/supabase/client';
 import { Project } from '@/types/projects';
 import { Order, OrderStage } from '@/types/orders';
 import { projectToOrderSync } from '@/utils/orderUtils';
@@ -18,7 +19,6 @@ export type ProjectViewMode = 'table' | 'pipeline' | 'campaigns';
 
 /**
  * Unified Project Data Hook - Single source of truth for all project data
- * Replaces: useProjects, useOrderData, useCampaigns, and useOrderManagement
  */
 export const useProjectData = () => {
   const { user } = useAuth();
@@ -36,71 +36,39 @@ export const useProjectData = () => {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Single query for all project data
-  const { data: rawProjects = [], isLoading, error, refetch } = useScalableQuery<Project[]>({
-    baseKey: ['projects', filters],
-    customQueryFn: async (): Promise<Project[]> => {
+  // Simplified query using standard useQuery
+  const { data: rawProjects = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['projects', user?.id, filters],
+    queryFn: async (): Promise<Project[]> => {
       if (!user?.id) {
         return [];
       }
       
       try {
-        const { userDataStore } = await import('@/lib/userDataStore');
-        const projectsData = await userDataStore.executeUserQuery('projects', '*', {});
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('brand_id', user.id)
+          .order('created_at', { ascending: false });
 
-        // Validate the response structure
-        if (!projectsData || typeof projectsData === 'string') {
-          return [];
-        }
-
-        // Check if it's an error response
-        if ((projectsData as any)?.error) {
-          return [];
-        }
-
-        // Ensure projectsData is an array
-        if (!Array.isArray(projectsData)) {
-          return [];
+        if (error) {
+          console.error('Error fetching projects:', error);
+          throw error;
         }
 
         // Transform and validate projects
-        const validProjects: Project[] = [];
-        
-        for (const item of projectsData) {
-          // Skip null, undefined, or non-object items
-          if (!item || typeof item !== 'object') {
-            continue;
-          }
-
-          // Skip error objects
-          if ('error' in (item as Record<string, any>)) {
-            continue;
-          }
-
-          const projectItem = item as Record<string, any>;
-          
-          // Validate required fields
-          if (typeof projectItem.id === 'string' &&
-              typeof projectItem.name === 'string' &&
-              typeof projectItem.campaign_type === 'string') {
-            
-            // Transform to match Project type exactly
-            const project: Project = {
-              id: projectItem.id,
-              name: projectItem.name,
-              campaign_type: projectItem.campaign_type,
-              start_date: projectItem.start_date || '',
-              end_date: projectItem.end_date || '',
-              budget: Number(projectItem.budget) || 0,
-              currency: projectItem.currency || 'USD',
-              platforms: Array.isArray(projectItem.platforms) ? projectItem.platforms : [],
-              status: projectItem.status || 'draft',
-              is_priority: Boolean(projectItem.is_priority)
-            };
-            
-            validProjects.push(project);
-          }
-        }
+        const validProjects: Project[] = (data || []).map((item: any) => ({
+          id: item.id,
+          name: item.name || '',
+          campaign_type: item.campaign_type || '',
+          start_date: item.start_date || '',
+          end_date: item.end_date || '',
+          budget: Number(item.budget) || 0,
+          currency: item.currency || 'USD',
+          platforms: Array.isArray(item.platforms) ? item.platforms : [],
+          status: item.status || 'draft',
+          is_priority: Boolean(item.is_priority)
+        }));
 
         return validProjects;
       } catch (error) {
@@ -108,6 +76,7 @@ export const useProjectData = () => {
         return [];
       }
     },
+    enabled: !!user?.id,
     staleTime: 30000,
     refetchOnWindowFocus: true,
   });
@@ -154,7 +123,7 @@ export const useProjectData = () => {
     return true;
   });
 
-  // Transform projects to orders for pipeline view - using sync version to avoid Promise issues
+  // Transform projects to orders for pipeline view
   const orders: Order[] = filteredProjects.map(project => projectToOrderSync(project));
 
   // Transform projects to campaign rows for dashboard
@@ -205,7 +174,7 @@ export const useProjectData = () => {
 
   const handleStageChange = (stage: OrderStage) => {
     setActiveStage(stage);
-    setSelectedProjectId(null); // Clear selected project when changing stages
+    setSelectedProjectId(null);
   };
 
   const handleProjectSelect = (id: string) => {
@@ -247,7 +216,7 @@ export const useProjectData = () => {
     setSelectedProjectId,
     setActiveStage,
     
-    // Legacy compatibility (will be removed after refactoring)
+    // Legacy compatibility
     setOrders: () => {},
   };
 };
