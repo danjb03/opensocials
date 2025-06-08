@@ -15,6 +15,14 @@ interface Deal {
   deal_value: number;
   status: string;
   invited_at: string;
+  title: string;
+  description: string;
+  value: number;
+  feedback?: string;
+  created_at: string;
+  updated_at: string;
+  brand_id: string;
+  creator_id: string;
   project?: {
     name: string;
     description?: string;
@@ -47,6 +55,14 @@ const CreatorDeals = () => {
       deal_value: deal.deal_value,
       status: deal.status,
       invited_at: deal.invited_at,
+      title: deal.project?.name || 'Untitled Campaign',
+      description: deal.project?.description || 'No description available',
+      value: deal.deal_value,
+      feedback: deal.creator_feedback,
+      created_at: deal.created_at,
+      updated_at: deal.updated_at,
+      brand_id: deal.project_id, // Using project_id as brand_id for compatibility
+      creator_id: deal.creator_id,
       project: deal.project ? {
         name: deal.project.name,
         description: deal.project.description,
