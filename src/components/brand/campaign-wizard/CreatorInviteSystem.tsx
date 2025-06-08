@@ -10,7 +10,6 @@ import { Separator } from '@/components/ui/separator';
 import { Plus, Send, DollarSign, Users, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useInviteCreatorToProject } from '@/hooks/mutations/useInviteCreatorToProject';
 
 interface CreatorInviteSystemProps {
   projectId: string;
@@ -35,8 +34,6 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
   const [selectedCreators, setSelectedCreators] = useState<string[]>([]);
   const [creatorBudgets, setCreatorBudgets] = useState<Record<string, number>>({});
 
-  const inviteCreatorMutation = useInviteCreatorToProject();
-
   // Fetch available creators
   const { data: availableCreators, isLoading } = useQuery({
     queryKey: ['available-creators', searchTerm],
@@ -60,6 +57,38 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
       return data || [];
     },
     enabled: true
+  });
+
+  // Invite creator mutation
+  const inviteCreatorMutation = useMutation({
+    mutationFn: async ({
+      creatorId,
+      agreedAmount,
+    }: {
+      creatorId: string;
+      agreedAmount: number;
+    }) => {
+      const { data, error } = await supabase.functions.invoke('invite-creator-to-project', {
+        body: {
+          project_id: projectId,
+          creator_id: creatorId,
+          agreed_amount: agreedAmount,
+          currency,
+          notes: 'Rolling campaign invitation'
+        }
+      });
+
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Failed to send invitation');
+      return data;
+    },
+    onSuccess: (data) => {
+      toast.success(data.message);
+      queryClient.invalidateQueries({ queryKey: ['project-creators', projectId] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to send invitation');
+    }
   });
 
   const handleCreatorSelect = (creatorId: string, budget: number) => {
@@ -97,11 +126,8 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
       await Promise.all(
         selectedCreators.map(creatorId => 
           inviteCreatorMutation.mutateAsync({
-            projectId,
             creatorId,
-            agreedAmount: creatorBudgets[creatorId],
-            currency,
-            notes: 'Rolling campaign invitation'
+            agreedAmount: creatorBudgets[creatorId] || 0,
           })
         )
       );
@@ -112,7 +138,6 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
       queryClient.invalidateQueries({ queryKey: ['project-creators', projectId] });
     } catch (error) {
       console.error('Failed to send invitations:', error);
-      toast.error('Failed to send some invitations. Please try again.');
     }
   };
 

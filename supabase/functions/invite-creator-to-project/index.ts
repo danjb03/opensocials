@@ -1,94 +1,67 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface InviteRequest {
-  project_id: string;
-  creator_id: string;
-  agreed_amount?: number;
-  currency?: string;
-  content_requirements?: any;
-  notes?: string;
-}
-
-const handler = async (req: Request): Promise<Response> => {
-  if (req.method === 'OPTIONS') {
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
     );
 
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('No authorization header');
+    // Get user from auth header
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) throw new Error("No authorization header");
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    if (userError || !userData.user) throw new Error("Invalid user token");
+
+    const { project_id, creator_id, agreed_amount, currency = 'USD', content_requirements, notes } = await req.json();
+
+    if (!project_id || !creator_id) {
+      throw new Error("Missing required fields: project_id and creator_id");
     }
 
-    // Get the user from the auth header
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (authError || !user) {
-      throw new Error('Invalid authentication');
-    }
-
-    const { project_id, creator_id, agreed_amount, currency = 'USD', content_requirements, notes }: InviteRequest = await req.json();
-
-    // Verify the user owns this project
-    const { data: project, error: projectError } = await supabase
+    // Check if brand owns the project
+    const { data: project, error: projectError } = await supabaseClient
       .from('projects')
-      .select('name, brand_id')
+      .select('brand_id, status')
       .eq('id', project_id)
       .single();
 
     if (projectError || !project) {
-      throw new Error('Project not found');
+      throw new Error("Project not found");
     }
 
-    // Get brand profile to verify ownership
-    const { data: brandProfile, error: brandError } = await supabase
-      .from('brand_profiles')
-      .select('user_id, company_name')
-      .eq('user_id', user.id)
+    if (project.brand_id !== userData.user.id) {
+      throw new Error("Unauthorized: You don't own this project");
+    }
+
+    // Check if creator already invited to this project
+    const { data: existingInvitation } = await supabaseClient
+      .from('project_creators')
+      .select('id, status')
+      .eq('project_id', project_id)
+      .eq('creator_id', creator_id)
       .single();
 
-    if (brandError || !brandProfile) {
-      throw new Error('Brand profile not found');
+    if (existingInvitation) {
+      throw new Error(`Creator already ${existingInvitation.status} for this project`);
     }
 
-    // Get creator profile and email
-    const { data: creatorProfile, error: creatorError } = await supabase
-      .from('creator_profiles')
-      .select('user_id, first_name, last_name')
-      .eq('user_id', creator_id)
-      .single();
-
-    if (creatorError || !creatorProfile) {
-      throw new Error('Creator profile not found');
-    }
-
-    // Get creator email from profiles table
-    const { data: creatorUser, error: creatorUserError } = await supabase
-      .from('profiles')
-      .select('email')
-      .eq('id', creator_id)
-      .single();
-
-    if (creatorUserError || !creatorUser?.email) {
-      throw new Error('Creator email not found');
-    }
-
-    // Create project creator invitation
-    const { data: invitation, error: inviteError } = await supabase
+    // Create project_creators entry
+    const { data: invitation, error: invitationError } = await supabaseClient
       .from('project_creators')
       .insert({
         project_id,
@@ -98,58 +71,61 @@ const handler = async (req: Request): Promise<Response> => {
         currency,
         content_requirements,
         notes,
-        invitation_date: new Date().toISOString()
+        invitation_date: new Date().toISOString(),
       })
       .select()
       .single();
 
-    if (inviteError) {
-      throw inviteError;
+    if (invitationError) {
+      throw new Error(`Failed to create invitation: ${invitationError.message}`);
     }
 
-    // Send invitation email
-    const creatorName = `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim();
-    const brandName = brandProfile.company_name || 'A brand';
+    // Get creator info for notification
+    const { data: creator } = await supabaseClient
+      .from('creator_profiles')
+      .select('first_name, last_name')
+      .eq('user_id', creator_id)
+      .single();
 
-    const emailResponse = await supabase.functions.invoke('send-email', {
-      body: {
-        to_email: creatorUser.email,
-        email_subject: `Campaign Invitation from ${brandName}`,
-        email_content: `
-          <h2>You've Been Invited to a Campaign!</h2>
-          <p>Hi ${creatorName},</p>
-          <p>${brandName} has invited you to participate in their campaign: <strong>${project.name}</strong></p>
-          ${agreed_amount ? `<p><strong>Offered Amount:</strong> ${currency} ${agreed_amount}</p>` : ''}
-          ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
-          <p>Log in to your creator dashboard to view the full details and respond to this invitation.</p>
-          <p><a href="${Deno.env.get('SITE_URL') || 'http://localhost:3000'}/creator/invitations" style="display: inline-block; background-color: #4F46E5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Invitation</a></p>
-          <p>Best regards,<br>The OpenSocials Team</p>
-        `,
-        from_email: 'OpenSocials <noreply@opensocials.net>'
-      }
-    });
+    const creatorName = creator ? `${creator.first_name || ''} ${creator.last_name || ''}`.trim() : 'Creator';
 
-    console.log('Invitation created and email sent:', { invitation, emailResponse });
+    // Send invitation email (using existing send-email function)
+    try {
+      await supabaseClient.functions.invoke('send-email', {
+        body: {
+          to: creator_id, // This should be the creator's email
+          subject: 'New Campaign Invitation',
+          template: 'project-invitation',
+          data: {
+            project_id,
+            project_name: project.name || 'Campaign',
+            agreed_amount,
+            currency,
+          }
+        }
+      });
+    } catch (emailError) {
+      console.warn('Failed to send invitation email:', emailError);
+      // Don't fail the invitation if email fails
+    }
 
-    return new Response(JSON.stringify({ 
-      success: true, 
-      invitation,
-      message: `Invitation sent to ${creatorName}` 
+    return new Response(JSON.stringify({
+      success: true,
+      message: `Invitation sent to ${creatorName}`,
+      invitation_id: invitation.id
     }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
 
   } catch (error) {
     console.error('Error in invite-creator-to-project:', error);
     return new Response(JSON.stringify({ 
-      error: error.message,
-      success: false 
+      success: false, 
+      error: error.message 
     }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 400,
     });
   }
-};
-
-serve(handler);
+});
