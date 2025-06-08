@@ -1,3 +1,6 @@
+import React, { memo } from 'react';
+import { AccessibleButton } from '@/components/ui/accessible-button';
+import { OptimizedImage } from '@/components/ui/optimized-image';
 
 export interface CampaignRow {
   project_id: string;
@@ -22,7 +25,7 @@ interface CampaignRowProps {
   isMobile?: boolean;
 }
 
-export function CampaignRow({ campaign, onViewProject, isMobile = false }: CampaignRowProps) {
+const CampaignRowMemo = memo(({ campaign, onViewProject, isMobile = false }: CampaignRowProps) => {
   console.log('Rendering campaign row:', campaign);
   
   const handleViewClick = () => {
@@ -92,21 +95,42 @@ export function CampaignRow({ campaign, onViewProject, isMobile = false }: Campa
           )}
         </div>
         
-        <button
+        <AccessibleButton
           onClick={handleViewClick}
-          className="w-full bg-primary text-primary-foreground py-3 rounded-md hover:bg-primary/90 transition-colors font-medium text-sm"
+          className="w-full"
+          aria-label={`View details for ${campaign.project_name}`}
         >
           View Details
-        </button>
+        </AccessibleButton>
       </div>
     );
   }
 
   return (
-    <div className="p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={handleViewClick}>
+    <div 
+      className="p-4 hover:bg-muted/50 transition-colors cursor-pointer focus-within:bg-muted/50" 
+      onClick={handleViewClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleViewClick();
+        }
+      }}
+      aria-label={`Campaign: ${campaign.project_name}`}
+    >
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
+            {campaign.avatar_url && (
+              <OptimizedImage
+                src={campaign.avatar_url}
+                alt={`${campaign.creator_name || 'Creator'} avatar`}
+                className="w-8 h-8 rounded-full"
+                fallbackSrc="/placeholder.svg"
+              />
+            )}
             <h3 className="font-semibold text-lg text-foreground">{campaign.project_name}</h3>
             <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(campaign.project_status)}`}>
               {campaign.project_status.replace('_', ' ').toUpperCase()}
@@ -133,17 +157,22 @@ export function CampaignRow({ campaign, onViewProject, isMobile = false }: Campa
         </div>
         
         <div className="flex items-center ml-4">
-          <button
+          <AccessibleButton
             onClick={(e) => {
               e.stopPropagation();
               handleViewClick();
             }}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium"
+            variant="default"
+            aria-label={`View details for ${campaign.project_name}`}
           >
             View Details
-          </button>
+          </AccessibleButton>
         </div>
       </div>
     </div>
   );
-}
+});
+
+CampaignRowMemo.displayName = 'CampaignRow';
+
+export { CampaignRowMemo as CampaignRow };

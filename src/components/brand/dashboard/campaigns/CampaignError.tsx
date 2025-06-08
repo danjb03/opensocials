@@ -1,7 +1,9 @@
 
+import React, { memo } from 'react';
 import { AlertTriangle, RefreshCw, Home, Wifi } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { AccessibleButton } from '@/components/ui/accessible-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useRetry } from '@/hooks/useRetry';
 
 interface CampaignErrorProps {
   error: string;
@@ -10,12 +12,17 @@ interface CampaignErrorProps {
   type?: 'network' | 'server' | 'permission' | 'general';
 }
 
-export function CampaignError({ 
+const CampaignErrorMemo = memo(({ 
   error, 
   onRetry, 
   onGoHome,
   type = 'general' 
-}: CampaignErrorProps) {
+}: CampaignErrorProps) => {
+  const { retry: retryWithBackoff, isRetrying } = useRetry(onRetry, {
+    maxAttempts: 3,
+    initialDelay: 1000,
+  });
+
   const getErrorConfig = () => {
     switch (type) {
       case 'network':
@@ -78,28 +85,36 @@ export function CampaignError({
           </div>
           
           <div className="flex flex-col sm:flex-row gap-2">
-            <Button 
-              onClick={onRetry}
-              className="flex-1 gap-2"
+            <AccessibleButton 
+              onClick={retryWithBackoff}
+              className="flex-1"
               variant="default"
+              loading={isRetrying}
+              loadingText="Retrying..."
+              aria-label="Retry the failed operation"
             >
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw className="h-4 w-4 mr-2" />
               Try Again
-            </Button>
+            </AccessibleButton>
             
             {onGoHome && (
-              <Button 
+              <AccessibleButton 
                 onClick={onGoHome}
                 variant="outline"
-                className="flex-1 gap-2"
+                className="flex-1"
+                aria-label="Go to home page"
               >
-                <Home className="h-4 w-4" />
+                <Home className="h-4 w-4 mr-2" />
                 Go Home
-              </Button>
+              </AccessibleButton>
             )}
           </div>
         </CardContent>
       </Card>
     </div>
   );
-}
+});
+
+CampaignErrorMemo.displayName = 'CampaignError';
+
+export { CampaignErrorMemo as CampaignError };
