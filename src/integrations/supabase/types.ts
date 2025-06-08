@@ -325,6 +325,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "creator_deals_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "creator_deals_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
@@ -1491,6 +1498,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "creator_deals_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "creator_deals_project_id_fkey"
             columns: ["project_id"]

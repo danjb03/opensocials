@@ -34,7 +34,7 @@ serve(async (req) => {
       );
     }
 
-    // Check if user is a super_admin
+    // Check if user is a super_admin or the user themselves
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role')
@@ -48,39 +48,55 @@ serve(async (req) => {
       );
     }
 
-    if (!profile || profile.role !== 'super_admin') {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized: Requires super_admin role' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
-      );
-    }
-
-    // Process the request data
     const requestData = await req.json().catch(() => ({}));
     
-    // Validate required fields
-    const requiredFields = ['name', 'username', 'platform'];
-    const missingFields = requiredFields.filter(field => !requestData[field]);
-    
-    if (missingFields.length) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields', fields: missingFields }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
+    // Determine target user ID - for super_admin it could be different from auth user
+    const targetUserId = profile?.role === 'super_admin' && requestData.target_user_id 
+      ? requestData.target_user_id 
+      : user.id;
 
-    // Create the creator profile
+    // Map frontend fields to database schema
+    const profileData = {
+      user_id: targetUserId,
+      display_name: requestData.fullName || requestData.name || null,
+      bio: requestData.bio || null,
+      primary_platform: Array.isArray(requestData.contentTypes) && requestData.contentTypes.length > 0 
+        ? requestData.contentTypes.join(', ') 
+        : requestData.platform || null,
+      content_type: Array.isArray(requestData.contentTypes) 
+        ? requestData.contentTypes.join(', ') 
+        : requestData.contentTypes || null,
+      follower_count: requestData.followers ? parseInt(requestData.followers) : 
+                     requestData.followerCount ? parseInt(requestData.followerCount) : null,
+      engagement_rate: requestData.avgViews ? parseFloat(requestData.avgViews) : 
+                      requestData.engagementRate ? parseFloat(requestData.engagementRate) : null,
+      audience_location: requestData.location || 'Global',
+      industries: requestData.industry ? [requestData.industry] : 
+                 Array.isArray(requestData.industries) ? requestData.industries : [],
+      creator_type: requestData.creatorType || null,
+      social_links: {
+        instagram: requestData.instagramHandle || null,
+        tiktok: requestData.tiktokHandle || null,
+        youtube: requestData.youtubeHandle || null
+      },
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    console.log('Creating creator profile with data:', profileData);
+
+    // Create or update the creator profile
     const { data: createdProfile, error: createError } = await supabase
       .from('creator_profiles')
-      .insert({
-        ...requestData,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+      .upsert(profileData, { 
+        onConflict: 'user_id',
+        ignoreDuplicates: false 
       })
       .select()
       .single();
 
     if (createError) {
+      console.error('Create profile error:', createError);
       return new Response(
         JSON.stringify({ error: 'Failed to create creator profile', details: createError.message }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }

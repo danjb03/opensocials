@@ -39,22 +39,97 @@ export const useProjectContent = (projectId: string) => {
   return useQuery({
     queryKey: ['project-content', projectId],
     queryFn: async (): Promise<ProjectContent[]> => {
-      // Since project_content table doesn't exist yet, return empty array
-      console.log('Project content table not available yet');
-      return [];
+      const { data: content, error } = await supabase
+        .from('campaign_content')
+        .select(`
+          *,
+          creator_profiles!campaign_content_creator_id_fkey (
+            display_name,
+            user_id
+          )
+        `)
+        .eq('campaign_id', projectId);
+
+      if (error) {
+        console.error('Error fetching project content:', error);
+        throw error;
+      }
+
+      return (content || []).map(item => ({
+        id: item.id,
+        projectCreatorId: item.creator_id,
+        contentType: item.content_type as any,
+        platform: item.platform,
+        title: item.title,
+        description: item.description,
+        status: mapContentStatus(item.status),
+        views: 0,
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at,
+        creatorInfo: {
+          id: item.creator_profiles?.user_id || '',
+          name: item.creator_profiles?.display_name || 'Unknown Creator'
+        }
+      }));
     },
     enabled: !!projectId,
   });
 };
+
+// Map database status to ProjectContent status
+function mapContentStatus(dbStatus: string): ProjectContent['status'] {
+  switch (dbStatus) {
+    case 'pending': return 'submitted';
+    case 'approved': return 'approved';
+    case 'rejected': return 'rejected';
+    case 'revision_requested': return 'under_review';
+    default: return 'draft';
+  }
+}
 
 // Fetch content for a specific creator within a project
 export const useProjectCreatorContent = (projectCreatorId: string) => {
   return useQuery({
     queryKey: ['project-creator-content', projectCreatorId],
     queryFn: async (): Promise<ProjectContent[]> => {
-      // Since project_content table doesn't exist yet, return empty array
-      console.log('Project content table not available yet');
-      return [];
+      const { data: content, error } = await supabase
+        .from('campaign_content')
+        .select(`
+          *,
+          creator_profiles!campaign_content_creator_id_fkey (
+            display_name,
+            user_id
+          )
+        `)
+        .eq('creator_id', projectCreatorId);
+
+      if (error) {
+        console.error('Error fetching creator content:', error);
+        throw error;
+      }
+
+      return (content || []).map(item => ({
+        id: item.id,
+        projectCreatorId: item.creator_id,
+        contentType: item.content_type as any,
+        platform: item.platform,
+        title: item.title,
+        description: item.description,
+        status: mapContentStatus(item.status),
+        views: 0,
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at,
+        creatorInfo: {
+          id: item.creator_profiles?.user_id || '',
+          name: item.creator_profiles?.display_name || 'Unknown Creator'
+        }
+      }));
     },
     enabled: !!projectCreatorId,
   });
@@ -67,6 +142,7 @@ export const useSubmitContent = () => {
   return useMutation({
     mutationFn: async ({
       projectCreatorId,
+      campaignId,
       contentType,
       platform,
       title,
@@ -77,6 +153,7 @@ export const useSubmitContent = () => {
       thumbnailUrl,
     }: {
       projectCreatorId: string;
+      campaignId: string;
       contentType: 'video' | 'post' | 'story' | 'reel' | 'short';
       platform: string;
       title?: string;
@@ -86,9 +163,26 @@ export const useSubmitContent = () => {
       fileType?: string;
       thumbnailUrl?: string;
     }) => {
-      // Since project_content table doesn't exist yet, just return mock data
-      console.log('Content submission not available yet - project_content table missing');
-      throw new Error('Content submission functionality not available yet');
+      const { data, error } = await supabase
+        .from('campaign_content')
+        .insert({
+          campaign_id: campaignId,
+          creator_id: projectCreatorId,
+          title: title || 'Untitled Content',
+          description: description,
+          content_type: contentType,
+          platform: platform,
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error submitting content:', error);
+        throw error;
+      }
+
+      return data;
     },
     onSuccess: (data) => {
       toast.success('Content submitted successfully');
@@ -97,7 +191,7 @@ export const useSubmitContent = () => {
     },
     onError: (error) => {
       console.error('Failed to submit content:', error);
-      toast.error('Content submission not available yet');
+      toast.error('Failed to submit content');
     },
   });
 };
@@ -118,9 +212,28 @@ export const useUpdateContentStatus = () => {
       reviewNotes?: string;
       reviewerId?: string;
     }) => {
-      // Since project_content table doesn't exist yet, just return mock data
-      console.log('Content status update not available yet - project_content table missing');
-      throw new Error('Content status update functionality not available yet');
+      // Map status back to database values
+      const dbStatus = status === 'approved' ? 'approved' : 
+                      status === 'rejected' ? 'rejected' : 
+                      status === 'under_review' ? 'revision_requested' : 'pending';
+
+      const { data, error } = await supabase
+        .from('campaign_content')
+        .update({
+          status: dbStatus,
+          feedback: reviewNotes,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', contentId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating content status:', error);
+        throw error;
+      }
+
+      return data;
     },
     onSuccess: (data) => {
       toast.success('Content status updated successfully');
@@ -129,7 +242,7 @@ export const useUpdateContentStatus = () => {
     },
     onError: (error) => {
       console.error('Failed to update content status:', error);
-      toast.error('Content status update not available yet');
+      toast.error('Failed to update content status');
     },
   });
 };
@@ -158,9 +271,28 @@ export const useUpdateContentMetrics = () => {
       publishedUrl?: string;
       publishedDate?: string;
     }) => {
-      // Since project_content table doesn't exist yet, just return mock data
-      console.log('Content metrics update not available yet - project_content table missing');
-      throw new Error('Content metrics update functionality not available yet');
+      // For now, just update the status if it's published
+      const updateData: any = {
+        updated_at: new Date().toISOString()
+      };
+
+      if (publishedUrl) {
+        updateData.status = 'approved'; // Mark as approved if published
+      }
+
+      const { data, error } = await supabase
+        .from('campaign_content')
+        .update(updateData)
+        .eq('id', contentId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating content metrics:', error);
+        throw error;
+      }
+
+      return data;
     },
     onSuccess: (data) => {
       toast.success('Content metrics updated successfully');
@@ -169,7 +301,7 @@ export const useUpdateContentMetrics = () => {
     },
     onError: (error) => {
       console.error('Failed to update content metrics:', error);
-      toast.error('Content metrics update not available yet');
+      toast.error('Failed to update content metrics');
     },
   });
 };

@@ -27,31 +27,115 @@ export interface ProjectPayment {
   };
 }
 
-// Fetch payments for a project - temporarily disabled since table doesn't exist
+// Fetch payments for a project
 export const useProjectPayments = (projectId: string) => {
   return useQuery({
     queryKey: ['project-payments', projectId],
     queryFn: async (): Promise<ProjectPayment[]> => {
-      console.log('Project payments table not available yet');
-      return [];
+      // Now fetch from real creator_deals table
+      const { data: deals, error } = await supabase
+        .from('creator_deals')
+        .select(`
+          id,
+          deal_value,
+          status,
+          payment_status,
+          paid_at,
+          created_at,
+          updated_at,
+          creator_profiles!creator_deals_creator_id_fkey (
+            display_name,
+            user_id
+          )
+        `)
+        .eq('project_id', projectId);
+
+      if (error) {
+        console.error('Error fetching project payments:', error);
+        throw error;
+      }
+
+      // Transform deals to payment format
+      return (deals || []).map(deal => ({
+        id: deal.id,
+        projectCreatorId: deal.id, // Using deal id as project creator id
+        amount: deal.deal_value,
+        currency: 'USD',
+        milestone: 'completion',
+        status: deal.payment_status === 'paid' ? 'completed' : 
+                deal.payment_status === 'processing' ? 'processing' : 'pending',
+        scheduledDate: deal.created_at,
+        processedDate: deal.payment_status === 'processing' ? deal.created_at : undefined,
+        completedDate: deal.paid_at || undefined,
+        createdAt: deal.created_at,
+        updatedAt: deal.updated_at,
+        creatorInfo: {
+          id: deal.creator_profiles?.user_id || '',
+          name: deal.creator_profiles?.display_name || 'Unknown Creator',
+          projectId: projectId
+        }
+      }));
     },
     enabled: !!projectId,
   });
 };
 
-// Fetch payments for a specific creator within a project - temporarily disabled
+// Fetch payments for a specific creator within a project
 export const useProjectCreatorPayments = (projectCreatorId: string) => {
   return useQuery({
     queryKey: ['project-creator-payments', projectCreatorId],
     queryFn: async (): Promise<ProjectPayment[]> => {
-      console.log('Project creator payments table not available yet');
-      return [];
+      const { data: deal, error } = await supabase
+        .from('creator_deals')
+        .select(`
+          id,
+          deal_value,
+          status,
+          payment_status,
+          paid_at,
+          created_at,
+          updated_at,
+          project_id,
+          creator_profiles!creator_deals_creator_id_fkey (
+            display_name,
+            user_id
+          )
+        `)
+        .eq('id', projectCreatorId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching creator payment:', error);
+        throw error;
+      }
+
+      if (!deal) return [];
+
+      return [{
+        id: deal.id,
+        projectCreatorId: deal.id,
+        amount: deal.deal_value,
+        currency: 'USD',
+        milestone: 'completion',
+        status: deal.payment_status === 'paid' ? 'completed' : 
+                deal.payment_status === 'processing' ? 'processing' : 'pending',
+        scheduledDate: deal.created_at,
+        processedDate: deal.payment_status === 'processing' ? deal.created_at : undefined,
+        completedDate: deal.paid_at || undefined,
+        createdAt: deal.created_at,
+        updatedAt: deal.updated_at,
+        creatorInfo: {
+          id: deal.creator_profiles?.user_id || '',
+          name: deal.creator_profiles?.display_name || 'Unknown Creator',
+          projectId: deal.project_id
+        }
+      }];
     },
     enabled: !!projectCreatorId,
   });
 };
 
-// Create a new payment - temporarily disabled
+// Create a new payment
 export const useCreatePayment = () => {
   const queryClient = useQueryClient();
 
@@ -71,20 +155,37 @@ export const useCreatePayment = () => {
       paymentMethod?: string;
       scheduledDate?: string;
     }) => {
-      console.log('Payment creation not available yet - project_creator_payments table missing');
-      throw new Error('Payment creation functionality not available yet');
+      // Update the deal payment status
+      const { data, error } = await supabase
+        .from('creator_deals')
+        .update({
+          payment_status: 'processing',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', projectCreatorId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating payment:', error);
+        throw error;
+      }
+
+      return data;
     },
     onSuccess: (data) => {
-      toast.success('Payment created successfully');
+      toast.success('Payment processed successfully');
+      queryClient.invalidateQueries({ queryKey: ['project-payments'] });
+      queryClient.invalidateQueries({ queryKey: ['project-creator-payments'] });
     },
     onError: (error) => {
       console.error('Failed to create payment:', error);
-      toast.error('Payment creation not available yet');
+      toast.error('Failed to process payment');
     },
   });
 };
 
-// Update payment status - temporarily disabled
+// Update payment status
 export const useUpdatePaymentStatus = () => {
   const queryClient = useQueryClient();
 
@@ -104,20 +205,42 @@ export const useUpdatePaymentStatus = () => {
       processedDate?: string;
       completedDate?: string;
     }) => {
-      console.log('Payment status update not available yet - project_creator_payments table missing');
-      throw new Error('Payment status update functionality not available yet');
+      const updateData: any = {
+        payment_status: status === 'completed' ? 'paid' : status,
+        updated_at: new Date().toISOString()
+      };
+
+      if (completedDate && status === 'completed') {
+        updateData.paid_at = completedDate;
+      }
+
+      const { data, error } = await supabase
+        .from('creator_deals')
+        .update(updateData)
+        .eq('id', paymentId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating payment status:', error);
+        throw error;
+      }
+
+      return data;
     },
     onSuccess: (data) => {
       toast.success('Payment status updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['project-payments'] });
+      queryClient.invalidateQueries({ queryKey: ['project-creator-payments'] });
     },
     onError: (error) => {
       console.error('Failed to update payment status:', error);
-      toast.error('Payment status update not available yet');
+      toast.error('Failed to update payment status');
     },
   });
 };
 
-// Process payment - temporarily disabled
+// Process payment
 export const useProcessPayment = () => {
   const queryClient = useQueryClient();
 
@@ -129,15 +252,32 @@ export const useProcessPayment = () => {
       paymentId: string;
       paymentMethod: string;
     }) => {
-      console.log('Payment processing not available yet - project_creator_payments table missing');
-      throw new Error('Payment processing functionality not available yet');
+      const { data, error } = await supabase
+        .from('creator_deals')
+        .update({
+          payment_status: 'paid',
+          paid_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', paymentId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error processing payment:', error);
+        throw error;
+      }
+
+      return data;
     },
     onSuccess: (data) => {
       toast.success('Payment processed successfully');
+      queryClient.invalidateQueries({ queryKey: ['project-payments'] });
+      queryClient.invalidateQueries({ queryKey: ['project-creator-payments'] });
     },
     onError: (error) => {
       console.error('Failed to process payment:', error);
-      toast.error('Payment processing not available yet');
+      toast.error('Failed to process payment');
     },
   });
 };
