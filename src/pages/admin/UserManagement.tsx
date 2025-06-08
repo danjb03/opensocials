@@ -22,8 +22,8 @@ interface User {
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all-roles');
+  const [statusFilter, setStatusFilter] = useState('all-status');
 
   const { data: users = [], isLoading, error } = useQuery({
     queryKey: ['admin-users'],
@@ -44,8 +44,8 @@ const UserManagement = () => {
       user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesRole = !roleFilter || user.role === roleFilter;
-    const matchesStatus = !statusFilter || user.status === statusFilter;
+    const matchesRole = roleFilter === 'all-roles' || user.role === roleFilter;
+    const matchesStatus = statusFilter === 'all-status' || user.status === statusFilter;
     
     return matchesSearch && matchesRole && matchesStatus;
   });
@@ -97,7 +97,7 @@ const UserManagement = () => {
                 <SelectValue placeholder="All Roles" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Roles</SelectItem>
+                <SelectItem value="all-roles">All Roles</SelectItem>
                 <SelectItem value="super_admin">Super Admin</SelectItem>
                 <SelectItem value="admin">Admin</SelectItem>
                 <SelectItem value="brand">Brand</SelectItem>
@@ -110,7 +110,7 @@ const UserManagement = () => {
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Status</SelectItem>
+                <SelectItem value="all-status">All Status</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="suspended">Suspended</SelectItem>
