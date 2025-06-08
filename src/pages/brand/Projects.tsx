@@ -9,7 +9,6 @@ import { EmptyProjectsState } from '@/components/brand/EmptyProjectsState';
 import { useProjectData, ProjectFilters } from '@/hooks/useProjectData';
 import { Card, CardContent } from '@/components/ui/card';
 import { SearchInput } from '@/components/ui/search-input';
-import { ToastManager } from '@/components/ui/toast-manager';
 import { AccessibleButton } from '@/components/ui/accessible-button';
 import { Plus, Filter } from 'lucide-react';
 
@@ -17,8 +16,12 @@ const Projects = () => {
   const { user } = useUnifiedAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Always call useState hooks first, in the same order
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  
+  // Always call useProjectData hook
   const { 
     projects, 
     isLoading, 
@@ -48,12 +51,34 @@ const Projects = () => {
     handleFiltersChange(updatedFilters);
   };
 
+  // Filter projects based on search query
   const filteredProjects = projects.filter(project => {
     if (!searchQuery) return true;
     return project.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
-  const errorMessage = error instanceof Error ? error.message : typeof error === 'string' ? error : 'An error occurred';
+  // Show error if there's an error
+  if (error) {
+    console.error('Projects page error:', error);
+    return (
+      <BrandLayout>
+        <div className="container mx-auto p-6 max-w-7xl">
+          <div className="text-center py-12">
+            <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Projects</h2>
+            <p className="text-gray-600">
+              {error instanceof Error ? error.message : 'An error occurred while loading projects'}
+            </p>
+            <AccessibleButton
+              onClick={() => window.location.reload()}
+              className="mt-4"
+            >
+              Retry
+            </AccessibleButton>
+          </div>
+        </div>
+      </BrandLayout>
+    );
+  }
 
   return (
     <BrandLayout>
@@ -143,12 +168,6 @@ const Projects = () => {
             )}
           </CardContent>
         </Card>
-
-        {/* Toast notifications */}
-        <ToastManager 
-          error={errorMessage}
-          onErrorDismiss={() => {}}
-        />
       </div>
     </BrandLayout>
   );
