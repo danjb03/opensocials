@@ -6,18 +6,12 @@ import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { ProjectsTable } from '@/components/brand/projects';
 import { ProjectsHeader } from '@/components/brand/ProjectsHeader';
 import { EmptyProjectsState } from '@/components/brand/EmptyProjectsState';
-import { useProjectData } from '@/hooks/useProjectData';
+import { useProjectData, ProjectFilters } from '@/hooks/useProjectData';
 import { Card, CardContent } from '@/components/ui/card';
 import { SearchInput } from '@/components/ui/search-input';
 import { ToastManager } from '@/components/ui/toast-manager';
 import { AccessibleButton } from '@/components/ui/accessible-button';
 import { Plus, Filter } from 'lucide-react';
-
-interface ProjectFilters {
-  search?: string;
-  status?: string;
-  dateRange?: { start: Date; end: Date };
-}
 
 const Projects = () => {
   const { user } = useUnifiedAuth();
@@ -47,7 +41,10 @@ const Projects = () => {
 
   const handleSearch = (value: string) => {
     setSearchQuery(value);
-    const updatedFilters: ProjectFilters = { ...filters, search: value };
+    const updatedFilters: ProjectFilters = { 
+      ...filters, 
+      campaignName: value 
+    };
     handleFiltersChange(updatedFilters);
   };
 
@@ -56,7 +53,7 @@ const Projects = () => {
     return project.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
-  const errorMessage = error instanceof Error ? error.message : error;
+  const errorMessage = error instanceof Error ? error.message : typeof error === 'string' ? error : 'An error occurred';
 
   return (
     <BrandLayout>
