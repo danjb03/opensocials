@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import BrandLayout from '@/components/layouts/BrandLayout';
@@ -6,7 +5,7 @@ import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { ProjectsTable } from '@/components/brand/projects';
 import { ProjectsHeader } from '@/components/brand/ProjectsHeader';
 import { EmptyProjectsState } from '@/components/brand/EmptyProjectsState';
-import { useProjectData, ProjectFilters } from '@/hooks/useProjectData';
+import { useProjectData, type ProjectFilters } from '@/hooks/useProjectData';
 import { Card, CardContent } from '@/components/ui/card';
 import { SearchInput } from '@/components/ui/search-input';
 import { AccessibleButton } from '@/components/ui/accessible-button';
