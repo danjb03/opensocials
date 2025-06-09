@@ -18,10 +18,29 @@ interface BrandProfile {
   is_complete?: boolean;
 }
 
+interface CreatorProfile {
+  user_id: string;
+  first_name: string | null;
+  last_name: string | null;
+  username: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+  banner_url: string | null;
+  primary_platform: string | null;
+  content_types: string[] | null;
+  platforms: string[] | null;
+  industries: string[] | null;
+  social_handles: any;
+  audience_location: any;
+  visibility_settings: any;
+  is_profile_complete?: boolean;
+}
+
 export const useUnifiedAuth = () => {
   const { user, session, isLoading: authLoading, emailConfirmed } = useAuth();
   const [role, setRole] = useState<UserRole | null>(null);
   const [brandProfile, setBrandProfile] = useState<BrandProfile | null>(null);
+  const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -32,6 +51,7 @@ export const useUnifiedAuth = () => {
     if (!user) {
       setRole(null);
       setBrandProfile(null);
+      setCreatorProfile(null);
       setIsLoading(false);
       return;
     }
@@ -62,6 +82,23 @@ export const useUnifiedAuth = () => {
             setBrandProfile(brandData);
           }
         }
+
+        // If user is a creator, fetch their profile
+        if (userRole === 'creator') {
+          console.log('🎨 Fetching creator profile');
+          const { data: creatorData, error: creatorError } = await supabase
+            .from('creator_profiles')
+            .select('*')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (creatorError) {
+            console.error('❌ Error fetching creator profile:', creatorError);
+          } else if (creatorData) {
+            console.log('✅ Creator profile fetched:', creatorData);
+            setCreatorProfile(creatorData);
+          }
+        }
       } catch (error) {
         console.error('❌ Error in fetchUserData:', error);
       } finally {
@@ -77,7 +114,32 @@ export const useUnifiedAuth = () => {
     session,
     role,
     brandProfile,
+    creatorProfile,
     isLoading: authLoading || isLoading,
     emailConfirmed
+  };
+};
+
+// Brand-specific hook
+export const useBrandAuth = () => {
+  const authData = useUnifiedAuth();
+  
+  return {
+    user: authData.user,
+    profile: authData.brandProfile,
+    isLoading: authData.isLoading,
+    role: authData.role
+  };
+};
+
+// Creator-specific hook
+export const useCreatorAuth = () => {
+  const authData = useUnifiedAuth();
+  
+  return {
+    user: authData.user,
+    profile: authData.creatorProfile,
+    isLoading: authData.isLoading,
+    role: authData.role
   };
 };
