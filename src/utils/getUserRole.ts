@@ -4,17 +4,13 @@ import type { UserRole } from '@/lib/auth';
 
 /**
  * Fetch a user's role from the database.
- * Uses service role to bypass RLS policies and avoid recursion.
+ * Prioritizes user_roles table over metadata for accuracy.
  */
 export const getUserRole = async (userId: string): Promise<UserRole | null> => {
   try {
-    // First try to get from auth metadata as it's always accessible
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user?.user_metadata?.role) {
-      return user.user_metadata.role as UserRole;
-    }
+    console.log('🔍 Fetching role for user:', userId);
 
-    // Try user_roles table first (this should bypass profile RLS issues)
+    // PRIORITY 1: Try user_roles table first (most authoritative)
     try {
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
@@ -24,14 +20,29 @@ export const getUserRole = async (userId: string): Promise<UserRole | null> => {
         .maybeSingle();
 
       if (!roleError && roleData?.role) {
-        console.log('✅ Found role in user_roles:', roleData.role);
+        console.log('✅ Found role in user_roles (priority 1):', roleData.role);
         return roleData.role as UserRole;
+      }
+      
+      if (roleError) {
+        console.warn('user_roles query error:', roleError.message);
       }
     } catch (roleErr) {
       console.warn('Could not fetch from user_roles:', roleErr);
     }
 
-    // Fallback: try profiles table with error handling
+    // PRIORITY 2: Try auth metadata as fallback
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.user_metadata?.role) {
+        console.log('✅ Found role in metadata (priority 2):', user.user_metadata.role);
+        return user.user_metadata.role as UserRole;
+      }
+    } catch (metaErr) {
+      console.warn('Could not fetch from metadata:', metaErr);
+    }
+
+    // PRIORITY 3: Try profiles table as last resort
     try {
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -40,7 +51,7 @@ export const getUserRole = async (userId: string): Promise<UserRole | null> => {
         .maybeSingle();
 
       if (!profileError && profileData?.role) {
-        console.log('✅ Found role in profiles:', profileData.role);
+        console.log('✅ Found role in profiles (priority 3):', profileData.role);
         return profileData.role as UserRole;
       }
 

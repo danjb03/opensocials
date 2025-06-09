@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (session?.user) {
           setEmailConfirmed(!!session.user.email_confirmed_at);
           
-          // Fetch user role with improved error handling
+          // Fetch user role with improved priority logic
           setTimeout(() => {
             retrieveRole(session.user.id);
           }, 0);
@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('✅ Role resolved successfully:', resolvedRole);
         setRole(resolvedRole);
       } else {
-        console.warn('⚠️ No role found for user');
+        console.warn('⚠️ No role found for user, defaulting to null');
         setRole(null);
       }
     } catch (error) {

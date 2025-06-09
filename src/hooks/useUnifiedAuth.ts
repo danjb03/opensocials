@@ -1,8 +1,7 @@
 
-import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/lib/auth';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/lib/auth';
 import { getUserRole } from '@/utils/getUserRole';
 import type { UserRole } from '@/lib/auth';
 
@@ -16,136 +15,69 @@ interface BrandProfile {
   brand_bio: string | null;
   brand_goal: string | null;
   campaign_focus: string[] | null;
-  created_at: string;
-  updated_at: string;
+  is_complete?: boolean;
 }
 
-interface CreatorProfile {
-  user_id: string;
-  username: string;
-  bio: string | null;
-  avatar_url: string | null;
-  social_handles: Record<string, string> | null;
-  content_types: string[] | null;
-  platforms: string[] | null;
-  audience_size: number | null;
-  engagement_rate: number | null;
-  created_at: string;
-  updated_at: string;
-}
+export const useUnifiedAuth = () => {
+  const { user, session, isLoading: authLoading, emailConfirmed } = useAuth();
+  const [role, setRole] = useState<UserRole | null>(null);
+  const [brandProfile, setBrandProfile] = useState<BrandProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-interface UnifiedAuthData {
-  user: {
-    id: string;
-    email?: string;
-    [key: string]: unknown;
-  } | null;
-  role: UserRole | null;
-  brandProfile: BrandProfile | null;
-  creatorProfile: CreatorProfile | null;
-  isLoading: boolean;
-  error: string | null;
-}
+  useEffect(() => {
+    if (authLoading) {
+      return;
+    }
 
-/**
- * Unified authentication hook that consolidates all auth-related data fetching
- * Replaces: useAuth, useUserRole, useBrandProfile, useCreatorProfile (data parts)
- */
-export const useUnifiedAuth = (): UnifiedAuthData => {
-  const { user, isLoading: authLoading } = useAuth();
-  
-  // Single query for all user-related data
-  const { data, isLoading: dataLoading, error } = useQuery({
-    queryKey: ['unified-auth', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
+    if (!user) {
+      setRole(null);
+      setBrandProfile(null);
+      setIsLoading(false);
+      return;
+    }
 
-      // Fetch all user data in parallel
-      const [roleResult, brandProfileResult, creatorProfileResult] = await Promise.allSettled([
-        getUserRole(user.id),
-        supabase.from('brand_profiles').select('*').eq('user_id', user.id).maybeSingle(),
-        supabase.from('creator_profiles').select('*').eq('user_id', user.id).maybeSingle()
-      ]);
-
-      const role = roleResult.status === 'fulfilled' ? roleResult.value : null;
-      const brandProfile = brandProfileResult.status === 'fulfilled' && brandProfileResult.value.data 
-        ? brandProfileResult.value.data 
-        : null;
-      
-      let creatorProfile = null;
-      if (creatorProfileResult.status === 'fulfilled' && creatorProfileResult.value.data) {
-        const rawProfile = creatorProfileResult.value.data;
-        // Transform the social_handles JSON to Record<string, string>
-        let socialHandles: Record<string, string> | null = null;
-        if (rawProfile.social_handles && typeof rawProfile.social_handles === 'object' && !Array.isArray(rawProfile.social_handles)) {
-          socialHandles = {};
-          Object.entries(rawProfile.social_handles).forEach(([key, value]) => {
-            if (typeof value === 'string') {
-              socialHandles![key] = value;
-            }
-          });
-        }
+    const fetchUserData = async () => {
+      try {
+        setIsLoading(true);
         
-        creatorProfile = {
-          ...rawProfile,
-          social_handles: socialHandles
-        };
+        // Fetch role using updated priority logic
+        console.log('🔍 Fetching user role with priority logic');
+        const userRole = await getUserRole(user.id);
+        console.log('🎯 Retrieved user role:', userRole);
+        setRole(userRole);
+
+        // If user is a brand, fetch their profile
+        if (userRole === 'brand') {
+          console.log('👔 Fetching brand profile');
+          const { data: brandData, error: brandError } = await supabase
+            .from('brand_profiles')
+            .select('*')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (brandError) {
+            console.error('❌ Error fetching brand profile:', brandError);
+          } else if (brandData) {
+            console.log('✅ Brand profile fetched:', brandData);
+            setBrandProfile(brandData);
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error in fetchUserData:', error);
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-      return {
-        role,
-        brandProfile,
-        creatorProfile
-      };
-    },
-    enabled: !!user?.id && !authLoading,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: false,
-    retry: 2
-  });
+    fetchUserData();
+  }, [user, authLoading]);
 
-  return {
-    user: user ? {
-      id: user.id,
-      email: user.email,
-      ...user
-    } : null,
-    role: data?.role || null,
-    brandProfile: data?.brandProfile || null,
-    creatorProfile: data?.creatorProfile || null,
-    isLoading: authLoading || dataLoading,
-    error: error?.message || null
-  };
-};
-
-/**
- * Hook for brand-specific auth data
- */
-export const useBrandAuth = () => {
-  const { user, role, brandProfile, isLoading, error } = useUnifiedAuth();
-  
   return {
     user,
+    session,
     role,
-    profile: brandProfile,
-    isLoading,
-    error,
-    isBrand: role === 'brand' || role === 'super_admin'
-  };
-};
-
-/**
- * Hook for creator-specific auth data
- */
-export const useCreatorAuth = () => {
-  const { user, role, creatorProfile, isLoading, error } = useUnifiedAuth();
-  
-  return {
-    user,
-    role,
-    profile: creatorProfile,
-    isLoading,
-    error,
-    isCreator: role === 'creator' || role === 'super_admin'
+    brandProfile,
+    isLoading: authLoading || isLoading,
+    emailConfirmed
   };
 };
