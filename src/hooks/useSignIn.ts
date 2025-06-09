@@ -27,16 +27,19 @@ export function useSignIn() {
         return;
       }
 
+      console.log('🔐 Attempting sign in for:', email);
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
+        console.error('❌ Sign in error:', error.message);
+        
         // Enhanced error handling
         if (error.message.includes("Email not confirmed")) {
           toast.error('Your email is not confirmed. Please check your inbox and click the confirmation link.');
-          console.error('Login error - email not confirmed:', error.message);
           
           // Offer resend confirmation option
           const { error: resendError } = await supabase.auth.resend({
@@ -65,8 +68,8 @@ export function useSignIn() {
         }
       }
 
-      // Check if email is confirmed - this is a double check even though Supabase should already prevent login
-      if (!data.user.email_confirmed_at) {
+      // Check if email is confirmed
+      if (!data.user?.email_confirmed_at) {
         toast.error('Please confirm your email before logging in.');
         
         // Resend confirmation email
@@ -83,56 +86,53 @@ export function useSignIn() {
         return;
       }
 
-      // Continue with the rest of the sign in process using the new security function
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('role, is_complete')
-        .eq('id', data.user.id)
-        .maybeSingle();
+      console.log('✅ Sign in successful for user:', data.user.id);
 
-      if (profileError) {
-        console.error('Error fetching user role:', profileError);
-        toast.error('Failed to fetch user role.');
-        return;
-      }
+      // Try to get role with improved error handling
+      try {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('role, is_complete')
+          .eq('id', data.user.id)
+          .maybeSingle();
 
-      // For brand users, check if their profile is complete
-      if (profileData?.role === 'brand') {
-        console.log('Brand user logged in, checking profile completion:', profileData);
-        
-        // Only redirect to setup page if is_complete is explicitly false
-        // Otherwise, go to the dashboard
-        if (profileData.is_complete === false) {
-          window.location.href = '/brand/setup-profile';
-          setIsLoading(false);
-          return;
+        if (profileError) {
+          // If it's a recursion error, still allow login but route based on metadata
+          if (profileError.message?.includes('infinite recursion')) {
+            console.warn('⚠️ Profile RLS recursion, using fallback routing');
+            
+            // Try to get role from user metadata
+            const metadataRole = data.user.user_metadata?.role;
+            if (metadataRole) {
+              routeBasedOnRole(metadataRole);
+            } else {
+              // Default routing for super admin
+              window.location.href = '/';
+            }
+            setIsLoading(false);
+            return;
+          } else {
+            console.error('Error fetching user profile:', profileError);
+            toast.error('Failed to fetch user profile.');
+            setIsLoading(false);
+            return;
+          }
         }
-      }
 
-      // Route based on role
-      if (profileData?.role) {
-        switch (profileData.role) {
-          case 'super_admin':
-            window.location.href = '/super-admin';
-            break;
-          case 'admin':
-            window.location.href = '/admin';
-            break;
-          case 'brand':
-            window.location.href = '/brand';
-            break;
-          case 'creator':
-            window.location.href = '/creator';
-            break;
-          default:
-            console.error('Unknown role:', profileData.role);
-            toast.error('Invalid user role');
+        // Normal routing based on profile data
+        if (profileData?.role) {
+          routeBasedOnRole(profileData.role, profileData.is_complete);
+        } else {
+          console.warn('⚠️ No role found, redirecting to home');
+          window.location.href = '/';
         }
-      } else {
-        toast.error('No role assigned.');
+      } catch (err) {
+        console.error('Profile fetch failed:', err);
+        // Fallback: redirect to home page
+        window.location.href = '/';
       }
     } catch (err: any) {
-      console.error('Login error:', err.message);
+      console.error('❌ Login error:', err.message);
       
       // Enhanced error handling for network issues
       if (err.message?.includes('Failed to fetch') || err.message?.includes('network')) {
@@ -142,6 +142,38 @@ export function useSignIn() {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const routeBasedOnRole = (role: string, isComplete?: boolean) => {
+    console.log('🎯 Routing user with role:', role);
+    
+    // For brand users, check if their profile is complete
+    if (role === 'brand' && isComplete === false) {
+      window.location.href = '/brand/setup-profile';
+      return;
+    }
+
+    // Route based on role
+    switch (role) {
+      case 'super_admin':
+        window.location.href = '/super-admin';
+        break;
+      case 'admin':
+        window.location.href = '/admin';
+        break;
+      case 'brand':
+        window.location.href = '/brand';
+        break;
+      case 'creator':
+        window.location.href = '/creator';
+        break;
+      case 'agency':
+        window.location.href = '/agency';
+        break;
+      default:
+        console.warn('❌ Unknown role:', role);
+        window.location.href = '/';
     }
   };
 

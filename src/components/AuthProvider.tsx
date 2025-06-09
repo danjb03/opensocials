@@ -20,6 +20,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('🔐 Auth state change:', event, session?.user?.id);
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -28,7 +29,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (session?.user) {
           setEmailConfirmed(!!session.user.email_confirmed_at);
           
-          // Fetch user role if authenticated, using setTimeout to prevent recursion
+          // Fetch user role with improved error handling
           setTimeout(() => {
             retrieveRole(session.user.id);
           }, 0);
@@ -42,6 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('🔍 Initial session check:', session?.user?.id);
       
       setSession(session);
       setUser(session?.user ?? null);
@@ -62,11 +64,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const retrieveRole = async (userId: string) => {
     try {
       setIsLoading(true);
+      console.log('🔍 Fetching role for user:', userId);
+      
       const resolvedRole = await getUserRole(userId);
-      setRole(resolvedRole);
+      
+      if (resolvedRole) {
+        console.log('✅ Role resolved successfully:', resolvedRole);
+        setRole(resolvedRole);
+      } else {
+        console.warn('⚠️ No role found for user');
+        setRole(null);
+      }
     } catch (error) {
       console.error('❌ Failed to fetch user role:', error);
-      toast.error('Failed to fetch user role. Please try refreshing the page.');
+      
+      // Don't show toast for recursion errors - they're system-level issues
+      if (!error?.message?.includes('infinite recursion')) {
+        toast.error('Failed to fetch user role. Please try refreshing the page.');
+      }
+      
       setRole(null);
     } finally {
       setIsLoading(false);

@@ -10,7 +10,6 @@ export const useUserRole = (userId: string | undefined) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Only fetch role if we have a valid userId
     if (!userId) {
       setIsLoading(false);
       setRole(null);
@@ -22,47 +21,71 @@ export const useUserRole = (userId: string | undefined) => {
       setError(null);
       
       try {
-        // First, check if we can get the role from user_roles table for most accurate status
-        const { data: roleData, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role, status')
-          .eq('user_id', userId)
-          .eq('status', 'approved')
-          .maybeSingle();
-
-        if (roleError) {
-          console.error('Error fetching from user_roles:', roleError.message);
-        } else if (roleData?.role) {
-          console.log('Found approved role in user_roles:', roleData.role);
-          setRole(roleData.role as UserRole);
+        // First check auth metadata - most reliable
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.user_metadata?.role) {
+          console.log('✅ Found role in metadata:', user.user_metadata.role);
+          setRole(user.user_metadata.role as UserRole);
           setIsLoading(false);
           return;
         }
-        
-        // If not found in user_roles, check profiles table as fallback
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', userId)
-          .maybeSingle();
 
-        if (error) {
-          console.error('Error fetching user role:', error.message);
-          setError(error.message);
-          setRole(null);
-          return;
+        // Try user_roles table (should be less prone to RLS issues)
+        try {
+          const { data: roleData, error: roleError } = await supabase
+            .from('user_roles')
+            .select('role, status')
+            .eq('user_id', userId)
+            .eq('status', 'approved')
+            .maybeSingle();
+
+          if (!roleError && roleData?.role) {
+            console.log('✅ Found approved role in user_roles:', roleData.role);
+            setRole(roleData.role as UserRole);
+            setIsLoading(false);
+            return;
+          }
+        } catch (roleErr) {
+          console.warn('User roles fetch failed:', roleErr);
         }
+        
+        // Last resort: try profiles table with careful error handling
+        try {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', userId)
+            .maybeSingle();
 
-        // Process the response data
-        if (data?.role) {
-          console.log('Found role in profiles:', data.role);
-          setRole(data.role as UserRole);
-        } else {
+          if (profileError) {
+            // Check if it's the recursion error
+            if (profileError.message?.includes('infinite recursion')) {
+              console.warn('⚠️ RLS recursion detected, cannot fetch role from profiles');
+              setRole(null);
+              setError('Profile access restricted');
+            } else {
+              console.error('Profile fetch error:', profileError.message);
+              setError(profileError.message);
+              setRole(null);
+            }
+            setIsLoading(false);
+            return;
+          }
+
+          if (profileData?.role) {
+            console.log('✅ Found role in profiles:', profileData.role);
+            setRole(profileData.role as UserRole);
+          } else {
+            console.warn('❌ No role found in any table');
+            setRole(null);
+          }
+        } catch (profileErr) {
+          console.warn('Profiles table access failed:', profileErr);
           setRole(null);
         }
       } catch (err) {
-        console.error('Unexpected error fetching role:', err);
-        setError('Unexpected error occurred');
+        console.error('❌ Unexpected error fetching role:', err);
+        setError('Failed to fetch user role');
         setRole(null);
       } finally {
         setIsLoading(false);
