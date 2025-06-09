@@ -18,11 +18,10 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
 
   useEffect(() => {
     const checkBrandAccess = async () => {
-
       // Don't do anything if auth is still loading
       if (authLoading) return;
       
-      // Allow super_admin to bypass immediately
+      // Allow super_admin to bypass immediately - they can access everything
       if (role === 'super_admin') {
         setIsChecking(false);
         return;
@@ -46,6 +45,7 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
         return;
       }
 
+      // Only check brand role for non-super-admin users
       if (role !== 'brand') {
         toast.error('You do not have brand access');
         navigate(redirectTo, { replace: true });
@@ -71,7 +71,6 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
           setIsChecking(false);
           return;
         }
-
 
         // Only redirect if profile is explicitly marked as incomplete
         // This reduces unnecessary redirects and improves performance

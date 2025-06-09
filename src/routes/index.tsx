@@ -32,7 +32,12 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
   }
 
   // Super admins can access any protected route regardless of the required role
-  if (requiredRole && role !== requiredRole && role !== 'super_admin') {
+  if (role === 'super_admin') {
+    return <>{children}</>;
+  }
+
+  // For non-super-admin users, check if they have the required role
+  if (requiredRole && role !== requiredRole) {
     return <Navigate to="/" replace />;
   }
 
@@ -50,7 +55,7 @@ export const AppRoutes = () => {
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/tos" element={<TermsOfService />} />
       
-      {/* Role-based routes */}
+      {/* Role-based routes - Super admins can access all of these */}
       <Route path="/admin/*" element={<ProtectedRoute requiredRole="admin"><AdminRoutes /></ProtectedRoute>} />
       <Route path="/agency/*" element={<ProtectedRoute requiredRole="agency"><AgencyRoutes /></ProtectedRoute>} />
       <Route path="/brand/*" element={<ProtectedRoute requiredRole="brand"><BrandRoutes /></ProtectedRoute>} />

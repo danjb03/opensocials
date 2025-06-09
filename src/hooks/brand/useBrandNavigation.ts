@@ -7,7 +7,6 @@ export const useBrandNavigation = () => {
   const navigate = useNavigate();
 
   const redirectToDashboard = () => {
-    
     // For super admins, always redirect to super admin dashboard
     if (role === 'super_admin') {
       navigate('/super-admin', { replace: true });
@@ -17,6 +16,18 @@ export const useBrandNavigation = () => {
     // Check for admin role
     if (role === 'admin') {
       navigate('/admin', { replace: true });
+      return;
+    }
+    
+    // Check for agency role
+    if (role === 'agency') {
+      navigate('/agency', { replace: true });
+      return;
+    }
+    
+    // Check for creator role
+    if (role === 'creator') {
+      navigate('/creator', { replace: true });
       return;
     }
     
