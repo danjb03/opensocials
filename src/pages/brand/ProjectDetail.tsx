@@ -67,22 +67,32 @@ const ProjectDetail = () => {
       const { data, error } = await supabase.functions.invoke('process-creator-payment', {
         body: {
           deal_id: dealId,
-          amount,
-          payment_method: 'platform'
+          amount
         }
       });
 
       if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || 'Payment failed');
+      if (!data?.success) {
+        // Handle case where creator needs to complete Stripe onboarding
+        if (data?.requires_onboarding && data?.account_link) {
+          window.open(data.account_link, '_blank');
+          throw new Error(`Creator needs to complete payment setup first. Setup link opened in new tab.`);
+        }
+        throw new Error(data?.error || 'Payment failed');
+      }
       return data;
     },
-    onSuccess: () => {
-      toast.success('Payment processed successfully');
+    onSuccess: (data) => {
+      toast.success('Payment processed successfully', {
+        description: data.message
+      });
       queryClient.invalidateQueries({ queryKey: ['project-payments', id] });
       queryClient.invalidateQueries({ queryKey: ['project-creators', id] });
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to process payment');
+      toast.error('Payment failed', {
+        description: error.message
+      });
     }
   });
 
@@ -308,13 +318,13 @@ const ProjectDetail = () => {
                             className="flex items-center gap-1"
                           >
                             <DollarSign className="h-3 w-3" />
-                            {processPaymentMutation.isPending ? 'Processing...' : 'Pay Now'}
+                            {processPaymentMutation.isPending ? 'Processing...' : 'Pay via Stripe'}
                           </Button>
                         )}
                         
                         {payment && payment.status === 'completed' && (
                           <Badge variant="outline" className="text-green-600">
-                            Paid
+                            Paid via Stripe
                           </Badge>
                         )}
                       </div>
