@@ -30,7 +30,7 @@ export const useAgencyUsers = () => {
         .from('agency_users')
         .select(`
           *,
-          profiles!agency_users_user_id_fkey (
+          profiles!user_id (
             first_name,
             last_name,
             email,

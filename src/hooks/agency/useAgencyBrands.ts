@@ -49,7 +49,7 @@ export const useAgencyBrands = () => {
           budget_range,
           logo_url,
           created_at,
-          profiles!brand_profiles_user_id_fkey (
+          profiles!user_id (
             email,
             status
           )

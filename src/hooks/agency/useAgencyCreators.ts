@@ -53,7 +53,7 @@ export const useAgencyCreators = () => {
           engagement_rate,
           avatar_url,
           created_at,
-          profiles!creator_profiles_user_id_fkey (
+          profiles!user_id (
             email,
             status
           )
