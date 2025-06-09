@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 import Index from "@/pages/Index";
@@ -55,12 +54,14 @@ export const AppRoutes = () => {
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/tos" element={<TermsOfService />} />
       
-      {/* Role-based routes - Super admins can access all of these without role restrictions */}
+      {/* Super Admin routes - Must come BEFORE other role-based routes */}
+      <Route path="/super-admin/*" element={<ProtectedRoute requiredRole="super_admin"><SuperAdminRoutes /></ProtectedRoute>} />
+      
+      {/* Other role-based routes */}
       <Route path="/admin/*" element={<ProtectedRoute requiredRole="admin"><AdminRoutes /></ProtectedRoute>} />
       <Route path="/agency/*" element={<ProtectedRoute requiredRole="agency"><AgencyRoutes /></ProtectedRoute>} />
       <Route path="/brand/*" element={<ProtectedRoute requiredRole="brand"><BrandRoutes /></ProtectedRoute>} />
       <Route path="/creator/*" element={<ProtectedRoute requiredRole="creator"><CreatorRoutes /></ProtectedRoute>} />
-      <Route path="/super-admin/*" element={<ProtectedRoute requiredRole="super_admin"><SuperAdminRoutes /></ProtectedRoute>} />
       
       {/* Catch all */}
       <Route path="*" element={<NotFound />} />

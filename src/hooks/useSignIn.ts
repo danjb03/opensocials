@@ -107,7 +107,7 @@ export function useSignIn() {
               routeBasedOnRole(metadataRole);
             } else {
               // Default routing for super admin
-              window.location.href = '/';
+              window.location.href = '/super-admin';
             }
             setIsLoading(false);
             return;
@@ -123,13 +123,13 @@ export function useSignIn() {
         if (profileData?.role) {
           routeBasedOnRole(profileData.role, profileData.is_complete);
         } else {
-          console.warn('⚠️ No role found, redirecting to home');
-          window.location.href = '/';
+          console.warn('⚠️ No role found, redirecting to super admin dashboard');
+          window.location.href = '/super-admin';
         }
       } catch (err) {
         console.error('Profile fetch failed:', err);
-        // Fallback: redirect to home page
-        window.location.href = '/';
+        // Fallback: redirect to super admin dashboard
+        window.location.href = '/super-admin';
       }
     } catch (err: any) {
       console.error('❌ Login error:', err.message);
@@ -148,13 +148,7 @@ export function useSignIn() {
   const routeBasedOnRole = (role: string, isComplete?: boolean) => {
     console.log('🎯 Routing user with role:', role);
     
-    // For brand users, check if their profile is complete
-    if (role === 'brand' && isComplete === false) {
-      window.location.href = '/brand/setup-profile';
-      return;
-    }
-
-    // Route based on role
+    // Route based on role - Super admin goes to super admin dashboard
     switch (role) {
       case 'super_admin':
         window.location.href = '/super-admin';
@@ -163,7 +157,12 @@ export function useSignIn() {
         window.location.href = '/admin';
         break;
       case 'brand':
-        window.location.href = '/brand';
+        // For brand users, check if their profile is complete
+        if (isComplete === false) {
+          window.location.href = '/brand/setup-profile';
+        } else {
+          window.location.href = '/brand';
+        }
         break;
       case 'creator':
         window.location.href = '/creator';
@@ -173,7 +172,7 @@ export function useSignIn() {
         break;
       default:
         console.warn('❌ Unknown role:', role);
-        window.location.href = '/';
+        window.location.href = '/super-admin'; // Default to super admin for unknown roles
     }
   };
 
