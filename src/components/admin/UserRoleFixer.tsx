@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -177,6 +176,7 @@ export default function UserRoleFixer() {
               <SelectItem value="brand">Brand</SelectItem>
               <SelectItem value="creator">Creator</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
+              <SelectItem value="agency">Agency</SelectItem>
               <SelectItem value="super_admin">Super Admin</SelectItem>
             </SelectContent>
           </Select>

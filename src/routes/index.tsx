@@ -12,6 +12,7 @@ import AdminRoutes from "./AdminRoutes";
 import { BrandRoutes } from "./BrandRoutes";
 import { CreatorRoutes } from "./CreatorRoutes";
 import { SuperAdminRoutes } from "./SuperAdminRoutes";
+import AgencyRoutes from "./AgencyRoutes";
 
 // Protected route wrapper
 interface ProtectedRouteProps {
@@ -51,6 +52,7 @@ export const AppRoutes = () => {
       
       {/* Role-based routes */}
       <Route path="/admin/*" element={<ProtectedRoute requiredRole="admin"><AdminRoutes /></ProtectedRoute>} />
+      <Route path="/agency/*" element={<ProtectedRoute requiredRole="agency"><AgencyRoutes /></ProtectedRoute>} />
       <Route path="/brand/*" element={<ProtectedRoute requiredRole="brand"><BrandRoutes /></ProtectedRoute>} />
       <Route path="/creator/*" element={<ProtectedRoute requiredRole="creator"><CreatorRoutes /></ProtectedRoute>} />
       <Route path="/super-admin/*" element={<ProtectedRoute requiredRole="super_admin"><SuperAdminRoutes /></ProtectedRoute>} />
