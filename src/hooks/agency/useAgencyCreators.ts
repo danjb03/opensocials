@@ -42,7 +42,7 @@ export const useAgencyCreators = () => {
       const userIds = agencyUsers.map(au => au.user_id);
 
       // Get creator profiles for those users
-      const { data, error } = await supabase
+      const { data: creatorProfiles, error: creatorError } = await supabase
         .from('creator_profiles')
         .select(`
           user_id,
@@ -52,33 +52,47 @@ export const useAgencyCreators = () => {
           follower_count,
           engagement_rate,
           avatar_url,
-          created_at,
-          profiles!user_id (
-            email,
-            status
-          )
+          created_at
         `)
         .in('user_id', userIds)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching agency creators:', error);
-        throw error;
+      if (creatorError) {
+        console.error('Error fetching creator profiles:', creatorError);
+        throw creatorError;
+      }
+
+      if (!creatorProfiles || creatorProfiles.length === 0) {
+        return [];
+      }
+
+      // Get profiles for email and status
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, email, status')
+        .in('id', creatorProfiles.map(cp => cp.user_id));
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        throw profilesError;
       }
 
       // Transform data to match expected format
-      return (data || []).map(creator => ({
-        user_id: creator.user_id,
-        first_name: creator.first_name || 'Unknown',
-        last_name: creator.last_name || 'User',
-        email: creator.profiles?.email || 'No email',
-        created_at: creator.created_at,
-        status: creator.profiles?.status || 'unknown',
-        primary_platform: creator.primary_platform,
-        follower_count: creator.follower_count,
-        engagement_rate: creator.engagement_rate,
-        avatar_url: creator.avatar_url,
-      }));
+      return creatorProfiles.map(creator => {
+        const profile = profiles?.find(p => p.id === creator.user_id);
+        return {
+          user_id: creator.user_id,
+          first_name: creator.first_name || 'Unknown',
+          last_name: creator.last_name || 'User',
+          email: profile?.email || 'No email',
+          created_at: creator.created_at,
+          status: profile?.status || 'unknown',
+          primary_platform: creator.primary_platform,
+          follower_count: creator.follower_count,
+          engagement_rate: creator.engagement_rate,
+          avatar_url: creator.avatar_url,
+        };
+      });
     },
     enabled: !!user?.id,
   });

@@ -26,27 +26,41 @@ export const useAgencyUsers = () => {
     queryFn: async (): Promise<AgencyUser[]> => {
       if (!user?.id) return [];
 
-      const { data, error } = await supabase
+      // First get agency users
+      const { data: agencyUsers, error: agencyError } = await supabase
         .from('agency_users')
-        .select(`
-          *,
-          profiles!user_id (
-            first_name,
-            last_name,
-            email,
-            role,
-            status
-          )
-        `)
+        .select('*')
         .eq('agency_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching agency users:', error);
-        throw error;
+      if (agencyError) {
+        console.error('Error fetching agency users:', agencyError);
+        throw agencyError;
       }
 
-      return data || [];
+      if (!agencyUsers || agencyUsers.length === 0) {
+        return [];
+      }
+
+      // Get user IDs
+      const userIds = agencyUsers.map(au => au.user_id);
+
+      // Fetch profiles separately
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email, role, status')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        throw profilesError;
+      }
+
+      // Combine the data
+      return agencyUsers.map(agencyUser => ({
+        ...agencyUser,
+        profiles: profiles?.find(profile => profile.id === agencyUser.user_id) || null
+      }));
     },
     enabled: !!user?.id,
   });
