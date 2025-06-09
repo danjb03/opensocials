@@ -56,7 +56,7 @@ const SuperAdminDashboard = () => {
             </Card>
           </div>
           
-          {/* New dashboard navigation cards */}
+          {/* Updated dashboard navigation cards */}
           <h2 className="text-xl font-semibold mt-10 mb-4">Dashboard Access</h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <Card className="border-l-4 border-l-violet-500">
@@ -95,38 +95,38 @@ const SuperAdminDashboard = () => {
               </CardContent>
             </Card>
             
-            <Card className="border-l-4 border-l-green-500">
+            <Card className="border-l-4 border-l-orange-500">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Admin Dashboard</CardTitle>
-                  <Settings className="h-5 w-5 text-green-500" />
+                  <CardTitle>Agency Dashboard</CardTitle>
+                  <Settings className="h-5 w-5 text-orange-500" />
                 </div>
-                <CardDescription>Access and manage admin dashboard</CardDescription>
+                <CardDescription>Access and manage agency dashboard</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button 
-                  onClick={() => navigate('/super-admin/admins')} 
-                  className="w-full bg-green-500 hover:bg-green-600"
+                  onClick={() => navigate('/agency')} 
+                  className="w-full bg-orange-500 hover:bg-orange-600"
                 >
-                  Go to Admin Dashboard
+                  Go to Agency Dashboard
                 </Button>
               </CardContent>
             </Card>
             
-            <Card className="border-l-4 border-l-amber-500">
+            <Card className="border-l-4 border-l-green-500">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Brand CRM</CardTitle>
-                  <Briefcase className="h-5 w-5 text-amber-500" />
+                  <CardTitle>Admin Dashboard</CardTitle>
+                  <Briefcase className="h-5 w-5 text-green-500" />
                 </div>
-                <CardDescription>Access brand CRM system</CardDescription>
+                <CardDescription>Access admin dashboard system</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button 
-                  onClick={() => navigate('/admin/crm/brands')} 
-                  className="w-full bg-amber-500 hover:bg-amber-600"
+                  onClick={() => navigate('/admin')} 
+                  className="w-full bg-green-500 hover:bg-green-600"
                 >
-                  Go to Brand CRM
+                  Go to Admin Dashboard
                 </Button>
               </CardContent>
             </Card>
