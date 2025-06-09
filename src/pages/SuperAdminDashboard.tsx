@@ -56,8 +56,8 @@ const SuperAdminDashboard = () => {
             </Card>
           </div>
           
-          {/* Updated dashboard navigation cards */}
-          <h2 className="text-xl font-semibold mt-10 mb-4">Dashboard Access</h2>
+          {/* Super Admin Dashboard Access - This is the key section that was missing */}
+          <h2 className="text-xl font-semibold mt-10 mb-4">Dashboard Access (Super Admin)</h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <Card className="border-l-4 border-l-violet-500">
               <CardHeader>
@@ -65,14 +65,14 @@ const SuperAdminDashboard = () => {
                   <CardTitle>Brand Dashboard</CardTitle>
                   <Users className="h-5 w-5 text-violet-500" />
                 </div>
-                <CardDescription>Access and manage brand dashboard</CardDescription>
+                <CardDescription>Access brand dashboard as super admin</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button 
-                  onClick={() => navigate('/super-admin/brands')}
+                  onClick={() => navigate('/brand')}
                   className="w-full bg-violet-500 hover:bg-violet-600"
                 >
-                  Go to Brand Dashboard
+                  Access Brand Dashboard
                 </Button>
               </CardContent>
             </Card>
@@ -83,14 +83,14 @@ const SuperAdminDashboard = () => {
                   <CardTitle>Creator Dashboard</CardTitle>
                   <User className="h-5 w-5 text-blue-500" />
                 </div>
-                <CardDescription>Access and manage creator dashboard</CardDescription>
+                <CardDescription>Access creator dashboard as super admin</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button 
-                  onClick={() => navigate('/super-admin/creators')} 
+                  onClick={() => navigate('/creator')} 
                   className="w-full bg-blue-500 hover:bg-blue-600"
                 >
-                  Go to Creator Dashboard
+                  Access Creator Dashboard
                 </Button>
               </CardContent>
             </Card>
@@ -101,14 +101,14 @@ const SuperAdminDashboard = () => {
                   <CardTitle>Agency Dashboard</CardTitle>
                   <Settings className="h-5 w-5 text-orange-500" />
                 </div>
-                <CardDescription>Access and manage agency dashboard</CardDescription>
+                <CardDescription>Access agency dashboard as super admin</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button 
                   onClick={() => navigate('/agency')} 
                   className="w-full bg-orange-500 hover:bg-orange-600"
                 >
-                  Go to Agency Dashboard
+                  Access Agency Dashboard
                 </Button>
               </CardContent>
             </Card>
@@ -126,7 +126,7 @@ const SuperAdminDashboard = () => {
                   onClick={() => navigate('/admin')} 
                   className="w-full bg-green-500 hover:bg-green-600"
                 >
-                  Go to Admin Dashboard
+                  Access Admin Dashboard
                 </Button>
               </CardContent>
             </Card>

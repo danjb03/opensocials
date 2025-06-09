@@ -55,7 +55,7 @@ export const AppRoutes = () => {
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/tos" element={<TermsOfService />} />
       
-      {/* Role-based routes - Super admins can access all of these */}
+      {/* Role-based routes - Super admins can access all of these without role restrictions */}
       <Route path="/admin/*" element={<ProtectedRoute requiredRole="admin"><AdminRoutes /></ProtectedRoute>} />
       <Route path="/agency/*" element={<ProtectedRoute requiredRole="agency"><AgencyRoutes /></ProtectedRoute>} />
       <Route path="/brand/*" element={<ProtectedRoute requiredRole="brand"><BrandRoutes /></ProtectedRoute>} />
