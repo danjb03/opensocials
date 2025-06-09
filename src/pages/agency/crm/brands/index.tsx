@@ -1,10 +1,10 @@
 
 import React from 'react';
-import BrandCRM from '@/pages/admin/crm/brands';
+import AgencyBrandCRM from '@/components/agency/AgencyBrandCRM';
 
-// Agency brand CRM - same as admin but scoped to agency's brands
-const AgencyBrandCRM = () => {
-  return <BrandCRM />;
+// Agency brand CRM - only shows brands managed by this agency
+const AgencyBrandCRMPage = () => {
+  return <AgencyBrandCRM />;
 };
 
-export default AgencyBrandCRM;
+export default AgencyBrandCRMPage;

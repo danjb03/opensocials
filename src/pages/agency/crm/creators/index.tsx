@@ -1,10 +1,10 @@
 
 import React from 'react';
-import CreatorCRM from '@/pages/admin/crm/creators';
+import AgencyCreatorCRM from '@/components/agency/AgencyCreatorCRM';
 
-// Agency creator CRM - same as admin but scoped to agency's creators
-const AgencyCreatorCRM = () => {
-  return <CreatorCRM />;
+// Agency creator CRM - only shows creators managed by this agency
+const AgencyCreatorCRMPage = () => {
+  return <AgencyCreatorCRM />;
 };
 
-export default AgencyCreatorCRM;
+export default AgencyCreatorCRMPage;

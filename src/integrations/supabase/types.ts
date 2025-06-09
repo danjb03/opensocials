@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      agency_users: {
+        Row: {
+          agency_id: string
+          created_at: string | null
+          id: string
+          role: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          agency_id: string
+          created_at?: string | null
+          id?: string
+          role?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          agency_id?: string
+          created_at?: string | null
+          id?: string
+          role?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       brand_creator_connections: {
         Row: {
           brand_id: string
@@ -1535,6 +1562,10 @@ export type Database = {
             }
         Returns: string
       }
+      get_user_agency: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       has_role: {
         Args: {
           user_id: string
@@ -1544,6 +1575,14 @@ export type Database = {
       }
       is_admin: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_agency_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      user_belongs_to_agency: {
+        Args: { user_id: string; agency_id: string }
         Returns: boolean
       }
     }

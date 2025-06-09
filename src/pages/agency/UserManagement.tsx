@@ -1,10 +1,10 @@
 
 import React from 'react';
-import UserManagement from '@/pages/admin/UserManagement';
+import AgencyUserManagement from '@/components/agency/AgencyUserManagement';
 
-// Agency user management - same as admin but scoped to agency's users
-const AgencyUserManagement = () => {
-  return <UserManagement />;
+// Agency user management - only shows users managed by this agency
+const AgencyUserManagementPage = () => {
+  return <AgencyUserManagement />;
 };
 
-export default AgencyUserManagement;
+export default AgencyUserManagementPage;
