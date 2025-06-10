@@ -1,75 +1,70 @@
 
 import { useEffect, useRef, useState } from 'react';
+import { Award, TrendingUp, Target, DollarSign, Users, Trophy } from 'lucide-react';
 
 interface StatCard {
   id: number;
-  number: string;
-  suffix: string;
+  percentage: string;
+  title: string;
   description: string;
-  delay: number;
-  size: 'large' | 'medium' | 'small';
-  position: string;
+  icon: any;
+  color: string;
 }
 
 export const TrustedBySection = () => {
+  const [currentCard, setCurrentCard] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
-  const [animatedNumbers, setAnimatedNumbers] = useState<{ [key: number]: number }>({});
   const sectionRef = useRef<HTMLDivElement>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const stats: StatCard[] = [
     {
       id: 1,
-      number: "92",
-      suffix: "%",
+      percentage: "92%",
+      title: "Consumer Trust",
       description: "of consumers trust influencer marketing content over traditional ads",
-      delay: 0,
-      size: 'large',
-      position: 'top-0 left-1/4'
+      icon: Users,
+      color: "from-blue-500/20 to-purple-500/20"
     },
     {
       id: 2,
-      number: "35",
-      suffix: "%",
+      percentage: "35%",
+      title: "Cost Efficiency",
       description: "more expensive: traditional paid ads vs creator led content",
-      delay: 200,
-      size: 'medium',
-      position: 'top-16 right-1/4'
+      icon: DollarSign,
+      color: "from-green-500/20 to-blue-500/20"
     },
     {
       id: 3,
-      number: "74",
-      suffix: "%",
+      percentage: "74%",
+      title: "Content Performance",
       description: "of brands say creators drive their highest performing content",
-      delay: 400,
-      size: 'medium',
-      position: 'top-32 left-1/6'
+      icon: TrendingUp,
+      color: "from-purple-500/20 to-pink-500/20"
     },
     {
       id: 4,
-      number: "84.8",
-      suffix: "%",
+      percentage: "84.8%",
+      title: "Marketing Effectiveness",
       description: "say influencer marketing is effective, not a gamble",
-      delay: 600,
-      size: 'small',
-      position: 'top-48 right-1/6'
+      icon: Target,
+      color: "from-orange-500/20 to-red-500/20"
     },
     {
       id: 5,
-      number: "6.16",
-      suffix: "x",
-      description: "ROI: brands earn $6.16 for every $1 spent on creator campaigns",
-      delay: 800,
-      size: 'large',
-      position: 'top-64 left-1/3'
+      percentage: "6.16x",
+      title: "ROI Multiplier",
+      description: "brands earn $6.16 for every $1 spent on creator campaigns",
+      icon: Award,
+      color: "from-yellow-500/20 to-orange-500/20"
     },
     {
       id: 6,
-      number: "6",
-      suffix: "x",
-      description: "Return on Investment",
-      delay: 1000,
-      size: 'small',
-      position: 'top-80 right-1/3'
+      percentage: "6x",
+      title: "Return Investment",
+      description: "average return on investment for creator partnerships",
+      icon: Trophy,
+      color: "from-pink-500/20 to-purple-500/20"
     }
   ];
 
@@ -78,12 +73,9 @@ export const TrustedBySection = () => {
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          // Start number animations
-          stats.forEach((stat) => {
-            setTimeout(() => {
-              animateNumber(stat.id, parseFloat(stat.number));
-            }, stat.delay);
-          });
+          startCarousel();
+        } else {
+          stopCarousel();
         }
       },
       { threshold: 0.3 }
@@ -93,49 +85,53 @@ export const TrustedBySection = () => {
       observer.observe(sectionRef.current);
     }
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      stopCarousel();
+    };
   }, []);
 
-  const animateNumber = (id: number, target: number) => {
-    const duration = 2000;
-    const steps = 60;
-    const stepValue = target / steps;
-    let current = 0;
+  const startCarousel = () => {
+    if (intervalRef.current) return;
     
-    const timer = setInterval(() => {
-      current += stepValue;
-      if (current >= target) {
-        current = target;
-        clearInterval(timer);
-      }
-      setAnimatedNumbers(prev => ({ ...prev, [id]: current }));
-    }, duration / steps);
+    intervalRef.current = setInterval(() => {
+      setCurrentCard((prev) => (prev + 1) % stats.length);
+    }, 3500); // 3.5 seconds per card
   };
 
-  const getCardSize = (size: string) => {
-    switch (size) {
-      case 'large':
-        return 'w-80 h-40 p-6';
-      case 'medium':
-        return 'w-72 h-36 p-5';
-      case 'small':
-        return 'w-64 h-32 p-4';
-      default:
-        return 'w-72 h-36 p-5';
+  const stopCarousel = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
   };
 
-  const getNumberSize = (size: string) => {
-    switch (size) {
-      case 'large':
-        return 'text-4xl md:text-5xl';
-      case 'medium':
-        return 'text-3xl md:text-4xl';
-      case 'small':
-        return 'text-2xl md:text-3xl';
-      default:
-        return 'text-3xl md:text-4xl';
-    }
+  const goToCard = (index: number) => {
+    setCurrentCard(index);
+    stopCarousel();
+    setTimeout(startCarousel, 5000); // Restart after 5 seconds
+  };
+
+  const getCardStyle = (index: number) => {
+    const totalCards = stats.length;
+    const currentIndex = currentCard;
+    
+    let position = index - currentIndex;
+    if (position < 0) position += totalCards;
+    
+    const baseZIndex = 100;
+    const zIndex = baseZIndex - position;
+    
+    const scale = Math.max(0.7, 1 - position * 0.1);
+    const translateX = position * 20;
+    const translateY = position * 15;
+    const opacity = position === 0 ? 1 : Math.max(0.3, 1 - position * 0.3);
+    
+    return {
+      transform: `translateX(${translateX}px) translateY(${translateY}px) scale(${scale})`,
+      zIndex,
+      opacity,
+    };
   };
 
   return (
@@ -147,51 +143,81 @@ export const TrustedBySection = () => {
         </h2>
       </div>
 
-      <div className="relative h-96 max-w-6xl mx-auto">
-        {stats.map((stat) => (
-          <div
-            key={stat.id}
-            className={`absolute ${stat.position} ${getCardSize(stat.size)} 
-              transform transition-all duration-1000 ease-out
-              ${isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 opacity-0 scale-95'}`}
-            style={{
-              transitionDelay: `${stat.delay}ms`,
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '16px',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
-            }}
-          >
-            <div className="h-full flex flex-col justify-center items-center text-center group cursor-pointer
-              hover:scale-105 hover:shadow-2xl transition-all duration-300
-              hover:bg-gradient-to-br hover:from-white/20 hover:to-white/10">
-              
-              <div className={`${getNumberSize(stat.size)} font-bold text-white mb-2 font-mono`}>
-                {animatedNumbers[stat.id] !== undefined 
-                  ? animatedNumbers[stat.id].toFixed(stat.number.includes('.') ? 1 : 0)
-                  : '0'}{stat.suffix}
-              </div>
-              
-              <p className="text-sm text-gray-300 leading-tight group-hover:text-white transition-colors duration-300">
-                {stat.description}
-              </p>
-              
-              {/* Glow effect */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/0 via-white/5 to-white/0 
-                opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-            </div>
-          </div>
-        ))}
+      <div className="relative h-[500px] max-w-4xl mx-auto flex items-center justify-center perspective-1000">
+        {/* Card Stack */}
+        <div className="relative w-full max-w-lg">
+          {stats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <div
+                key={stat.id}
+                className={`absolute inset-0 transition-all duration-700 ease-out cursor-pointer
+                  ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
+                style={getCardStyle(index)}
+                onClick={() => goToCard(index)}
+                onMouseEnter={stopCarousel}
+                onMouseLeave={startCarousel}
+              >
+                <div className={`w-full h-80 rounded-3xl backdrop-blur-xl border border-white/10 
+                  bg-gradient-to-br ${stat.color} shadow-2xl
+                  hover:shadow-3xl hover:scale-105 transition-all duration-300
+                  flex flex-col items-center justify-center text-center p-8 relative overflow-hidden`}>
+                  
+                  {/* Background Pattern */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+                  
+                  {/* Icon */}
+                  <div className="mb-6 p-4 rounded-full bg-white/10 backdrop-blur-sm">
+                    <Icon size={32} className="text-white" />
+                  </div>
+                  
+                  {/* Main Percentage */}
+                  <h1 className="text-6xl md:text-7xl font-bold text-white mb-4 font-mono tracking-tight">
+                    {stat.percentage}
+                  </h1>
+                  
+                  {/* Title */}
+                  <h3 className="text-xl font-semibold text-white mb-3">
+                    {stat.title}
+                  </h3>
+                  
+                  {/* Description */}
+                  <p className="text-sm text-white/80 leading-relaxed max-w-xs">
+                    {stat.description}
+                  </p>
 
-        {/* Background decorative elements */}
+                  {/* Subtle glow effect */}
+                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-white/0 via-white/5 to-white/0 
+                    opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Navigation Dots */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3">
+          {stats.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToCard(index)}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                index === currentCard 
+                  ? 'bg-white scale-125' 
+                  : 'bg-white/40 hover:bg-white/60'
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Background Elements */}
         <div className="absolute top-10 left-10 w-2 h-2 bg-white/20 rounded-full animate-float" 
           style={{ animationDelay: '0s' }} />
         <div className="absolute top-20 right-20 w-1 h-1 bg-white/30 rounded-full animate-float" 
           style={{ animationDelay: '1s' }} />
-        <div className="absolute bottom-20 left-20 w-1.5 h-1.5 bg-white/25 rounded-full animate-float" 
+        <div className="absolute bottom-32 left-20 w-1.5 h-1.5 bg-white/25 rounded-full animate-float" 
           style={{ animationDelay: '2s' }} />
-        <div className="absolute bottom-10 right-10 w-2 h-2 bg-white/20 rounded-full animate-float" 
+        <div className="absolute bottom-40 right-10 w-2 h-2 bg-white/20 rounded-full animate-float" 
           style={{ animationDelay: '0.5s' }} />
       </div>
 
