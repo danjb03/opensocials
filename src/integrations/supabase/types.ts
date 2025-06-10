@@ -234,6 +234,13 @@ export type Database = {
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "campaign_content_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "slim_projects"
+            referencedColumns: ["id"]
+          },
         ]
       }
       campaign_content_files: {
@@ -356,6 +363,13 @@ export type Database = {
             columns: ["creator_id"]
             isOneToOne: false
             referencedRelation: "creator_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "creator_deals_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "slim_creator_profiles"
             referencedColumns: ["user_id"]
           },
           {
@@ -991,6 +1005,13 @@ export type Database = {
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "project_creators_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "slim_projects"
+            referencedColumns: ["id"]
+          },
         ]
       }
       project_drafts: {
@@ -1563,6 +1584,13 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "creator_deals_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "slim_creator_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "creator_deals_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
@@ -1570,6 +1598,115 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      slim_creator_profiles: {
+        Row: {
+          audience_location: Json | null
+          avatar_url: string | null
+          engagement_rate: number | null
+          first_name: string | null
+          follower_count: number | null
+          id: string | null
+          industries: string[] | null
+          is_profile_complete: boolean | null
+          last_name: string | null
+          primary_platform: string | null
+          user_id: string | null
+          username: string | null
+        }
+        Insert: {
+          audience_location?: Json | null
+          avatar_url?: string | null
+          engagement_rate?: number | null
+          first_name?: string | null
+          follower_count?: number | null
+          id?: string | null
+          industries?: string[] | null
+          is_profile_complete?: boolean | null
+          last_name?: string | null
+          primary_platform?: string | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          audience_location?: Json | null
+          avatar_url?: string | null
+          engagement_rate?: number | null
+          first_name?: string | null
+          follower_count?: number | null
+          id?: string | null
+          industries?: string[] | null
+          is_profile_complete?: boolean | null
+          last_name?: string | null
+          primary_platform?: string | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "creator_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_crm_creators_view"
+            referencedColumns: ["creator_id"]
+          },
+          {
+            foreignKeyName: "creator_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      slim_projects: {
+        Row: {
+          brand_id: string | null
+          budget: number | null
+          campaign_type: string | null
+          currency: string | null
+          end_date: string | null
+          id: string | null
+          is_priority: boolean | null
+          name: string | null
+          platforms: string[] | null
+          start_date: string | null
+          status: string | null
+        }
+        Insert: {
+          brand_id?: string | null
+          budget?: number | null
+          campaign_type?: string | null
+          currency?: string | null
+          end_date?: string | null
+          id?: string | null
+          is_priority?: boolean | null
+          name?: string | null
+          platforms?: string[] | null
+          start_date?: string | null
+          status?: string | null
+        }
+        Update: {
+          brand_id?: string | null
+          budget?: number | null
+          campaign_type?: string | null
+          currency?: string | null
+          end_date?: string | null
+          id?: string | null
+          is_priority?: boolean | null
+          name?: string | null
+          platforms?: string[] | null
+          start_date?: string | null
+          status?: string | null
+        }
+        Relationships: []
       }
     }
     Functions: {

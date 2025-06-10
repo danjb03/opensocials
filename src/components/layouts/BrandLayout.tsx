@@ -112,7 +112,7 @@ const BrandLayout = memo(({ children }: BrandLayoutProps) => {
                   <SidebarMenuButton 
                     asChild 
                     isActive={item.isActive}
-                    className="h-12 mr-2"
+                    className="h-12 mr-2 hover:bg-accent hover:text-accent-foreground transition-colors"
                     tooltip={item.title}
                   >
                     <Link to={item.url} className="flex items-center gap-3">
@@ -132,7 +132,7 @@ const BrandLayout = memo(({ children }: BrandLayoutProps) => {
             <Button 
               variant="default" 
               onClick={handleSignOut}
-              className="w-full h-12 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:text-xs"
+              className="w-full h-12 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:text-xs hover:bg-accent hover:text-accent-foreground transition-colors"
             >
               <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
               <LogOut className="hidden group-data-[collapsible=icon]:block h-4 w-4" />
@@ -142,7 +142,7 @@ const BrandLayout = memo(({ children }: BrandLayoutProps) => {
         
         <SidebarInset className="flex flex-col">
           <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background px-4">
-            <SidebarTrigger className="text-foreground hover:bg-accent" />
+            <SidebarTrigger className="text-foreground hover:bg-accent hover:text-accent-foreground transition-colors" />
           </header>
           
           <main className="flex-1 overflow-auto">

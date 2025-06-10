@@ -1,137 +1,155 @@
 
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
-import Logo from "@/components/ui/logo";
+import { memo, useMemo } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import SidebarLogo from "@/components/ui/sidebar-logo";
+import { Button } from "@/components/ui/button";
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Navigate, Outlet, Link } from 'react-router-dom';
-import { UserCircle, Users, PackageOpen, LayoutDashboard, FileText, Briefcase, BarChart, UserPlus } from 'lucide-react';
-import { Button } from '../ui/button';
-import { useState } from 'react';
-import SidebarToggle from './SidebarToggle';
+import { useAgencyAuth } from '@/hooks/useUnifiedAuth';
+import { Home, Users, Building2, Settings, BarChart2, LogOut } from 'lucide-react';
 import Footer from './Footer';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+  SidebarInset,
+} from "@/components/ui/sidebar";
 
-const AgencyLayout = ({ children }: { children?: React.ReactNode }) => {
-  const { user, role } = useUnifiedAuth();
+interface AgencyLayoutProps {
+  children: React.ReactNode;
+}
+
+const AgencyLayout = memo(({ children }: AgencyLayoutProps) => {
+  const { user, profile } = useAgencyAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const location = useLocation();
 
-  if (!user || (role !== 'agency' && role !== 'super_admin')) {
-    toast({
-      title: 'Access Denied',
-      description: 'Only agency users can access this page.',
-      variant: 'destructive',
-    });
-    return <Navigate to="/" replace />;
-  }
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/');
+      toast({
+        title: "Signed out",
+        description: "You have been signed out successfully.",
+      });
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast({
+        title: "Error",
+        description: "There was an error signing out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const isActiveRoute = useMemo(() => {
+    return (path: string, exact = false) => {
+      if (exact) {
+        return location.pathname === path;
+      }
+      return location.pathname.startsWith(path);
+    };
+  }, [location.pathname]);
+
+  const menuItems = [
+    {
+      title: "Dashboard",
+      url: "/agency",
+      icon: Home,
+      isActive: isActiveRoute('/agency', true)
+    },
+    {
+      title: "Team Management",
+      url: "/agency/team",
+      icon: Users,
+      isActive: isActiveRoute('/agency/team')
+    },
+    {
+      title: "CRM",
+      url: "/agency/crm",
+      icon: BarChart2,
+      isActive: isActiveRoute('/agency/crm')
+    },
+    {
+      title: "Clients",
+      url: "/agency/clients",
+      icon: Building2,
+      isActive: isActiveRoute('/agency/clients')
+    },
+    {
+      title: "Settings",
+      url: "/agency/settings",
+      icon: Settings,
+      isActive: isActiveRoute('/agency/settings')
+    }
+  ];
 
   return (
-    <div className="min-h-screen flex">
-      <aside className={`relative bg-sidebar text-sidebar-foreground transition-all duration-300 ${
-        isSidebarCollapsed ? 'w-16' : 'w-64'
-      }`}>
-        <SidebarToggle 
-          isCollapsed={isSidebarCollapsed} 
-          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        />
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <Sidebar collapsible="icon" className="bg-sidebar border-r border-sidebar-border">
+          <SidebarHeader className="p-4 flex items-center justify-center min-h-[80px]">
+            <SidebarLogo className="group-data-[collapsible=icon]:scale-75" />
+          </SidebarHeader>
+          
+          <SidebarContent className="px-4">
+            <SidebarMenu>
+              {menuItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={item.isActive}
+                    className="h-12 mr-2 hover:bg-accent hover:text-accent-foreground transition-colors"
+                    tooltip={item.title}
+                  >
+                    <Link to={item.url} className="flex items-center gap-3">
+                      <item.icon className="h-5 w-5" />
+                      <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarContent>
+          
+          <SidebarFooter className="p-4 border-t border-sidebar-border">
+            <div className="text-sm text-sidebar-foreground/70 mb-2 truncate group-data-[collapsible=icon]:hidden">
+              {profile?.first_name ? `${profile.first_name} ${profile.last_name}` : user?.email}
+            </div>
+            <Button 
+              variant="default" 
+              onClick={handleSignOut}
+              className="w-full h-12 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:text-xs hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+              <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
+              <LogOut className="hidden group-data-[collapsible=icon]:block h-4 w-4" />
+            </Button>
+          </SidebarFooter>
+        </Sidebar>
         
-        <div className="p-4 flex flex-col h-full">
-          <div className="mb-6">
-            <Logo className={isSidebarCollapsed ? 'hidden' : 'block'} />
-          </div>
+        <SidebarInset className="flex flex-col">
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background px-4">
+            <SidebarTrigger className="text-foreground hover:bg-accent hover:text-accent-foreground transition-colors" />
+          </header>
           
-          <nav className="space-y-1 flex-1">
-            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
-              <Link to="/agency" className="flex items-center gap-2">
-                <LayoutDashboard className="h-5 w-5" />
-                {!isSidebarCollapsed && <span>Dashboard</span>}
-              </Link>
-            </Button>
-            
-            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
-              <Link to="/agency/users" className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                {!isSidebarCollapsed && <span>User Management</span>}
-              </Link>
-            </Button>
-            
-            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
-              <Link to="/agency/invite" className="flex items-center gap-2">
-                <UserPlus className="h-5 w-5" />
-                {!isSidebarCollapsed && <span>Invite Users</span>}
-              </Link>
-            </Button>
-            
-            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
-              <Link to="/agency/projects" className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                {!isSidebarCollapsed && <span>Project Management</span>}
-              </Link>
-            </Button>
-            
-            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
-              <Link to="/agency/orders" className="flex items-center gap-2">
-                <PackageOpen className="h-5 w-5" />
-                {!isSidebarCollapsed && <span>Order Management</span>}
-              </Link>
-            </Button>
-            
-            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
-              <Link to="/agency/crm/brands" className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5" />
-                {!isSidebarCollapsed && <span>Brand CRM</span>}
-              </Link>
-            </Button>
-            
-            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
-              <Link to="/agency/crm/creators" className="flex items-center gap-2">
-                <UserCircle className="h-5 w-5" />
-                {!isSidebarCollapsed && <span>Creator CRM</span>}
-              </Link>
-            </Button>
-
-            {!isSidebarCollapsed && (
-              <div className="px-4 py-2 text-xs text-muted-foreground uppercase mt-4">Insights</div>
-            )}
-
-            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
-              <Link to="/agency/crm/creators/leaderboard" className="flex items-center gap-2">
-                <BarChart className="h-5 w-5" />
-                {!isSidebarCollapsed && <span>Creator Leaderboard</span>}
-              </Link>
-            </Button>
-
-            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
-              <Link to="/agency/crm/brands/leaderboard" className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5" />
-                {!isSidebarCollapsed && <span>Brand Leaderboard</span>}
-              </Link>
-            </Button>
-
-            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" asChild>
-              <Link to="/agency/crm/deals" className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                {!isSidebarCollapsed && <span>Deal Pipeline</span>}
-              </Link>
-            </Button>
-          </nav>
+          <main className="flex-1 overflow-auto">
+            {children}
+          </main>
           
-          <div className="mt-auto pt-4 border-t border-sidebar-border">
-            {!isSidebarCollapsed && (
-              <div className="text-sm opacity-70">
-                Logged in as Agency
-              </div>
-            )}
-          </div>
-        </div>
-      </aside>
-      
-      <main className="flex-1 bg-background overflow-auto flex flex-col">
-        <div className="flex-1">
-          {children || <Outlet />}
-        </div>
-        <Footer />
-      </main>
-    </div>
+          <Footer />
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
-};
+});
+
+AgencyLayout.displayName = 'AgencyLayout';
 
 export default AgencyLayout;
