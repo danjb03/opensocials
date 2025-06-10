@@ -25,7 +25,11 @@ export const InterestRegistrationModal = ({ open, onOpenChange }: InterestRegist
     e.preventDefault();
     
     if (!name || !email || !userType) {
-      toast.error("Please fill in all required fields");
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -43,7 +47,10 @@ export const InterestRegistrationModal = ({ open, onOpenChange }: InterestRegist
 
       if (error) throw error;
 
-      toast.success("Thank you for registering your interest! We'll be in touch soon.");
+      toast({
+        title: "Success",
+        description: "Thank you for registering your interest! We'll be in touch soon.",
+      });
       
       // Reset form
       setName("");
@@ -53,7 +60,11 @@ export const InterestRegistrationModal = ({ open, onOpenChange }: InterestRegist
       onOpenChange(false);
     } catch (error) {
       console.error('Error submitting registration:', error);
-      toast.error("Something went wrong. Please try again.");
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
