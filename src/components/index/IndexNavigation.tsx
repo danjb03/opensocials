@@ -37,7 +37,7 @@ export const IndexNavigation = ({ user }: IndexNavigationProps) => {
               {!user && (
                 <Button 
                   onClick={() => navigate('/auth')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+                  className="bg-white text-black hover:bg-gray-200 px-6"
                 >
                   Get Started
                 </Button>

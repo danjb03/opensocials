@@ -30,7 +30,7 @@ export const CTASection = ({ user }: CTASectionProps) => {
                     placeholder="name@email.com"
                     className="bg-transparent text-white placeholder-gray-500 px-4 py-3 flex-1 focus:outline-none"
                   />
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full">
+                  <Button className="bg-white text-black hover:bg-gray-200 px-8 py-3 rounded-full">
                     Get notified
                   </Button>
                 </div>

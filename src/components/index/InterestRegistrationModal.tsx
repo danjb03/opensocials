@@ -130,7 +130,7 @@ export const InterestRegistrationModal = ({ open, onOpenChange }: InterestRegist
           
           <Button 
             type="submit" 
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            className="w-full bg-white text-black hover:bg-gray-200"
             disabled={isSubmitting}
           >
             {isSubmitting ? "Submitting..." : "Want faster deals?"}
