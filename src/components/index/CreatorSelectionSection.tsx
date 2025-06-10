@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -90,7 +91,10 @@ export const CreatorSelectionSection = () => {
                   {/* Chat bubble - only show for selected creator */}
                   {selectedCreatorId && (
                     <div className="relative mt-6">
-                      <div className="bg-yellow-400 text-black px-4 py-2 rounded-2xl rounded-bl-sm inline-block ml-auto">
+                      <div 
+                        className="bg-yellow-400 text-black px-4 py-2 rounded-2xl rounded-bl-sm inline-block ml-auto cursor-pointer hover:bg-yellow-300 transition-colors"
+                        onClick={() => setShowInterestModal(true)}
+                      >
                         <span className="font-medium">Perfect match!</span>
                       </div>
                     </div>
@@ -117,8 +121,11 @@ export const CreatorSelectionSection = () => {
                 Our AI-powered matching system analyzes your brand requirements and connects you with creators who are the perfect fit for your campaign style and objectives.
               </p>
               <div className="space-y-4">
-                <Button className="bg-white text-black hover:bg-gray-100 rounded-full px-8 py-6 text-lg font-medium">
-                  Find Your Creator
+                <Button 
+                  onClick={() => setShowInterestModal(true)}
+                  className="bg-white text-black hover:bg-gray-100 rounded-full px-8 py-6 text-lg font-medium"
+                >
+                  Get Started
                 </Button>
               </div>
             </div>
