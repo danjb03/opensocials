@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
@@ -111,71 +110,7 @@ const Index = () => {
                   </Button>
                 </div>
               </div>
-            ) : (
-              <Card className="max-w-lg mx-auto bg-gray-900 border-gray-800">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-2xl text-white">Welcome back!</CardTitle>
-                  <CardDescription className="text-gray-400 text-lg">
-                    {user.email}
-                    <br />
-                    Role: {role || 'Loading...'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {role === 'super_admin' && (
-                    <>
-                      <Button 
-                        onClick={() => navigate('/super-admin')}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-3"
-                      >
-                        Go to Super Admin Dashboard
-                      </Button>
-                      <div className="border-t border-gray-800 pt-4 space-y-3">
-                        <p className="text-sm text-gray-400 mb-3">Or access any dashboard:</p>
-                        <div className="grid grid-cols-2 gap-3">
-                          <Button 
-                            onClick={() => navigate('/admin')}
-                            variant="outline"
-                            className="py-2 border-gray-700 text-gray-300 hover:bg-gray-800"
-                          >
-                            Admin
-                          </Button>
-                          <Button 
-                            onClick={() => navigate('/brand')}
-                            variant="outline"
-                            className="py-2 border-gray-700 text-gray-300 hover:bg-gray-800"
-                          >
-                            Brand
-                          </Button>
-                          <Button 
-                            onClick={() => navigate('/creator')}
-                            variant="outline"
-                            className="py-2 border-gray-700 text-gray-300 hover:bg-gray-800"
-                          >
-                            Creator
-                          </Button>
-                          <Button 
-                            onClick={() => navigate('/agency')}
-                            variant="outline"
-                            className="py-2 border-gray-700 text-gray-300 hover:bg-gray-800"
-                          >
-                            Agency
-                          </Button>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                  {role && role !== 'super_admin' && (
-                    <Button 
-                      onClick={() => navigate(`/${role}`)}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-3"
-                    >
-                      Go to {role.charAt(0).toUpperCase() + role.slice(1)} Dashboard
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+            ) : null}
           </div>
 
           {/* Trusted By Section */}
