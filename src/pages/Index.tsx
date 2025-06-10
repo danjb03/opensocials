@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
@@ -74,8 +73,8 @@ const Index = () => {
       <TrustedBySection />
       <FeaturesSection />
       <WorkflowSection />
-      <FeaturesGrid />
       <CreatorSelectionSection />
+      <FeaturesGrid />
       <BenefitsSection />
       <HowItWorksSection />
       <TestimonialsSection />
