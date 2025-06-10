@@ -1,16 +1,17 @@
 
+
 export const StatsSection = () => {
   const stats = [
     {
-      number: "45+",
+      number: "1000+",
       label: "Creators"
     },
     {
-      number: "5K+", 
+      number: "500+", 
       label: "Brands"
     },
     {
-      number: "4.8",
+      number: "24hrs",
       label: "Average deal speed"
     }
   ];
@@ -34,3 +35,4 @@ export const StatsSection = () => {
     </section>
   );
 };
+
