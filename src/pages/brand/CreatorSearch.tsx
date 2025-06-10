@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -181,14 +180,14 @@ const CreatorSearch = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold mb-2 text-foreground">Find Creators</h1>
-            <p className="text-muted-foreground">Instantly see who's right for your campaign</p>
+            <p className="text-foreground">Instantly see who's right for your campaign</p>
           </div>
           
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
               onClick={() => setShowFavoritesModal(true)}
-              className="flex items-center gap-2 border-border text-foreground"
+              className="flex items-center gap-2 text-foreground"
             >
               <Heart className="h-4 w-4" />
               Your Creator Lists
@@ -197,7 +196,7 @@ const CreatorSearch = () => {
           </div>
         </div>
         
-        <Card className="mb-8 border-border bg-card shadow-sm overflow-hidden">
+        <Card className="mb-8 shadow-sm overflow-hidden">
           <CardContent className="p-6">
             <CreatorFilters 
               searchTerm={searchTerm} 
@@ -240,18 +239,20 @@ const CreatorSearch = () => {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
           ) : transformedCreators.length === 0 ? (
-            <div className="text-center py-16 bg-card rounded-lg border border-dashed border-border">
-              <svg className="mx-auto h-12 w-12 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <h3 className="mt-2 text-sm font-medium text-foreground">No creators found</h3>
-              <p className="mt-1 text-sm text-muted-foreground">Try adjusting your search or filter criteria.</p>
-              <div className="mt-6">
-                <Button onClick={resetFilters} variant="outline" className="border-border text-foreground">
-                  Clear all filters
-                </Button>
-              </div>
-            </div>
+            <Card className="border-dashed">
+              <CardContent className="text-center py-16">
+                <svg className="mx-auto h-12 w-12 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 className="mt-2 text-sm font-medium text-foreground">No creators found</h3>
+                <p className="mt-1 text-sm text-foreground">Try adjusting your search or filter criteria.</p>
+                <div className="mt-6">
+                  <Button onClick={resetFilters} variant="outline" className="text-foreground">
+                    Clear all filters
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           ) : viewMode === 'grid' ? (
             <CreatorGrid 
               creators={transformedCreators} 
@@ -304,3 +305,5 @@ const CreatorSearch = () => {
 };
 
 export default CreatorSearch;
+
+</initial_code>

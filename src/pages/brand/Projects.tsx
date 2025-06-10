@@ -109,13 +109,13 @@ const Projects = () => {
                 value={searchQuery}
                 onChange={handleSearch}
                 placeholder="Search projects..."
-                className="w-full bg-card border-border text-foreground"
+                className="w-full text-foreground"
               />
             </div>
             <AccessibleButton
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className="gap-2 border-border text-foreground"
+              className="gap-2 text-foreground"
               aria-label="Toggle filters"
               aria-expanded={showFilters}
             >
@@ -126,7 +126,7 @@ const Projects = () => {
 
           {/* Filters Panel */}
           {showFilters && (
-            <Card className="animate-slide-up bg-card border-border">
+            <Card className="animate-slide-up">
               <CardContent className="p-4">
                 <ProjectsHeader 
                   filters={filters}
@@ -139,7 +139,7 @@ const Projects = () => {
         </div>
         
         {/* Projects Content */}
-        <Card className="overflow-hidden border-border bg-card transition-all duration-300 hover:shadow-lg">
+        <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg">
           <CardContent className="p-0">
             {!isLoading && filteredProjects.length === 0 && !searchQuery ? (
               <div className="animate-scale-in">
@@ -153,7 +153,7 @@ const Projects = () => {
                 <AccessibleButton
                   variant="outline"
                   onClick={() => setSearchQuery('')}
-                  className="mt-4 border-border text-foreground"
+                  className="mt-4 text-foreground"
                 >
                   Clear search
                 </AccessibleButton>

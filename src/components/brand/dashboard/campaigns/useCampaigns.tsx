@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ToastManager } from '@/components/ui/toast-manager';
-import type { CampaignRow } from './CampaignRow';
+import type { Campaign } from './CampaignRow';
 
 interface CampaignFilters {
   search?: string;
@@ -12,7 +12,7 @@ interface CampaignFilters {
 }
 
 interface UseCampaignsReturn {
-  campaigns: CampaignRow[];
+  campaigns: Campaign[];
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
@@ -21,7 +21,7 @@ interface UseCampaignsReturn {
 }
 
 export function useCampaigns(): UseCampaignsReturn {
-  const [campaigns, setCampaigns] = useState<CampaignRow[]>([]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<CampaignFilters>({});
@@ -80,8 +80,8 @@ export function useCampaigns(): UseCampaignsReturn {
         throw queryError;
       }
 
-      // Transform data to match CampaignRow interface
-      const transformedCampaigns: CampaignRow[] = (data || []).map(project => {
+      // Transform data to match Campaign interface
+      const transformedCampaigns: Campaign[] = (data || []).map(project => {
         // Get the first creator deal if available
         const firstDeal = Array.isArray(project.creator_deals) && project.creator_deals.length > 0 
           ? project.creator_deals[0] 
@@ -90,22 +90,16 @@ export function useCampaigns(): UseCampaignsReturn {
         const creatorProfile = firstDeal?.creator_profiles;
 
         return {
-          project_id: project.id,
-          project_name: project.name,
-          project_status: project.status || 'draft',
-          start_date: project.start_date,
-          end_date: project.end_date,
+          id: project.id,
+          name: project.name,
+          status: project.status as 'draft' | 'active' | 'completed' | 'paused' || 'draft',
           budget: project.budget || 0,
-          currency: project.currency || 'USD',
-          deal_id: firstDeal?.id || null,
-          deal_status: firstDeal?.status || null,
-          deal_value: firstDeal?.deal_value || null,
-          creator_name: creatorProfile 
-            ? `${creatorProfile.first_name} ${creatorProfile.last_name}`
-            : null,
-          avatar_url: creatorProfile?.avatar_url || null,
-          engagement_rate: creatorProfile?.engagement_rate?.toString() || null,
-          primary_platform: creatorProfile?.primary_platform || null,
+          startDate: project.start_date || '',
+          endDate: project.end_date || '',
+          creators: Array.isArray(project.creator_deals) ? project.creator_deals.length : 0,
+          reach: 50000, // Mock data
+          engagement: 4.2, // Mock data
+          platform: creatorProfile?.primary_platform || 'Multiple'
         };
       });
 
