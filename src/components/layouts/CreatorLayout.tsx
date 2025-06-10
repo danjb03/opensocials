@@ -1,7 +1,7 @@
 
 import { memo, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import Logo from "@/components/ui/logo";
+import SidebarLogo from "@/components/ui/sidebar-logo";
 import { Button } from "@/components/ui/button";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -82,7 +82,7 @@ const CreatorLayout = memo(({ children }: CreatorLayoutProps) => {
       <div className="min-h-screen flex w-full">
         <Sidebar collapsible="icon" className="bg-sidebar border-r border-sidebar-border">
           <SidebarHeader className="p-4">
-            <Logo />
+            <SidebarLogo />
           </SidebarHeader>
           
           <SidebarContent>
