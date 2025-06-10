@@ -57,29 +57,33 @@ export const BenefitsSection = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {benefits.slice(0, 4).map((benefit, index) => (
-            <Card key={index} className="bg-gray-900/60 border border-gray-700/30 p-6 rounded-2xl backdrop-blur-sm hover:bg-gray-900/80 transition-all duration-300 group">
-              <CardContent className="p-0">
-                <div className="mb-6">
-                  <benefit.icon className="w-8 h-8 text-gray-300 stroke-[1.5] mb-4" />
-                </div>
-                <h3 className="text-xl font-light text-white mb-3">{benefit.title}</h3>
+            <div key={index} className="bg-gray-900/80 border border-gray-700/50 rounded-3xl p-8 backdrop-blur-sm hover:bg-gray-900/90 transition-all duration-300 group relative overflow-hidden">
+              {/* Green accent dot */}
+              <div className="absolute top-6 left-6">
+                <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+              </div>
+              
+              <div className="mt-8">
+                <h3 className="text-xl font-medium text-white mb-3">{benefit.title}</h3>
                 <p className="text-gray-400 text-sm leading-relaxed">{benefit.description}</p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mt-6 max-w-5xl mx-auto">
           {benefits.slice(4).map((benefit, index) => (
-            <Card key={index + 4} className="bg-gray-900/60 border border-gray-700/30 p-6 rounded-2xl backdrop-blur-sm hover:bg-gray-900/80 transition-all duration-300 group">
-              <CardContent className="p-0">
-                <div className="mb-6">
-                  <benefit.icon className="w-8 h-8 text-gray-300 stroke-[1.5] mb-4" />
-                </div>
-                <h3 className="text-xl font-light text-white mb-3">{benefit.title}</h3>
+            <div key={index + 4} className="bg-gray-900/80 border border-gray-700/50 rounded-3xl p-8 backdrop-blur-sm hover:bg-gray-900/90 transition-all duration-300 group relative overflow-hidden">
+              {/* Green accent dot */}
+              <div className="absolute top-6 left-6">
+                <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+              </div>
+              
+              <div className="mt-8">
+                <h3 className="text-xl font-medium text-white mb-3">{benefit.title}</h3>
                 <p className="text-gray-400 text-sm leading-relaxed">{benefit.description}</p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
       </div>
