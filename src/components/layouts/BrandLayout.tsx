@@ -113,7 +113,7 @@ const BrandLayout = memo(({ children }: BrandLayoutProps) => {
               onClick={handleSignOut} 
               loading={isLoggingOut}
               loadingText="Signing out..."
-              className="w-full h-12 text-foreground"
+              className="w-full h-12 text-black"
               aria-label="Sign out of your account"
             >
               {isSidebarCollapsed && !isLoggingOut ? "Out" : null}
