@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, Outlet } from 'react-router-dom';
 import AgencyLayout from '@/components/layouts/AgencyLayout';
 import AgencyDashboard from '@/pages/agency/Dashboard';
 import AgencyUserManagement from '@/pages/agency/UserManagement';
@@ -18,7 +18,7 @@ import AgencyBrandLeaderboard from '@/pages/agency/crm/brands/leaderboard';
 const AgencyRoutes = () => {
   return (
     <Routes>
-      <Route element={<AgencyLayout />}>
+      <Route path="/*" element={<AgencyLayout><Outlet /></AgencyLayout>}>
         <Route index element={<AgencyDashboard />} />
         <Route path="users" element={<AgencyUserManagement />} />
         <Route path="invite" element={<AgencyInviteUsers />} />

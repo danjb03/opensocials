@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, Outlet } from 'react-router-dom';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import AdminDashboard from '@/pages/admin/Dashboard';
 import ProjectManagement from '@/pages/admin/ProjectManagement';
@@ -18,7 +18,7 @@ import InviteUsers from '@/pages/admin/InviteUsers';
 const AdminRoutes = () => {
   return (
     <Routes>
-      <Route element={<AdminLayout />}>
+      <Route path="/*" element={<AdminLayout><Outlet /></AdminLayout>}>
         <Route index element={<AdminDashboard />} />
         <Route path="users" element={<UserManagement />} />
         <Route path="invite" element={<InviteUsers />} />

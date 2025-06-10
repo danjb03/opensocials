@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -150,6 +151,30 @@ export const useCreatorAuth = () => {
   return {
     user: authData.user,
     profile: authData.creatorProfile,
+    isLoading: authData.isLoading,
+    role: authData.role
+  };
+};
+
+// Admin-specific hook
+export const useAdminAuth = () => {
+  const authData = useUnifiedAuth();
+  
+  return {
+    user: authData.user,
+    profile: authData.user, // Admins use basic user data
+    isLoading: authData.isLoading,
+    role: authData.role
+  };
+};
+
+// Agency-specific hook
+export const useAgencyAuth = () => {
+  const authData = useUnifiedAuth();
+  
+  return {
+    user: authData.user,
+    profile: authData.user, // Agencies use basic user data
     isLoading: authData.isLoading,
     role: authData.role
   };
