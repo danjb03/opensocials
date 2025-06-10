@@ -26,7 +26,7 @@ export const HeroSection = ({ user }: HeroSectionProps) => {
               <span className="text-gray-400">the efficient way</span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-400 mb-12 max-w-4xl mx-auto leading-relaxed">
-              Innovative solutions for brands and agencies connecting with creators across all major platforms. Arriving shortly.
+              The fastest way to close creator deals, without cutting any corners.
             </p>
 
             {!user ? (
