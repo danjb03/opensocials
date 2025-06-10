@@ -9,7 +9,7 @@ export const FeaturesSection = () => {
         <div className="text-center mb-16">
           <div className="inline-flex items-center space-x-2 bg-gray-900 rounded-full px-4 py-2 mb-8">
             <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-            <span className="text-gray-400 text-sm uppercase tracking-wider">What you'll get</span>
+            <span className="text-blue-400 text-sm uppercase tracking-wider">What you'll get</span>
           </div>
           <h2 className="text-5xl md:text-6xl font-light mb-8">
             We don't just manage,<br />
