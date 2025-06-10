@@ -70,7 +70,7 @@ const QuickActions = React.memo(() => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="w-full group-hover:bg-primary group-hover:text-white transition-colors"
+                  className="w-full group-hover:bg-primary transition-colors"
                   onClick={(e) => handleButtonClick(e, action.route)}
                 >
                   {action.buttonText}
