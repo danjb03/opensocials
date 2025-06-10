@@ -3,15 +3,15 @@ export const StatsSection = () => {
   const stats = [
     {
       number: "45+",
-      label: "Happy customers"
+      label: "Creators"
     },
     {
       number: "5K+", 
-      label: "Hours spent on craft"
+      label: "Brands"
     },
     {
       number: "4.8",
-      label: "Review rate"
+      label: "Average deal speed"
     }
   ];
 
