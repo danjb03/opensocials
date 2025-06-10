@@ -16,13 +16,16 @@ const Index = () => {
 
   useEffect(() => {
     if (!isLoading && user && role) {
-      console.log('Index - Redirecting based on role:', role);
+      console.log('Index - User logged in with role:', role);
       
-      // Redirect based on user role
+      // Super admins should stay on index page to choose their dashboard
+      if (role === 'super_admin') {
+        console.log('Index - Super admin detected, staying on index page');
+        return;
+      }
+      
+      // Redirect based on user role for non-super-admin users
       switch (role) {
-        case 'super_admin':
-          navigate('/super-admin');
-          break;
         case 'admin':
           navigate('/admin');
           break;
@@ -88,14 +91,49 @@ const Index = () => {
                     Role: {role || 'Loading...'}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-3">
                   {role === 'super_admin' && (
-                    <Button 
-                      onClick={() => navigate('/super-admin')}
-                      className="w-full bg-purple-600 hover:bg-purple-700"
-                    >
-                      Go to Super Admin Dashboard
-                    </Button>
+                    <>
+                      <Button 
+                        onClick={() => navigate('/super-admin')}
+                        className="w-full bg-purple-600 hover:bg-purple-700 mb-4"
+                      >
+                        Go to Super Admin Dashboard
+                      </Button>
+                      <div className="border-t pt-3 space-y-2">
+                        <p className="text-sm text-gray-600 mb-2">Or access any dashboard:</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button 
+                            onClick={() => navigate('/admin')}
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            Admin
+                          </Button>
+                          <Button 
+                            onClick={() => navigate('/brand')}
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            Brand
+                          </Button>
+                          <Button 
+                            onClick={() => navigate('/creator')}
+                            size="sm"
+                            className="bg-orange-600 hover:bg-orange-700"
+                          >
+                            Creator
+                          </Button>
+                          <Button 
+                            onClick={() => navigate('/agency')}
+                            size="sm"
+                            className="bg-indigo-600 hover:bg-indigo-700"
+                          >
+                            Agency
+                          </Button>
+                        </div>
+                      </div>
+                    </>
                   )}
                   {role === 'admin' && (
                     <Button 

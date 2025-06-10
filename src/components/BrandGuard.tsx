@@ -21,8 +21,9 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
       // Don't do anything if auth is still loading
       if (authLoading) return;
       
-      // Allow super_admin to bypass immediately - they can access everything
+      // Super admins can access everything - bypass all checks
       if (role === 'super_admin') {
+        console.log('Super admin detected - bypassing all brand checks');
         setIsChecking(false);
         return;
       }
@@ -73,7 +74,6 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
         }
 
         // Only redirect if profile is explicitly marked as incomplete
-        // This reduces unnecessary redirects and improves performance
         if (profile?.is_complete === false) {
           navigate('/brand/setup-profile', { replace: true });
           return;

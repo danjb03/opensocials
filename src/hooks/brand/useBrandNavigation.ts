@@ -7,9 +7,9 @@ export const useBrandNavigation = () => {
   const navigate = useNavigate();
 
   const redirectToDashboard = () => {
-    // For super admins, always redirect to super admin dashboard
+    // For super admins, redirect to index page to let them choose
     if (role === 'super_admin') {
-      navigate('/super-admin', { replace: true });
+      navigate('/', { replace: true });
       return;
     }
     
