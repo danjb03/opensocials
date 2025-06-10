@@ -68,6 +68,7 @@ export const SignUpForm = ({
           <SelectContent>
             <SelectItem value="creator">Creator</SelectItem>
             <SelectItem value="brand">Brand</SelectItem>
+            <SelectItem value="agency">Agency</SelectItem>
           </SelectContent>
         </Select>
       </div>
