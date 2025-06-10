@@ -6,6 +6,7 @@ import { IndexNavigation } from "@/components/index/IndexNavigation";
 import { HeroSection } from "@/components/index/HeroSection";
 import { TrustedBySection } from "@/components/index/TrustedBySection";
 import { FeaturesSection } from "@/components/index/FeaturesSection";
+import { BenefitsSection } from "@/components/index/BenefitsSection";
 import { WorkflowSection } from "@/components/index/WorkflowSection";
 import { FeaturesGrid } from "@/components/index/FeaturesGrid";
 import { HowItWorksSection } from "@/components/index/HowItWorksSection";
@@ -71,6 +72,7 @@ const Index = () => {
       <HeroSection user={user} />
       <TrustedBySection />
       <FeaturesSection />
+      <BenefitsSection />
       <WorkflowSection />
       <FeaturesGrid />
       <HowItWorksSection />
