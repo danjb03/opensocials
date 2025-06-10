@@ -51,22 +51,22 @@ const Index = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto text-center">
           <div className="mb-8">
             <Logo className="mx-auto mb-6" />
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
+            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
               Welcome to Open Socials
             </h1>
-            <p className="text-xl text-gray-600 mb-8">
+            <p className="text-xl text-muted-foreground mb-8">
               The premier platform connecting brands with creators
             </p>
           </div>
@@ -76,20 +76,20 @@ const Index = () => {
               <Button 
                 onClick={() => navigate('/auth')} 
                 size="lg"
-                className="bg-primary hover:bg-primary/90 text-white px-8 py-3"
+                className="px-8 py-3"
               >
                 Get Started
               </Button>
-              <p className="text-gray-500">
+              <p className="text-muted-foreground">
                 Sign up or log in to access your dashboard
               </p>
             </div>
           ) : (
             <div className="space-y-6">
-              <Card className="max-w-md mx-auto">
+              <Card className="max-w-md mx-auto border border-border">
                 <CardHeader>
-                  <CardTitle>Welcome back!</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-foreground">Welcome back!</CardTitle>
+                  <CardDescription className="text-muted-foreground">
                     You're logged in as: {user.email}
                     <br />
                     Role: {role || 'Loading...'}
@@ -100,38 +100,38 @@ const Index = () => {
                     <>
                       <Button 
                         onClick={() => navigate('/super-admin')}
-                        className="w-full bg-purple-600 hover:bg-purple-700 mb-4"
+                        className="w-full mb-4"
                       >
                         Go to Super Admin Dashboard
                       </Button>
-                      <div className="border-t pt-3 space-y-2">
-                        <p className="text-sm text-gray-600 mb-2">Or access any dashboard:</p>
+                      <div className="border-t border-border pt-3 space-y-2">
+                        <p className="text-sm text-muted-foreground mb-2">Or access any dashboard:</p>
                         <div className="grid grid-cols-2 gap-2">
                           <Button 
                             onClick={() => navigate('/admin')}
                             size="sm"
-                            className="bg-green-600 hover:bg-green-700"
+                            variant="outline"
                           >
                             Admin
                           </Button>
                           <Button 
                             onClick={() => navigate('/brand')}
                             size="sm"
-                            className="bg-blue-600 hover:bg-blue-700"
+                            variant="outline"
                           >
                             Brand
                           </Button>
                           <Button 
                             onClick={() => navigate('/creator')}
                             size="sm"
-                            className="bg-orange-600 hover:bg-orange-700"
+                            variant="outline"
                           >
                             Creator
                           </Button>
                           <Button 
                             onClick={() => navigate('/agency')}
                             size="sm"
-                            className="bg-indigo-600 hover:bg-indigo-700"
+                            variant="outline"
                           >
                             Agency
                           </Button>
@@ -142,7 +142,7 @@ const Index = () => {
                   {role === 'admin' && (
                     <Button 
                       onClick={() => navigate('/admin')}
-                      className="w-full bg-green-600 hover:bg-green-700"
+                      className="w-full"
                     >
                       Go to Admin Dashboard
                     </Button>
@@ -150,7 +150,7 @@ const Index = () => {
                   {role === 'brand' && (
                     <Button 
                       onClick={() => navigate('/brand')}
-                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      className="w-full"
                     >
                       Go to Brand Dashboard
                     </Button>
@@ -158,7 +158,7 @@ const Index = () => {
                   {role === 'creator' && (
                     <Button 
                       onClick={() => navigate('/creator')}
-                      className="w-full bg-orange-600 hover:bg-orange-700"
+                      className="w-full"
                     >
                       Go to Creator Dashboard
                     </Button>
@@ -166,7 +166,7 @@ const Index = () => {
                   {role === 'agency' && (
                     <Button 
                       onClick={() => navigate('/agency')}
-                      className="w-full bg-indigo-600 hover:bg-indigo-700"
+                      className="w-full"
                     >
                       Go to Agency Dashboard
                     </Button>
