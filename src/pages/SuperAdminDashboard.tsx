@@ -7,18 +7,30 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserRoleFixer from '@/components/admin/UserRoleFixer';
 import { CreatorLeaderboard } from '@/components/admin/CreatorLeaderboard';
 import { Users, LayoutDashboard, User, Settings, Briefcase, Award } from 'lucide-react';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 
 const SuperAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const navigate = useNavigate();
+  const { user, role } = useUnifiedAuth();
+  
+  // Debug log to check current user and role
+  console.log('SuperAdminDashboard - Current user:', user?.id);
+  console.log('SuperAdminDashboard - Current role:', role);
   
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-2xl font-bold mb-6">Super Admin Dashboard</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-2">Super Admin Dashboard</h1>
+        <div className="text-sm text-muted-foreground">
+          Logged in as: {user?.email} | Role: {role}
+        </div>
+      </div>
       
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="dashboards">Dashboard Access</TabsTrigger>
           <TabsTrigger value="leaderboard">Creator Earnings</TabsTrigger>
           <TabsTrigger value="tools">Admin Tools</TabsTrigger>
         </TabsList>
@@ -31,7 +43,7 @@ const SuperAdminDashboard = () => {
                 <CardDescription>Manage all users in the system</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" className="w-full">View All Users</Button>
+                <Button variant="outline" onClick={() => navigate('/admin/users')} className="w-full">View All Users</Button>
               </CardContent>
             </Card>
             
@@ -51,13 +63,20 @@ const SuperAdminDashboard = () => {
                 <CardDescription>Manage creator accounts</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" className="w-full">View All Creators</Button>
+                <Button variant="outline" onClick={() => navigate('/admin/crm/creators')} className="w-full">View All Creators</Button>
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="dashboards">
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold mb-2">Dashboard Access (Super Admin Only)</h2>
+            <p className="text-muted-foreground mb-6">
+              As a super admin, you can access any dashboard in the system. Use these buttons to navigate to different user dashboards.
+            </p>
+          </div>
           
-          {/* Super Admin Dashboard Access - This is the key section that was missing */}
-          <h2 className="text-xl font-semibold mt-10 mb-4">Dashboard Access (Super Admin)</h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <Card className="border-l-4 border-l-violet-500">
               <CardHeader>

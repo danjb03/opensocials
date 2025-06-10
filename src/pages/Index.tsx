@@ -1,29 +1,46 @@
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Navigate } from 'react-router-dom';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { supabase } from '@/integrations/supabase/client';
-import { useState } from 'react';
-import { toast } from '@/components/ui/sonner';
-import Logo from '@/components/ui/logo';
+
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Logo from "@/components/ui/logo";
 
 const Index = () => {
   const { user, role, isLoading } = useUnifiedAuth();
-  const [isSigningOut, setIsSigningOut] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSignOut = async () => {
-    try {
-      setIsSigningOut(true);
-      await supabase.auth.signOut();
-      toast.success('Successfully signed out');
-    } catch (error) {
-      console.error('Error signing out:', error);
-      toast.error('Error signing out');
-    } finally {
-      setIsSigningOut(false);
+  console.log('Index - User:', user?.id);
+  console.log('Index - Role:', role);
+  console.log('Index - Loading:', isLoading);
+
+  useEffect(() => {
+    if (!isLoading && user && role) {
+      console.log('Index - Redirecting based on role:', role);
+      
+      // Redirect based on user role
+      switch (role) {
+        case 'super_admin':
+          navigate('/super-admin');
+          break;
+        case 'admin':
+          navigate('/admin');
+          break;
+        case 'brand':
+          navigate('/brand');
+          break;
+        case 'creator':
+          navigate('/creator');
+          break;
+        case 'agency':
+          navigate('/agency');
+          break;
+        default:
+          console.log('Index - Unknown role, staying on index');
+          break;
+      }
     }
-  };
+  }, [user, role, isLoading, navigate]);
 
   if (isLoading) {
     return (
@@ -33,82 +50,90 @@ const Index = () => {
     );
   }
 
-  // Redirect based on role
-  if (user && role === 'brand') {
-    return <Navigate to="/brand" replace />;
-  }
-  
-  if (user && role === 'admin') {
-    return <Navigate to="/admin" replace />;
-  }
-
-  if (user && role === 'creator') {
-    return <Navigate to="/creator" replace />;
-  }
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white p-4">
-      <div className="mb-8">
-        <Logo />
-      </div>
-      <div className="text-center max-w-xl">
-        <h1 className="text-4xl font-bold mb-4">Welcome to the Platform</h1>
-        
-        {user && !role && (
-          <Alert className="mb-6 bg-yellow-50 border-yellow-200">
-            <AlertTitle>No Role Assigned</AlertTitle>
-            <AlertDescription>
-              Your account doesn't have a role assigned or your role is pending approval. 
-              Please contact an administrator.
-            </AlertDescription>
-          </Alert>
-        )}
-        
-        <p className="text-xl text-gray-600 mb-6">
-          {user 
-            ? `Welcome, ${user.email}! ${role ? `You are logged in as a ${role}.` : ''}`
-            : 'Connect brands with creators for impactful collaborations.'}
-        </p>
-        
-        {!user ? (
-          <div className="flex justify-center gap-4 mt-6">
-            <Button asChild>
-              <Link to="/auth">Sign In</Link>
-            </Button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="mb-8">
+            <Logo className="mx-auto mb-6" />
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
+              Welcome to Open Socials
+            </h1>
+            <p className="text-xl text-gray-600 mb-8">
+              The premier platform connecting brands with creators
+            </p>
           </div>
-        ) : (
-          <div className="mt-8 space-y-4">
-            {role === 'super_admin' && (
-              <Button asChild variant="default" className="mr-4">
-                <Link to="/super-admin">Super Admin Dashboard</Link>
-              </Button>
-            )}
-            {role === 'admin' && (
-              <Button asChild variant="default" className="mr-4">
-                <Link to="/admin">Admin Dashboard</Link>
-              </Button>
-            )}
-            {role === 'brand' && (
-              <Button asChild variant="default" className="mr-4">
-                <Link to="/brand">Brand Dashboard</Link>
-              </Button>
-            )}
-            {role === 'creator' && (
-              <Button asChild variant="default" className="mr-4">
-                <Link to="/creator">Creator Dashboard</Link>
-              </Button>
-            )}
-            <div>
+
+          {!user ? (
+            <div className="space-y-4">
               <Button 
-                onClick={handleSignOut} 
-                variant="outline"
-                disabled={isSigningOut}
+                onClick={() => navigate('/auth')} 
+                size="lg"
+                className="bg-primary hover:bg-primary/90 text-white px-8 py-3"
               >
-                {isSigningOut ? 'Signing out...' : 'Sign Out'}
+                Get Started
               </Button>
+              <p className="text-gray-500">
+                Sign up or log in to access your dashboard
+              </p>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="space-y-6">
+              <Card className="max-w-md mx-auto">
+                <CardHeader>
+                  <CardTitle>Welcome back!</CardTitle>
+                  <CardDescription>
+                    You're logged in as: {user.email}
+                    <br />
+                    Role: {role || 'Loading...'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {role === 'super_admin' && (
+                    <Button 
+                      onClick={() => navigate('/super-admin')}
+                      className="w-full bg-purple-600 hover:bg-purple-700"
+                    >
+                      Go to Super Admin Dashboard
+                    </Button>
+                  )}
+                  {role === 'admin' && (
+                    <Button 
+                      onClick={() => navigate('/admin')}
+                      className="w-full bg-green-600 hover:bg-green-700"
+                    >
+                      Go to Admin Dashboard
+                    </Button>
+                  )}
+                  {role === 'brand' && (
+                    <Button 
+                      onClick={() => navigate('/brand')}
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                    >
+                      Go to Brand Dashboard
+                    </Button>
+                  )}
+                  {role === 'creator' && (
+                    <Button 
+                      onClick={() => navigate('/creator')}
+                      className="w-full bg-orange-600 hover:bg-orange-700"
+                    >
+                      Go to Creator Dashboard
+                    </Button>
+                  )}
+                  {role === 'agency' && (
+                    <Button 
+                      onClick={() => navigate('/agency')}
+                      className="w-full bg-indigo-600 hover:bg-indigo-700"
+                    >
+                      Go to Agency Dashboard
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
