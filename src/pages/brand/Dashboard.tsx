@@ -1,4 +1,3 @@
-
 import BrandLayout from '@/components/layouts/BrandLayout';
 import BrandDashboardStats from '@/components/brand/dashboard/BrandDashboardStats';
 import TodoPanel from '@/components/brand/dashboard/TodoPanel';
@@ -56,8 +55,6 @@ const Dashboard = () => {
     return 'Good evening';
   };
 
-  const brandName = profile?.company_name || 'there';
-
   return (
     <>
       <BrandLayout>
@@ -68,7 +65,7 @@ const Dashboard = () => {
               <div className="flex-1">
                 <div className="mb-6">
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    {getWelcomeMessage()}, {brandName}!
+                    {getWelcomeMessage()}, Welcome Back!
                   </h1>
                   <p className="text-lg text-gray-600 mb-4">
                     Welcome back to your Brand Dashboard
