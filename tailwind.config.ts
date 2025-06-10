@@ -37,7 +37,7 @@ export default {
           foreground: "#FFFFFF",
         },
         muted: {
-          DEFAULT: "#202020",
+          DEFAULT: "#1A1A20",
           foreground: "#909090",
         },
         accent: {
@@ -45,11 +45,11 @@ export default {
           foreground: "#000000",
         },
         popover: {
-          DEFAULT: "#101010",
+          DEFAULT: "#0F0F15",
           foreground: "#FFFFFF",
         },
         card: {
-          DEFAULT: "#101010",
+          DEFAULT: "#0F0F15",
           foreground: "#FFFFFF",
         },
         sidebar: {
