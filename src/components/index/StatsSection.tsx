@@ -4,11 +4,11 @@ export const StatsSection = () => {
   const stats = [
     {
       number: "1000+",
-      label: "Creators"
+      label: "Creators Onboard"
     },
     {
       number: "500+", 
-      label: "Brands"
+      label: "Brands Active"
     },
     {
       number: "24hrs",
