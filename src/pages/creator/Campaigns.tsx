@@ -125,23 +125,23 @@ const CreatorCampaigns = () => {
 
   return (
     <CreatorLayout>
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-6 bg-background">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">My Campaigns</h1>
+          <h1 className="text-3xl font-bold mb-2 text-foreground">My Campaigns</h1>
           <p className="text-muted-foreground">Manage your active campaigns and track your content delivery.</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={value => setActiveTab(value as any)} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="active" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-3 mb-6 bg-gray-950 border border-gray-800/40">
+            <TabsTrigger value="active" className="flex items-center gap-2 data-[state=active]:bg-gray-900 data-[state=active]:text-white text-gray-400 hover:text-white">
               <Clock className="h-4 w-4" />
               Active ({activeCampaigns.length})
             </TabsTrigger>
-            <TabsTrigger value="upcoming" className="flex items-center gap-2">
+            <TabsTrigger value="upcoming" className="flex items-center gap-2 data-[state=active]:bg-gray-900 data-[state=active]:text-white text-gray-400 hover:text-white">
               <CalendarDays className="h-4 w-4" />
               Upcoming ({upcomingCampaigns.length})
             </TabsTrigger>
-            <TabsTrigger value="completed" className="flex items-center gap-2">
+            <TabsTrigger value="completed" className="flex items-center gap-2 data-[state=active]:bg-gray-900 data-[state=active]:text-white text-gray-400 hover:text-white">
               <CheckCircle className="h-4 w-4" />
               Completed ({completedCampaigns.length})
             </TabsTrigger>
@@ -149,28 +149,28 @@ const CreatorCampaigns = () => {
 
           <TabsContent value="active">
             {isLoading ? (
-              <div className="flex justify-center p-8">Loading campaigns...</div>
+              <div className="flex justify-center p-8 text-foreground">Loading campaigns...</div>
             ) : filteredCampaigns.length > 0 ? (
               <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {filteredCampaigns.map((campaign) => (
-                  <Card key={campaign.id} className="bg-white shadow-sm">
+                  <Card key={campaign.id}>
                     <CardHeader>
-                      <CardTitle className="text-lg font-semibold">{campaign.name}</CardTitle>
+                      <CardTitle className="text-lg font-semibold text-foreground">{campaign.name}</CardTitle>
                       <CardDescription className="text-muted-foreground">
                         {campaign.description || 'No description provided.'}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm">
-                        <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <CalendarDays className="h-4 w-4" />
                         <span>{new Date(campaign.start_date).toLocaleDateString()} - {new Date(campaign.end_date).toLocaleDateString()}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <Circle className={`h-4 w-4 ${getCampaignStatusColor(campaign.status)}`} />
-                        <span>Status: {campaign.status || 'Unknown'}</span>
+                        <span className="text-muted-foreground">Status: {campaign.status || 'Unknown'}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="h-4 w-4" />
                         <span>Budget: {campaign.currency}{campaign.budget?.toLocaleString()}</span>
                       </div>
                     </CardContent>
@@ -179,12 +179,14 @@ const CreatorCampaigns = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => navigate(`/creator/campaigns/${campaign.id}`)}
+                        className="border-gray-700 text-foreground hover:bg-gray-900"
                       >
                         View Details
                       </Button>
                       <Button 
                         size="sm"
                         onClick={() => navigate(`/creator/campaigns/${campaign.id}/upload`)}
+                        className="bg-primary text-primary-foreground hover:bg-primary/90"
                       >
                         <Upload className="mr-2 h-4 w-4" />
                         Upload Content
@@ -196,10 +198,10 @@ const CreatorCampaigns = () => {
             ) : (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="rounded-full bg-gray-100 p-3 mb-3">
+                  <div className="rounded-full bg-gray-900 p-3 mb-3">
                     <Circle className="h-6 w-6 text-muted-foreground" />
                   </div>
-                  <h3 className="font-medium text-base mb-1">No active campaigns</h3>
+                  <h3 className="font-medium text-base mb-1 text-foreground">No active campaigns</h3>
                   <p className="text-sm text-muted-foreground">
                     Check back later for new collaboration opportunities.
                   </p>
@@ -210,28 +212,28 @@ const CreatorCampaigns = () => {
 
           <TabsContent value="upcoming">
             {isLoading ? (
-              <div className="flex justify-center p-8">Loading campaigns...</div>
+              <div className="flex justify-center p-8 text-foreground">Loading campaigns...</div>
             ) : filteredCampaigns.length > 0 ? (
               <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {filteredCampaigns.map((campaign) => (
-                  <Card key={campaign.id} className="bg-white shadow-sm">
+                  <Card key={campaign.id}>
                     <CardHeader>
-                      <CardTitle className="text-lg font-semibold">{campaign.name}</CardTitle>
+                      <CardTitle className="text-lg font-semibold text-foreground">{campaign.name}</CardTitle>
                       <CardDescription className="text-muted-foreground">
                         {campaign.description || 'No description provided.'}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm">
-                        <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <CalendarDays className="h-4 w-4" />
                         <span>{new Date(campaign.start_date).toLocaleDateString()} - {new Date(campaign.end_date).toLocaleDateString()}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <Circle className={`h-4 w-4 ${getCampaignStatusColor(campaign.status)}`} />
-                        <span>Status: {campaign.status || 'Unknown'}</span>
+                        <span className="text-muted-foreground">Status: {campaign.status || 'Unknown'}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="h-4 w-4" />
                         <span>Budget: {campaign.currency}{campaign.budget?.toLocaleString()}</span>
                       </div>
                     </CardContent>
@@ -240,6 +242,7 @@ const CreatorCampaigns = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => navigate(`/creator/campaigns/${campaign.id}`)}
+                        className="border-gray-700 text-foreground hover:bg-gray-900"
                       >
                         View Details
                       </Button>
@@ -250,10 +253,10 @@ const CreatorCampaigns = () => {
             ) : (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="rounded-full bg-gray-100 p-3 mb-3">
+                  <div className="rounded-full bg-gray-900 p-3 mb-3">
                     <CalendarDays className="h-6 w-6 text-muted-foreground" />
                   </div>
-                  <h3 className="font-medium text-base mb-1">No upcoming campaigns</h3>
+                  <h3 className="font-medium text-base mb-1 text-foreground">No upcoming campaigns</h3>
                   <p className="text-sm text-muted-foreground">
                     Check back later for new collaboration opportunities.
                   </p>
@@ -264,28 +267,28 @@ const CreatorCampaigns = () => {
 
           <TabsContent value="completed">
             {isLoading ? (
-              <div className="flex justify-center p-8">Loading campaigns...</div>
+              <div className="flex justify-center p-8 text-foreground">Loading campaigns...</div>
             ) : filteredCampaigns.length > 0 ? (
               <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {filteredCampaigns.map((campaign) => (
-                  <Card key={campaign.id} className="bg-white shadow-sm">
+                  <Card key={campaign.id}>
                     <CardHeader>
-                      <CardTitle className="text-lg font-semibold">{campaign.name}</CardTitle>
+                      <CardTitle className="text-lg font-semibold text-foreground">{campaign.name}</CardTitle>
                       <CardDescription className="text-muted-foreground">
                         {campaign.description || 'No description provided.'}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm">
-                        <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <CalendarDays className="h-4 w-4" />
                         <span>{new Date(campaign.start_date).toLocaleDateString()} - {new Date(campaign.end_date).toLocaleDateString()}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <Circle className={`h-4 w-4 ${getCampaignStatusColor(campaign.status)}`} />
-                        <span>Status: {campaign.status || 'Unknown'}</span>
+                        <span className="text-muted-foreground">Status: {campaign.status || 'Unknown'}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="h-4 w-4" />
                         <span>Budget: {campaign.currency}{campaign.budget?.toLocaleString()}</span>
                       </div>
                     </CardContent>
@@ -294,6 +297,7 @@ const CreatorCampaigns = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => navigate(`/creator/campaigns/${campaign.id}`)}
+                        className="border-gray-700 text-foreground hover:bg-gray-900"
                       >
                         View Details
                       </Button>
@@ -304,10 +308,10 @@ const CreatorCampaigns = () => {
             ) : (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="rounded-full bg-gray-100 p-3 mb-3">
+                  <div className="rounded-full bg-gray-900 p-3 mb-3">
                     <CheckCircle className="h-6 w-6 text-muted-foreground" />
                   </div>
-                  <h3 className="font-medium text-base mb-1">No completed campaigns</h3>
+                  <h3 className="font-medium text-base mb-1 text-foreground">No completed campaigns</h3>
                   <p className="text-sm text-muted-foreground">
                     Completed campaigns will appear here.
                   </p>
