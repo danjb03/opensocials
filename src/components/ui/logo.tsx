@@ -22,7 +22,11 @@ const Logo = ({ className = '' }: LogoProps) => {
       <img 
         src={logoSrc} 
         alt="OS Logo" 
-        className={`w-auto ${sizeClass}`}
+        className={`w-auto ${sizeClass} mix-blend-screen brightness-0 invert`}
+        style={{ 
+          filter: 'brightness(0) invert(1)',
+          mixBlendMode: 'screen'
+        }}
       />
     </Link>
   );
