@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
@@ -18,7 +19,7 @@ const EarningsChart: React.FC<EarningsChartProps> = React.memo(({
       label: "Earnings",
       theme: {
         light: "#2563eb",
-        dark: "#1e40af"
+        dark: "#60a5fa"
       }
     }
   }), []);
@@ -34,11 +35,12 @@ const EarningsChart: React.FC<EarningsChartProps> = React.memo(({
     earningsData && earningsData.length > 0,
     [earningsData]
   );
+
   if (!hasData) {
     return (
-      <Card>
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle>Earnings Over Time</CardTitle>
+          <CardTitle className="text-foreground">Earnings Over Time</CardTitle>
         </CardHeader>
         <CardContent className="h-[300px] flex items-center justify-center">
           <p className="text-muted-foreground">
@@ -50,17 +52,17 @@ const EarningsChart: React.FC<EarningsChartProps> = React.memo(({
   }
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden bg-card border-border">
       <CardHeader>
-        <CardTitle>Earnings Over Time</CardTitle>
+        <CardTitle className="text-foreground">Earnings Over Time</CardTitle>
       </CardHeader>
       <CardContent className="pt-6 pb-8">
         <div className="h-[400px] w-full">
           <ChartContainer config={chartConfig}>
             <LineChart data={earningsData} margin={chartMargin}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
+              <CartesianGrid strokeDasharray="3 3" stroke="#333333" />
+              <XAxis dataKey="date" stroke="#888888" />
+              <YAxis stroke="#888888" />
               <Tooltip content={<ChartTooltipContent />} />
               <Line 
                 type="monotone" 

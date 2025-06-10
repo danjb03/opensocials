@@ -73,11 +73,11 @@ const CreatorAnalytics = () => {
   if (isLoading) {
     return (
       <CreatorLayout>
-        <div className="container mx-auto p-6">
+        <div className="container mx-auto p-6 bg-background">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <div className="w-8 h-8 border-t-2 border-b-2 border-primary rounded-full animate-spin mx-auto mb-4"></div>
-              <p>Loading your analytics...</p>
+              <p className="text-foreground">Loading your analytics...</p>
             </div>
           </div>
         </div>
@@ -87,47 +87,47 @@ const CreatorAnalytics = () => {
 
   return (
     <CreatorLayout>
-      <div className="container mx-auto p-6 space-y-6">
+      <div className="container mx-auto p-6 space-y-6 bg-background">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Creator Analytics</h1>
+          <h1 className="text-3xl font-bold mb-2 text-foreground">Creator Analytics</h1>
           <p className="text-muted-foreground">Track your earnings, performance, and growth across all brand campaigns.</p>
         </div>
 
         {/* Earnings Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
+          <Card className="bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
+              <CardTitle className="text-sm font-medium text-foreground">Total Earnings</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalEarnings.toFixed(2)}</div>
+              <div className="text-2xl font-bold text-foreground">${totalEarnings.toFixed(2)}</div>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed Deals</CardTitle>
+              <CardTitle className="text-sm font-medium text-foreground">Completed Deals</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{completedDeals}</div>
+              <div className="text-2xl font-bold text-foreground">{completedDeals}</div>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Deals</CardTitle>
+              <CardTitle className="text-sm font-medium text-foreground">Active Deals</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{activeDeals}</div>
+              <div className="text-2xl font-bold text-foreground">{activeDeals}</div>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pipeline Value</CardTitle>
+              <CardTitle className="text-sm font-medium text-foreground">Pipeline Value</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${pipelineValue.toFixed(2)}</div>
+              <div className="text-2xl font-bold text-foreground">${pipelineValue.toFixed(2)}</div>
             </CardContent>
           </Card>
         </div>

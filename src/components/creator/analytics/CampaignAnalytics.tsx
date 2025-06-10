@@ -45,27 +45,27 @@ const CampaignAnalytics: React.FC<CampaignAnalyticsProps> = ({ deals }) => {
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
   return (
-    <Card>
+    <Card className="bg-card border-border">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-foreground">
           <Calendar className="h-5 w-5" />
           Campaign Analytics
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div>
-          <h4 className="font-semibold mb-3">Monthly Campaign Activity</h4>
+          <h4 className="font-semibold mb-3 text-foreground">Monthly Campaign Activity</h4>
           {monthlyData.length > 0 ? (
             <ChartContainer
               config={{
-                count: { label: "Campaigns", theme: { light: "#2563eb", dark: "#1e40af" } }
+                count: { label: "Campaigns", theme: { light: "#2563eb", dark: "#60a5fa" } }
               }}
               className="h-[200px]"
             >
               <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
+                <CartesianGrid strokeDasharray="3 3" stroke="#333333" />
+                <XAxis dataKey="month" stroke="#888888" />
+                <YAxis stroke="#888888" />
                 <Tooltip content={<ChartTooltipContent />} />
                 <Bar dataKey="count" fill="var(--color-count)" />
               </BarChart>
@@ -78,12 +78,12 @@ const CampaignAnalytics: React.FC<CampaignAnalyticsProps> = ({ deals }) => {
         </div>
 
         <div>
-          <h4 className="font-semibold mb-3">Deal Status Distribution</h4>
+          <h4 className="font-semibold mb-3 text-foreground">Deal Status Distribution</h4>
           {statusData.length > 0 ? (
             <div className="flex items-center justify-center">
               <ChartContainer
                 config={{
-                  count: { label: "Count", theme: { light: "#2563eb", dark: "#1e40af" } }
+                  count: { label: "Count", theme: { light: "#2563eb", dark: "#60a5fa" } }
                 }}
                 className="h-[200px] w-full"
               >
