@@ -47,11 +47,11 @@ const OrdersPipeline: React.FC<OrdersPipelineProps> = ({
           <TabsTrigger 
             key={stage} 
             value={stage}
-            className="flex items-center py-2"
+            className="flex items-center py-2 text-foreground"
           >
             {stageIcons[stage]}
-            <span className="hidden md:inline">{orderStageLabels[stage]}</span>
-            <span className="ml-2 bg-gray-200 text-gray-700 rounded-full px-2 py-0.5 text-xs">
+            <span className="hidden md:inline text-foreground">{orderStageLabels[stage]}</span>
+            <span className="ml-2 bg-muted text-foreground rounded-full px-2 py-0.5 text-xs">
               {getOrdersByStage(stage).length}
             </span>
           </TabsTrigger>
@@ -70,11 +70,11 @@ const OrdersPipeline: React.FC<OrdersPipelineProps> = ({
                 />
               ))
             ) : (
-              <div className="col-span-full py-12 text-center bg-gray-50 rounded-lg border border-dashed">
+              <div className="col-span-full py-12 text-center bg-card rounded-lg border border-dashed border-border">
                 <div className="flex flex-col items-center justify-center">
                   {stageIcons[stage]}
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No campaigns in {orderStageLabels[stage]}</h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <h3 className="mt-2 text-sm font-medium text-foreground">No campaigns in {orderStageLabels[stage]}</h3>
+                  <p className="mt-1 text-sm text-foreground/60">
                     Get started by moving a campaign to this stage
                   </p>
                 </div>

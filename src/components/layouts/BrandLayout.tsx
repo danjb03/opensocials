@@ -1,3 +1,4 @@
+
 import { useState, memo, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AccessibleButton } from "@/components/ui/accessible-button";
@@ -86,16 +87,16 @@ const BrandLayout = memo(({ children }: BrandLayoutProps) => {
               <AccessibleButton 
                 key={item.to}
                 variant="ghost" 
-                className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent h-12 transition-all duration-200 hover:scale-105 group" 
+                className="w-full justify-start text-foreground hover:bg-sidebar-accent h-12 transition-all duration-200 hover:scale-105 group" 
                 asChild
               >
                 <Link 
                   to={item.to} 
-                  className="flex items-center gap-3"
+                  className="flex items-center gap-3 text-foreground"
                   aria-label={isSidebarCollapsed ? item.label : undefined}
                 >
                   <item.icon className="h-5 w-5 transition-transform group-hover:scale-110" />
-                  {!isSidebarCollapsed && <span>{item.label}</span>}
+                  {!isSidebarCollapsed && <span className="text-foreground">{item.label}</span>}
                 </Link>
               </AccessibleButton>
             ))}
@@ -103,7 +104,7 @@ const BrandLayout = memo(({ children }: BrandLayoutProps) => {
           
           <div className="mt-auto pt-4 border-t border-sidebar-border">
             {!isSidebarCollapsed && (
-              <div className="text-sm opacity-70 mb-2 truncate animate-fade-in">
+              <div className="text-sm text-foreground/70 mb-2 truncate animate-fade-in">
                 {profile?.company_name || user?.email}
               </div>
             )}
@@ -112,7 +113,7 @@ const BrandLayout = memo(({ children }: BrandLayoutProps) => {
               onClick={handleSignOut} 
               loading={isLoggingOut}
               loadingText="Signing out..."
-              className="w-full h-12"
+              className="w-full h-12 text-foreground"
               aria-label="Sign out of your account"
             >
               {isSidebarCollapsed && !isLoggingOut ? "Out" : null}

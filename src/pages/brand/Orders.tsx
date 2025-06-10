@@ -68,7 +68,7 @@ const BrandOrders = () => {
 
   return (
     <BrandLayout>
-      <div className="container mx-auto p-6 bg-background">
+      <div className="container mx-auto p-6 bg-background text-foreground">
         <OrdersHeader />
         
         <OrdersSearch 
