@@ -13,7 +13,7 @@ const NavigationLogo = ({ className = '' }: NavigationLogoProps) => {
       <img 
         src={logoSrc} 
         alt="OS Logo" 
-        className="w-auto h-12"
+        className="w-auto h-24"
       />
     </Link>
   );
