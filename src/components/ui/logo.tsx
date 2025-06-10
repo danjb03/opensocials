@@ -14,8 +14,8 @@ const Logo = ({ className = '' }: LogoProps) => {
   // Use the new OS logo
   const logoSrc = "/lovable-uploads/1d0809d8-cd41-4f30-9717-c8c13460e048.png";
     
-  // Use larger size for home/auth pages, smaller for others - doubled from original sizes
-  const sizeClass = isHomeOrAuth ? "h-64" : "h-20";
+  // Use larger size for home/auth pages, smaller for others - made footer size much smaller
+  const sizeClass = isHomeOrAuth ? "h-64" : "h-8";
 
   return (
     <Link to="/" className={`block ${className}`}>
