@@ -11,8 +11,8 @@ const Logo = ({ className = '' }: LogoProps) => {
   // Check if we're on the home page or auth page
   const isHomeOrAuth = location.pathname === '/' || location.pathname.startsWith('/auth');
   
-  // Use the new OS logo for all pages
-  const logoSrc = "/lovable-uploads/7e63b7a0-e62c-4a35-9cb1-700719430688.png";
+  // Use the new OS logo
+  const logoSrc = "/lovable-uploads/1d0809d8-cd41-4f30-9717-c8c13460e048.png";
     
   // Use larger size for home/auth pages, smaller for others
   const sizeClass = isHomeOrAuth ? "h-32" : "h-10";
@@ -22,11 +22,7 @@ const Logo = ({ className = '' }: LogoProps) => {
       <img 
         src={logoSrc} 
         alt="OS Logo" 
-        className={`w-auto ${sizeClass} mix-blend-screen brightness-0 invert`}
-        style={{ 
-          filter: 'brightness(0) invert(1)',
-          mixBlendMode: 'screen'
-        }}
+        className={`w-auto ${sizeClass}`}
       />
     </Link>
   );
