@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { DollarSign, Handshake, TrendingUp } from "lucide-react";
+import { TrendingUp, Target, BarChart3 } from "lucide-react";
 
 export const FeaturesSection = () => {
   return (
@@ -24,8 +24,8 @@ export const FeaturesSection = () => {
           <Card className="bg-gray-900 border-gray-800 p-8 rounded-3xl">
             <CardContent className="p-0">
               <div className="mb-8">
-                <div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <DollarSign className="w-12 h-12 text-white stroke-[1.5]" />
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <TrendingUp className="w-10 h-10 text-white stroke-[1.5]" />
                 </div>
               </div>
               <h3 className="text-2xl font-light text-white mb-4">Revenue Growth</h3>
@@ -36,8 +36,8 @@ export const FeaturesSection = () => {
           <Card className="bg-gray-900 border-gray-800 p-8 rounded-3xl">
             <CardContent className="p-0">
               <div className="mb-8">
-                <div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Handshake className="w-12 h-12 text-white stroke-[1.5]" />
+                <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <Target className="w-10 h-10 text-white stroke-[1.5]" />
                 </div>
               </div>
               <h3 className="text-2xl font-light text-white mb-4">Monetization Strategy</h3>
@@ -48,8 +48,8 @@ export const FeaturesSection = () => {
           <Card className="bg-gray-900 border-gray-800 p-8 rounded-3xl">
             <CardContent className="p-0">
               <div className="mb-8">
-                <div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <TrendingUp className="w-12 h-12 text-white stroke-[1.5]" />
+                <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <BarChart3 className="w-10 h-10 text-white stroke-[1.5]" />
                 </div>
               </div>
               <h3 className="text-2xl font-light text-white mb-4">Performance Tracking</h3>
