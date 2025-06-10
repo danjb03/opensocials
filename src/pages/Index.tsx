@@ -6,7 +6,6 @@ import { HeroSection } from "@/components/index/HeroSection";
 import { TrustedBySection } from "@/components/index/TrustedBySection";
 import { FeaturesSection } from "@/components/index/FeaturesSection";
 import { WorkflowSection } from "@/components/index/WorkflowSection";
-import { FeaturesGrid } from "@/components/index/FeaturesGrid";
 import { CreatorSelectionSection } from "@/components/index/CreatorSelectionSection";
 import { BenefitsSection } from "@/components/index/BenefitsSection";
 import { HowItWorksSection } from "@/components/index/HowItWorksSection";
@@ -74,7 +73,6 @@ const Index = () => {
       <FeaturesSection />
       <WorkflowSection />
       <CreatorSelectionSection />
-      <FeaturesGrid />
       <BenefitsSection />
       <HowItWorksSection />
       <TestimonialsSection />
