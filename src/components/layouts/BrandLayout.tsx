@@ -116,7 +116,7 @@ const BrandLayout = memo(({ children }: BrandLayoutProps) => {
               className="w-full h-12 bg-white text-black hover:bg-gray-100 hover:text-black"
               aria-label="Sign out of your account"
             >
-              {isSidebarCollapsed && !isLoggingOut ? "Out" : null}
+              {!isLoggingOut && (isSidebarCollapsed ? "Out" : "Sign Out")}
             </AccessibleButton>
           </div>
         </div>
