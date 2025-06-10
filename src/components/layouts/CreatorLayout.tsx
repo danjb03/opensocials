@@ -81,7 +81,7 @@ const CreatorLayout = memo(({ children }: CreatorLayoutProps) => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <Sidebar collapsible="icon" className="bg-sidebar border-r border-sidebar-border">
-          <SidebarHeader className="p-4">
+          <SidebarHeader className="p-4 flex items-center justify-center min-h-[80px]">
             <SidebarLogo />
           </SidebarHeader>
           
@@ -106,15 +106,16 @@ const CreatorLayout = memo(({ children }: CreatorLayoutProps) => {
           </SidebarContent>
           
           <SidebarFooter className="p-4 border-t border-sidebar-border">
-            <div className="text-sm text-sidebar-foreground/70 mb-2 truncate">
+            <div className="text-sm text-sidebar-foreground/70 mb-2 truncate group-data-[collapsible=icon]:hidden">
               {user?.email}
             </div>
             <Button 
               variant="default" 
               onClick={handleSignOut}
-              className="w-full h-12"
+              className="w-full h-12 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:p-0"
             >
-              Sign Out
+              <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
+              <span className="hidden group-data-[collapsible=icon]:block">SO</span>
             </Button>
           </SidebarFooter>
         </Sidebar>
