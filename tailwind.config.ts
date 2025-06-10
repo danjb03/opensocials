@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -198,6 +199,14 @@ export default {
           '100%': {
             transform: 'rotate(360deg)'
           }
+        },
+        'scroll': {
+          '0%': {
+            transform: 'translateX(0)'
+          },
+          '100%': {
+            transform: 'translateX(-50%)'
+          }
         }
       },
       animation: {
@@ -213,7 +222,8 @@ export default {
         'shimmer': 'shimmer 2s infinite linear',
         'float': 'float 3s ease-in-out infinite',
         'shake': 'shake 0.82s cubic-bezier(.36,.07,.19,.97) both',
-        'spin-slow': 'spin-slow 3s linear infinite'
+        'spin-slow': 'spin-slow 3s linear infinite',
+        'scroll': 'scroll 30s linear infinite'
       },
       spacing: {
         '18': '4.5rem',
