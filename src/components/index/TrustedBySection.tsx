@@ -119,13 +119,13 @@ export const TrustedBySection = () => {
     let position = index - currentIndex;
     if (position < 0) position += totalCards;
     
-    const baseZIndex = 100;
+    const baseZIndex = 40; // Reduced from 100 to stay below navigation z-50
     const zIndex = baseZIndex - position;
     
     // Enhanced card shuffle animation - cards move left before going to back
     const scale = position === 0 ? 1 : position === 1 ? 0.92 : 0.84;
     const translateX = position === 0 ? 0 : position === 1 ? 40 : 80;
-    const translateY = position * 25;
+    const translateY = position * 20; // Reduced from 25 to 20 for better positioning
     const opacity = position === 0 ? 1 : position === 1 ? 0.9 : 0.7; // Reduced transparency
     
     return {
@@ -137,8 +137,8 @@ export const TrustedBySection = () => {
   };
 
   return (
-    <div ref={sectionRef} className="relative py-8 mb-16 overflow-hidden bg-black"> {/* Reduced padding and margin */}
-      <div className="text-center mb-8"> {/* Reduced bottom margin */}
+    <div ref={sectionRef} className="relative pt-2 pb-8 mb-16 overflow-hidden bg-black"> {/* Minimal top padding, normal bottom */}
+      <div className="text-center mb-4"> {/* Reduced bottom margin from mb-8 to mb-4 */}
         <p className="text-gray-500 text-sm mb-4 uppercase tracking-wider">The numbers speak for themselves</p>
         <h2 className="text-3xl md:text-4xl font-light text-white mb-4">
           Process is <span className="italic text-gray-400">Result</span>
@@ -148,7 +148,7 @@ export const TrustedBySection = () => {
         </p>
       </div>
 
-      <div className="relative h-[650px] max-w-5xl mx-auto flex items-center justify-center perspective-1000"> {/* Increased height */}
+      <div className="relative h-[600px] max-w-5xl mx-auto flex items-center justify-center perspective-1000"> {/* Reduced height from 650px to 600px */}
         {/* Card Stack */}
         <div className="relative w-full max-w-2xl">
           {stats.map((stat, index) => {
@@ -208,7 +208,7 @@ export const TrustedBySection = () => {
         </div>
 
         {/* Navigation Dots */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2"> {/* Moved from bottom-8 to bottom-4 */}
           {stats.map((_, index) => (
             <button
               key={index}
