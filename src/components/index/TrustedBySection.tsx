@@ -8,7 +8,7 @@ interface StatCard {
   title: string;
   description: string;
   icon: any;
-  color: string;
+  step: string;
 }
 
 export const TrustedBySection = () => {
@@ -24,15 +24,15 @@ export const TrustedBySection = () => {
       title: "Consumer Trust",
       description: "of consumers trust influencer marketing content over traditional ads",
       icon: Users,
-      color: "from-blue-500/20 to-purple-500/20"
+      step: "Step 1"
     },
     {
       id: 2,
       percentage: "35%",
-      title: "Cost Efficiency",
+      title: "Cost Efficiency", 
       description: "more expensive: traditional paid ads vs creator led content",
       icon: DollarSign,
-      color: "from-green-500/20 to-blue-500/20"
+      step: "Step 2"
     },
     {
       id: 3,
@@ -40,7 +40,7 @@ export const TrustedBySection = () => {
       title: "Content Performance",
       description: "of brands say creators drive their highest performing content",
       icon: TrendingUp,
-      color: "from-purple-500/20 to-pink-500/20"
+      step: "Step 3"
     },
     {
       id: 4,
@@ -48,7 +48,7 @@ export const TrustedBySection = () => {
       title: "Marketing Effectiveness",
       description: "say influencer marketing is effective, not a gamble",
       icon: Target,
-      color: "from-orange-500/20 to-red-500/20"
+      step: "Step 4"
     },
     {
       id: 5,
@@ -56,7 +56,7 @@ export const TrustedBySection = () => {
       title: "ROI Multiplier",
       description: "brands earn $6.16 for every $1 spent on creator campaigns",
       icon: Award,
-      color: "from-yellow-500/20 to-orange-500/20"
+      step: "Step 5"
     },
     {
       id: 6,
@@ -64,7 +64,7 @@ export const TrustedBySection = () => {
       title: "Return Investment",
       description: "average return on investment for creator partnerships",
       icon: Trophy,
-      color: "from-pink-500/20 to-purple-500/20"
+      step: "Step 6"
     }
   ];
 
@@ -96,7 +96,7 @@ export const TrustedBySection = () => {
     
     intervalRef.current = setInterval(() => {
       setCurrentCard((prev) => (prev + 1) % stats.length);
-    }, 3500); // 3.5 seconds per card
+    }, 3500);
   };
 
   const stopCarousel = () => {
@@ -109,7 +109,7 @@ export const TrustedBySection = () => {
   const goToCard = (index: number) => {
     setCurrentCard(index);
     stopCarousel();
-    setTimeout(startCarousel, 5000); // Restart after 5 seconds
+    setTimeout(startCarousel, 5000);
   };
 
   const getCardStyle = (index: number) => {
@@ -122,10 +122,11 @@ export const TrustedBySection = () => {
     const baseZIndex = 100;
     const zIndex = baseZIndex - position;
     
-    const scale = Math.max(0.7, 1 - position * 0.1);
-    const translateX = position * 20;
-    const translateY = position * 15;
-    const opacity = position === 0 ? 1 : Math.max(0.3, 1 - position * 0.3);
+    // More dramatic scaling and positioning for the reference look
+    const scale = position === 0 ? 1 : position === 1 ? 0.95 : 0.9;
+    const translateX = position * 30;
+    const translateY = position * 20;
+    const opacity = position === 0 ? 1 : position === 1 ? 0.8 : 0.6;
     
     return {
       transform: `translateX(${translateX}px) translateY(${translateY}px) scale(${scale})`,
@@ -135,17 +136,20 @@ export const TrustedBySection = () => {
   };
 
   return (
-    <div ref={sectionRef} className="relative py-20 mb-20 overflow-hidden">
+    <div ref={sectionRef} className="relative py-20 mb-20 overflow-hidden bg-black">
       <div className="text-center mb-16">
-        <p className="text-gray-500 text-sm mb-4 uppercase tracking-wider">Already chosen by leaders</p>
-        <h2 className="text-3xl md:text-4xl font-light text-foreground mb-4">
-          The numbers speak for themselves
+        <p className="text-gray-500 text-sm mb-4 uppercase tracking-wider">The numbers speak for themselves</p>
+        <h2 className="text-3xl md:text-4xl font-light text-white mb-4">
+          Process is <span className="italic text-gray-400">Result</span>
         </h2>
+        <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+          Thoughtful, intentional creator partnerships are what make brands stand out.
+        </p>
       </div>
 
-      <div className="relative h-[500px] max-w-4xl mx-auto flex items-center justify-center perspective-1000">
+      <div className="relative h-[600px] max-w-5xl mx-auto flex items-center justify-center perspective-1000">
         {/* Card Stack */}
-        <div className="relative w-full max-w-lg">
+        <div className="relative w-full max-w-2xl">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             return (
@@ -158,36 +162,43 @@ export const TrustedBySection = () => {
                 onMouseEnter={stopCarousel}
                 onMouseLeave={startCarousel}
               >
-                <div className={`w-full h-80 rounded-3xl backdrop-blur-xl border border-white/10 
-                  bg-gradient-to-br ${stat.color} shadow-2xl
+                <div className="w-full h-96 rounded-2xl backdrop-blur-xl border border-white/10 
+                  bg-gradient-to-br from-gray-900/40 to-gray-800/20 shadow-2xl
                   hover:shadow-3xl hover:scale-105 transition-all duration-300
-                  flex flex-col items-center justify-center text-center p-8 relative overflow-hidden`}>
+                  flex flex-col justify-center text-left p-12 relative overflow-hidden">
                   
-                  {/* Background Pattern */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+                  {/* Dark overlay for depth */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent pointer-events-none" />
                   
+                  {/* Step indicator */}
+                  <div className="absolute top-6 left-6">
+                    <span className="text-xs text-gray-500 font-medium tracking-wider uppercase">
+                      {stat.step}
+                    </span>
+                  </div>
+
                   {/* Icon */}
-                  <div className="mb-6 p-4 rounded-full bg-white/10 backdrop-blur-sm">
-                    <Icon size={32} className="text-white" />
+                  <div className="mb-8 p-3 rounded-full bg-white/5 backdrop-blur-sm w-fit">
+                    <Icon size={28} className="text-white/80" />
                   </div>
                   
-                  {/* Main Percentage */}
-                  <h1 className="text-6xl md:text-7xl font-bold text-white mb-4 font-mono tracking-tight">
-                    {stat.percentage}
-                  </h1>
-                  
-                  {/* Title */}
-                  <h3 className="text-xl font-semibold text-white mb-3">
-                    {stat.title}
-                  </h3>
-                  
-                  {/* Description */}
-                  <p className="text-sm text-white/80 leading-relaxed max-w-xs">
-                    {stat.description}
-                  </p>
+                  {/* Main Content */}
+                  <div className="relative z-10">
+                    <h3 className="text-2xl font-semibold text-white mb-4">
+                      {stat.title}
+                    </h3>
+                    
+                    <h1 className="text-7xl md:text-8xl font-bold text-white mb-6 font-mono tracking-tight">
+                      {stat.percentage}
+                    </h1>
+                    
+                    <p className="text-base text-gray-300 leading-relaxed max-w-md">
+                      {stat.description}
+                    </p>
+                  </div>
 
-                  {/* Subtle glow effect */}
-                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-white/0 via-white/5 to-white/0 
+                  {/* Subtle gradient overlay */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/0 via-white/5 to-white/0 
                     opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                 </div>
               </div>
@@ -196,33 +207,31 @@ export const TrustedBySection = () => {
         </div>
 
         {/* Navigation Dots */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3">
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
           {stats.map((_, index) => (
             <button
               key={index}
               onClick={() => goToCard(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
                 index === currentCard 
                   ? 'bg-white scale-125' 
-                  : 'bg-white/40 hover:bg-white/60'
+                  : 'bg-white/30 hover:bg-white/50'
               }`}
             />
           ))}
         </div>
 
         {/* Background Elements */}
-        <div className="absolute top-10 left-10 w-2 h-2 bg-white/20 rounded-full animate-float" 
+        <div className="absolute top-10 left-10 w-1 h-1 bg-white/10 rounded-full animate-float" 
           style={{ animationDelay: '0s' }} />
-        <div className="absolute top-20 right-20 w-1 h-1 bg-white/30 rounded-full animate-float" 
+        <div className="absolute top-20 right-20 w-1 h-1 bg-white/15 rounded-full animate-float" 
           style={{ animationDelay: '1s' }} />
-        <div className="absolute bottom-32 left-20 w-1.5 h-1.5 bg-white/25 rounded-full animate-float" 
+        <div className="absolute bottom-32 left-20 w-1 h-1 bg-white/10 rounded-full animate-float" 
           style={{ animationDelay: '2s' }} />
-        <div className="absolute bottom-40 right-10 w-2 h-2 bg-white/20 rounded-full animate-float" 
-          style={{ animationDelay: '0.5s' }} />
       </div>
 
       {/* Bottom gradient fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black to-transparent pointer-events-none" />
     </div>
   );
 };
