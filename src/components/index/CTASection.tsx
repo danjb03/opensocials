@@ -41,12 +41,6 @@ export const CTASection = ({ user }: CTASectionProps) => {
               >
                 Register
               </Button>
-              <Button 
-                onClick={() => setShowInterestModal(true)}
-                className="bg-white text-black hover:bg-gray-200 px-8 py-3 text-lg font-medium rounded-full"
-              >
-                Register
-              </Button>
             </div>
           )}
         </div>
