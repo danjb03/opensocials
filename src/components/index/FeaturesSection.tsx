@@ -24,36 +24,36 @@ export const FeaturesSection = () => {
           <Card className="bg-gray-900 border-gray-800 p-8 rounded-3xl">
             <CardContent className="p-0">
               <div className="mb-8">
-                <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <DollarSign className="w-8 h-8 text-white" />
+                <div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <DollarSign className="w-12 h-12 text-white stroke-[1.5]" />
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-white mb-4">Revenue Growth</h3>
-              <p className="text-gray-400">Turn your social media presence into a profitable revenue stream</p>
+              <h3 className="text-2xl font-light text-white mb-4">Revenue Growth</h3>
+              <p className="text-gray-400 text-lg leading-relaxed">Turn your social media presence into a profitable revenue stream</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gray-900 border-gray-800 p-8 rounded-3xl">
             <CardContent className="p-0">
               <div className="mb-8">
-                <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Handshake className="w-8 h-8 text-white" />
+                <div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Handshake className="w-12 h-12 text-white stroke-[1.5]" />
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-white mb-4">Monetization Strategy</h3>
-              <p className="text-gray-400">Expert guidance on turning followers into customers</p>
+              <h3 className="text-2xl font-light text-white mb-4">Monetization Strategy</h3>
+              <p className="text-gray-400 text-lg leading-relaxed">Expert guidance on turning followers into customers</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gray-900 border-gray-800 p-8 rounded-3xl">
             <CardContent className="p-0">
               <div className="mb-8">
-                <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <TrendingUp className="w-8 h-8 text-white" />
+                <div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <TrendingUp className="w-12 h-12 text-white stroke-[1.5]" />
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-white mb-4">Performance Tracking</h3>
-              <p className="text-gray-400">Real-time analytics to maximize your social ROI</p>
+              <h3 className="text-2xl font-light text-white mb-4">Performance Tracking</h3>
+              <p className="text-gray-400 text-lg leading-relaxed">Real-time analytics to maximize your social ROI</p>
             </CardContent>
           </Card>
         </div>
