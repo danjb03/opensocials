@@ -26,7 +26,7 @@ interface AgencyLayoutProps {
 }
 
 const AgencyLayout = memo(({ children }: AgencyLayoutProps) => {
-  const { user, profile } = useAgencyAuth();
+  const { user } = useAgencyAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const location = useLocation();
@@ -121,7 +121,7 @@ const AgencyLayout = memo(({ children }: AgencyLayoutProps) => {
           
           <SidebarFooter className="p-4 border-t border-sidebar-border">
             <div className="text-sm text-sidebar-foreground/70 mb-2 truncate group-data-[collapsible=icon]:hidden">
-              {profile?.first_name ? `${profile.first_name} ${profile.last_name}` : user?.email}
+              {user?.email}
             </div>
             <Button 
               variant="default" 
