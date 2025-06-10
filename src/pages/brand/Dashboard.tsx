@@ -110,7 +110,7 @@ const Dashboard = () => {
                   <BrandCampaignTable />
                   
                   {/* Todo Panel */}
-                  <TodoPanel items={todoItems} />
+                  <TodoPanel todos={todoItems} />
                 </div>
               </div>
             )}

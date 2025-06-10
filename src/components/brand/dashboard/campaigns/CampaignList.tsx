@@ -1,13 +1,13 @@
 
 import React, { memo } from 'react';
-import { CampaignRow, type CampaignRow as CampaignRowType } from './CampaignRow';
+import { CampaignRow, type Campaign } from './CampaignRow';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { VirtualList } from '@/components/ui/virtual-list';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Package } from 'lucide-react';
 
 interface CampaignListProps {
-  campaigns: CampaignRowType[];
+  campaigns: Campaign[];
   onViewProject: (projectId: string) => void;
 }
 
@@ -29,15 +29,13 @@ const CampaignListMemo = memo(({ campaigns, onViewProject }: CampaignListProps) 
     );
   }
 
-  const renderCampaignItem = (campaign: CampaignRowType, index: number) => (
+  const renderCampaignItem = (campaign: Campaign, index: number) => (
     <div 
       className="animate-fade-in border-b border-border last:border-b-0"
       style={{ animationDelay: `${index * 50}ms` }}
     >
       <CampaignRow 
         campaign={campaign}
-        onViewProject={onViewProject}
-        isMobile={isMobile}
       />
     </div>
   );
@@ -58,7 +56,7 @@ const CampaignListMemo = memo(({ campaigns, onViewProject }: CampaignListProps) 
   return (
     <div className={`${isMobile ? 'space-y-4 p-4' : 'divide-y divide-border'} border border-border rounded-lg overflow-hidden`}>
       {campaigns.map((campaign, index) => (
-        <div key={campaign.project_id}>
+        <div key={campaign.id}>
           {renderCampaignItem(campaign, index)}
         </div>
       ))}
