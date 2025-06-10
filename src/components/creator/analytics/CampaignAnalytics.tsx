@@ -45,16 +45,16 @@ const CampaignAnalytics: React.FC<CampaignAnalyticsProps> = ({ deals }) => {
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
   return (
-    <Card className="bg-card border-border">
+    <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700/50">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-foreground">
+        <CardTitle className="flex items-center gap-2 text-gray-100">
           <Calendar className="h-5 w-5" />
           Campaign Analytics
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div>
-          <h4 className="font-semibold mb-3 text-foreground">Monthly Campaign Activity</h4>
+          <h4 className="font-semibold mb-3 text-gray-100">Monthly Campaign Activity</h4>
           {monthlyData.length > 0 ? (
             <ChartContainer
               config={{
@@ -63,22 +63,22 @@ const CampaignAnalytics: React.FC<CampaignAnalyticsProps> = ({ deals }) => {
               className="h-[200px]"
             >
               <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333333" />
-                <XAxis dataKey="month" stroke="#888888" />
-                <YAxis stroke="#888888" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="month" stroke="#9CA3AF" />
+                <YAxis stroke="#9CA3AF" />
                 <Tooltip content={<ChartTooltipContent />} />
                 <Bar dataKey="count" fill="var(--color-count)" />
               </BarChart>
             </ChartContainer>
           ) : (
-            <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+            <div className="h-[200px] flex items-center justify-center text-gray-300">
               No campaign data available
             </div>
           )}
         </div>
 
         <div>
-          <h4 className="font-semibold mb-3 text-foreground">Deal Status Distribution</h4>
+          <h4 className="font-semibold mb-3 text-gray-100">Deal Status Distribution</h4>
           {statusData.length > 0 ? (
             <div className="flex items-center justify-center">
               <ChartContainer
@@ -105,7 +105,7 @@ const CampaignAnalytics: React.FC<CampaignAnalyticsProps> = ({ deals }) => {
               </ChartContainer>
             </div>
           ) : (
-            <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+            <div className="h-[200px] flex items-center justify-center text-gray-300">
               No status data available
             </div>
           )}

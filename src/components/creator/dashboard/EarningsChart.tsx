@@ -38,12 +38,12 @@ const EarningsChart: React.FC<EarningsChartProps> = React.memo(({
 
   if (!hasData) {
     return (
-      <Card className="bg-card border-border">
+      <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700/50">
         <CardHeader>
-          <CardTitle className="text-foreground">Earnings Over Time</CardTitle>
+          <CardTitle className="text-gray-100">Earnings Over Time</CardTitle>
         </CardHeader>
         <CardContent className="h-[300px] flex items-center justify-center">
-          <p className="text-muted-foreground">
+          <p className="text-gray-300">
             Zero now. But one campaign flips this graph.
           </p>
         </CardContent>
@@ -52,17 +52,17 @@ const EarningsChart: React.FC<EarningsChartProps> = React.memo(({
   }
 
   return (
-    <Card className="overflow-hidden bg-card border-border">
+    <Card className="overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700/50">
       <CardHeader>
-        <CardTitle className="text-foreground">Earnings Over Time</CardTitle>
+        <CardTitle className="text-gray-100">Earnings Over Time</CardTitle>
       </CardHeader>
       <CardContent className="pt-6 pb-8">
         <div className="h-[400px] w-full">
           <ChartContainer config={chartConfig}>
             <LineChart data={earningsData} margin={chartMargin}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#333333" />
-              <XAxis dataKey="date" stroke="#888888" />
-              <YAxis stroke="#888888" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis dataKey="date" stroke="#9CA3AF" />
+              <YAxis stroke="#9CA3AF" />
               <Tooltip content={<ChartTooltipContent />} />
               <Line 
                 type="monotone" 

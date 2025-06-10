@@ -35,9 +35,9 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({
   const recentDeals = deals.slice(0, 5);
 
   return (
-    <Card className="bg-card border-border">
+    <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700/50">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-foreground">
+        <CardTitle className="flex items-center gap-2 text-gray-100">
           <TrendingUp className="h-5 w-5" />
           Performance Metrics
         </CardTitle>
@@ -46,41 +46,41 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-green-400">{acceptanceRate}%</div>
-            <div className="text-sm text-muted-foreground">Deal Acceptance</div>
+            <div className="text-sm text-gray-300">Deal Acceptance</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-400">${avgDealValue.toLocaleString()}</div>
-            <div className="text-sm text-muted-foreground">Avg Deal Value</div>
+            <div className="text-sm text-gray-300">Avg Deal Value</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-purple-400">{responseRate}%</div>
-            <div className="text-sm text-muted-foreground">Response Rate</div>
+            <div className="text-sm text-gray-300">Response Rate</div>
           </div>
         </div>
 
         <div>
-          <h4 className="font-semibold mb-3 text-foreground">Recent Activity</h4>
+          <h4 className="font-semibold mb-3 text-gray-100">Recent Activity</h4>
           <div className="space-y-2">
             {recentDeals.length > 0 ? (
               recentDeals.map(deal => (
-                <div key={deal.id} className="flex items-center justify-between p-2 bg-muted rounded-lg">
+                <div key={deal.id} className="flex items-center justify-between p-2 bg-gray-800/50 rounded-lg border border-gray-700/30">
                   <div className="flex items-center gap-2">
                     {deal.status === 'completed' && <CheckCircle className="h-4 w-4 text-green-400" />}
                     {deal.status === 'accepted' && <Clock className="h-4 w-4 text-blue-400" />}
                     {deal.status === 'pending' && <Clock className="h-4 w-4 text-yellow-400" />}
                     {deal.status === 'declined' && <XCircle className="h-4 w-4 text-red-400" />}
-                    <span className="text-sm font-medium truncate max-w-[120px] text-foreground">{deal.title}</span>
+                    <span className="text-sm font-medium truncate max-w-[120px] text-gray-200">{deal.title}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-foreground">${deal.value}</span>
-                    <Badge variant="outline" className="text-xs border-border text-muted-foreground">
+                    <span className="text-sm text-gray-200">${deal.value}</span>
+                    <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
                       {deal.status}
                     </Badge>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-sm text-muted-foreground">You haven't made a move yet. Change that today.</p>
+              <p className="text-sm text-gray-300">You haven't made a move yet. Change that today.</p>
             )}
           </div>
         </div>

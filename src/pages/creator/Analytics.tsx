@@ -95,39 +95,39 @@ const CreatorAnalytics = () => {
 
         {/* Earnings Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-card border-border">
+          <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-foreground">Total Earnings</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-100">Total Earnings</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">${totalEarnings.toFixed(2)}</div>
+              <div className="text-2xl font-bold text-white">${totalEarnings.toFixed(2)}</div>
             </CardContent>
           </Card>
           
-          <Card className="bg-card border-border">
+          <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-foreground">Completed Deals</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-100">Completed Deals</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">{completedDeals}</div>
+              <div className="text-2xl font-bold text-white">{completedDeals}</div>
             </CardContent>
           </Card>
           
-          <Card className="bg-card border-border">
+          <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-foreground">Active Deals</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-100">Active Deals</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">{activeDeals}</div>
+              <div className="text-2xl font-bold text-white">{activeDeals}</div>
             </CardContent>
           </Card>
           
-          <Card className="bg-card border-border">
+          <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-foreground">Pipeline Value</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-100">Pipeline Value</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">${pipelineValue.toFixed(2)}</div>
+              <div className="text-2xl font-bold text-white">${pipelineValue.toFixed(2)}</div>
             </CardContent>
           </Card>
         </div>

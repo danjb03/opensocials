@@ -24,39 +24,39 @@ const SocialGrowth: React.FC = () => {
   };
 
   return (
-    <Card className="bg-card border-border">
+    <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700/50">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-foreground">
+        <CardTitle className="flex items-center gap-2 text-gray-100">
           <Users className="h-5 w-5" />
           Social Growth
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
-          <div className="text-center p-3 bg-muted rounded-lg">
+          <div className="text-center p-3 bg-gray-800/50 rounded-lg border border-gray-700/30">
             <Users className="h-6 w-6 mx-auto mb-1 text-blue-400" />
-            <div className="text-lg font-bold text-foreground">{currentMetrics.followers.toLocaleString()}</div>
-            <div className="text-xs text-muted-foreground">Followers</div>
+            <div className="text-lg font-bold text-gray-100">{currentMetrics.followers.toLocaleString()}</div>
+            <div className="text-xs text-gray-300">Followers</div>
           </div>
-          <div className="text-center p-3 bg-muted rounded-lg">
+          <div className="text-center p-3 bg-gray-800/50 rounded-lg border border-gray-700/30">
             <TrendingUp className="h-6 w-6 mx-auto mb-1 text-green-400" />
-            <div className="text-lg font-bold text-foreground">{currentMetrics.engagement}%</div>
-            <div className="text-xs text-muted-foreground">Engagement</div>
+            <div className="text-lg font-bold text-gray-100">{currentMetrics.engagement}%</div>
+            <div className="text-xs text-gray-300">Engagement</div>
           </div>
-          <div className="text-center p-3 bg-muted rounded-lg">
+          <div className="text-center p-3 bg-gray-800/50 rounded-lg border border-gray-700/30">
             <Eye className="h-6 w-6 mx-auto mb-1 text-purple-400" />
-            <div className="text-lg font-bold text-foreground">{(currentMetrics.avgViews / 1000).toFixed(1)}K</div>
-            <div className="text-xs text-muted-foreground">Avg Views</div>
+            <div className="text-lg font-bold text-gray-100">{(currentMetrics.avgViews / 1000).toFixed(1)}K</div>
+            <div className="text-xs text-gray-300">Avg Views</div>
           </div>
-          <div className="text-center p-3 bg-muted rounded-lg">
+          <div className="text-center p-3 bg-gray-800/50 rounded-lg border border-gray-700/30">
             <Heart className="h-6 w-6 mx-auto mb-1 text-red-400" />
-            <div className="text-lg font-bold text-foreground">{(currentMetrics.avgLikes / 1000).toFixed(1)}K</div>
-            <div className="text-xs text-muted-foreground">Avg Likes</div>
+            <div className="text-lg font-bold text-gray-100">{(currentMetrics.avgLikes / 1000).toFixed(1)}K</div>
+            <div className="text-xs text-gray-300">Avg Likes</div>
           </div>
         </div>
 
         <div>
-          <h4 className="font-semibold mb-3 text-foreground">6-Month Growth Trend</h4>
+          <h4 className="font-semibold mb-3 text-gray-100">6-Month Growth Trend</h4>
           <ChartContainer
             config={{
               followers: { label: "Followers", theme: { light: "#2563eb", dark: "#60a5fa" } }
@@ -64,9 +64,9 @@ const SocialGrowth: React.FC = () => {
             className="h-[200px]"
           >
             <LineChart data={growthData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#333333" />
-              <XAxis dataKey="month" stroke="#888888" />
-              <YAxis stroke="#888888" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis dataKey="month" stroke="#9CA3AF" />
+              <YAxis stroke="#9CA3AF" />
               <Tooltip content={<ChartTooltipContent />} />
               <Line 
                 type="monotone" 
@@ -79,12 +79,12 @@ const SocialGrowth: React.FC = () => {
           </ChartContainer>
         </div>
 
-        <div className="text-sm text-muted-foreground text-center">
+        <div className="text-sm text-gray-300 text-center">
           Connect your social platforms to see real-time analytics
         </div>
 
-        <div className="p-3 bg-muted border border-border rounded-lg">
-          <p className="text-sm text-foreground text-center">
+        <div className="p-3 bg-gray-800/50 border border-gray-700/30 rounded-lg">
+          <p className="text-sm text-gray-100 text-center">
             These stats update weekly. Keep posting to stay visible to brands.
           </p>
         </div>
