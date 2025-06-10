@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
@@ -5,9 +6,10 @@ import { IndexNavigation } from "@/components/index/IndexNavigation";
 import { HeroSection } from "@/components/index/HeroSection";
 import { TrustedBySection } from "@/components/index/TrustedBySection";
 import { FeaturesSection } from "@/components/index/FeaturesSection";
-import { BenefitsSection } from "@/components/index/BenefitsSection";
 import { WorkflowSection } from "@/components/index/WorkflowSection";
 import { FeaturesGrid } from "@/components/index/FeaturesGrid";
+import { CreatorSelectionSection } from "@/components/index/CreatorSelectionSection";
+import { BenefitsSection } from "@/components/index/BenefitsSection";
 import { HowItWorksSection } from "@/components/index/HowItWorksSection";
 import { TestimonialsSection } from "@/components/index/TestimonialsSection";
 import { StatsSection } from "@/components/index/StatsSection";
@@ -73,6 +75,7 @@ const Index = () => {
       <FeaturesSection />
       <WorkflowSection />
       <FeaturesGrid />
+      <CreatorSelectionSection />
       <BenefitsSection />
       <HowItWorksSection />
       <TestimonialsSection />
