@@ -11,10 +11,8 @@ const Logo = ({ className = '' }: LogoProps) => {
   // Check if we're on the home page or auth page
   const isHomeOrAuth = location.pathname === '/' || location.pathname.startsWith('/auth');
   
-  // Use Logo2 (black & white) for home/auth pages, Logo1 for others
-  const logoSrc = isHomeOrAuth 
-    ? "/lovable-uploads/7780980e-8910-4ad1-a0df-28190a7f66bb.png"  // Logo2 (black & white)
-    : "/lovable-uploads/870b5584-9a62-4484-a05f-b373c664e839.png"; // Logo1 (original)
+  // Use the new OS logo for all pages
+  const logoSrc = "/lovable-uploads/7e63b7a0-e62c-4a35-9cb1-700719430688.png";
     
   // Use larger size for home/auth pages, smaller for others
   const sizeClass = isHomeOrAuth ? "h-32" : "h-10";
