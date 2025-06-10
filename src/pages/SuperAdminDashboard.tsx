@@ -39,11 +39,11 @@ const SuperAdminDashboard = () => {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <Card>
               <CardHeader>
-                <CardTitle>System Users</CardTitle>
-                <CardDescription>Manage all users in the system</CardDescription>
+                <CardTitle>Agencies</CardTitle>
+                <CardDescription>Manage all agency accounts</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" onClick={() => navigate('/admin/users')} className="w-full">View All Users</Button>
+                <Button variant="outline" onClick={() => navigate('/super-admin/users/agencies')} className="w-full">View All Agencies</Button>
               </CardContent>
             </Card>
             
@@ -53,7 +53,7 @@ const SuperAdminDashboard = () => {
                 <CardDescription>Manage brand accounts</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" onClick={() => navigate('/admin/crm/brands')} className="w-full">View All Brands</Button>
+                <Button variant="outline" onClick={() => navigate('/super-admin/users/brands')} className="w-full">View All Brands</Button>
               </CardContent>
             </Card>
             
@@ -63,7 +63,7 @@ const SuperAdminDashboard = () => {
                 <CardDescription>Manage creator accounts</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" onClick={() => navigate('/admin/crm/creators')} className="w-full">View All Creators</Button>
+                <Button variant="outline" onClick={() => navigate('/super-admin/users/creators')} className="w-full">View All Creators</Button>
               </CardContent>
             </Card>
           </div>
