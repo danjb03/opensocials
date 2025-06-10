@@ -30,7 +30,8 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
 
       // Check if current location is a super-admin route
       if (location.pathname.startsWith('/super-admin')) {
-        setIsChecking(false);
+        console.log('Super admin route detected - redirecting non-super-admin user');
+        navigate('/', { replace: true });
         return;
       }
 
@@ -48,6 +49,7 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
 
       // Only check brand role for non-super-admin users
       if (role !== 'brand') {
+        console.log('User role is not brand:', role);
         toast.error('You do not have brand access');
         navigate(redirectTo, { replace: true });
         return;
@@ -61,10 +63,9 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
 
       try {
         const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('is_complete')
-          .eq('id', user.id)
-          .eq('role', 'brand')
+          .from('brand_profiles')
+          .select('user_id')
+          .eq('user_id', user.id)
           .maybeSingle();
 
         if (profileError) {
@@ -73,8 +74,8 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
           return;
         }
 
-        // Only redirect if profile is explicitly marked as incomplete
-        if (profile?.is_complete === false) {
+        // Only redirect if no profile exists at all
+        if (!profile) {
           navigate('/brand/setup-profile', { replace: true });
           return;
         }

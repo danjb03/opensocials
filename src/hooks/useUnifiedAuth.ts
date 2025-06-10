@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
-import { getUserRole } from '@/utils/getUserRole';
+import { getUserRole, updateUserMetadata, clearAuthState } from '@/utils/getUserRole';
 import type { UserRole } from '@/lib/auth';
 
 interface BrandProfile {
@@ -62,7 +62,23 @@ export const useUnifiedAuth = () => {
         
         // Fetch role using updated priority logic
         console.log('🔍 Fetching user role with priority logic');
-        const userRole = await getUserRole(user.id);
+        let userRole = await getUserRole(user.id);
+        
+        // If no role found, check if this is the specific super admin user
+        if (!userRole && user.id === 'af6ad2ce-be6c-4620-a440-867c52d66918') {
+          console.log('🔧 Fixing super admin user role');
+          const success = await updateUserMetadata(user.id, 'super_admin');
+          if (success) {
+            userRole = 'super_admin';
+            // Clear auth state and reload to get fresh session
+            clearAuthState();
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+            return;
+          }
+        }
+
         console.log('🎯 Retrieved user role:', userRole);
         setRole(userRole);
 

@@ -42,30 +42,59 @@ export const getUserRole = async (userId: string): Promise<UserRole | null> => {
       console.warn('Could not fetch from metadata:', metaErr);
     }
 
-    // PRIORITY 3: Try profiles table as last resort
-    try {
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (!profileError && profileData?.role) {
-        console.log('✅ Found role in profiles (priority 3):', profileData.role);
-        return profileData.role as UserRole;
-      }
-
-      if (profileError) {
-        console.warn('Profile fetch error (may be RLS recursion):', profileError.message);
-      }
-    } catch (profileErr) {
-      console.warn('Could not fetch from profiles:', profileErr);
-    }
-
     console.warn('❌ No role found for user:', userId);
     return null;
   } catch (err) {
     console.error('❌ Failed to retrieve user role:', err);
     return null;
+  }
+};
+
+/**
+ * Update user metadata to fix stale role information
+ */
+export const updateUserMetadata = async (userId: string, role: UserRole): Promise<boolean> => {
+  try {
+    console.log('🔄 Updating user metadata for user:', userId, 'to role:', role);
+    
+    const { error } = await supabase.auth.admin.updateUserById(userId, {
+      user_metadata: { role }
+    });
+
+    if (error) {
+      console.error('❌ Failed to update user metadata:', error);
+      return false;
+    }
+
+    console.log('✅ User metadata updated successfully');
+    return true;
+  } catch (err) {
+    console.error('❌ Error updating user metadata:', err);
+    return false;
+  }
+};
+
+/**
+ * Clear auth state to force fresh role lookup
+ */
+export const clearAuthState = () => {
+  try {
+    // Clear all Supabase auth keys from localStorage
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    // Clear from sessionStorage if in use
+    Object.keys(sessionStorage || {}).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        sessionStorage.removeItem(key);
+      }
+    });
+    
+    console.log('🧹 Auth state cleared');
+  } catch (err) {
+    console.error('❌ Error clearing auth state:', err);
   }
 };

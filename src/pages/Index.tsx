@@ -111,7 +111,10 @@ const Index = () => {
                             Admin
                           </Button>
                           <Button 
-                            onClick={() => navigate('/brand')}
+                            onClick={() => {
+                              localStorage.setItem('bypass_brand_check', 'true');
+                              navigate('/brand');
+                            }}
                             size="sm"
                             className="bg-blue-600 hover:bg-blue-700"
                           >
