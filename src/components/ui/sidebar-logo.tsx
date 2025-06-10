@@ -13,7 +13,7 @@ const SidebarLogo = ({ className = '' }: SidebarLogoProps) => {
       <img 
         src={logoSrc} 
         alt="OS Logo" 
-        className="w-auto h-12 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 object-contain transition-all duration-200"
+        className="w-auto h-16 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10 object-contain transition-all duration-200"
       />
     </Link>
   );
