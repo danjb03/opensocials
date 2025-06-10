@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
@@ -9,7 +10,7 @@ import { WorkflowSection } from "@/components/index/WorkflowSection";
 import { CreatorSelectionSection } from "@/components/index/CreatorSelectionSection";
 import { BenefitsSection } from "@/components/index/BenefitsSection";
 import { HowItWorksSection } from "@/components/index/HowItWorksSection";
-import { TestimonialsSection } from "@/components/index/TestimonialsSection";
+// import { TestimonialsSection } from "@/components/index/TestimonialsSection"; // Commented out to hide this section
 import { StatsSection } from "@/components/index/StatsSection";
 import { CTASection } from "@/components/index/CTASection";
 import { IndexFooter } from "@/components/index/IndexFooter";
@@ -75,7 +76,8 @@ const Index = () => {
       <CreatorSelectionSection />
       <BenefitsSection />
       <HowItWorksSection />
-      <TestimonialsSection />
+      {/* Testimonials section hidden per request */}
+      {/* <TestimonialsSection /> */}
       <StatsSection />
       <CTASection user={user} />
       <IndexFooter />
