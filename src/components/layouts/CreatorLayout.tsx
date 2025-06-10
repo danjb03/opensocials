@@ -80,7 +80,7 @@ const CreatorLayout = memo(({ children }: CreatorLayoutProps) => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
-        <Sidebar className="bg-sidebar border-r border-sidebar-border">
+        <Sidebar collapsible="icon" className="bg-sidebar border-r border-sidebar-border">
           <SidebarHeader className="p-4">
             <Logo />
           </SidebarHeader>
@@ -93,6 +93,7 @@ const CreatorLayout = memo(({ children }: CreatorLayoutProps) => {
                     asChild 
                     isActive={item.isActive}
                     className="h-12"
+                    tooltip={item.title}
                   >
                     <Link to={item.url} className="flex items-center gap-3">
                       <item.icon className="h-5 w-5" />
