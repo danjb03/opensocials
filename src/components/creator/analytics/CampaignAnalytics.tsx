@@ -45,7 +45,7 @@ const CampaignAnalytics: React.FC<CampaignAnalyticsProps> = ({ deals }) => {
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
   return (
-    <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700/50">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-gray-100">
           <Calendar className="h-5 w-5" />

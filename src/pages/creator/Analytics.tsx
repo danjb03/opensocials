@@ -95,7 +95,7 @@ const CreatorAnalytics = () => {
 
         {/* Earnings Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700/50">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-100">Total Earnings</CardTitle>
             </CardHeader>
@@ -104,7 +104,7 @@ const CreatorAnalytics = () => {
             </CardContent>
           </Card>
           
-          <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700/50">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-100">Completed Deals</CardTitle>
             </CardHeader>
@@ -113,7 +113,7 @@ const CreatorAnalytics = () => {
             </CardContent>
           </Card>
           
-          <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700/50">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-100">Active Deals</CardTitle>
             </CardHeader>
@@ -122,7 +122,7 @@ const CreatorAnalytics = () => {
             </CardContent>
           </Card>
           
-          <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700/50">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-100">Pipeline Value</CardTitle>
             </CardHeader>

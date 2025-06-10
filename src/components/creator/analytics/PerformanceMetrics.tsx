@@ -35,7 +35,7 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({
   const recentDeals = deals.slice(0, 5);
 
   return (
-    <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700/50">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-gray-100">
           <TrendingUp className="h-5 w-5" />

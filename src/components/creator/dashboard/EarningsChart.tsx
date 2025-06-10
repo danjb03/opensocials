@@ -38,7 +38,7 @@ const EarningsChart: React.FC<EarningsChartProps> = React.memo(({
 
   if (!hasData) {
     return (
-      <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700/50">
+      <Card>
         <CardHeader>
           <CardTitle className="text-gray-100">Earnings Over Time</CardTitle>
         </CardHeader>
@@ -52,7 +52,7 @@ const EarningsChart: React.FC<EarningsChartProps> = React.memo(({
   }
 
   return (
-    <Card className="overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700/50">
+    <Card className="overflow-hidden">
       <CardHeader>
         <CardTitle className="text-gray-100">Earnings Over Time</CardTitle>
       </CardHeader>
