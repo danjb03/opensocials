@@ -14,7 +14,7 @@ export const CreatorGrid = ({ creators, selectedCreators, onToggleCreator, onVie
   if (creators.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">No creators found matching your criteria.</p>
+        <p className="text-foreground">No creators found matching your criteria.</p>
       </div>
     );
   }

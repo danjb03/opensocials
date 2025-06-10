@@ -20,10 +20,10 @@ export function CampaignNameField() {
       name="name"
       render={({ field, fieldState }) => (
         <FormItem>
-          <FormLabel className="text-base font-semibold">Campaign Name</FormLabel>
+          <FormLabel className="text-base font-semibold text-foreground">Campaign Name</FormLabel>
           <FormControl>
             <div className="relative group">
-              <PencilIcon className="absolute left-3 top-3 h-4 w-4 text-gray-500 transition-colors group-focus-within:text-primary" />
+              <PencilIcon className="absolute left-3 top-3 h-4 w-4 text-foreground transition-colors group-focus-within:text-primary" />
               <Input 
                 placeholder="Enter campaign name" 
                 className="pl-10 border-slate-300 focus-visible:ring-blue-500 transition-all duration-200" 

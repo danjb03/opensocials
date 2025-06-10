@@ -1,95 +1,95 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, Search, ExternalLink, Star } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Eye, MessageCircle, TrendingUp } from 'lucide-react';
 
 interface Creator {
   id: string;
   name: string;
+  handle: string;
   platform: string;
-  imageUrl: string;
   followers: string;
+  engagement: string;
+  categories: string[];
+  imageUrl?: string;
 }
 
 interface CreatorListProps {
   creators: Creator[];
+  onViewProfile?: (creatorId: string) => void;
 }
 
-const CreatorList: React.FC<CreatorListProps> = ({ creators }) => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  
-  const goToCreatorSearch = () => {
-    navigate('/brand/creators');
-  };
-
-  const handleLikeCreator = (creatorId: string) => {
-    // This will be implemented in the future to store liked creators
-    toast({
-      title: "Creator added to your favorites",
-      variant: "success",
-    });
-    // Future implementation: Store this in Supabase
-  };
+const CreatorList: React.FC<CreatorListProps> = ({ creators, onViewProfile }) => {
+  if (creators.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-foreground">Recommended Creators</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-foreground">No recommended creators at the moment.</p>
+            <p className="text-foreground mt-2">Create a campaign to get personalized recommendations.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <Card className="mb-6">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5" />
-          Your Creator Network
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-foreground">
+          <TrendingUp className="h-5 w-5" />
+          Recommended Creators
         </CardTitle>
-        <Button variant="outline" size="sm" onClick={goToCreatorSearch}>
-          <Search className="h-4 w-4 mr-2" />
-          Find Creators
-        </Button>
       </CardHeader>
       <CardContent>
-        {creators.length === 0 ? (
-          <div className="text-center py-6">
-            <p className="text-muted-foreground mb-4">You haven't added any creators to your network yet</p>
-            <Button onClick={goToCreatorSearch}>
-              <Search className="h-4 w-4 mr-2" />
-              Browse Creator Marketplace
-            </Button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {creators.map((creator) => (
-              <div key={creator.id} className="flex items-center p-3 border rounded-md bg-background">
-                <Avatar className="h-10 w-10 mr-3">
-                  <AvatarImage src={creator.imageUrl} alt={creator.name} />
-                  <AvatarFallback className="bg-primary/10 text-primary">
-                    {creator.name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{creator.name}</p>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    {creator.platform} • {creator.followers}
-                  </p>
+        <div className="space-y-4">
+          {creators.map((creator) => (
+            <div key={creator.id} className="flex items-center justify-between p-4 border rounded-lg bg-background">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                  {creator.imageUrl ? (
+                    <img src={creator.imageUrl} alt={creator.name} className="w-12 h-12 rounded-full object-cover" />
+                  ) : (
+                    <span className="text-foreground font-medium">{creator.name.charAt(0)}</span>
+                  )}
                 </div>
-                <div className="flex gap-1">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => handleLikeCreator(creator.id)}
-                    title="Add to favorites"
-                  >
-                    <Star className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" title="View profile">
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
+                <div>
+                  <h4 className="font-medium text-foreground">{creator.name}</h4>
+                  <p className="text-foreground">@{creator.handle} • {creator.platform}</p>
+                  <div className="flex items-center gap-4 mt-1 text-sm">
+                    <div className="flex items-center gap-1">
+                      <Eye className="h-3.5 w-3.5 text-foreground" />
+                      <span className="text-foreground">{creator.followers} Followers</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MessageCircle className="h-3.5 w-3.5 text-foreground" />
+                      <span className="text-foreground">{creator.engagement} Engagement</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-1 mt-2">
+                    {creator.categories.slice(0, 2).map((category) => (
+                      <Badge key={category} variant="secondary" className="text-xs">
+                        {category}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => onViewProfile?.(creator.id)}
+              >
+                View Profile
+              </Button>
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

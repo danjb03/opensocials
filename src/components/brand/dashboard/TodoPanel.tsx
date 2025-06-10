@@ -1,107 +1,127 @@
 
-import React, { useCallback } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Bell, ArrowRight, Clock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle, Clock, AlertCircle, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface TodoItem {
   id: string;
   title: string;
   description: string;
-  type: 'review' | 'confirm' | 'signoff' | 'next_stage';
-  projectId: string;
-  projectName: string;
-  currentStage: string;
-  nextStage: string;
+  priority: 'high' | 'medium' | 'low';
+  type: 'action' | 'review' | 'setup';
+  dueDate?: string;
+  route?: string;
 }
 
 interface TodoPanelProps {
-  items: TodoItem[];
+  todos: TodoItem[];
+  onMarkComplete?: (todoId: string) => void;
+  onViewAll?: () => void;
 }
 
-const TodoPanel: React.FC<TodoPanelProps> = React.memo(({ items }) => {
+const TodoPanel: React.FC<TodoPanelProps> = React.memo(({ 
+  todos = [], 
+  onMarkComplete,
+  onViewAll 
+}) => {
   const navigate = useNavigate();
 
-  const handleActionClick = useCallback((projectId: string) => {
-    navigate(`/brand/orders?projectId=${projectId}`);
+  const priorityConfig = useMemo(() => ({
+    high: { color: 'bg-red-100 text-red-800', icon: AlertCircle },
+    medium: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
+    low: { color: 'bg-green-100 text-green-800', icon: CheckCircle }
+  }), []);
+
+  const handleTodoClick = useCallback((todo: TodoItem) => {
+    if (todo.route) {
+      navigate(todo.route);
+    }
   }, [navigate]);
 
-  if (items.length === 0) {
-    return (
-      <Card className="shadow-md rounded-xl bg-white">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-lg md:text-xl font-semibold">
-            <Bell className="h-5 w-5 text-amber-500" />
-            Pending Actions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-            <div className="rounded-full bg-slate-100 p-3 mb-3">
-              <Bell className="h-6 w-6 text-slate-400" />
-            </div>
-            <p className="text-center">No pending actions at the moment</p>
-            <p className="text-sm text-center text-slate-400 mt-1">
-              You're all caught up!
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const handleMarkComplete = useCallback((e: React.MouseEvent, todoId: string) => {
+    e.stopPropagation();
+    onMarkComplete?.(todoId);
+  }, [onMarkComplete]);
+
+  const displayTodos = todos.slice(0, 5);
 
   return (
-    <Card className="shadow-md rounded-xl overflow-hidden">
-      <CardHeader className="pb-2 border-b border-slate-100">
-        <CardTitle className="flex items-center gap-2 text-lg md:text-xl font-semibold">
-          <Bell className="h-5 w-5 text-amber-500" />
-          Pending Actions
-        </CardTitle>
+    <Card className="h-fit">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-foreground">Todo List</CardTitle>
+          {todos.length > 5 && (
+            <Button variant="ghost" size="sm" onClick={onViewAll} className="text-foreground">
+              View All
+            </Button>
+          )}
+        </div>
       </CardHeader>
-      <CardContent className="p-0">
-        <div className="divide-y divide-slate-100">
-          {items.map((item, index) => (
-            <div 
-              key={item.id} 
-              className="flex items-start justify-between p-4 hover:bg-slate-50 transition-colors"
-            >
-              <div className="flex gap-3">
-                <div className="mt-1">
-                  <div className="rounded-full bg-amber-100 p-1.5">
-                    <Clock className="h-4 w-4 text-amber-600" />
+      <CardContent>
+        {displayTodos.length === 0 ? (
+          <div className="text-center py-8">
+            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+            <h3 className="font-medium text-foreground mb-2">All caught up!</h3>
+            <p className="text-foreground">
+              No pending tasks at the moment.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {displayTodos.map((todo) => {
+              const PriorityIcon = priorityConfig[todo.priority].icon;
+              return (
+                <div
+                  key={todo.id}
+                  className="p-3 border rounded-lg hover:bg-accent cursor-pointer transition-colors group"
+                  onClick={() => handleTodoClick(todo)}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-medium text-foreground text-sm truncate">
+                          {todo.title}
+                        </h4>
+                        <Badge 
+                          variant="secondary" 
+                          className={`text-xs ${priorityConfig[todo.priority].color}`}
+                        >
+                          <PriorityIcon className="h-3 w-3 mr-1" />
+                          {todo.priority}
+                        </Badge>
+                      </div>
+                      <p className="text-foreground text-xs line-clamp-2">
+                        {todo.description}
+                      </p>
+                      {todo.dueDate && (
+                        <p className="text-foreground text-xs mt-1">
+                          Due: {todo.dueDate}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 ml-2">
+                      {onMarkComplete && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto"
+                          onClick={(e) => handleMarkComplete(e, todo.id)}
+                          aria-label="Mark as complete"
+                        >
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        </Button>
+                      )}
+                      <ChevronRight className="h-4 w-4 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <h4 className="font-medium text-slate-800">{item.title}</h4>
-                  <p className="text-sm text-slate-500 mt-0.5">
-                    {item.description}
-                  </p>
-                  {item.type === 'next_stage' && (
-                    <div className="flex items-center gap-2 mt-1.5 text-xs">
-                      <span className="font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
-                        {item.currentStage}
-                      </span>
-                      <ArrowRight className="h-3 w-3 text-slate-400" />
-                      <span className="font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                        {item.nextStage}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <Button 
-                size="sm"
-                variant="outline"
-                onClick={() => handleActionClick(item.projectId)}
-                className="whitespace-nowrap ml-2 text-xs border border-slate-200 shadow-sm hover:bg-slate-50"
-              >
-                View Details
-                <ArrowRight className="h-3 w-3 ml-1" />
-              </Button>
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
