@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
@@ -60,59 +59,55 @@ export const useUnifiedAuth = () => {
       try {
         setIsLoading(true);
         
-        // Fetch role using updated priority logic
-        console.log('🔍 Fetching user role with priority logic');
+        // Fetch role using improved priority logic
+        console.log('🔍 Fetching user role with security definer function');
         let userRole = await getUserRole(user.id);
         
-        // If no role found, check if this is the specific super admin user
+        // Special handling for known super admin user
         if (!userRole && user.id === 'af6ad2ce-be6c-4620-a440-867c52d66918') {
-          console.log('🔧 Fixing super admin user role');
-          const success = await updateUserMetadata(user.id, 'super_admin');
-          if (success) {
-            userRole = 'super_admin';
-            // Clear auth state and reload to get fresh session
-            clearAuthState();
-            setTimeout(() => {
-              window.location.reload();
-            }, 1000);
-            return;
-          }
+          console.log('🔧 Detected known super admin user, ensuring correct role');
+          userRole = 'super_admin';
+          // Update metadata to match
+          await updateUserMetadata(user.id, 'super_admin');
         }
 
         console.log('🎯 Retrieved user role:', userRole);
         setRole(userRole);
 
-        // If user is a brand, fetch their profile
-        if (userRole === 'brand') {
-          console.log('👔 Fetching brand profile');
-          const { data: brandData, error: brandError } = await supabase
-            .from('brand_profiles')
-            .select('*')
-            .eq('user_id', user.id)
-            .maybeSingle();
+        // Only fetch profiles if role is determined and not super_admin accessing other dashboards
+        if (userRole && userRole !== 'super_admin') {
+          // If user is a brand, fetch their profile
+          if (userRole === 'brand') {
+            console.log('👔 Fetching brand profile');
+            const { data: brandData, error: brandError } = await supabase
+              .from('brand_profiles')
+              .select('*')
+              .eq('user_id', user.id)
+              .maybeSingle();
 
-          if (brandError) {
-            console.error('❌ Error fetching brand profile:', brandError);
-          } else if (brandData) {
-            console.log('✅ Brand profile fetched:', brandData);
-            setBrandProfile(brandData);
+            if (brandError) {
+              console.error('❌ Error fetching brand profile:', brandError);
+            } else if (brandData) {
+              console.log('✅ Brand profile fetched:', brandData);
+              setBrandProfile(brandData);
+            }
           }
-        }
 
-        // If user is a creator, fetch their profile
-        if (userRole === 'creator') {
-          console.log('🎨 Fetching creator profile');
-          const { data: creatorData, error: creatorError } = await supabase
-            .from('creator_profiles')
-            .select('*')
-            .eq('user_id', user.id)
-            .maybeSingle();
+          // If user is a creator, fetch their profile
+          if (userRole === 'creator') {
+            console.log('🎨 Fetching creator profile');
+            const { data: creatorData, error: creatorError } = await supabase
+              .from('creator_profiles')
+              .select('*')
+              .eq('user_id', user.id)
+              .maybeSingle();
 
-          if (creatorError) {
-            console.error('❌ Error fetching creator profile:', creatorError);
-          } else if (creatorData) {
-            console.log('✅ Creator profile fetched:', creatorData);
-            setCreatorProfile(creatorData);
+            if (creatorError) {
+              console.error('❌ Error fetching creator profile:', creatorError);
+            } else if (creatorData) {
+              console.log('✅ Creator profile fetched:', creatorData);
+              setCreatorProfile(creatorData);
+            }
           }
         }
       } catch (error) {

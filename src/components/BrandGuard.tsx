@@ -28,28 +28,15 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
         return;
       }
 
-      // Check if current location is a super-admin route
-      if (location.pathname.startsWith('/super-admin')) {
-        console.log('Super admin route detected - redirecting non-super-admin user');
-        navigate('/', { replace: true });
-        return;
-      }
-
-      const bypassCheck = localStorage.getItem('bypass_brand_check');
-      if (bypassCheck) {
-        localStorage.removeItem('bypass_brand_check');
-        setIsChecking(false);
-        return;
-      }
-
       if (!user) {
+        console.log('No user found, redirecting to auth');
         navigate('/auth', { replace: true });
         return;
       }
 
-      // Only check brand role for non-super-admin users
+      // For non-super-admin users on brand routes, check if they have brand role
       if (role !== 'brand') {
-        console.log('User role is not brand:', role);
+        console.log('User role is not brand and not super admin:', role);
         toast.error('You do not have brand access');
         navigate(redirectTo, { replace: true });
         return;

@@ -4,13 +4,29 @@ import type { UserRole } from '@/lib/auth';
 
 /**
  * Fetch a user's role from the database.
- * Prioritizes user_roles table over metadata for accuracy.
+ * Uses the new security definer function to avoid RLS recursion.
  */
 export const getUserRole = async (userId: string): Promise<UserRole | null> => {
   try {
     console.log('🔍 Fetching role for user:', userId);
 
-    // PRIORITY 1: Try user_roles table first (most authoritative)
+    // PRIORITY 1: Use the new security definer function
+    try {
+      const { data, error } = await supabase.rpc('get_current_user_role');
+      
+      if (!error && data) {
+        console.log('✅ Found role using security definer function:', data);
+        return data as UserRole;
+      }
+      
+      if (error) {
+        console.warn('Security definer function error:', error.message);
+      }
+    } catch (err) {
+      console.warn('Could not call security definer function:', err);
+    }
+
+    // PRIORITY 2: Fallback to direct user_roles query
     try {
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
@@ -20,7 +36,7 @@ export const getUserRole = async (userId: string): Promise<UserRole | null> => {
         .maybeSingle();
 
       if (!roleError && roleData?.role) {
-        console.log('✅ Found role in user_roles (priority 1):', roleData.role);
+        console.log('✅ Found role in user_roles (fallback):', roleData.role);
         return roleData.role as UserRole;
       }
       
@@ -31,12 +47,12 @@ export const getUserRole = async (userId: string): Promise<UserRole | null> => {
       console.warn('Could not fetch from user_roles:', roleErr);
     }
 
-    // PRIORITY 2: Try auth metadata as fallback
+    // PRIORITY 3: Use auth metadata as last resort only for known super admin
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user?.user_metadata?.role) {
-        console.log('✅ Found role in metadata (priority 2):', user.user_metadata.role);
-        return user.user_metadata.role as UserRole;
+      if (user?.user_metadata?.role && user.id === 'af6ad2ce-be6c-4620-a440-867c52d66918') {
+        console.log('✅ Found role in metadata for known super admin:', user.user_metadata.role);
+        return 'super_admin' as UserRole;
       }
     } catch (metaErr) {
       console.warn('Could not fetch from metadata:', metaErr);
