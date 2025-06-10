@@ -11,7 +11,7 @@ export const HowItWorksSection = () => {
             <span className="text-blue-400 text-sm uppercase tracking-wider">How it works</span>
           </div>
           <h2 className="text-5xl md:text-6xl font-light mb-8">
-            Top-notch partnerships,<br />
+            Sponsorships,<br />
             <span className="text-gray-400">delivered at your doorstep.</span>
           </h2>
         </div>
