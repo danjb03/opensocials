@@ -38,10 +38,10 @@ const CampaignAnalytics = memo(() => {
   if (isLoading) {
     return (
       <BrandLayout>
-        <div className="container mx-auto p-6 max-w-7xl">
+        <div className="container mx-auto p-6 max-w-7xl bg-background">
           <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-64 bg-gray-200 rounded"></div>
+            <div className="h-8 bg-muted rounded w-1/3"></div>
+            <div className="h-64 bg-muted rounded"></div>
           </div>
         </div>
       </BrandLayout>
@@ -51,10 +51,10 @@ const CampaignAnalytics = memo(() => {
   if (!project) {
     return (
       <BrandLayout>
-        <div className="container mx-auto p-6 max-w-7xl">
+        <div className="container mx-auto p-6 max-w-7xl bg-background">
           <div className="text-center py-8">
-            <h2 className="text-xl font-semibold mb-2">Project not found</h2>
-            <p className="text-gray-500 mb-4">The project you're looking for doesn't exist or you don't have access to it.</p>
+            <h2 className="text-xl font-semibold mb-2 text-foreground">Project not found</h2>
+            <p className="text-muted-foreground mb-4">The project you're looking for doesn't exist or you don't have access to it.</p>
           </div>
         </div>
       </BrandLayout>
@@ -64,15 +64,15 @@ const CampaignAnalytics = memo(() => {
   return (
     <ErrorBoundary>
       <BrandLayout>
-        <div className="container mx-auto p-6 max-w-7xl">
+        <div className="container mx-auto p-6 max-w-7xl bg-background">
           <CampaignHeader projectName={project.name} projectId={project.id} />
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid grid-cols-4 gap-4">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="engagement">Engagement</TabsTrigger>
-              <TabsTrigger value="creators">Campaign Creators</TabsTrigger>
-              <TabsTrigger value="content">Content Performance</TabsTrigger>
+            <TabsList className="grid grid-cols-4 gap-4 bg-card border-border">
+              <TabsTrigger value="overview" className="text-foreground data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Overview</TabsTrigger>
+              <TabsTrigger value="engagement" className="text-foreground data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Engagement</TabsTrigger>
+              <TabsTrigger value="creators" className="text-foreground data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Campaign Creators</TabsTrigger>
+              <TabsTrigger value="content" className="text-foreground data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Content Performance</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-4">

@@ -37,7 +37,7 @@ const Dashboard = () => {
   if (introLoading) {
     return (
       <BrandLayout>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex items-center justify-center h-64">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -51,21 +51,21 @@ const Dashboard = () => {
   return (
     <>
       <BrandLayout>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Header Section */}
             <div className="flex items-start justify-between mb-8">
               <div className="flex-1">
                 <div className="mb-6">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  <h1 className="text-3xl font-bold text-foreground mb-2">
                     Welcome Back!
                   </h1>
-                  <p className="text-lg text-gray-600 mb-4">
+                  <p className="text-lg text-muted-foreground mb-4">
                     Welcome back to your Brand Dashboard
                   </p>
                   
                   <div className="max-w-3xl">
-                    <p className="text-base text-gray-600 leading-relaxed">
+                    <p className="text-base text-muted-foreground leading-relaxed">
                       Connect with top creators, manage campaigns seamlessly, and grow your brand's reach. 
                       Your dashboard gives you complete control over your influencer marketing campaigns, 
                       from discovery to delivery.
@@ -83,7 +83,7 @@ const Dashboard = () => {
                   <Button 
                     variant="outline" 
                     onClick={handleBackToSuperAdmin} 
-                    className="flex items-center gap-2 bg-white shadow-sm hover:shadow-md transition-shadow"
+                    className="flex items-center gap-2 bg-card shadow-sm hover:shadow-md transition-shadow border-border text-foreground"
                   >
                     <ArrowLeft className="h-4 w-4" />
                     Back to Super Admin

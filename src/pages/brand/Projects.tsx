@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import BrandLayout from '@/components/layouts/BrandLayout';
@@ -61,10 +62,10 @@ const Projects = () => {
     console.error('Projects page error:', error);
     return (
       <BrandLayout>
-        <div className="container mx-auto p-6 max-w-7xl">
+        <div className="container mx-auto p-6 max-w-7xl bg-background">
           <div className="text-center py-12">
-            <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Projects</h2>
-            <p className="text-gray-600">
+            <h2 className="text-xl font-semibold text-destructive mb-2">Error Loading Projects</h2>
+            <p className="text-muted-foreground">
               {error instanceof Error ? error.message : 'An error occurred while loading projects'}
             </p>
             <AccessibleButton
@@ -81,7 +82,7 @@ const Projects = () => {
 
   return (
     <BrandLayout>
-      <div className="container mx-auto p-6 max-w-7xl animate-fade-in">
+      <div className="container mx-auto p-6 max-w-7xl animate-fade-in bg-background">
         {/* Enhanced Header */}
         <div className="flex flex-col gap-6 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -108,13 +109,13 @@ const Projects = () => {
                 value={searchQuery}
                 onChange={handleSearch}
                 placeholder="Search projects..."
-                className="w-full"
+                className="w-full bg-card border-border text-foreground"
               />
             </div>
             <AccessibleButton
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className="gap-2"
+              className="gap-2 border-border text-foreground"
               aria-label="Toggle filters"
               aria-expanded={showFilters}
             >
@@ -125,7 +126,7 @@ const Projects = () => {
 
           {/* Filters Panel */}
           {showFilters && (
-            <Card className="animate-slide-up">
+            <Card className="animate-slide-up bg-card border-border">
               <CardContent className="p-4">
                 <ProjectsHeader 
                   filters={filters}
@@ -138,7 +139,7 @@ const Projects = () => {
         </div>
         
         {/* Projects Content */}
-        <Card className="overflow-hidden border-slate-200 transition-all duration-300 hover:shadow-lg">
+        <Card className="overflow-hidden border-border bg-card transition-all duration-300 hover:shadow-lg">
           <CardContent className="p-0">
             {!isLoading && filteredProjects.length === 0 && !searchQuery ? (
               <div className="animate-scale-in">
@@ -152,7 +153,7 @@ const Projects = () => {
                 <AccessibleButton
                   variant="outline"
                   onClick={() => setSearchQuery('')}
-                  className="mt-4"
+                  className="mt-4 border-border text-foreground"
                 >
                   Clear search
                 </AccessibleButton>

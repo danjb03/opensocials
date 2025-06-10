@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -145,10 +144,10 @@ const EditCampaign = () => {
   if (loading) {
     return (
       <BrandLayout>
-        <div className="container mx-auto p-6 max-w-7xl">
+        <div className="container mx-auto p-6 max-w-7xl bg-background">
           <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-64 bg-gray-200 rounded"></div>
+            <div className="h-8 bg-muted rounded w-1/3"></div>
+            <div className="h-64 bg-muted rounded"></div>
           </div>
         </div>
       </BrandLayout>
@@ -158,11 +157,11 @@ const EditCampaign = () => {
   if (!project) {
     return (
       <BrandLayout>
-        <div className="container mx-auto p-6 max-w-7xl">
-          <Card>
+        <div className="container mx-auto p-6 max-w-7xl bg-background">
+          <Card className="bg-card border-border">
             <CardContent className="flex flex-col items-center justify-center pt-6 pb-6">
-              <h2 className="text-xl font-semibold mb-2">Project not found</h2>
-              <p className="text-gray-500 mb-4">The project you're looking for doesn't exist or you don't have access to it.</p>
+              <h2 className="text-xl font-semibold mb-2 text-foreground">Project not found</h2>
+              <p className="text-muted-foreground mb-4">The project you're looking for doesn't exist or you don't have access to it.</p>
               <Button onClick={() => navigate('/brand/projects')}>
                 Back to Projects
               </Button>
@@ -178,32 +177,33 @@ const EditCampaign = () => {
 
   return (
     <BrandLayout>
-      <div className="container mx-auto p-6 max-w-7xl">
+      <div className="container mx-auto p-6 max-w-7xl bg-background">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
-            <Button variant="outline" onClick={() => navigate(`/brand/projects/${id}`)}>
+            <Button variant="outline" onClick={() => navigate(`/brand/projects/${id}`)} className="border-border text-foreground">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Campaign
             </Button>
-            <h1 className="text-3xl font-bold">Edit Campaign</h1>
+            <h1 className="text-3xl font-bold text-foreground">Edit Campaign</h1>
           </div>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <Card className="mb-6">
+          <Card className="mb-6 bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-xl">Campaign Details</CardTitle>
+              <CardTitle className="text-xl text-foreground">Campaign Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Campaign Name</Label>
+                  <Label htmlFor="name" className="text-foreground">Campaign Name</Label>
                   <Input
                     id="name"
                     name="name"
                     value={formData.name || ''}
                     onChange={handleChange}
                     required
+                    className="bg-background border-border text-foreground"
                   />
                 </div>
                 
@@ -372,13 +372,14 @@ const EditCampaign = () => {
               variant="outline" 
               onClick={() => navigate(`/brand/projects/${id}`)}
               disabled={saving}
+              className="border-border text-foreground"
             >
               Cancel
             </Button>
             <Button 
               type="submit" 
               disabled={saving}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-sm"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
             >
               {saving ? 'Saving...' : 'Save Changes'}
               {!saving && <Save className="ml-2 h-4 w-4" />}
@@ -391,3 +392,5 @@ const EditCampaign = () => {
 };
 
 export default EditCampaign;
+
+</edits_to_apply>

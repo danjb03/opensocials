@@ -45,50 +45,50 @@ const CampaignAnalyticsList = memo(() => {
   return (
     <ErrorBoundary>
       <BrandLayout>
-        <div className="container mx-auto p-6 max-w-7xl">
+        <div className="container mx-auto p-6 max-w-7xl bg-background">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold">Campaign Analytics</h1>
+            <h1 className="text-3xl font-bold text-foreground">Campaign Analytics</h1>
           </div>
 
-          <Card className="mb-8">
+          <Card className="mb-8 bg-card border-border">
             <CardHeader>
-              <CardTitle>Your Campaigns</CardTitle>
-              <CardDescription>View performance metrics for all of your campaigns</CardDescription>
+              <CardTitle className="text-foreground">Your Campaigns</CardTitle>
+              <CardDescription className="text-muted-foreground">View performance metrics for all of your campaigns</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
                 <div className="animate-pulse space-y-4">
-                  <div className="h-12 bg-gray-200 rounded"></div>
-                  <div className="h-12 bg-gray-200 rounded"></div>
-                  <div className="h-12 bg-gray-200 rounded"></div>
+                  <div className="h-12 bg-muted rounded"></div>
+                  <div className="h-12 bg-muted rounded"></div>
+                  <div className="h-12 bg-muted rounded"></div>
                 </div>
               ) : campaigns.length > 0 ? (
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Campaign Name</TableHead>
-                      <TableHead>End Date</TableHead>
-                      <TableHead>Reach</TableHead>
-                      <TableHead>Engagement</TableHead>
-                      <TableHead>Actions</TableHead>
+                    <TableRow className="border-border">
+                      <TableHead className="text-foreground">Campaign Name</TableHead>
+                      <TableHead className="text-foreground">End Date</TableHead>
+                      <TableHead className="text-foreground">Reach</TableHead>
+                      <TableHead className="text-foreground">Engagement</TableHead>
+                      <TableHead className="text-foreground">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {campaigns.map((campaign) => {
                       const analytics = getAnalyticsSummary(campaign);
                       return (
-                        <TableRow key={campaign.id}>
-                          <TableCell className="font-medium">{campaign.name}</TableCell>
-                          <TableCell>
+                        <TableRow key={campaign.id} className="border-border">
+                          <TableCell className="font-medium text-foreground">{campaign.name}</TableCell>
+                          <TableCell className="text-foreground">
                             {new Date(campaign.end_date).toLocaleDateString()}
                           </TableCell>
-                          <TableCell>{analytics.reach.toLocaleString()}</TableCell>
-                          <TableCell>{analytics.engagementRate}%</TableCell>
+                          <TableCell className="text-foreground">{analytics.reach.toLocaleString()}</TableCell>
+                          <TableCell className="text-foreground">{analytics.engagementRate}%</TableCell>
                           <TableCell>
                             <Button 
                               size="sm" 
                               onClick={() => handleViewAnalytics(campaign.id)}
-                              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                              className="bg-primary text-primary-foreground hover:bg-primary/90"
                             >
                               <BarChart2 className="mr-1 h-4 w-4" /> 
                               View Analytics
@@ -102,8 +102,8 @@ const CampaignAnalyticsList = memo(() => {
                 </Table>
               ) : (
                 <div className="text-center py-10">
-                  <BarChart2 className="h-12 w-12 mx-auto text-gray-300 mb-2" />
-                  <p className="text-gray-500 mb-4">No campaigns found</p>
+                  <BarChart2 className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-muted-foreground mb-4">No campaigns found</p>
                   <Button onClick={() => navigate('/brand/projects')}>Go to Projects</Button>
                 </div>
               )}

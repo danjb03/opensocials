@@ -30,10 +30,10 @@ const ManageBudget = () => {
   if (loading) {
     return (
       <BrandLayout>
-        <div className="container mx-auto p-6 max-w-7xl">
+        <div className="container mx-auto p-6 max-w-7xl bg-background">
           <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-64 bg-gray-200 rounded"></div>
+            <div className="h-8 bg-muted rounded w-1/3"></div>
+            <div className="h-64 bg-muted rounded"></div>
           </div>
         </div>
       </BrandLayout>
@@ -43,11 +43,11 @@ const ManageBudget = () => {
   if (!project) {
     return (
       <BrandLayout>
-        <div className="container mx-auto p-6 max-w-7xl">
-          <Card>
+        <div className="container mx-auto p-6 max-w-7xl bg-background">
+          <Card className="bg-card border-border">
             <CardContent className="flex flex-col items-center justify-center pt-6 pb-6">
-              <h2 className="text-xl font-semibold mb-2">Project not found</h2>
-              <p className="text-gray-500 mb-4">The project you're looking for doesn't exist or you don't have access to it.</p>
+              <h2 className="text-xl font-semibold mb-2 text-foreground">Project not found</h2>
+              <p className="text-muted-foreground mb-4">The project you're looking for doesn't exist or you don't have access to it.</p>
               <Button onClick={() => navigate('/brand/projects')}>
                 Back to Projects
               </Button>
@@ -60,21 +60,21 @@ const ManageBudget = () => {
 
   return (
     <BrandLayout>
-      <div className="container mx-auto p-6 max-w-7xl">
+      <div className="container mx-auto p-6 max-w-7xl bg-background">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
-            <Button variant="outline" onClick={() => navigate(`/brand/projects/${project.id}`)}>
+            <Button variant="outline" onClick={() => navigate(`/brand/projects/${project.id}`)} className="border-border text-foreground">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Campaign
             </Button>
-            <h1 className="text-3xl font-bold">Manage Budget</h1>
+            <h1 className="text-3xl font-bold text-foreground">Manage Budget</h1>
           </div>
         </div>
 
         <Tabs defaultValue="budget" className="space-y-6">
-          <TabsList className="grid grid-cols-2 w-[400px]">
-            <TabsTrigger value="budget">Budget Overview</TabsTrigger>
-            <TabsTrigger value="breakdown">Budget Breakdown</TabsTrigger>
+          <TabsList className="grid grid-cols-2 w-[400px] bg-card border-border">
+            <TabsTrigger value="budget" className="text-foreground data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Budget Overview</TabsTrigger>
+            <TabsTrigger value="breakdown" className="text-foreground data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Budget Breakdown</TabsTrigger>
           </TabsList>
 
           <TabsContent value="budget" className="space-y-6">

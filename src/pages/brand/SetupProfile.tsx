@@ -52,10 +52,10 @@ const SetupProfile = () => {
 
   return (
     <BrandLayout>
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-6 bg-background">
         <div className="max-w-2xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2">
+            <h1 className="text-3xl font-bold mb-2 text-foreground">
               {existingProfile ? 'Edit Your Brand Profile' : 'Set Up Your Brand Profile'}
             </h1>
             <p className="text-muted-foreground">
@@ -63,10 +63,10 @@ const SetupProfile = () => {
             </p>
           </div>
           
-          <Card>
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle>Brand Information</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-foreground">Brand Information</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 Tell us about your brand to help creators understand who you are
               </CardDescription>
             </CardHeader>
