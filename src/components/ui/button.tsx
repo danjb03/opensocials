@@ -17,7 +17,7 @@ const buttonVariants = cva(
           "border border-input bg-background text-foreground hover:scale-105 active:scale-95 hover:shadow-md",
         secondary:
           "bg-secondary text-secondary-foreground hover:scale-105 active:scale-95 hover:shadow-md",
-        ghost: "text-foreground hover:scale-105 active:scale-95 hover:bg-accent/10",
+        ghost: "text-foreground hover:scale-105 active:scale-95",
         link: "text-primary underline-offset-4 hover:underline hover:scale-105 active:scale-95",
         custom: "",
       },
