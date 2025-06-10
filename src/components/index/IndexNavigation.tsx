@@ -30,7 +30,7 @@ export const IndexNavigation = ({ user }: IndexNavigationProps) => {
             <div className="flex items-center space-x-4">
               {!user && (
                 <Button 
-                  onClick={() => navigate('/auth')}
+                  onClick={() => setShowInterestModal(true)}
                   className="bg-white text-black hover:bg-gray-200 px-6"
                 >
                   Get Started
