@@ -24,7 +24,7 @@ const TopCampaigns: React.FC<TopCampaignsProps> = ({ campaigns }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-foreground">
           <TrendingUp className="h-5 w-5" />
           Top Performing Campaigns
         </CardTitle>
@@ -41,20 +41,20 @@ const TopCampaigns: React.FC<TopCampaignsProps> = ({ campaigns }) => {
                     Campaign Visual
                   </div>
                 )}
-                <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full px-2 py-0.5 text-xs font-medium">
+                <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full px-2 py-0.5 text-xs font-medium text-foreground">
                   {campaign.platform}
                 </div>
               </div>
               <div className="p-3">
-                <h4 className="font-medium mb-2">{campaign.title}</h4>
+                <h4 className="font-medium mb-2 text-foreground">{campaign.title}</h4>
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-1">
-                    <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span>{campaign.reach} Reach</span>
+                    <Eye className="h-3.5 w-3.5 text-foreground" />
+                    <span className="text-foreground">{campaign.reach} Reach</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <User className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span>{campaign.engagement} Engagement</span>
+                    <User className="h-3.5 w-3.5 text-foreground" />
+                    <span className="text-foreground">{campaign.engagement} Engagement</span>
                   </div>
                 </div>
               </div>

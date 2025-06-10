@@ -25,8 +25,8 @@ const ContentItem: React.FC<ContentItemProps> = ({ item }) => {
     <div className="flex items-center justify-between rounded-md border p-3">
       <div className="flex items-center">
         <div>
-          <p className="font-medium">{item.type.charAt(0).toUpperCase() + item.type.slice(1)}</p>
-          <p className="text-sm text-gray-500">By {item.creatorName} • {item.platform}</p>
+          <p className="font-medium text-foreground">{item.type.charAt(0).toUpperCase() + item.type.slice(1)}</p>
+          <p className="text-sm text-foreground">By {item.creatorName} • {item.platform}</p>
         </div>
       </div>
       <Badge

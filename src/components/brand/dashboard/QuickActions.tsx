@@ -60,9 +60,9 @@ const QuickActions = React.memo(() => {
                   <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
                     <Icon className="h-5 w-5 text-primary" />
                   </div>
-                  <CardTitle className="text-base font-semibold">{action.title}</CardTitle>
+                  <CardTitle className="text-base font-semibold text-foreground">{action.title}</CardTitle>
                 </div>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-sm text-foreground leading-relaxed">
                   {action.description}
                 </p>
               </CardHeader>

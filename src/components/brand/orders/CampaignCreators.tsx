@@ -35,7 +35,7 @@ const CampaignCreators: React.FC<CampaignCreatorsProps> = ({ creators, orderId }
       {/* Current Creators Section */}
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Current Creators ({creators.length})</h3>
+          <h3 className="text-lg font-semibold text-foreground">Current Creators ({creators.length})</h3>
           <div className="flex gap-2">
             <Button 
               size="sm" 

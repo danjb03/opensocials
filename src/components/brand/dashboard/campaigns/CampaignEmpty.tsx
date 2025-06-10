@@ -42,7 +42,7 @@ export function CampaignEmpty({ onCreateCampaign, showCreateButton = true }: Cam
               <h3 className="text-xl font-semibold text-foreground">
                 Ready to launch your first campaign?
               </h3>
-              <p className="text-muted-foreground max-w-md mx-auto">
+              <p className="text-foreground max-w-md mx-auto">
                 Create marketing campaigns to start working with creators and grow your brand's reach.
               </p>
             </div>
@@ -59,7 +59,7 @@ export function CampaignEmpty({ onCreateCampaign, showCreateButton = true }: Cam
                   <h4 className="font-medium text-sm text-foreground mb-1">
                     {feature.title}
                   </h4>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-foreground">
                     {feature.description}
                   </p>
                 </div>

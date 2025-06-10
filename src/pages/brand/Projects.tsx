@@ -65,7 +65,7 @@ const Projects = () => {
         <div className="container mx-auto p-6 max-w-7xl bg-background">
           <div className="text-center py-12">
             <h2 className="text-xl font-semibold text-destructive mb-2">Error Loading Projects</h2>
-            <p className="text-muted-foreground">
+            <p className="text-foreground">
               {error instanceof Error ? error.message : 'An error occurred while loading projects'}
             </p>
             <AccessibleButton
@@ -88,7 +88,7 @@ const Projects = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-foreground">Projects</h1>
-              <p className="text-muted-foreground mt-1">
+              <p className="text-foreground mt-1">
                 Manage your marketing campaigns and creator collaborations
               </p>
             </div>
@@ -147,7 +147,7 @@ const Projects = () => {
               </div>
             ) : !isLoading && filteredProjects.length === 0 && searchQuery ? (
               <div className="p-8 text-center">
-                <p className="text-muted-foreground">
+                <p className="text-foreground">
                   No projects found matching "{searchQuery}"
                 </p>
                 <AccessibleButton
