@@ -685,6 +685,36 @@ export type Database = {
         }
         Relationships: []
       }
+      interest_registrations: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone_number: string | null
+          updated_at: string
+          user_type: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone_number?: string | null
+          updated_at?: string
+          user_type: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone_number?: string | null
+          updated_at?: string
+          user_type?: string
+        }
+        Relationships: []
+      }
       invite_logs: {
         Row: {
           email: string
