@@ -1,8 +1,11 @@
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const CreatorSelectionSection = () => {
+  const [selectedCreatorId, setSelectedCreatorId] = useState(1);
+
   const creators = [
     {
       id: 1,
@@ -33,6 +36,10 @@ export const CreatorSelectionSection = () => {
     }
   ];
 
+  const handleCreatorSelect = (creatorId: number) => {
+    setSelectedCreatorId(creatorId);
+  };
+
   return (
     <section className="py-32 px-6">
       <div className="container mx-auto max-w-6xl">
@@ -53,12 +60,13 @@ export const CreatorSelectionSection = () => {
                 
                 {/* Creator selection interface */}
                 <div className="space-y-4">
-                  {creators.map((creator, index) => (
+                  {creators.map((creator) => (
                     <div 
                       key={creator.id}
                       className={`flex items-center space-x-4 p-4 rounded-2xl bg-gray-800/50 border border-gray-700/30 hover:bg-gray-800/70 transition-all duration-300 cursor-pointer group ${
-                        index === 0 ? 'ring-2 ring-purple-500/50' : ''
+                        selectedCreatorId === creator.id ? 'ring-2 ring-purple-500/50' : ''
                       }`}
+                      onClick={() => handleCreatorSelect(creator.id)}
                     >
                       <div className={`relative w-12 h-12 rounded-full border-3 ${creator.borderColor} overflow-hidden`}>
                         <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
@@ -77,12 +85,14 @@ export const CreatorSelectionSection = () => {
                   ))}
                 </div>
 
-                {/* Chat bubble */}
-                <div className="relative mt-6">
-                  <div className="bg-yellow-400 text-black px-4 py-2 rounded-2xl rounded-bl-sm inline-block ml-auto">
-                    <span className="font-medium">Perfect match!</span>
+                {/* Chat bubble - only show for selected creator */}
+                {selectedCreatorId && (
+                  <div className="relative mt-6">
+                    <div className="bg-yellow-400 text-black px-4 py-2 rounded-2xl rounded-bl-sm inline-block ml-auto">
+                      <span className="font-medium">Perfect match!</span>
+                    </div>
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
