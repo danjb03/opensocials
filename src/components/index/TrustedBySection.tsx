@@ -137,8 +137,8 @@ export const TrustedBySection = () => {
   };
 
   return (
-    <div ref={sectionRef} className="relative py-12 mb-32 overflow-hidden bg-black"> {/* Reduced top padding, increased bottom margin */}
-      <div className="text-center mb-12"> {/* Reduced bottom margin */}
+    <div ref={sectionRef} className="relative py-8 mb-16 overflow-hidden bg-black"> {/* Reduced padding and margin */}
+      <div className="text-center mb-8"> {/* Reduced bottom margin */}
         <p className="text-gray-500 text-sm mb-4 uppercase tracking-wider">The numbers speak for themselves</p>
         <h2 className="text-3xl md:text-4xl font-light text-white mb-4">
           Process is <span className="italic text-gray-400">Result</span>
