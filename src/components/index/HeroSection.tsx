@@ -31,18 +31,6 @@ export const HeroSection = ({ user }: HeroSectionProps) => {
 
             {!user ? (
               <div className="space-y-6">
-                <div className="flex items-center justify-center mb-8">
-                  <div className="flex items-center bg-gray-900 rounded-full p-2 max-w-md w-full">
-                    <input
-                      type="email"
-                      placeholder="name@email.com"
-                      className="bg-transparent text-white placeholder-gray-500 px-4 py-3 flex-1 focus:outline-none"
-                    />
-                    <Button className="bg-white text-black hover:bg-gray-200 px-8 py-3 rounded-full">
-                      Get notified
-                    </Button>
-                  </div>
-                </div>
                 <Button 
                   onClick={() => setShowInterestModal(true)}
                   className="bg-white text-black hover:bg-gray-200 px-8 py-3 text-lg font-medium rounded-full"
