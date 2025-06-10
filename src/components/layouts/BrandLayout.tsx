@@ -7,8 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useBrandAuth } from '@/hooks/useUnifiedAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Home, Search, Package, Calendar, Settings, BarChart2 } from 'lucide-react';
-import SidebarToggle from './SidebarToggle';
+import { Home, Search, Package, Calendar, Settings, BarChart2, Menu, ChevronLeft } from 'lucide-react';
 import Footer from './Footer';
 
 interface BrandLayoutProps {
@@ -72,10 +71,22 @@ const BrandLayout = memo(({ children }: BrandLayoutProps) => {
       <aside className={`${sidebarPosition} ${sidebarWidth} bg-sidebar text-sidebar-foreground transition-all duration-300 ease-in-out ${
         isMobile && !isSidebarCollapsed ? 'z-50 animate-slide-in-right' : ''
       } ${isMobile && isSidebarCollapsed ? 'hidden' : ''}`}>
-        <SidebarToggle 
-          isCollapsed={isSidebarCollapsed} 
-          onClick={toggleSidebar}
-        />
+        {/* Sidebar Toggle Button */}
+        <div className="absolute right-[-12px] top-4 z-10">
+          <AccessibleButton
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 rounded-full border bg-background shadow-md hover:bg-accent"
+            onClick={toggleSidebar}
+            aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isSidebarCollapsed ? (
+              <Menu className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
+          </AccessibleButton>
+        </div>
         
         <div className="p-4 flex flex-col h-full">
           <div className="mb-6">
