@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/ui/logo";
@@ -15,7 +14,7 @@ export const HeroSection = ({ user }: HeroSectionProps) => {
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16">
           <div className="flex justify-center mb-12">
-            <Logo className="h-24" />
+            <Logo className="h-48" />
           </div>
           <h1 className="text-6xl md:text-8xl font-light mb-8 tracking-tight">
             Creator partnerships,<br />
