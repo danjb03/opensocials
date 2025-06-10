@@ -70,33 +70,33 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 bg-background">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">User Management</h1>
+        <h1 className="text-3xl font-bold mb-2 text-foreground">User Management</h1>
         <p className="text-muted-foreground">Manage user accounts, roles, and permissions.</p>
       </div>
 
-      <Card className="mb-6">
+      <Card className="mb-6 bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-lg">Filter Users</CardTitle>
+          <CardTitle className="text-lg text-foreground">Filter Users</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4 flex-wrap">
             <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Search by name or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
+                className="pl-9 bg-background border-border text-foreground"
               />
             </div>
             
             <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-[160px] bg-background border-border text-foreground">
                 <SelectValue placeholder="All Roles" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-popover border-border">
                 <SelectItem value="all-roles">All Roles</SelectItem>
                 <SelectItem value="super_admin">Super Admin</SelectItem>
                 <SelectItem value="admin">Admin</SelectItem>
@@ -106,10 +106,10 @@ const UserManagement = () => {
             </Select>
 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-[160px] bg-background border-border text-foreground">
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-popover border-border">
                 <SelectItem value="all-status">All Status</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
@@ -122,46 +122,46 @@ const UserManagement = () => {
 
       {isLoading && (
         <div className="flex justify-center py-10">
-          <Loader className="animate-spin h-6 w-6" />
+          <Loader className="animate-spin h-6 w-6 text-foreground" />
         </div>
       )}
 
       {error && (
-        <div className="text-red-500 text-center py-6">
+        <div className="text-destructive-foreground text-center py-6">
           <p>Failed to load users. Please try again later.</p>
         </div>
       )}
 
       {!isLoading && !error && (
-        <div className="rounded-md border">
+        <div className="rounded-md border border-border bg-card">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+              <TableRow className="border-border">
+                <TableHead className="text-foreground">Name</TableHead>
+                <TableHead className="text-foreground">Email</TableHead>
+                <TableHead className="text-foreground">Role</TableHead>
+                <TableHead className="text-foreground">Status</TableHead>
+                <TableHead className="text-foreground">Created</TableHead>
+                <TableHead className="text-right text-foreground">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredUsers.length === 0 ? (
-                <TableRow>
+                <TableRow className="border-border">
                   <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                     No users found matching your criteria.
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">
+                  <TableRow key={user.id} className="border-border">
+                    <TableCell className="font-medium text-foreground">
                       {user.first_name && user.last_name 
                         ? `${user.first_name} ${user.last_name}`
                         : 'No name set'
                       }
                     </TableCell>
-                    <TableCell>{user.email}</TableCell>
+                    <TableCell className="text-foreground">{user.email}</TableCell>
                     <TableCell>
                       <Badge variant={getRoleBadgeVariant(user.role)}>
                         {user.role || 'No role'}
@@ -172,11 +172,11 @@ const UserManagement = () => {
                         {user.status || 'Unknown'}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-foreground">
                       {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" className="border-border text-foreground hover:bg-accent">
                         Edit
                       </Button>
                     </TableCell>

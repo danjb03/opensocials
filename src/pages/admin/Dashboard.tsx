@@ -45,68 +45,68 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 bg-background">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-2 text-foreground">Admin Dashboard</h1>
         <p className="text-muted-foreground">Manage your platform and monitor key metrics.</p>
       </div>
 
       <div className="grid gap-6 mb-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="bg-card border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <CardTitle className="text-sm font-medium text-foreground">Total Users</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,234</div>
+            <div className="text-2xl font-bold text-foreground">1,234</div>
             <p className="text-xs text-muted-foreground">+12% from last month</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-card border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
+            <CardTitle className="text-sm font-medium text-foreground">Active Projects</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">56</div>
+            <div className="text-2xl font-bold text-foreground">56</div>
             <p className="text-xs text-muted-foreground">+8% from last month</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-card border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium text-foreground">Total Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$45,231</div>
+            <div className="text-2xl font-bold text-foreground">$45,231</div>
             <p className="text-xs text-muted-foreground">+15% from last month</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-card border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+            <CardTitle className="text-sm font-medium text-foreground">Conversion Rate</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12.3%</div>
+            <div className="text-2xl font-bold text-foreground">12.3%</div>
             <p className="text-xs text-muted-foreground">+2.1% from last month</p>
           </CardContent>
         </Card>
       </div>
 
       <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+        <h2 className="text-xl font-semibold mb-4 text-foreground">Quick Actions</h2>
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {quickActions.map((action) => (
-            <Card key={action.href} className="hover:shadow-md transition-shadow">
+            <Card key={action.href} className="bg-card border-border hover:shadow-md transition-shadow">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
+                <CardTitle className="flex items-center gap-2 text-lg text-foreground">
                   <action.icon className="h-5 w-5" />
                   {action.title}
                 </CardTitle>
-                <CardDescription>{action.description}</CardDescription>
+                <CardDescription className="text-muted-foreground">{action.description}</CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
-                <Button asChild className="w-full">
+                <Button asChild className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
                   <Link to={action.href}>Go to {action.title}</Link>
                 </Button>
               </CardContent>

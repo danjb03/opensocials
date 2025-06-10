@@ -10,7 +10,6 @@ import { WorkflowSection } from "@/components/index/WorkflowSection";
 import { CreatorSelectionSection } from "@/components/index/CreatorSelectionSection";
 import { BenefitsSection } from "@/components/index/BenefitsSection";
 import { HowItWorksSection } from "@/components/index/HowItWorksSection";
-// import { TestimonialsSection } from "@/components/index/TestimonialsSection"; // Commented out to hide this section
 import { StatsSection } from "@/components/index/StatsSection";
 import { CTASection } from "@/components/index/CTASection";
 import { IndexFooter } from "@/components/index/IndexFooter";
@@ -60,14 +59,14 @@ const Index = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <IndexNavigation user={user} />
       <HeroSection user={user} />
       <TrustedBySection />
@@ -76,8 +75,6 @@ const Index = () => {
       <CreatorSelectionSection />
       <BenefitsSection />
       <HowItWorksSection />
-      {/* Testimonials section hidden per request */}
-      {/* <TestimonialsSection /> */}
       <StatsSection />
       <CTASection user={user} />
       <IndexFooter />
