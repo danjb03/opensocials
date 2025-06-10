@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -208,12 +209,12 @@ const EditCampaign = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="campaign_type">Campaign Type</Label>
+                  <Label htmlFor="campaign_type" className="text-foreground">Campaign Type</Label>
                   <Select 
                     onValueChange={(value) => handleSelectChange('campaign_type', value)}
                     value={formData.campaign_type}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-background border-border text-foreground">
                       <SelectValue placeholder="Select campaign type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -228,25 +229,26 @@ const EditCampaign = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="description">Campaign Description</Label>
+                <Label htmlFor="description" className="text-foreground">Campaign Description</Label>
                 <Textarea
                   id="description"
                   name="description"
                   value={formData.description || ''}
                   onChange={handleChange}
                   rows={4}
+                  className="bg-background border-border text-foreground"
                 />
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label>Start Date</Label>
+                  <Label className="text-foreground">Start Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full justify-start text-left font-normal border-border",
                           !formData.start_date && "text-muted-foreground"
                         )}
                       >
@@ -265,13 +267,13 @@ const EditCampaign = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label>End Date</Label>
+                  <Label className="text-foreground">End Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full justify-start text-left font-normal border-border",
                           !formData.end_date && "text-muted-foreground"
                         )}
                       >
@@ -292,9 +294,9 @@ const EditCampaign = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="budget">Budget</Label>
+                <Label htmlFor="budget" className="text-foreground">Budget</Label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
                     $
                   </span>
                   <Input
@@ -303,13 +305,13 @@ const EditCampaign = () => {
                     type="number"
                     value={formData.budget || ''}
                     onChange={handleChange}
-                    className="pl-7"
+                    className="pl-7 bg-background border-border text-foreground"
                   />
                 </div>
               </div>
               
               <div className="space-y-3">
-                <Label>Platforms</Label>
+                <Label className="text-foreground">Platforms</Label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {platformOptions.map((platform) => (
                     <div key={platform} className="flex items-center space-x-2">
@@ -322,7 +324,7 @@ const EditCampaign = () => {
                       />
                       <label 
                         htmlFor={`platform-${platform}`}
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
                       >
                         {platform}
                       </label>
@@ -342,7 +344,7 @@ const EditCampaign = () => {
                   />
                   <label 
                     htmlFor="whitelisting"
-                    className="text-sm font-medium leading-none"
+                    className="text-sm font-medium leading-none text-foreground"
                   >
                     Require Whitelisting
                   </label>
@@ -358,7 +360,7 @@ const EditCampaign = () => {
                   />
                   <label 
                     htmlFor="draft_approval"
-                    className="text-sm font-medium leading-none"
+                    className="text-sm font-medium leading-none text-foreground"
                   >
                     Require Draft Approval
                   </label>
@@ -392,5 +394,3 @@ const EditCampaign = () => {
 };
 
 export default EditCampaign;
-
-</edits_to_apply>
