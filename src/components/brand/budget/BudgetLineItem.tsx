@@ -26,16 +26,17 @@ export const BudgetLineItem: React.FC<BudgetLineItemProps> = ({
           value={item.description}
           onChange={(e) => onChangeItem(index, 'description', e.target.value)}
           placeholder="Item description"
+          className="text-foreground"
         />
       </div>
       <div className="col-span-4">
         <div className="relative">
-          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground h-4 w-4" />
           <Input
             type="number"
             value={item.amount}
             onChange={(e) => onChangeItem(index, 'amount', e.target.value)}
-            className="pl-10"
+            className="pl-10 text-foreground"
             placeholder="0.00"
           />
         </div>
@@ -48,7 +49,7 @@ export const BudgetLineItem: React.FC<BudgetLineItemProps> = ({
             size="sm"
             onClick={() => onRemoveItem(index)}
           >
-            <Trash className="h-4 w-4 text-gray-500" />
+            <Trash className="h-4 w-4 text-foreground" />
           </Button>
         )}
       </div>

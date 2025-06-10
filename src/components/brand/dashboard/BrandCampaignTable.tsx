@@ -24,7 +24,7 @@ export default function BrandCampaignTable() {
     return (
       <Card className="shadow-md rounded-xl overflow-hidden">
         <CardHeader className="pb-0">
-          <CardTitle className="text-xl font-bold">
+          <CardTitle className="text-xl font-bold text-foreground">
             Your Campaigns
           </CardTitle>
         </CardHeader>
@@ -39,7 +39,7 @@ export default function BrandCampaignTable() {
     return (
       <Card className="shadow-md rounded-xl overflow-hidden">
         <CardHeader>
-          <CardTitle className="text-xl font-bold">Your Campaigns</CardTitle>
+          <CardTitle className="text-xl font-bold text-foreground">Your Campaigns</CardTitle>
         </CardHeader>
         <CardContent>
           <CampaignError error={error} onRetry={refetch} />
@@ -52,8 +52,8 @@ export default function BrandCampaignTable() {
 
   return (
     <Card className="shadow-md rounded-xl overflow-hidden">
-      <CardHeader className="pb-2 border-b border-slate-100">
-        <CardTitle className="text-xl font-bold">
+      <CardHeader className="pb-2 border-b border-border">
+        <CardTitle className="text-xl font-bold text-foreground">
           Your Campaigns ({campaigns?.length || 0})
         </CardTitle>
       </CardHeader>

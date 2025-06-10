@@ -22,8 +22,8 @@ export const ProjectsHeader = ({
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
       <div>
-        <h1 className="text-3xl font-bold">Projects</h1>
-        <p className="text-gray-600">Manage your campaigns and projects</p>
+        <h1 className="text-3xl font-bold text-foreground">Projects</h1>
+        <p className="text-foreground">Manage your campaigns and projects</p>
       </div>
       
       <div className="flex items-center mt-4 md:mt-0 space-x-2">

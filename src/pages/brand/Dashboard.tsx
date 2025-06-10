@@ -60,12 +60,12 @@ const Dashboard = () => {
                   <h1 className="text-3xl font-bold text-foreground mb-2">
                     Welcome Back!
                   </h1>
-                  <p className="text-lg text-muted-foreground mb-4">
+                  <p className="text-lg text-foreground mb-4">
                     Welcome back to your Brand Dashboard
                   </p>
                   
                   <div className="max-w-3xl">
-                    <p className="text-base text-muted-foreground leading-relaxed">
+                    <p className="text-base text-foreground leading-relaxed">
                       Connect with top creators, manage campaigns seamlessly, and grow your brand's reach. 
                       Your dashboard gives you complete control over your influencer marketing campaigns, 
                       from discovery to delivery.

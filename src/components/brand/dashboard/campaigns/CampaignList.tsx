@@ -31,7 +31,7 @@ const CampaignListMemo = memo(({ campaigns, onViewProject }: CampaignListProps) 
 
   const renderCampaignItem = (campaign: CampaignRowType, index: number) => (
     <div 
-      className="animate-fade-in border-b border-slate-100 last:border-b-0"
+      className="animate-fade-in border-b border-border last:border-b-0"
       style={{ animationDelay: `${index * 50}ms` }}
     >
       <CampaignRow 
@@ -50,13 +50,13 @@ const CampaignListMemo = memo(({ campaigns, onViewProject }: CampaignListProps) 
         itemHeight={isMobile ? 180 : 120}
         containerHeight={600}
         renderItem={renderCampaignItem}
-        className="border border-slate-200 rounded-lg"
+        className="border border-border rounded-lg"
       />
     );
   }
 
   return (
-    <div className={`${isMobile ? 'space-y-4 p-4' : 'divide-y divide-slate-100'} border border-slate-200 rounded-lg overflow-hidden`}>
+    <div className={`${isMobile ? 'space-y-4 p-4' : 'divide-y divide-border'} border border-border rounded-lg overflow-hidden`}>
       {campaigns.map((campaign, index) => (
         <div key={campaign.project_id}>
           {renderCampaignItem(campaign, index)}

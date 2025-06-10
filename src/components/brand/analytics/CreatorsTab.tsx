@@ -25,8 +25,8 @@ export const CreatorsTab = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Campaign Creators</CardTitle>
-        <CardDescription>Performance of creators who participated in this campaign</CardDescription>
+        <CardTitle className="text-foreground">Campaign Creators</CardTitle>
+        <CardDescription className="text-foreground">Performance of creators who participated in this campaign</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">

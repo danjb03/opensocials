@@ -23,7 +23,7 @@ export const CampaignHeader = ({ projectName, projectId }: CampaignHeaderProps) 
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Analytics
         </Button>
-        <h1 className="text-3xl font-bold">{projectName} Analytics</h1>
+        <h1 className="text-3xl font-bold text-foreground">{projectName} Analytics</h1>
       </div>
       <div className="flex space-x-2">
         <Button variant="outline">

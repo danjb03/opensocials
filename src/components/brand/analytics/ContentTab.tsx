@@ -6,8 +6,8 @@ export const ContentTab = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Content Performance</CardTitle>
-        <CardDescription>Compare performance across different content pieces</CardDescription>
+        <CardTitle className="text-foreground">Content Performance</CardTitle>
+        <CardDescription className="text-foreground">Compare performance across different content pieces</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
