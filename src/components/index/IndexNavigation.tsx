@@ -28,12 +28,6 @@ export const IndexNavigation = ({ user }: IndexNavigationProps) => {
               <button className="text-gray-400 hover:text-white transition-colors">FAQs</button>
             </div>
             <div className="flex items-center space-x-4">
-              <Button 
-                onClick={() => setShowInterestModal(true)}
-                className="bg-white text-black hover:bg-gray-200 px-6"
-              >
-                Register
-              </Button>
               {!user && (
                 <Button 
                   onClick={() => navigate('/auth')}
