@@ -1,7 +1,6 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import Logo from "@/components/ui/logo";
+import NavigationLogo from "@/components/ui/navigation-logo";
 
 interface IndexNavigationProps {
   user: any;
@@ -15,7 +14,7 @@ export const IndexNavigation = ({ user }: IndexNavigationProps) => {
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Logo className="h-6" />
+            <NavigationLogo />
           </div>
           <div className="hidden md:flex items-center space-x-8">
             <button className="text-gray-400 hover:text-white transition-colors">Features</button>
