@@ -7,6 +7,7 @@ import AgencyUserManagement from '@/pages/agency/UserManagement';
 import AgencyInviteUsers from '@/pages/agency/InviteUsers';
 import AgencyProjectManagement from '@/pages/agency/ProjectManagement';
 import AgencyOrderManagement from '@/pages/agency/OrderManagement';
+import AgencyCRMDashboard from '@/pages/agency/crm/index';
 import AgencyBrandCRM from '@/pages/agency/crm/brands';
 import AgencyBrandDetail from '@/pages/agency/crm/brands/[brand_id]';
 import AgencyCreatorCRM from '@/pages/agency/crm/creators';
