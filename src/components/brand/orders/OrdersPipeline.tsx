@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EmptyState } from '@/components/ui/empty-state';
 import { OrderStage, orderStageLabels, Order } from '@/types/orders';
 import CampaignCard from './CampaignCard';
 import { FileText, Users, ClipboardCheck, Calendar, BarChart2 } from 'lucide-react';
@@ -19,6 +20,15 @@ const stageIcons: Record<OrderStage, React.ReactNode> = {
   contract_payment: <ClipboardCheck className="h-4 w-4 mr-2" />,
   planning_creation: <Calendar className="h-4 w-4 mr-2" />,
   content_performance: <BarChart2 className="h-4 w-4 mr-2" />,
+};
+
+// Map icons for empty states (without margins)
+const stageIconsForEmpty: Record<OrderStage, any> = {
+  campaign_setup: FileText,
+  creator_selection: Users,
+  contract_payment: ClipboardCheck,
+  planning_creation: Calendar,
+  content_performance: BarChart2,
 };
 
 const OrdersPipeline: React.FC<OrdersPipelineProps> = ({ 
@@ -70,14 +80,13 @@ const OrdersPipeline: React.FC<OrdersPipelineProps> = ({
                 />
               ))
             ) : (
-              <div className="col-span-full py-12 text-center bg-card rounded-lg border border-dashed border-border">
-                <div className="flex flex-col items-center justify-center">
-                  {stageIcons[stage]}
-                  <h3 className="mt-2 text-sm font-medium text-foreground">No campaigns in {orderStageLabels[stage]}</h3>
-                  <p className="mt-1 text-sm text-foreground/60">
-                    Get started by moving a campaign to this stage
-                  </p>
-                </div>
+              <div className="col-span-full">
+                <EmptyState
+                  icon={stageIconsForEmpty[stage]}
+                  title={`No campaigns in ${orderStageLabels[stage]}`}
+                  description="Get started by moving a campaign to this stage or create a new campaign."
+                  className="animate-fade-in"
+                />
               </div>
             )}
           </div>
