@@ -10,15 +10,15 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:scale-105 active:scale-95 hover:shadow-lg hover:bg-white hover:text-black",
+        default: "bg-primary text-primary-foreground hover:scale-105 active:scale-95 hover:shadow-lg hover:bg-accent hover:text-accent-foreground",
         destructive:
-          "bg-destructive text-destructive-foreground hover:scale-105 active:scale-95 hover:shadow-lg hover:bg-white hover:text-black",
+          "bg-destructive text-destructive-foreground hover:scale-105 active:scale-95 hover:shadow-lg hover:bg-accent hover:text-accent-foreground",
         outline:
-          "border border-input bg-background text-foreground hover:scale-105 active:scale-95 hover:shadow-md hover:bg-white hover:text-black",
+          "border border-input bg-background text-foreground hover:scale-105 active:scale-95 hover:shadow-md hover:bg-accent hover:text-accent-foreground",
         secondary:
-          "bg-secondary text-secondary-foreground hover:scale-105 active:scale-95 hover:shadow-md hover:bg-white hover:text-black",
-        ghost: "text-foreground hover:scale-105 active:scale-95 hover:bg-white hover:text-black",
-        link: "text-primary underline-offset-4 hover:underline hover:scale-105 active:scale-95 hover:text-black",
+          "bg-secondary text-secondary-foreground hover:scale-105 active:scale-95 hover:shadow-md hover:bg-accent hover:text-accent-foreground",
+        ghost: "text-foreground hover:scale-105 active:scale-95 hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline hover:scale-105 active:scale-95 hover:text-accent-foreground",
         custom: "",
       },
       size: {
