@@ -66,10 +66,10 @@ const AgencyLayout = memo(({ children }: AgencyLayoutProps) => {
       isActive: isActiveRoute('/agency', true)
     },
     {
-      title: "Team Management",
-      url: "/agency/team",
+      title: "User Management",
+      url: "/agency/users",
       icon: Users,
-      isActive: isActiveRoute('/agency/team')
+      isActive: isActiveRoute('/agency/users')
     },
     {
       title: "CRM",
@@ -78,16 +78,16 @@ const AgencyLayout = memo(({ children }: AgencyLayoutProps) => {
       isActive: isActiveRoute('/agency/crm')
     },
     {
-      title: "Clients",
-      url: "/agency/clients",
+      title: "Projects",
+      url: "/agency/projects",
       icon: Building2,
-      isActive: isActiveRoute('/agency/clients')
+      isActive: isActiveRoute('/agency/projects')
     },
     {
-      title: "Settings",
-      url: "/agency/settings",
+      title: "Orders",
+      url: "/agency/orders",
       icon: Settings,
-      isActive: isActiveRoute('/agency/settings')
+      isActive: isActiveRoute('/agency/orders')
     }
   ];
 
