@@ -96,7 +96,7 @@ export const TrustedBySection = () => {
     
     intervalRef.current = setInterval(() => {
       setCurrentCard((prev) => (prev + 1) % stats.length);
-    }, 3500);
+    }, 4500); // Increased from 3500 to 4500ms
   };
 
   const stopCarousel = () => {
@@ -109,7 +109,7 @@ export const TrustedBySection = () => {
   const goToCard = (index: number) => {
     setCurrentCard(index);
     stopCarousel();
-    setTimeout(startCarousel, 5000);
+    setTimeout(startCarousel, 6000); // Increased pause time when manually clicked
   };
 
   const getCardStyle = (index: number) => {
@@ -122,22 +122,23 @@ export const TrustedBySection = () => {
     const baseZIndex = 100;
     const zIndex = baseZIndex - position;
     
-    // More dramatic scaling and positioning for the reference look
-    const scale = position === 0 ? 1 : position === 1 ? 0.95 : 0.9;
-    const translateX = position * 30;
-    const translateY = position * 20;
-    const opacity = position === 0 ? 1 : position === 1 ? 0.8 : 0.6;
+    // Enhanced card shuffle animation - cards move left before going to back
+    const scale = position === 0 ? 1 : position === 1 ? 0.92 : 0.84;
+    const translateX = position === 0 ? 0 : position === 1 ? 40 : 80;
+    const translateY = position * 25;
+    const opacity = position === 0 ? 1 : position === 1 ? 0.9 : 0.7; // Reduced transparency
     
     return {
       transform: `translateX(${translateX}px) translateY(${translateY}px) scale(${scale})`,
       zIndex,
       opacity,
+      transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)', // Smoother transition
     };
   };
 
   return (
-    <div ref={sectionRef} className="relative py-20 mb-20 overflow-hidden bg-black">
-      <div className="text-center mb-16">
+    <div ref={sectionRef} className="relative py-12 mb-32 overflow-hidden bg-black"> {/* Reduced top padding, increased bottom margin */}
+      <div className="text-center mb-12"> {/* Reduced bottom margin */}
         <p className="text-gray-500 text-sm mb-4 uppercase tracking-wider">The numbers speak for themselves</p>
         <h2 className="text-3xl md:text-4xl font-light text-white mb-4">
           Process is <span className="italic text-gray-400">Result</span>
@@ -147,7 +148,7 @@ export const TrustedBySection = () => {
         </p>
       </div>
 
-      <div className="relative h-[600px] max-w-5xl mx-auto flex items-center justify-center perspective-1000">
+      <div className="relative h-[650px] max-w-5xl mx-auto flex items-center justify-center perspective-1000"> {/* Increased height */}
         {/* Card Stack */}
         <div className="relative w-full max-w-2xl">
           {stats.map((stat, index) => {
@@ -155,31 +156,31 @@ export const TrustedBySection = () => {
             return (
               <div
                 key={stat.id}
-                className={`absolute inset-0 transition-all duration-700 ease-out cursor-pointer
+                className={`absolute inset-0 cursor-pointer
                   ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
                 style={getCardStyle(index)}
                 onClick={() => goToCard(index)}
                 onMouseEnter={stopCarousel}
                 onMouseLeave={startCarousel}
               >
-                <div className="w-full h-96 rounded-2xl backdrop-blur-xl border border-white/10 
-                  bg-gradient-to-br from-gray-900/40 to-gray-800/20 shadow-2xl
+                <div className="w-full h-96 rounded-2xl backdrop-blur-xl border border-white/20 
+                  bg-gradient-to-br from-gray-800/70 to-gray-900/60 shadow-2xl  
                   hover:shadow-3xl hover:scale-105 transition-all duration-300
                   flex flex-col justify-center text-left p-12 relative overflow-hidden">
                   
-                  {/* Dark overlay for depth */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent pointer-events-none" />
+                  {/* Enhanced dark overlay for better contrast */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-black/30 to-gray-900/20 pointer-events-none" />
                   
                   {/* Step indicator */}
                   <div className="absolute top-6 left-6">
-                    <span className="text-xs text-gray-500 font-medium tracking-wider uppercase">
+                    <span className="text-xs text-gray-400 font-medium tracking-wider uppercase">
                       {stat.step}
                     </span>
                   </div>
 
                   {/* Icon */}
-                  <div className="mb-8 p-3 rounded-full bg-white/5 backdrop-blur-sm w-fit">
-                    <Icon size={28} className="text-white/80" />
+                  <div className="mb-8 p-3 rounded-full bg-white/10 backdrop-blur-sm w-fit">
+                    <Icon size={28} className="text-white/90" />
                   </div>
                   
                   {/* Main Content */}
@@ -192,13 +193,13 @@ export const TrustedBySection = () => {
                       {stat.percentage}
                     </h1>
                     
-                    <p className="text-base text-gray-300 leading-relaxed max-w-md">
+                    <p className="text-base text-gray-200 leading-relaxed max-w-md"> {/* Improved text contrast */}
                       {stat.description}
                     </p>
                   </div>
 
                   {/* Subtle gradient overlay */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/0 via-white/5 to-white/0 
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/0 via-white/3 to-white/0 
                     opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                 </div>
               </div>
@@ -215,7 +216,7 @@ export const TrustedBySection = () => {
               className={`w-2 h-2 rounded-full transition-all duration-300 ${
                 index === currentCard 
                   ? 'bg-white scale-125' 
-                  : 'bg-white/30 hover:bg-white/50'
+                  : 'bg-white/40 hover:bg-white/60'
               }`}
             />
           ))}
