@@ -52,332 +52,439 @@ const Index = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <div className="relative bg-background border-b border-border">
-        <div className="container mx-auto px-4 py-20">
-          <div className="max-w-6xl mx-auto text-center">
-            <div className="mb-12">
-              <Logo className="mx-auto mb-8" />
-              <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 tracking-tight">
-                Welcome to Open Socials
-              </h1>
-              <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
-                The premier platform connecting brands with creators for authentic partnerships
-              </p>
+    <div className="min-h-screen bg-black text-white">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-sm border-b border-gray-800">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Logo className="h-8" />
+            <div className="hidden md:flex items-center space-x-8">
+              <button className="text-gray-400 hover:text-white transition-colors">Features</button>
+              <button className="text-gray-400 hover:text-white transition-colors">How it works</button>
+              <button className="text-gray-400 hover:text-white transition-colors">Testimonials</button>
+              <button className="text-gray-400 hover:text-white transition-colors">FAQs</button>
             </div>
-
-            {!user ? (
-              <div className="space-y-6">
-                <Button 
-                  onClick={() => navigate('/auth')} 
-                  size="lg"
-                  className="px-12 py-4 text-lg font-semibold"
-                >
-                  Get Started
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-                <p className="text-muted-foreground text-lg">
-                  Join thousands of brands and creators worldwide
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-8">
-                <Card className="max-w-lg mx-auto border border-border bg-card">
-                  <CardHeader className="text-center">
-                    <CardTitle className="text-2xl text-foreground">Welcome back!</CardTitle>
-                    <CardDescription className="text-muted-foreground text-lg">
-                      {user.email}
-                      <br />
-                      Role: {role || 'Loading...'}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {role === 'super_admin' && (
-                      <>
-                        <Button 
-                          onClick={() => navigate('/super-admin')}
-                          className="w-full text-lg py-3"
-                        >
-                          Go to Super Admin Dashboard
-                        </Button>
-                        <div className="border-t border-border pt-4 space-y-3">
-                          <p className="text-sm text-muted-foreground mb-3">Or access any dashboard:</p>
-                          <div className="grid grid-cols-2 gap-3">
-                            <Button 
-                              onClick={() => navigate('/admin')}
-                              variant="outline"
-                              className="py-2"
-                            >
-                              Admin
-                            </Button>
-                            <Button 
-                              onClick={() => navigate('/brand')}
-                              variant="outline"
-                              className="py-2"
-                            >
-                              Brand
-                            </Button>
-                            <Button 
-                              onClick={() => navigate('/creator')}
-                              variant="outline"
-                              className="py-2"
-                            >
-                              Creator
-                            </Button>
-                            <Button 
-                              onClick={() => navigate('/agency')}
-                              variant="outline"
-                              className="py-2"
-                            >
-                              Agency
-                            </Button>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                    {role && role !== 'super_admin' && (
-                      <Button 
-                        onClick={() => navigate(`/${role}`)}
-                        className="w-full text-lg py-3"
-                      >
-                        Go to {role.charAt(0).toUpperCase() + role.slice(1)} Dashboard
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Features Section */}
-      <div className="py-20 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-                Why Choose Open Socials?
-              </h2>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                Our platform provides everything you need for successful creator partnerships
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              <Card className="border border-border bg-card hover:shadow-lg transition-shadow">
-                <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-foreground rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Users className="h-8 w-8 text-background" />
-                  </div>
-                  <CardTitle className="text-xl text-foreground">Creator Network</CardTitle>
-                  <CardDescription className="text-muted-foreground">
-                    Access thousands of verified creators across all major platforms
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-
-              <Card className="border border-border bg-card hover:shadow-lg transition-shadow">
-                <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-foreground rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Briefcase className="h-8 w-8 text-background" />
-                  </div>
-                  <CardTitle className="text-xl text-foreground">Campaign Management</CardTitle>
-                  <CardDescription className="text-muted-foreground">
-                    Streamlined tools for managing campaigns from start to finish
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-
-              <Card className="border border-border bg-card hover:shadow-lg transition-shadow">
-                <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-foreground rounded-full flex items-center justify-center mx-auto mb-4">
-                    <TrendingUp className="h-8 w-8 text-background" />
-                  </div>
-                  <CardTitle className="text-xl text-foreground">Analytics & Insights</CardTitle>
-                  <CardDescription className="text-muted-foreground">
-                    Real-time performance tracking and detailed campaign analytics
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Section */}
-      <div className="py-20 bg-muted border-t border-border">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="grid md:grid-cols-3 gap-8 text-center">
-              <div>
-                <div className="text-4xl md:text-5xl font-bold text-foreground mb-2">10K+</div>
-                <div className="text-lg text-muted-foreground">Active Creators</div>
-              </div>
-              <div>
-                <div className="text-4xl md:text-5xl font-bold text-foreground mb-2">500+</div>
-                <div className="text-lg text-muted-foreground">Brand Partners</div>
-              </div>
-              <div>
-                <div className="text-4xl md:text-5xl font-bold text-foreground mb-2">1M+</div>
-                <div className="text-lg text-muted-foreground">Campaigns Delivered</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Platform Benefits */}
-      <div className="py-20 bg-background border-t border-border">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-                Built for Success
-              </h2>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                Our platform is designed to deliver results for both brands and creators
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-foreground rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Shield className="h-6 w-6 text-background" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Secure Payments</h3>
-                  <p className="text-muted-foreground">Protected transactions with escrow and milestone-based payments</p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-foreground rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Zap className="h-6 w-6 text-background" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Quick Matching</h3>
-                  <p className="text-muted-foreground">AI-powered creator matching based on brand requirements</p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-foreground rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Star className="h-6 w-6 text-background" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Quality Assurance</h3>
-                  <p className="text-muted-foreground">Verified creators and content review processes</p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-foreground rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Users className="h-6 w-6 text-background" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">24/7 Support</h3>
-                  <p className="text-muted-foreground">Dedicated support team for all your campaign needs</p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-foreground rounded-lg flex items-center justify-center flex-shrink-0">
-                  <TrendingUp className="h-6 w-6 text-background" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Performance Tracking</h3>
-                  <p className="text-muted-foreground">Real-time analytics and detailed performance reports</p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-foreground rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Briefcase className="h-6 w-6 text-background" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Easy Management</h3>
-                  <p className="text-muted-foreground">Intuitive dashboard for managing all your campaigns</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* CTA Section */}
-      <div className="py-20 bg-foreground text-background">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Ready to Get Started?
-            </h2>
-            <p className="text-xl text-background/80 mb-8 max-w-2xl mx-auto">
-              Join the platform that's transforming creator partnerships. Start your journey today.
-            </p>
             {!user && (
               <Button 
                 onClick={() => navigate('/auth')}
-                size="lg"
-                variant="secondary"
-                className="px-12 py-4 text-lg font-semibold"
+                className="bg-white text-black hover:bg-gray-200 px-6"
               >
-                Join Open Socials
-                <ArrowRight className="ml-2 h-5 w-5" />
+                Get Started
               </Button>
             )}
           </div>
         </div>
-      </div>
+      </nav>
 
-      {/* Footer */}
-      <div className="bg-background border-t border-border py-12">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid md:grid-cols-4 gap-8">
-              <div className="col-span-2">
-                <Logo className="mb-4" />
-                <p className="text-muted-foreground mb-4 max-w-md">
-                  Connecting brands with creators for authentic partnerships that drive results.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-foreground mb-4">Platform</h4>
-                <div className="space-y-2 text-muted-foreground">
-                  <div>For Brands</div>
-                  <div>For Creators</div>
-                  <div>For Agencies</div>
-                </div>
-              </div>
-              <div>
-                <h4 className="font-semibold text-foreground mb-4">Legal</h4>
-                <div className="space-y-2 text-muted-foreground">
-                  <button onClick={() => navigate('/privacy-policy')} className="block text-left hover:text-foreground transition-colors">
-                    Privacy Policy
-                  </button>
-                  <button onClick={() => navigate('/tos')} className="block text-left hover:text-foreground transition-colors">
-                    Terms of Service
-                  </button>
-                  <button onClick={() => navigate('/data-deletion')} className="block text-left hover:text-foreground transition-colors">
-                    Data Deletion
-                  </button>
-                </div>
-              </div>
+      {/* Hero Section */}
+      <section className="pt-32 pb-20 px-6">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <div className="flex justify-center mb-12">
+              <Logo className="h-24" />
             </div>
-            <div className="border-t border-border mt-12 pt-8 text-center text-muted-foreground">
-              <p>&copy; 2024 Open Socials. All rights reserved.</p>
+            <h1 className="text-6xl md:text-8xl font-light mb-8 tracking-tight">
+              Creator partnerships,<br />
+              <span className="text-gray-400">the efficient way</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-400 mb-12 max-w-4xl mx-auto leading-relaxed">
+              Innovative solutions for brands and agencies connecting with creators across all major platforms. Arriving shortly.
+            </p>
+
+            {!user ? (
+              <div className="flex items-center justify-center mb-16">
+                <div className="flex items-center bg-gray-900 rounded-full p-2 max-w-md w-full">
+                  <input
+                    type="email"
+                    placeholder="name@email.com"
+                    className="bg-transparent text-white placeholder-gray-500 px-4 py-3 flex-1 focus:outline-none"
+                  />
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full">
+                    Get notified
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Card className="max-w-lg mx-auto bg-gray-900 border-gray-800">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-2xl text-white">Welcome back!</CardTitle>
+                  <CardDescription className="text-gray-400 text-lg">
+                    {user.email}
+                    <br />
+                    Role: {role || 'Loading...'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {role === 'super_admin' && (
+                    <>
+                      <Button 
+                        onClick={() => navigate('/super-admin')}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-3"
+                      >
+                        Go to Super Admin Dashboard
+                      </Button>
+                      <div className="border-t border-gray-800 pt-4 space-y-3">
+                        <p className="text-sm text-gray-400 mb-3">Or access any dashboard:</p>
+                        <div className="grid grid-cols-2 gap-3">
+                          <Button 
+                            onClick={() => navigate('/admin')}
+                            variant="outline"
+                            className="py-2 border-gray-700 text-gray-300 hover:bg-gray-800"
+                          >
+                            Admin
+                          </Button>
+                          <Button 
+                            onClick={() => navigate('/brand')}
+                            variant="outline"
+                            className="py-2 border-gray-700 text-gray-300 hover:bg-gray-800"
+                          >
+                            Brand
+                          </Button>
+                          <Button 
+                            onClick={() => navigate('/creator')}
+                            variant="outline"
+                            className="py-2 border-gray-700 text-gray-300 hover:bg-gray-800"
+                          >
+                            Creator
+                          </Button>
+                          <Button 
+                            onClick={() => navigate('/agency')}
+                            variant="outline"
+                            className="py-2 border-gray-700 text-gray-300 hover:bg-gray-800"
+                          >
+                            Agency
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {role && role !== 'super_admin' && (
+                    <Button 
+                      onClick={() => navigate(`/${role}`)}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-3"
+                    >
+                      Go to {role.charAt(0).toUpperCase() + role.slice(1)} Dashboard
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Trusted By Section */}
+          <div className="text-center mb-20">
+            <p className="text-gray-500 text-sm mb-8 uppercase tracking-wider">Already chosen by the leaders</p>
+            <div className="flex items-center justify-center space-x-12 opacity-60">
+              <div className="text-gray-600 font-semibold">headspace</div>
+              <div className="text-gray-600 font-semibold">shopify</div>
+              <div className="text-gray-600 font-semibold">volvo</div>
+              <div className="text-gray-600 font-semibold">Mobbin</div>
+              <div className="text-gray-600 font-semibold">Pinterest</div>
+              <div className="text-gray-600 font-semibold">duolingo</div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* What You'll Get Section */}
+      <section className="py-20 px-6">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center space-x-2 bg-gray-900 rounded-full px-4 py-2 mb-8">
+              <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+              <span className="text-blue-400 text-sm uppercase tracking-wider">What you'll get</span>
+            </div>
+            <h2 className="text-5xl md:text-6xl font-light mb-8">
+              We resolve problems associated with<br />
+              <span className="text-gray-400">creative partnerships.</span>
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="bg-gray-900 border-gray-800 p-8 rounded-3xl">
+              <CardContent className="p-0">
+                <div className="mb-8">
+                  <div className="text-blue-400 text-sm font-medium mb-4">Growth</div>
+                  <div className="h-32 bg-gradient-to-t from-blue-600 to-blue-400 opacity-20 rounded-lg"></div>
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-4">Tailor-made partnerships</h3>
+                <p className="text-gray-400">We've got the expertise to make your vision a reality.</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-900 border-gray-800 p-8 rounded-3xl">
+              <CardContent className="p-0">
+                <div className="mb-8">
+                  <div className="bg-gray-800 rounded-lg p-6 h-32 flex items-center justify-center">
+                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                      <Zap className="w-4 h-4 text-white" />
+                    </div>
+                  </div>
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-4">Latest design</h3>
+                <p className="text-gray-400">Today, 11:30</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-900 border-gray-800 p-8 rounded-3xl">
+              <CardContent className="p-0">
+                <div className="mb-8">
+                  <div className="h-32 flex items-end">
+                    <div className="w-full h-16 bg-gradient-to-r from-blue-600 to-blue-400 opacity-20 rounded-lg"></div>
+                  </div>
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-4">Scalable as you grow</h3>
+                <p className="text-gray-400">We're ready to meet your evolving needs.</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Workflow Integration Section */}
+      <section className="py-20 px-6">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <div>
+              <h3 className="text-3xl font-light mb-6">Workflow integration</h3>
+              <p className="text-gray-400 text-lg mb-8">Seamlessly connect all your existing apps.</p>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <div className="w-6 h-6 bg-white rounded"></div>
+                </div>
+                <div className="w-12 h-12 bg-gray-800 rounded-lg"></div>
+                <div className="w-12 h-12 bg-gray-800 rounded-lg"></div>
+                <div className="w-12 h-12 bg-gray-800 rounded-lg"></div>
+                <div className="w-12 h-12 bg-gray-800 rounded-lg"></div>
+                <div className="w-12 h-12 bg-gray-800 rounded-lg"></div>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-3xl font-light mb-6">Collaborate real-time</h3>
+              <p className="text-gray-400 text-lg">Seamlessly connect all your existing apps.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Grid */}
+      <section className="py-20 px-6">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
+            <div className="bg-gray-900 rounded-2xl p-6 text-center">
+              <div className="w-2 h-2 bg-blue-600 rounded-full mx-auto mb-3"></div>
+              <span className="text-white text-sm">Creator matching</span>
+            </div>
+            <div className="bg-gray-900 rounded-2xl p-6 text-center">
+              <div className="w-2 h-2 bg-blue-600 rounded-full mx-auto mb-3"></div>
+              <span className="text-white text-sm">Campaign management</span>
+            </div>
+            <div className="bg-gray-900 rounded-2xl p-6 text-center">
+              <div className="w-2 h-2 bg-blue-600 rounded-full mx-auto mb-3"></div>
+              <span className="text-white text-sm">Performance tracking</span>
+            </div>
+            <div className="bg-gray-900 rounded-2xl p-6 text-center">
+              <div className="w-2 h-2 bg-blue-600 rounded-full mx-auto mb-3"></div>
+              <span className="text-white text-sm">Asset management</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="bg-gray-900 rounded-2xl p-6 text-center">
+              <div className="w-2 h-2 bg-blue-600 rounded-full mx-auto mb-3"></div>
+              <span className="text-white text-sm">Secure payments</span>
+            </div>
+            <div className="bg-gray-900 rounded-2xl p-6 text-center">
+              <div className="w-2 h-2 bg-blue-600 rounded-full mx-auto mb-3"></div>
+              <span className="text-white text-sm">Brand safety</span>
+            </div>
+            <div className="bg-gray-900 rounded-2xl p-6 text-center">
+              <div className="w-2 h-2 bg-blue-600 rounded-full mx-auto mb-3"></div>
+              <span className="text-white text-sm">Multi-platform support</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-20 px-6">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center space-x-2 bg-gray-900 rounded-full px-4 py-2 mb-8">
+              <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+              <span className="text-blue-400 text-sm uppercase tracking-wider">How it works</span>
+            </div>
+            <h2 className="text-5xl md:text-6xl font-light mb-8">
+              Top-notch partnerships,<br />
+              <span className="text-gray-400">delivered at your doorstep.</span>
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="bg-gray-900 border-gray-800 p-8 rounded-3xl text-center">
+              <CardContent className="p-0">
+                <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <div className="w-8 h-8 border-2 border-white rounded"></div>
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-4">Tell us your vision</h3>
+                <p className="text-gray-400">Choose a plan and share your campaign details with us; we're here to listen.</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-900 border-gray-800 p-8 rounded-3xl text-center">
+              <CardContent className="p-0">
+                <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <div className="w-8 h-8 bg-blue-400 rounded-full"></div>
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-4">Receive the magic</h3>
+                <p className="text-gray-400">Sit back and relax; our expert team will turn your vision into reality.</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-900 border-gray-800 p-8 rounded-3xl text-center">
+              <CardContent className="p-0">
+                <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <div className="w-8 h-8 bg-white rounded-lg"></div>
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-4">Get ongoing support</h3>
+                <p className="text-gray-400">Your subscription ensures you have continuous access to our team.</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 px-6">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="bg-gray-900 border-gray-800 p-8 rounded-3xl">
+              <CardContent className="p-0">
+                <div className="text-gray-600 font-semibold mb-4">loom</div>
+                <p className="text-white mb-6">"Creative, innovative and strategic. We have great achievements made together and looking to more"</p>
+                <div className="flex text-blue-400 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-current" />
+                  ))}
+                </div>
+                <div>
+                  <div className="text-white font-medium">Henry Arthur</div>
+                  <div className="text-gray-400 text-sm">Head of Engineering, Loom</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-900 border-gray-800 p-8 rounded-3xl">
+              <CardContent className="p-0">
+                <div className="text-gray-600 font-semibold mb-4">INTERCOM</div>
+                <p className="text-white mb-6">"Incredible group of people and talented professionals. Focused on the development of flexible ideas"</p>
+                <div className="flex text-blue-400 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-current" />
+                  ))}
+                </div>
+                <div>
+                  <div className="text-white font-medium">Jerome Bell</div>
+                  <div className="text-gray-400 text-sm">Product Analyst, Intercom</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-900 border-gray-800 p-8 rounded-3xl">
+              <CardContent className="p-0">
+                <div className="text-gray-600 font-semibold mb-4">Abstract</div>
+                <p className="text-white mb-6">"A truly innovative approach to partnerships that sets this platform apart from its peers within the broader industry"</p>
+                <div className="flex text-blue-400 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-current" />
+                  ))}
+                </div>
+                <div>
+                  <div className="text-white font-medium">Eleanor Pena</div>
+                  <div className="text-gray-400 text-sm">Head of Product Design, Abstract</div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-20 px-6">
+        <div className="container mx-auto max-w-4xl">
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            <div>
+              <div className="text-5xl md:text-6xl font-light text-white mb-2">45+</div>
+              <div className="text-gray-400">Happy customers</div>
+            </div>
+            <div>
+              <div className="text-5xl md:text-6xl font-light text-white mb-2">5k+</div>
+              <div className="text-gray-400">Hours spent on craft</div>
+            </div>
+            <div>
+              <div className="text-5xl md:text-6xl font-light text-white mb-2">4.8</div>
+              <div className="text-gray-400">Review rate</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 px-6">
+        <div className="container mx-auto max-w-4xl text-center">
+          <h2 className="text-5xl md:text-6xl font-light mb-8">
+            Elevate the way you<br />
+            <span className="text-gray-400">source partnerships</span>
+          </h2>
+          <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
+            Get ready to start producing stunning, efficient campaign work without the hassles of hiring. Soon available.
+          </p>
+          {!user && (
+            <div className="flex items-center justify-center">
+              <div className="flex items-center bg-gray-900 rounded-full p-2 max-w-md w-full">
+                <input
+                  type="email"
+                  placeholder="name@email.com"
+                  className="bg-transparent text-white placeholder-gray-500 px-4 py-3 flex-1 focus:outline-none"
+                />
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full">
+                  Get notified
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 px-6 border-t border-gray-800">
+        <div className="container mx-auto max-w-6xl">
+          <div className="flex items-center justify-between">
+            <Logo className="h-8" />
+            <div className="flex items-center space-x-8 text-gray-400 text-sm">
+              <button onClick={() => navigate('/privacy-policy')} className="hover:text-white transition-colors">
+                Contact
+              </button>
+              <button onClick={() => navigate('/privacy-policy')} className="hover:text-white transition-colors">
+                Privacy & Cookie Policy
+              </button>
+              <button onClick={() => navigate('/tos')} className="hover:text-white transition-colors">
+                Terms & Conditions
+              </button>
+            </div>
+            <div className="text-gray-500 text-sm">
+              Made with love by Open Socials
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
