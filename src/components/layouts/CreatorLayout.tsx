@@ -85,19 +85,19 @@ const CreatorLayout = memo(({ children }: CreatorLayoutProps) => {
             <SidebarLogo />
           </SidebarHeader>
           
-          <SidebarContent>
-            <SidebarMenu>
+          <SidebarContent className="flex flex-col justify-center flex-1 px-4">
+            <SidebarMenu className="space-y-6">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     asChild 
                     isActive={item.isActive}
-                    className="h-12"
+                    className="h-14 text-base font-medium justify-center group-data-[collapsible=icon]:justify-center"
                     tooltip={item.title}
                   >
-                    <Link to={item.url} className="flex items-center gap-3">
-                      <item.icon className="h-5 w-5" />
-                      <span>{item.title}</span>
+                    <Link to={item.url} className="flex items-center gap-4 px-6 py-4">
+                      <item.icon className="h-6 w-6" />
+                      <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -106,13 +106,13 @@ const CreatorLayout = memo(({ children }: CreatorLayoutProps) => {
           </SidebarContent>
           
           <SidebarFooter className="p-4 border-t border-sidebar-border">
-            <div className="text-sm text-sidebar-foreground/70 mb-2 truncate group-data-[collapsible=icon]:hidden">
+            <div className="text-sm text-sidebar-foreground/70 mb-3 truncate group-data-[collapsible=icon]:hidden text-center">
               {user?.email}
             </div>
             <Button 
               variant="default" 
               onClick={handleSignOut}
-              className="w-full h-12 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:p-0"
+              className="w-full h-12 group-data-[collapsible=icon]:h-12 group-data-[collapsible=icon]:w-12 group-data-[collapsible=icon]:p-0"
             >
               <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
               <span className="hidden group-data-[collapsible=icon]:block">SO</span>
