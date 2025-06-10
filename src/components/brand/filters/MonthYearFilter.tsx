@@ -32,7 +32,7 @@ export const monthOptions = [
 
 export function getYearOptions() {
   const currentYear = new Date().getFullYear();
-  const years = [];
+  const years = [{ value: 'all', label: 'All Years' }];
   for (let year = currentYear - 2; year <= currentYear + 2; year++) {
     years.push({ value: year.toString(), label: year.toString() });
   }
@@ -45,7 +45,7 @@ export function MonthYearFilter({ month, year, onMonthChange, onYearChange }: Mo
       <h3 className="text-sm font-medium">Month Started</h3>
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <Select value={month} onValueChange={onMonthChange}>
+          <Select value={month || 'all'} onValueChange={onMonthChange}>
             <SelectTrigger className="text-sm">
               <SelectValue placeholder="Month" />
             </SelectTrigger>
@@ -59,7 +59,7 @@ export function MonthYearFilter({ month, year, onMonthChange, onYearChange }: Mo
           </Select>
         </div>
         <div>
-          <Select value={year} onValueChange={onYearChange}>
+          <Select value={year || 'all'} onValueChange={onYearChange}>
             <SelectTrigger className="text-sm">
               <SelectValue placeholder="Year" />
             </SelectTrigger>

@@ -11,6 +11,15 @@ interface AudienceSectionProps {
   setAudienceLocation: (location: string) => void;
 }
 
+const audienceTypeOptions = [
+  { value: 'gen-z', label: 'Gen Z' },
+  { value: 'millennials', label: 'Millennials' },
+  { value: 'gen-x', label: 'Gen X' },
+  { value: 'baby-boomers', label: 'Baby Boomers' },
+  { value: 'mixed', label: 'Mixed' },
+  { value: 'niche', label: 'Niche' },
+];
+
 export function AudienceSection({ 
   audienceType, 
   setAudienceType, 
@@ -21,17 +30,16 @@ export function AudienceSection({
     <div className="grid gap-4 md:grid-cols-2">
       <div className="space-y-2">
         <Label htmlFor="audienceType">Audience Type</Label>
-        <Select value={audienceType} onValueChange={setAudienceType}>
+        <Select value={audienceType || 'mixed'} onValueChange={setAudienceType}>
           <SelectTrigger id="audienceType">
             <SelectValue placeholder="Select audience" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Gen Z">Gen Z</SelectItem>
-            <SelectItem value="Millennials">Millennials</SelectItem>
-            <SelectItem value="Gen X">Gen X</SelectItem>
-            <SelectItem value="Baby Boomers">Baby Boomers</SelectItem>
-            <SelectItem value="Mixed">Mixed</SelectItem>
-            <SelectItem value="Niche">Niche</SelectItem>
+            {audienceTypeOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
