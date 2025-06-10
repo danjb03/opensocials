@@ -3,14 +3,23 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Building2, Users, TrendingUp, FileText } from 'lucide-react';
+import { Building2, Users, TrendingUp, FileText, BarChart2 } from 'lucide-react';
+import { useAgencyBrands } from '@/hooks/agency/useAgencyBrands';
+import { useAgencyCreators } from '@/hooks/agency/useAgencyCreators';
 
 const AgencyCRMDashboard = () => {
+  const { data: brands = [], isLoading: brandsLoading } = useAgencyBrands();
+  const { data: creators = [], isLoading: creatorsLoading } = useAgencyCreators();
+
+  // Calculate totals - in a real app this would come from deal tracking
+  const totalActiveDeals = 23; // Mock data
+  const totalRevenue = 24500; // Mock data
+
   return (
     <div className="container mx-auto p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <TrendingUp className="h-8 w-8" />
+          <BarChart2 className="h-8 w-8" />
           <h1 className="text-3xl font-bold">CRM Dashboard</h1>
         </div>
       </div>
@@ -22,7 +31,9 @@ const AgencyCRMDashboard = () => {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
+            <div className="text-2xl font-bold">
+              {brandsLoading ? '...' : brands.length}
+            </div>
             <p className="text-xs text-muted-foreground">Active brand accounts</p>
           </CardContent>
         </Card>
@@ -33,7 +44,9 @@ const AgencyCRMDashboard = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">48</div>
+            <div className="text-2xl font-bold">
+              {creatorsLoading ? '...' : creators.length}
+            </div>
             <p className="text-xs text-muted-foreground">Active creator accounts</p>
           </CardContent>
         </Card>
@@ -44,7 +57,7 @@ const AgencyCRMDashboard = () => {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">23</div>
+            <div className="text-2xl font-bold">{totalActiveDeals}</div>
             <p className="text-xs text-muted-foreground">Deals in progress</p>
           </CardContent>
         </Card>
@@ -55,7 +68,7 @@ const AgencyCRMDashboard = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$24.5K</div>
+            <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">This month</p>
           </CardContent>
         </Card>
