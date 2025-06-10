@@ -1,21 +1,34 @@
 
 export const StatsSection = () => {
+  const stats = [
+    {
+      number: "45+",
+      label: "Happy customers"
+    },
+    {
+      number: "5K+", 
+      label: "Hours spent on craft"
+    },
+    {
+      number: "4.8",
+      label: "Review rate"
+    }
+  ];
+
   return (
-    <section className="py-20 px-6">
-      <div className="container mx-auto max-w-4xl">
-        <div className="grid md:grid-cols-3 gap-8 text-center">
-          <div>
-            <div className="text-5xl md:text-6xl font-light text-white mb-2">45+</div>
-            <div className="text-gray-400">Happy customers</div>
-          </div>
-          <div>
-            <div className="text-5xl md:text-6xl font-light text-white mb-2">5k+</div>
-            <div className="text-gray-400">Hours spent on craft</div>
-          </div>
-          <div>
-            <div className="text-5xl md:text-6xl font-light text-white mb-2">4.8</div>
-            <div className="text-gray-400">Review rate</div>
-          </div>
+    <section className="py-32 px-6 border-t border-gray-800">
+      <div className="container mx-auto max-w-7xl">
+        <div className="grid md:grid-cols-3 gap-16">
+          {stats.map((stat, index) => (
+            <div key={index} className="text-center space-y-4">
+              <div className="text-7xl md:text-8xl font-light text-white tracking-tight">
+                {stat.number}
+              </div>
+              <div className="text-gray-400 text-lg font-medium">
+                {stat.label}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
