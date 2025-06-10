@@ -1,9 +1,7 @@
-
-
 export const StatsSection = () => {
   const stats = [
     {
-      number: "1000+",
+      number: "100+",
       label: "Creators Onboard"
     },
     {
@@ -35,4 +33,3 @@ export const StatsSection = () => {
     </section>
   );
 };
-
