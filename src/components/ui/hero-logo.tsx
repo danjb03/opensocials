@@ -13,7 +13,7 @@ const HeroLogo = ({ className = '' }: HeroLogoProps) => {
       <img 
         src={logoSrc} 
         alt="OS Logo" 
-        className="w-auto h-56"
+        className="w-auto h-72 mx-auto"
       />
     </Link>
   );
