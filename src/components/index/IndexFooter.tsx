@@ -20,7 +20,7 @@ export const IndexFooter = () => {
             </button>
           </div>
           <div className="text-gray-500 text-sm">
-            Made with love by Open Socials
+            © 2025 OS
           </div>
         </div>
       </div>
