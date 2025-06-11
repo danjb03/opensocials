@@ -12,7 +12,7 @@ export const BenefitsSection = () => {
     },
     {
       title: "Performance tracking",
-      description: "Real-time analytics and insights to measure campaign success and ROI"
+      description: "Live analytics on reach, clicks, and ROI. See what's working as it happens."
     },
     {
       title: "Asset management",
