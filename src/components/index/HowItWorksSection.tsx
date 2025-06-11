@@ -42,7 +42,7 @@ export const HowItWorksSection = () => {
               <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <div className="w-8 h-8 bg-white rounded-lg"></div>
               </div>
-              <h3 className="text-xl font-semibold text-white mb-4">Get ongoing support</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">Launch & scale</h3>
               <p className="text-gray-400">Your subscription ensures you have continuous access to our team.</p>
             </CardContent>
           </Card>
