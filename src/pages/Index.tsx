@@ -77,8 +77,8 @@ const Index = () => {
       <BenefitsSection />
       <HowItWorksSection />
       <StatsSection />
-      <FAQSection />
       <CTASection user={user} />
+      <FAQSection />
       <IndexFooter />
     </div>
   );
