@@ -16,7 +16,7 @@ export const BenefitsSection = () => {
     },
     {
       title: "Asset management",
-      description: "Centralized hub for all your creative assets, briefs, and campaign materials"
+      description: "One hub for briefs, contracts, and content: no lost files, no scattered links."
     },
     {
       title: "Secure payments",
