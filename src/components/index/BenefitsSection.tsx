@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 
 export const BenefitsSection = () => {
@@ -29,7 +28,7 @@ export const BenefitsSection = () => {
     },
     {
       title: "Multi-platform support",
-      description: "Seamless campaign execution across Instagram, TikTok, YouTube, and more"
+      description: "Run seamless campaigns across all major social channels"
     }
   ];
 
