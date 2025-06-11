@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 
 export const HowItWorksSection = () => {
@@ -12,7 +11,7 @@ export const HowItWorksSection = () => {
           </div>
           <h2 className="text-5xl md:text-6xl font-light mb-8">
             Sponsorships,<br />
-            <span className="text-gray-400">delivered at your doorstep.</span>
+            <span className="text-gray-400">Results, delivered.</span>
           </h2>
         </div>
 
