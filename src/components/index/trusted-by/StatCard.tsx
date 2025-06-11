@@ -42,13 +42,6 @@ export const StatCard = ({
         
         {/* Solid background overlay to prevent see-through effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900/90 to-black/95 pointer-events-none" />
-        
-        {/* Step indicator */}
-        <div className="absolute top-6 left-6 z-10">
-          <span className="text-xs text-gray-400 font-medium tracking-wider uppercase">
-            {step}
-          </span>
-        </div>
 
         {/* Icon */}
         <div className="mb-8 p-3 rounded-full bg-white/10 backdrop-blur-sm w-fit relative z-10">
