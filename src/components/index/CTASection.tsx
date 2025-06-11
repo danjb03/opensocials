@@ -22,7 +22,8 @@ export const CTASection = ({ user }: CTASectionProps) => {
         
         <div className="container mx-auto max-w-4xl text-center relative z-10">
           <h2 className="text-5xl md:text-6xl font-light mb-8">
-            Partnerships done properly.
+            Partnerships done properly.<br />
+            Built for brands that move quickly and think bigger.
           </h2>
           <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
             The best creators are already vetted, briefed, and ready to go. Deals land fast. Campaigns launch faster.
