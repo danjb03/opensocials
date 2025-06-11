@@ -1,8 +1,10 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, Target, BarChart3 } from "lucide-react";
+
 export const FeaturesSection = () => {
-  return <section className="py-20 px-6">
+  return (
+    <section className="py-20 px-6">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16">
           <div className="inline-flex items-center space-x-2 bg-gray-900 rounded-full px-4 py-2 mb-8">
@@ -56,5 +58,6 @@ export const FeaturesSection = () => {
           </Card>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
