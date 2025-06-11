@@ -43,7 +43,7 @@ export const HowItWorksSection = () => {
                 <div className="w-8 h-8 bg-white rounded-lg"></div>
               </div>
               <h3 className="text-xl font-semibold text-white mb-4">Launch & scale</h3>
-              <p className="text-gray-400">Your subscription ensures you have continuous access to our team.</p>
+              <p className="text-gray-400">Campaign goes live. We handle the logistics. You stay focused on results.</p>
             </CardContent>
           </Card>
         </div>
