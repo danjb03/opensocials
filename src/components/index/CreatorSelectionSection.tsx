@@ -105,7 +105,7 @@ export const CreatorSelectionSection = () => {
                 <span className="text-blue-400 text-sm uppercase tracking-wider">Creator Matching</span>
               </div>
               <h2 className="text-5xl md:text-6xl font-light mb-8 text-white">
-                Find the right creator
+                Find the right creator, instantly.
               </h2>
               <p className="text-lg leading-relaxed mb-8 text-slate-300">
                 Our conversation-first matching system filters by niche performance so you only see creators who align with your campaign goals and drive results.
