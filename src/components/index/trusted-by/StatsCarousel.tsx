@@ -56,10 +56,11 @@ export const StatsCarousel = ({ isVisible }: StatsCarouselProps) => {
     const baseZIndex = 40;
     const zIndex = baseZIndex - position;
     
-    const scale = position === 0 ? 1 : position === 1 ? 0.92 : 0.84;
-    const translateX = position === 0 ? 0 : position === 1 ? 40 : 80;
-    const translateY = position === 0 ? 0 : position * 10; // Reduced translateY for better centering
-    const opacity = position === 0 ? 1 : position === 1 ? 0.9 : 0.7;
+    // Adjusted positioning to prevent overlapping
+    const scale = position === 0 ? 1 : position === 1 ? 0.85 : 0.7;
+    const translateX = position === 0 ? 0 : position === 1 ? 60 : 120;
+    const translateY = position === 0 ? 0 : position === 1 ? 20 : 40;
+    const opacity = position === 0 ? 1 : position === 1 ? 0.6 : 0.3;
     
     return {
       transform: `translateX(${translateX}px) translateY(${translateY}px) scale(${scale})`,

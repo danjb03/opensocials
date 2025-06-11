@@ -35,23 +35,23 @@ export const StatCard = ({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <div className="w-full h-96 rounded-2xl backdrop-blur-xl border border-white/20 
-        bg-gradient-to-br from-gray-800/70 to-gray-900/60 shadow-2xl  
+      <div className="w-full h-96 rounded-2xl border border-white/20 
+        bg-gradient-to-br from-gray-900/95 to-black/95 shadow-2xl backdrop-blur-xl
         hover:shadow-3xl hover:scale-105 transition-all duration-300
         flex flex-col justify-center text-left p-12 relative overflow-hidden">
         
-        {/* Enhanced dark overlay for better contrast */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black/30 to-gray-900/20 pointer-events-none" />
+        {/* Solid background overlay to prevent see-through effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900/90 to-black/95 pointer-events-none" />
         
         {/* Step indicator */}
-        <div className="absolute top-6 left-6">
+        <div className="absolute top-6 left-6 z-10">
           <span className="text-xs text-gray-400 font-medium tracking-wider uppercase">
             {step}
           </span>
         </div>
 
         {/* Icon */}
-        <div className="mb-8 p-3 rounded-full bg-white/10 backdrop-blur-sm w-fit">
+        <div className="mb-8 p-3 rounded-full bg-white/10 backdrop-blur-sm w-fit relative z-10">
           <Icon size={28} className="text-white/90" />
         </div>
         
@@ -72,7 +72,7 @@ export const StatCard = ({
 
         {/* Subtle gradient overlay */}
         <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/0 via-white/3 to-white/0 
-          opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+          opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none z-5" />
       </div>
     </div>
   );
