@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 
 export const HowItWorksSection = () => {
@@ -31,7 +32,7 @@ export const HowItWorksSection = () => {
               <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <div className="w-8 h-8 bg-blue-400 rounded-full"></div>
               </div>
-              <h3 className="text-xl font-semibold text-white mb-4">Receive the magic</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">Get matched</h3>
               <p className="text-gray-400">Sit back and relax; our expert team will turn your vision into reality.</p>
             </CardContent>
           </Card>
