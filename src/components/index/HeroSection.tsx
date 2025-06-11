@@ -18,7 +18,7 @@ export const HeroSection = ({ user }: HeroSectionProps) => {
       <section className="pt-32 pb-20 px-6">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <div className="flex justify-center mb-4">
+            <div className="flex justify-center mb-2">
               <HeroLogo />
             </div>
             <h1 className="text-6xl md:text-8xl font-light mb-8 tracking-tight">
