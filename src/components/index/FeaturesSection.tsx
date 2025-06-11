@@ -51,7 +51,7 @@ export const FeaturesSection = () => {
                 </div>
               </div>
               <h3 className="text-2xl font-light text-white mb-4">Smart filters. Instant launch.</h3>
-              <p className="text-gray-400 text-lg leading-relaxed">Real-time analytics to maximize your social ROI</p>
+              <p className="text-gray-400 text-lg leading-relaxed">See ROI, engagement, and creator performance live.</p>
             </CardContent>
           </Card>
         </div>
