@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 
 export const BenefitsSection = () => {
@@ -20,7 +21,7 @@ export const BenefitsSection = () => {
     },
     {
       title: "Secure payments",
-      description: "Protected payment processing with automatic milestone-based creator compensation"
+      description: "Pay creators with confidence. Tracked and protected."
     },
     {
       title: "Brand safety",
