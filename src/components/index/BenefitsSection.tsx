@@ -5,7 +5,7 @@ export const BenefitsSection = () => {
   const benefits = [
     {
       title: "Creator matching",
-      description: "AI-powered matching system connects you with the perfect creators for your brand"
+      description: "Get matched with high-performing creators based on niche, audience, and conversion data."
     },
     {
       title: "Campaign management", 
