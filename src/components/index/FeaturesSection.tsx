@@ -12,9 +12,7 @@ export const FeaturesSection = () => {
             We don't just manage,<br />
             <span className="text-gray-400">we monetise.</span>
           </h2>
-          <p className="text-xl text-gray-400 mb-12 max-w-4xl mx-auto leading-relaxed">
-            Social Media is a business tool. If your content isn't turning into clients, deals and serious revenue you're leaving money on the table.
-          </p>
+          <p className="mb-12 max-w-4xl mx-auto leading-relaxed text-slate-300 text-lg">High-performing creators. Zero back-and-forth.Smart filters. Instant launch. Upload briefs, set budgets, track performance, every tool you need. </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
