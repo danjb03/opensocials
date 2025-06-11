@@ -1,5 +1,5 @@
 
-import { Award, TrendingUp, Target, DollarSign, Users, Trophy } from 'lucide-react';
+import { Award, TrendingUp, Target, DollarSign, Users } from 'lucide-react';
 
 export interface StatCard {
   id: number;
@@ -50,13 +50,5 @@ export const statsData: StatCard[] = [
     description: "brands earn $6.16 for every $1 spent on creator campaigns",
     icon: Award,
     step: "Step 5"
-  },
-  {
-    id: 6,
-    percentage: "6x",
-    title: "Return Investment",
-    description: "average return on investment for creator partnerships",
-    icon: Trophy,
-    step: "Step 6"
   }
 ];
