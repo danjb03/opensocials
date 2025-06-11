@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
@@ -80,16 +81,6 @@ export const FAQSection = () => {
             <p className="text-xl text-gray-400 text-center max-w-2xl mx-auto mb-8">
               Find the answers to our most common questions here, but if you still need help, feel free to contact me.
             </p>
-            
-            <div className="flex justify-center mb-8">
-              <Button
-                onClick={() => setShowRegistrationModal(true)}
-                variant="outline"
-                className="bg-transparent border-gray-600 text-white hover:bg-gray-800 rounded-full px-6 py-3"
-              >
-                Register
-              </Button>
-            </div>
 
             {/* Tab Switcher */}
             <div className="flex justify-center space-x-4 mb-8">
