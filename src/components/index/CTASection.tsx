@@ -22,8 +22,7 @@ export const CTASection = ({ user }: CTASectionProps) => {
         
         <div className="container mx-auto max-w-4xl text-center relative z-10">
           <h2 className="text-5xl md:text-6xl font-light mb-8">
-            Elevate the way you<br />
-            <span className="text-gray-400">source partnerships</span>
+            Partnerships done properly.
           </h2>
           <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
             Get ready to start producing stunning, efficient campaign work without the hassles of hiring. Soon available.
