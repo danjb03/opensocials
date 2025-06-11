@@ -52,7 +52,7 @@ export const FeaturesSection = () => {
                   <BarChart3 className="w-10 h-10 text-white stroke-[1.5]" />
                 </div>
               </div>
-              <h3 className="text-2xl font-light text-white mb-4">Performance Tracking</h3>
+              <h3 className="text-2xl font-light text-white mb-4">Smart filters. Instant launch.</h3>
               <p className="text-gray-400 text-lg leading-relaxed">Real-time analytics to maximize your social ROI</p>
             </CardContent>
           </Card>
