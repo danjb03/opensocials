@@ -1,5 +1,3 @@
-
-
 import { Card, CardContent } from "@/components/ui/card";
 
 export const HowItWorksSection = () => {
@@ -24,7 +22,7 @@ export const HowItWorksSection = () => {
                 <div className="w-8 h-8 border-2 border-white rounded"></div>
               </div>
               <h3 className="text-xl font-semibold text-white mb-4">Drop the brief</h3>
-              <p className="text-gray-400">Choose a plan and share your campaign details with us; we're here to listen.</p>
+              <p className="text-gray-400">Tell us what you need, audience, goals, budget.</p>
             </CardContent>
           </Card>
 
