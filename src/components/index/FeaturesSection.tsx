@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, Target, BarChart3 } from "lucide-react";
 export const FeaturesSection = () => {
@@ -25,7 +26,7 @@ export const FeaturesSection = () => {
                   <TrendingUp className="w-10 h-10 text-white stroke-[1.5]" />
                 </div>
               </div>
-              <h3 className="text-2xl font-light text-white mb-4">Revenue Growth</h3>
+              <h3 className="text-2xl font-light text-white mb-4">High-performing creators.</h3>
               <p className="text-lg leading-relaxed text-slate-200">Pre-vetted. High-performing. Ready to go live.</p>
             </CardContent>
           </Card>
@@ -37,8 +38,8 @@ export const FeaturesSection = () => {
                   <Target className="w-10 h-10 text-white stroke-[1.5]" />
                 </div>
               </div>
-              <h3 className="text-2xl font-light text-white mb-4">Monetization Strategy</h3>
-              <p className="text-gray-400 text-lg leading-relaxed">Expert guidance on turning followers into customers</p>
+              <h3 className="text-2xl font-light text-white mb-4">Zero back-and-forth.</h3>
+              <p className="text-gray-400 text-lg leading-relaxed">Drop in your own briefs, set your terms, and start the deal.</p>
             </CardContent>
           </Card>
 
@@ -49,7 +50,7 @@ export const FeaturesSection = () => {
                   <BarChart3 className="w-10 h-10 text-white stroke-[1.5]" />
                 </div>
               </div>
-              <h3 className="text-2xl font-light text-white mb-4">Performance Tracking</h3>
+              <h3 className="text-2xl font-light text-white mb-4">Smart filters. Instant launch.</h3>
               <p className="text-gray-400 text-lg leading-relaxed">Real-time analytics to maximize your social ROI</p>
             </CardContent>
           </Card>
