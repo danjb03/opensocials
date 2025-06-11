@@ -16,7 +16,7 @@ export const FeaturesSection = () => {
             <span className="text-gray-400">we monetise.</span>
           </h2>
           <p className="text-xl text-gray-400 mb-12 max-w-4xl mx-auto leading-relaxed">
-            Social Media is a business tool. If your content isn't turning into clients, deals and serious revenue you're leaving money on the table.
+            Upload briefs, set budgets, track performance, every tool you need.
           </p>
         </div>
 
