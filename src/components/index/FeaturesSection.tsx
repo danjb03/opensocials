@@ -1,10 +1,7 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, Target, BarChart3 } from "lucide-react";
-
 export const FeaturesSection = () => {
-  return (
-    <section className="py-20 px-6">
+  return <section className="py-20 px-6">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16">
           <div className="inline-flex items-center space-x-2 bg-gray-900 rounded-full px-4 py-2 mb-8">
@@ -41,7 +38,7 @@ export const FeaturesSection = () => {
                 </div>
               </div>
               <h3 className="text-2xl font-light text-white mb-4">Zero back-and-forth.</h3>
-              <p className="text-gray-400 text-lg leading-relaxed">Drop in your own briefs, set your terms, and start the deal.</p>
+              <p className="text-lg leading-relaxed text-slate-300">Drop in your own briefs, set your terms, and start the deal.</p>
             </CardContent>
           </Card>
 
@@ -53,11 +50,10 @@ export const FeaturesSection = () => {
                 </div>
               </div>
               <h3 className="text-2xl font-light text-white mb-4">Smart filters. Instant launch.</h3>
-              <p className="text-gray-400 text-lg leading-relaxed">See ROI, engagement, and creator performance live.</p>
+              <p className="text-lg leading-relaxed text-slate-300">See ROI, engagement, and creator performance live.</p>
             </CardContent>
           </Card>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
