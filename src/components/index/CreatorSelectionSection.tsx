@@ -1,49 +1,39 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { InterestRegistrationModal } from "./InterestRegistrationModal";
-
 export const CreatorSelectionSection = () => {
   const [selectedCreatorId, setSelectedCreatorId] = useState(1);
   const [showInterestModal, setShowInterestModal] = useState(false);
-
-  const creators = [
-    {
-      id: 1,
-      name: "Sarah",
-      image: "/lovable-uploads/e4e5b130-826a-4835-aa50-1bf5466c18c9.png",
-      specialty: "Fashion & Lifestyle",
-      followers: "125K",
-      engagement: "4.2%",
-      borderColor: "border-purple-500"
-    },
-    {
-      id: 2, 
-      name: "Marcus",
-      image: "/lovable-uploads/e4e5b130-826a-4835-aa50-1bf5466c18c9.png",
-      specialty: "Tech & Gaming",
-      followers: "89K",
-      engagement: "5.1%",
-      borderColor: "border-cyan-500"
-    },
-    {
-      id: 3,
-      name: "Elena",
-      image: "/lovable-uploads/e4e5b130-826a-4835-aa50-1bf5466c18c9.png", 
-      specialty: "Beauty & Wellness",
-      followers: "203K",
-      engagement: "3.8%",
-      borderColor: "border-yellow-500"
-    }
-  ];
-
+  const creators = [{
+    id: 1,
+    name: "Sarah",
+    image: "/lovable-uploads/e4e5b130-826a-4835-aa50-1bf5466c18c9.png",
+    specialty: "Fashion & Lifestyle",
+    followers: "125K",
+    engagement: "4.2%",
+    borderColor: "border-purple-500"
+  }, {
+    id: 2,
+    name: "Marcus",
+    image: "/lovable-uploads/e4e5b130-826a-4835-aa50-1bf5466c18c9.png",
+    specialty: "Tech & Gaming",
+    followers: "89K",
+    engagement: "5.1%",
+    borderColor: "border-cyan-500"
+  }, {
+    id: 3,
+    name: "Elena",
+    image: "/lovable-uploads/e4e5b130-826a-4835-aa50-1bf5466c18c9.png",
+    specialty: "Beauty & Wellness",
+    followers: "203K",
+    engagement: "3.8%",
+    borderColor: "border-yellow-500"
+  }];
   const handleCreatorSelect = (creatorId: number) => {
     setSelectedCreatorId(creatorId);
   };
-
-  return (
-    <>
+  return <>
       <section className="py-32 px-6">
         <div className="container mx-auto max-w-6xl">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -63,14 +53,7 @@ export const CreatorSelectionSection = () => {
                   
                   {/* Creator selection interface */}
                   <div className="space-y-4">
-                    {creators.map((creator) => (
-                      <div 
-                        key={creator.id}
-                        className={`flex items-center space-x-4 p-4 rounded-2xl bg-gray-800/50 border border-gray-700/30 hover:bg-gray-800/70 transition-all duration-300 cursor-pointer group ${
-                          selectedCreatorId === creator.id ? 'ring-2 ring-purple-500/50' : ''
-                        }`}
-                        onClick={() => handleCreatorSelect(creator.id)}
-                      >
+                    {creators.map(creator => <div key={creator.id} className={`flex items-center space-x-4 p-4 rounded-2xl bg-gray-800/50 border border-gray-700/30 hover:bg-gray-800/70 transition-all duration-300 cursor-pointer group ${selectedCreatorId === creator.id ? 'ring-2 ring-purple-500/50' : ''}`} onClick={() => handleCreatorSelect(creator.id)}>
                         <div className={`relative w-12 h-12 rounded-full border-3 ${creator.borderColor} overflow-hidden`}>
                           <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
                             <span className="text-white font-medium">{creator.name[0]}</span>
@@ -84,21 +67,15 @@ export const CreatorSelectionSection = () => {
                           <p className="text-white text-sm font-medium">{creator.followers}</p>
                           <p className="text-gray-400 text-xs">{creator.engagement} eng.</p>
                         </div>
-                      </div>
-                    ))}
+                      </div>)}
                   </div>
 
                   {/* Chat bubble - only show for selected creator */}
-                  {selectedCreatorId && (
-                    <div className="relative mt-6">
-                      <div 
-                        className="bg-yellow-400 text-black px-4 py-2 rounded-2xl rounded-bl-sm inline-block ml-auto cursor-pointer hover:bg-yellow-300 transition-colors"
-                        onClick={() => setShowInterestModal(true)}
-                      >
+                  {selectedCreatorId && <div className="relative mt-6">
+                      <div className="bg-yellow-400 text-black px-4 py-2 rounded-2xl rounded-bl-sm inline-block ml-auto cursor-pointer hover:bg-yellow-300 transition-colors" onClick={() => setShowInterestModal(true)}>
                         <span className="font-medium">Perfect match!</span>
                       </div>
-                    </div>
-                  )}
+                    </div>}
                 </CardContent>
               </Card>
 
@@ -114,17 +91,14 @@ export const CreatorSelectionSection = () => {
                 <span className="text-blue-400 text-sm uppercase tracking-wider">Creator Matching</span>
               </div>
               <h2 className="text-5xl md:text-6xl font-light mb-8 text-white">
-                Find the right creator,<br />
-                <span className="text-gray-400">instantly.</span>
+                Select the creator<br />
+                <span className="text-gray-400">that's perfect for you</span>
               </h2>
-              <p className="text-gray-400 text-lg leading-relaxed mb-8">
+              <p className="text-lg leading-relaxed mb-8 text-slate-300">
                 Our AI-powered matching system analyzes your brand requirements and connects you with creators who are the perfect fit for your campaign style and objectives.
               </p>
               <div className="space-y-4">
-                <Button 
-                  onClick={() => setShowInterestModal(true)}
-                  className="bg-white text-black hover:bg-gray-100 rounded-full px-8 py-6 text-lg font-medium"
-                >
+                <Button onClick={() => setShowInterestModal(true)} className="bg-white text-black hover:bg-gray-100 rounded-full px-8 py-6 text-lg font-medium">
                   Get Started
                 </Button>
               </div>
@@ -133,10 +107,6 @@ export const CreatorSelectionSection = () => {
         </div>
       </section>
       
-      <InterestRegistrationModal 
-        open={showInterestModal} 
-        onOpenChange={setShowInterestModal} 
-      />
-    </>
-  );
+      <InterestRegistrationModal open={showInterestModal} onOpenChange={setShowInterestModal} />
+    </>;
 };
