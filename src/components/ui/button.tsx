@@ -2,6 +2,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
+import { ArrowRight } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -19,6 +20,7 @@ const buttonVariants = cva(
           "bg-gray-800 text-white border border-gray-700 hover:bg-gray-700 hover:border-gray-600 hover:scale-[1.02] active:scale-[0.98] hover:shadow-md",
         ghost: "text-foreground hover:bg-gray-900 hover:scale-[1.02] active:scale-[0.98] rounded-full",
         link: "text-primary underline-offset-4 hover:underline hover:scale-[1.02] active:scale-[0.98] rounded-none",
+        connect: "bg-black text-white border border-gray-700 hover:bg-gray-900 hover:border-gray-600 hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg rounded-full px-6 py-3 font-medium",
         custom: "",
       },
       size: {
@@ -26,6 +28,7 @@ const buttonVariants = cva(
         sm: "h-8 rounded-full px-4",
         lg: "h-12 rounded-full px-8",
         icon: "h-10 w-10",
+        connect: "h-12 px-6 py-3 text-base",
       },
     },
     defaultVariants: {
@@ -39,17 +42,25 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
+  showArrow?: boolean
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, showArrow = false, children, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
+    
+    // Show arrow by default for connect variant
+    const shouldShowArrow = showArrow || variant === "connect"
+    
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
-      />
+      >
+        {shouldShowArrow && <ArrowRight className="h-4 w-4" />}
+        {children}
+      </Comp>
     )
   }
 )

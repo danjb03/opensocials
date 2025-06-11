@@ -51,8 +51,9 @@ export const IndexNavigation = ({ user }: IndexNavigationProps) => {
             <div className="flex items-center space-x-4">
               {!user && (
                 <Button 
+                  variant="connect"
+                  size="connect"
                   onClick={() => setShowInterestModal(true)}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 px-6"
                 >
                   Get Started
                 </Button>
