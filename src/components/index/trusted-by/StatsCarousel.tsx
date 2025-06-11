@@ -58,7 +58,7 @@ export const StatsCarousel = ({ isVisible }: StatsCarouselProps) => {
     
     const scale = position === 0 ? 1 : position === 1 ? 0.92 : 0.84;
     const translateX = position === 0 ? 0 : position === 1 ? 40 : 80;
-    const translateY = position * 20;
+    const translateY = position === 0 ? 0 : position * 10; // Reduced translateY for better centering
     const opacity = position === 0 ? 1 : position === 1 ? 0.9 : 0.7;
     
     return {
@@ -71,8 +71,8 @@ export const StatsCarousel = ({ isVisible }: StatsCarouselProps) => {
 
   return (
     <div className="relative h-[600px] max-w-5xl mx-auto flex items-center justify-center perspective-1000">
-      {/* Card Stack */}
-      <div className="relative w-full max-w-2xl">
+      {/* Card Stack - Centered within the container */}
+      <div className="relative w-full max-w-2xl flex items-center justify-center" style={{ height: '400px' }}>
         {statsData.map((stat, index) => (
           <StatCard
             key={stat.id}
