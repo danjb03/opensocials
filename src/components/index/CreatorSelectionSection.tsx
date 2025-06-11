@@ -44,7 +44,7 @@ export const CreatorSelectionSection = () => {
               <Card className="bg-gray-900/50 border border-gray-700/30 rounded-3xl p-8 backdrop-blur-sm">
                 <CardContent className="p-0">
                   <h3 className="text-2xl font-light text-white mb-2">
-                    Find the right creator,
+                    Just qualified matches
                   </h3>
                   <h4 className="text-xl text-white mb-6">
                     instantly.
