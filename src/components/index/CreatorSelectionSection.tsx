@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,10 +43,10 @@ export const CreatorSelectionSection = () => {
               <Card className="bg-gray-900/50 border border-gray-700/30 rounded-3xl p-8 backdrop-blur-sm">
                 <CardContent className="p-0">
                   <h3 className="text-2xl font-light text-white mb-2">
-                    Collaborate
+                    Find the right creator,
                   </h3>
                   <h4 className="text-xl text-white mb-6">
-                    real-time
+                    instantly.
                   </h4>
                   <p className="text-gray-400 mb-8 leading-relaxed">
                     Seamlessly connect all your existing apps.
@@ -95,7 +96,7 @@ export const CreatorSelectionSection = () => {
                 <span className="text-gray-400">that's perfect for you</span>
               </h2>
               <p className="text-lg leading-relaxed mb-8 text-slate-300">
-                Our AI-powered matching system analyzes your brand requirements and connects you with creators who are the perfect fit for your campaign style and objectives.
+                Our conversation-first matching system filters by niche performance so you only see creators who align with your campaign goals and drive results.
               </p>
               <div className="space-y-4">
                 <Button onClick={() => setShowInterestModal(true)} className="bg-white text-black hover:bg-gray-100 rounded-full px-8 py-6 text-lg font-medium">
