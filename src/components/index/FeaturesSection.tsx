@@ -28,7 +28,7 @@ export const FeaturesSection = () => {
                   <TrendingUp className="w-10 h-10 text-white stroke-[1.5]" />
                 </div>
               </div>
-              <h3 className="text-2xl font-light text-white mb-4">Revenue Growth</h3>
+              <h3 className="text-2xl font-light text-white mb-4">High-performing creators</h3>
               <p className="text-gray-400 text-lg leading-relaxed">Turn your social media presence into a profitable revenue stream</p>
             </CardContent>
           </Card>
