@@ -25,7 +25,7 @@ export const CTASection = ({ user }: CTASectionProps) => {
             Partnerships done properly.
           </h2>
           <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
-            Built for brands that move quickly and think bigger.
+            The best creators are already vetted, briefed, and ready to go. Deals land fast. Campaigns launch faster.
           </p>
           {!user && (
             <Button 
