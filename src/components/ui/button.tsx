@@ -7,7 +7,7 @@ import { ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 relative overflow-hidden",
   {
     variants: {
       variant: {
@@ -20,7 +20,7 @@ const buttonVariants = cva(
           "bg-gray-800 text-white border border-gray-700 hover:bg-gray-700 hover:border-gray-600 hover:scale-[1.02] active:scale-[0.98] hover:shadow-md",
         ghost: "text-foreground hover:bg-gray-900 hover:scale-[1.02] active:scale-[0.98] rounded-full",
         link: "text-primary underline-offset-4 hover:underline hover:scale-[1.02] active:scale-[0.98] rounded-none",
-        connect: "bg-black text-white border border-gray-700 hover:bg-gray-900 hover:border-gray-600 hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg rounded-full px-6 py-3 font-medium",
+        connect: "bg-black text-white border border-gray-700 hover:bg-gray-900 hover:border-gray-600 hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg rounded-full px-6 py-3 font-medium before:absolute before:bottom-0 before:left-0 before:right-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-white/40 before:to-transparent before:content-['']",
         custom: "",
       },
       size: {
