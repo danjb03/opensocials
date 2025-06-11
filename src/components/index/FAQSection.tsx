@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
+import { InterestRegistrationModal } from "./InterestRegistrationModal";
 
 const brandFAQs = [
   {
@@ -65,112 +65,92 @@ const creatorFAQs = [
 
 export const FAQSection = () => {
   const [activeTab, setActiveTab] = useState<'brands' | 'creators'>('brands');
-  const [showContact, setShowContact] = useState(false);
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
 
   const currentFAQs = activeTab === 'brands' ? brandFAQs : creatorFAQs;
 
   return (
-    <section className="py-20 px-6 bg-background">
-      <div className="container mx-auto max-w-4xl">
-        <div className="mb-16">
-          <h2 className="text-5xl md:text-6xl font-light mb-8 text-center">
-            Your Questions <span className="italic text-gray-400">Answered</span>
-          </h2>
-          <p className="text-xl text-gray-400 text-center max-w-2xl mx-auto mb-8">
-            Find the answers to our most common questions here, but if you still need help, feel free to contact me.
-          </p>
-          
-          <div className="flex justify-center mb-8">
-            <Button
-              onClick={() => setShowContact(true)}
-              variant="outline"
-              className="bg-transparent border-gray-600 text-white hover:bg-gray-800 rounded-full px-6 py-3"
-            >
-              Contact Us
-            </Button>
+    <>
+      <section className="py-20 px-6 bg-background">
+        <div className="container mx-auto max-w-4xl">
+          <div className="mb-16">
+            <h2 className="text-5xl md:text-6xl font-light mb-8 text-center">
+              Your Questions <span className="italic text-gray-400">Answered</span>
+            </h2>
+            <p className="text-xl text-gray-400 text-center max-w-2xl mx-auto mb-8">
+              Find the answers to our most common questions here, but if you still need help, feel free to contact me.
+            </p>
+            
+            <div className="flex justify-center mb-8">
+              <Button
+                onClick={() => setShowRegistrationModal(true)}
+                variant="outline"
+                className="bg-transparent border-gray-600 text-white hover:bg-gray-800 rounded-full px-6 py-3"
+              >
+                Register
+              </Button>
+            </div>
+
+            {/* Tab Switcher */}
+            <div className="flex justify-center space-x-4 mb-8">
+              <Button
+                onClick={() => setActiveTab('brands')}
+                variant={activeTab === 'brands' ? 'default' : 'ghost'}
+                className={`px-6 py-2 rounded-full ${
+                  activeTab === 'brands' 
+                    ? 'bg-white text-black' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Brands
+              </Button>
+              <Button
+                onClick={() => setActiveTab('creators')}
+                variant={activeTab === 'creators' ? 'default' : 'ghost'}
+                className={`px-6 py-2 rounded-full ${
+                  activeTab === 'creators' 
+                    ? 'bg-white text-black' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Creators
+              </Button>
+            </div>
           </div>
 
-          {/* Tab Switcher */}
-          <div className="flex justify-center space-x-4 mb-8">
-            <Button
-              onClick={() => setActiveTab('brands')}
-              variant={activeTab === 'brands' ? 'default' : 'ghost'}
-              className={`px-6 py-2 rounded-full ${
-                activeTab === 'brands' 
-                  ? 'bg-white text-black' 
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              Brands
-            </Button>
-            <Button
-              onClick={() => setActiveTab('creators')}
-              variant={activeTab === 'creators' ? 'default' : 'ghost'}
-              className={`px-6 py-2 rounded-full ${
-                activeTab === 'creators' 
-                  ? 'bg-white text-black' 
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              Creators
-            </Button>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <Accordion type="single" collapsible className="w-full">
-            {currentFAQs.map((faq, index) => (
-              <AccordionItem key={index} value={`item-${index}`} className="border-none">
-                <Card className="bg-gray-900/50 border-gray-800 mb-4 overflow-hidden">
-                  <AccordionTrigger className="px-6 py-6 hover:no-underline group">
-                    <div className="flex items-center justify-between w-full">
-                      <h3 className="text-lg font-medium text-white text-left group-hover:text-gray-300 transition-colors">
-                        {faq.question}
-                      </h3>
-                      <div className="ml-4 flex-shrink-0">
-                        <Plus className="h-5 w-5 text-gray-400 group-data-[state=open]:hidden" />
-                        <X className="h-5 w-5 text-gray-400 group-data-[state=closed]:hidden" />
+          <div className="space-y-4">
+            <Accordion type="single" collapsible className="w-full">
+              {currentFAQs.map((faq, index) => (
+                <AccordionItem key={index} value={`item-${index}`} className="border-none">
+                  <Card className="bg-gray-900/50 border-gray-800 mb-4 overflow-hidden">
+                    <AccordionTrigger className="px-6 py-6 hover:no-underline group">
+                      <div className="flex items-center justify-between w-full">
+                        <h3 className="text-lg font-medium text-white text-left group-hover:text-gray-300 transition-colors">
+                          {faq.question}
+                        </h3>
+                        <div className="ml-4 flex-shrink-0">
+                          <Plus className="h-5 w-5 text-gray-400 group-data-[state=open]:hidden" />
+                          <X className="h-5 w-5 text-gray-400 group-data-[state=closed]:hidden" />
+                        </div>
                       </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-6 pb-6">
-                    <p className="text-gray-300 leading-relaxed">
-                      {faq.answer}
-                    </p>
-                  </AccordionContent>
-                </Card>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-
-        {/* Contact Modal */}
-        {showContact && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-            <Card className="bg-gray-900 border-gray-700 max-w-md w-full p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold text-white">Contact Us</h3>
-                <Button
-                  onClick={() => setShowContact(false)}
-                  variant="ghost"
-                  size="sm"
-                  className="text-gray-400 hover:text-white"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="space-y-4">
-                <p className="text-gray-300">
-                  We specialize in branding, UI/UX design, web design, and creative strategy—delivering tailored solutions that elevate your business visually and functionally.
-                </p>
-                <Button className="w-full bg-white text-black hover:bg-gray-200">
-                  Get in Touch
-                </Button>
-              </div>
-            </Card>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-6 pb-6">
+                      <p className="text-gray-300 leading-relaxed">
+                        {faq.answer}
+                      </p>
+                    </AccordionContent>
+                  </Card>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
-        )}
-      </div>
-    </section>
+        </div>
+      </section>
+      
+      <InterestRegistrationModal 
+        open={showRegistrationModal} 
+        onOpenChange={setShowRegistrationModal} 
+      />
+    </>
   );
 };
