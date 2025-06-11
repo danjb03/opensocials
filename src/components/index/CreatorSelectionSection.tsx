@@ -114,8 +114,8 @@ export const CreatorSelectionSection = () => {
                 <span className="text-blue-400 text-sm uppercase tracking-wider">Creator Matching</span>
               </div>
               <h2 className="text-5xl md:text-6xl font-light mb-8 text-white">
-                Select the creator<br />
-                <span className="text-gray-400">that's perfect for you</span>
+                Find the right creator,<br />
+                <span className="text-gray-400">instantly.</span>
               </h2>
               <p className="text-gray-400 text-lg leading-relaxed mb-8">
                 Our AI-powered matching system analyzes your brand requirements and connects you with creators who are the perfect fit for your campaign style and objectives.
