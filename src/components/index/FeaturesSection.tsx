@@ -40,7 +40,7 @@ export const FeaturesSection = () => {
                   <Target className="w-10 h-10 text-white stroke-[1.5]" />
                 </div>
               </div>
-              <h3 className="text-2xl font-light text-white mb-4">Monetization Strategy</h3>
+              <h3 className="text-2xl font-light text-white mb-4">Zero back-and-forth.</h3>
               <p className="text-gray-400 text-lg leading-relaxed">Expert guidance on turning followers into customers</p>
             </CardContent>
           </Card>
