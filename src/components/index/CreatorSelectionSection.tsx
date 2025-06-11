@@ -86,7 +86,7 @@ export const CreatorSelectionSection = () => {
                         className="bg-yellow-400 text-black px-4 py-2 rounded-2xl rounded-bl-sm inline-block ml-auto cursor-pointer hover:bg-yellow-300 transition-colors"
                         onClick={() => setShowInterestModal(true)}
                       >
-                        <span className="font-medium">Perfect match!</span>
+                        <span className="font-medium">Book This Creator</span>
                       </div>
                     </div>
                   )}
