@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 
 export const BenefitsSection = () => {
@@ -9,7 +8,7 @@ export const BenefitsSection = () => {
     },
     {
       title: "Campaign management", 
-      description: "Streamlined workflow from brief creation to content delivery and performance tracking"
+      description: "Upload briefs, assign creators, track deliverables all from one streamlined dashboard."
     },
     {
       title: "Performance tracking",
