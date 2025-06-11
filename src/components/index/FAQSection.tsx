@@ -1,4 +1,5 @@
 
+
 import { useState } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
@@ -79,7 +80,7 @@ export const FAQSection = () => {
               Your Questions <span className="italic text-gray-400">Answered</span>
             </h2>
             <p className="text-xl text-gray-400 text-center max-w-2xl mx-auto mb-8">
-              Find the answers to our most common questions here, but if you still need help, feel free to contact me.
+              Get answers to the most common questions from brands and creators about our partnership platform.
             </p>
 
             {/* Tab Switcher */}
@@ -145,3 +146,4 @@ export const FAQSection = () => {
     </>
   );
 };
+
