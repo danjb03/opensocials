@@ -11,6 +11,7 @@ import { CreatorSelectionSection } from "@/components/index/CreatorSelectionSect
 import { BenefitsSection } from "@/components/index/BenefitsSection";
 import { HowItWorksSection } from "@/components/index/HowItWorksSection";
 import { StatsSection } from "@/components/index/StatsSection";
+import { FAQSection } from "@/components/index/FAQSection";
 import { CTASection } from "@/components/index/CTASection";
 import { IndexFooter } from "@/components/index/IndexFooter";
 
@@ -76,6 +77,7 @@ const Index = () => {
       <BenefitsSection />
       <HowItWorksSection />
       <StatsSection />
+      <FAQSection />
       <CTASection user={user} />
       <IndexFooter />
     </div>
