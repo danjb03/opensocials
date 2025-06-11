@@ -56,10 +56,10 @@ export const StatsCarousel = ({ isVisible }: StatsCarouselProps) => {
     const baseZIndex = 50;
     const zIndex = baseZIndex - position;
     
-    // Improved positioning with better spacing and visibility control
+    // Reduced spacing and improved positioning
     const scale = position === 0 ? 1 : position === 1 ? 0.85 : position === 2 ? 0.7 : 0.55;
-    const translateX = position === 0 ? 0 : position === 1 ? 120 : position === 2 ? 240 : 360;
-    const translateY = position === 0 ? 0 : position === 1 ? 40 : position === 2 ? 80 : 120;
+    const translateX = position === 0 ? 0 : position === 1 ? 100 : position === 2 ? 200 : 300;
+    const translateY = position === 0 ? 0 : position === 1 ? 30 : position === 2 ? 60 : 90;
     const opacity = position === 0 ? 1 : position === 1 ? 0.6 : position === 2 ? 0.3 : 0.1;
     const blur = position === 0 ? 0 : position === 1 ? 0.5 : position === 2 ? 1.5 : 3;
     
@@ -73,19 +73,19 @@ export const StatsCarousel = ({ isVisible }: StatsCarouselProps) => {
   };
 
   return (
-    <div className="relative py-20 overflow-hidden bg-black">
+    <div className="relative py-12 overflow-hidden bg-black">
       {/* Enhanced gradient masks for better content hiding */}
       <div className="absolute inset-0 pointer-events-none z-40">
         <div className="absolute top-0 left-0 w-48 h-full bg-gradient-to-r from-black via-black/90 to-transparent" />
         <div className="absolute top-0 right-0 w-48 h-full bg-gradient-to-l from-black via-black/90 to-transparent" />
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black via-black/80 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black via-black/80 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black via-black/80 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black via-black/80 to-transparent" />
       </div>
 
-      {/* Main carousel container with improved dimensions */}
-      <div className="relative h-[600px] max-w-7xl mx-auto flex items-center justify-center px-8">
+      {/* Main carousel container with reduced height */}
+      <div className="relative h-[480px] max-w-7xl mx-auto flex items-center justify-center px-8">
         {/* Card stack container with better perspective */}
-        <div className="relative w-full max-w-2xl flex items-center justify-center" style={{ height: '480px', perspective: '1200px' }}>
+        <div className="relative w-full max-w-2xl flex items-center justify-center" style={{ height: '400px', perspective: '1200px' }}>
           {statsData.map((stat, index) => (
             <StatCard
               key={stat.id}
@@ -104,8 +104,8 @@ export const StatsCarousel = ({ isVisible }: StatsCarouselProps) => {
         </div>
       </div>
 
-      {/* Enhanced navigation dots with better spacing */}
-      <div className="relative z-50 mt-12">
+      {/* Navigation dots with reduced spacing */}
+      <div className="relative z-50 mt-6">
         <NavigationDots 
           stats={statsData} 
           currentCard={currentCard} 

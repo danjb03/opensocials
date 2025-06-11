@@ -25,12 +25,12 @@ export const TrustedBySection = () => {
   }, []);
 
   return (
-    <div ref={sectionRef} className="relative pt-2 pb-8 mb-16 overflow-hidden bg-black">
+    <div ref={sectionRef} className="relative pt-2 pb-4 mb-8 overflow-hidden bg-black">
       <TrustedBySectionHeader />
       <StatsCarousel isVisible={isVisible} />
       
       {/* Bottom gradient fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black to-transparent pointer-events-none" />
     </div>
   );
 };
