@@ -1,4 +1,5 @@
 
+
 import { Card, CardContent } from "@/components/ui/card";
 
 export const HowItWorksSection = () => {
@@ -22,7 +23,7 @@ export const HowItWorksSection = () => {
               <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <div className="w-8 h-8 border-2 border-white rounded"></div>
               </div>
-              <h3 className="text-xl font-semibold text-white mb-4">Tell us your vision</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">Drop the brief</h3>
               <p className="text-gray-400">Choose a plan and share your campaign details with us; we're here to listen.</p>
             </CardContent>
           </Card>
