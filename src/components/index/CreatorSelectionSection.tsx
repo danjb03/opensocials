@@ -1,12 +1,13 @@
 
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { InterestRegistrationModal } from "./InterestRegistrationModal";
+
 export const CreatorSelectionSection = () => {
   const [selectedCreatorId, setSelectedCreatorId] = useState(1);
   const [showInterestModal, setShowInterestModal] = useState(false);
+
   const creators = [{
     id: 1,
     name: "Sarah",
@@ -32,10 +33,13 @@ export const CreatorSelectionSection = () => {
     engagement: "3.8%",
     borderColor: "border-yellow-500"
   }];
+
   const handleCreatorSelect = (creatorId: number) => {
     setSelectedCreatorId(creatorId);
   };
-  return <>
+
+  return (
+    <>
       <section className="py-32 px-6">
         <div className="container mx-auto max-w-6xl">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -46,16 +50,18 @@ export const CreatorSelectionSection = () => {
                   <h3 className="text-2xl font-light text-white mb-2">
                     Just qualified matches
                   </h3>
-                  <h4 className="text-xl text-white mb-6">
-                    instantly.
-                  </h4>
                   <p className="text-gray-400 mb-8 leading-relaxed">
                     Seamlessly connect all your existing apps.
                   </p>
                   
                   {/* Creator selection interface */}
                   <div className="space-y-4">
-                    {creators.map(creator => <div key={creator.id} className={`flex items-center space-x-4 p-4 rounded-2xl bg-gray-800/50 border border-gray-700/30 hover:bg-gray-800/70 transition-all duration-300 cursor-pointer group ${selectedCreatorId === creator.id ? 'ring-2 ring-purple-500/50' : ''}`} onClick={() => handleCreatorSelect(creator.id)}>
+                    {creators.map(creator => (
+                      <div 
+                        key={creator.id} 
+                        className={`flex items-center space-x-4 p-4 rounded-2xl bg-gray-800/50 border border-gray-700/30 hover:bg-gray-800/70 transition-all duration-300 cursor-pointer group ${selectedCreatorId === creator.id ? 'ring-2 ring-purple-500/50' : ''}`}
+                        onClick={() => handleCreatorSelect(creator.id)}
+                      >
                         <div className={`relative w-12 h-12 rounded-full border-3 ${creator.borderColor} overflow-hidden`}>
                           <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
                             <span className="text-white font-medium">{creator.name[0]}</span>
@@ -69,15 +75,21 @@ export const CreatorSelectionSection = () => {
                           <p className="text-white text-sm font-medium">{creator.followers}</p>
                           <p className="text-gray-400 text-xs">{creator.engagement} eng.</p>
                         </div>
-                      </div>)}
+                      </div>
+                    ))}
                   </div>
 
                   {/* Chat bubble - only show for selected creator */}
-                  {selectedCreatorId && <div className="relative mt-6">
-                      <div className="bg-yellow-400 text-black px-4 py-2 rounded-2xl rounded-bl-sm inline-block ml-auto cursor-pointer hover:bg-yellow-300 transition-colors" onClick={() => setShowInterestModal(true)}>
+                  {selectedCreatorId && (
+                    <div className="relative mt-6">
+                      <div 
+                        className="bg-yellow-400 text-black px-4 py-2 rounded-2xl rounded-bl-sm inline-block ml-auto cursor-pointer hover:bg-yellow-300 transition-colors"
+                        onClick={() => setShowInterestModal(true)}
+                      >
                         <span className="font-medium">Perfect match!</span>
                       </div>
-                    </div>}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -100,7 +112,10 @@ export const CreatorSelectionSection = () => {
                 Our conversation-first matching system filters by niche performance so you only see creators who align with your campaign goals and drive results.
               </p>
               <div className="space-y-4">
-                <Button onClick={() => setShowInterestModal(true)} className="bg-white text-black hover:bg-gray-100 rounded-full px-8 py-6 text-lg font-medium">
+                <Button 
+                  onClick={() => setShowInterestModal(true)} 
+                  className="bg-white text-black hover:bg-gray-100 rounded-full px-8 py-6 text-lg font-medium"
+                >
                   Get Started
                 </Button>
               </div>
@@ -109,7 +124,10 @@ export const CreatorSelectionSection = () => {
         </div>
       </section>
       
-      <InterestRegistrationModal open={showInterestModal} onOpenChange={setShowInterestModal} />
-    </>;
+      <InterestRegistrationModal 
+        open={showInterestModal} 
+        onOpenChange={setShowInterestModal} 
+      />
+    </>
+  );
 };
-
