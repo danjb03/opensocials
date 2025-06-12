@@ -30,7 +30,9 @@ export const BudgetValidationModal: React.FC<BudgetValidationModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-foreground">Offer too low for this creator</DialogTitle>
+          <DialogTitle className="text-foreground">
+            Offer too low for this creator
+          </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
