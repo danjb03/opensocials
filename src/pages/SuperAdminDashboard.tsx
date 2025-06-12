@@ -44,9 +44,9 @@ const SuperAdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <Button 
-                  variant="outline" 
+                  variant="secondary" 
                   onClick={() => navigate('/super-admin/users/agencies')} 
-                  className="w-full bg-secondary text-secondary-foreground border-border hover:bg-accent hover:text-accent-foreground"
+                  className="w-full bg-card text-foreground border border-border hover:bg-muted"
                 >
                   View All Agencies
                 </Button>
@@ -60,9 +60,9 @@ const SuperAdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <Button 
-                  variant="outline" 
+                  variant="secondary" 
                   onClick={() => navigate('/super-admin/users/brands')} 
-                  className="w-full bg-secondary text-secondary-foreground border-border hover:bg-accent hover:text-accent-foreground"
+                  className="w-full bg-card text-foreground border border-border hover:bg-muted"
                 >
                   View All Brands
                 </Button>
@@ -76,9 +76,9 @@ const SuperAdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <Button 
-                  variant="outline" 
+                  variant="secondary" 
                   onClick={() => navigate('/super-admin/users/creators')} 
-                  className="w-full bg-secondary text-secondary-foreground border-border hover:bg-accent hover:text-accent-foreground"
+                  className="w-full bg-card text-foreground border border-border hover:bg-muted"
                 >
                   View All Creators
                 </Button>
@@ -107,7 +107,7 @@ const SuperAdminDashboard = () => {
               <CardContent>
                 <Button 
                   onClick={() => navigate('/brand')}
-                  className="w-full bg-violet-500 hover:bg-violet-600 text-white"
+                  className="w-full bg-violet-500 hover:bg-violet-600 text-white border-0"
                 >
                   Access Brand Dashboard
                 </Button>
@@ -125,7 +125,7 @@ const SuperAdminDashboard = () => {
               <CardContent>
                 <Button 
                   onClick={() => navigate('/creator')} 
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white border-0"
                 >
                   Access Creator Dashboard
                 </Button>
@@ -143,7 +143,7 @@ const SuperAdminDashboard = () => {
               <CardContent>
                 <Button 
                   onClick={() => navigate('/agency')} 
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white border-0"
                 >
                   Access Agency Dashboard
                 </Button>
@@ -161,7 +161,7 @@ const SuperAdminDashboard = () => {
               <CardContent>
                 <Button 
                   onClick={() => navigate('/admin')} 
-                  className="w-full bg-green-500 hover:bg-green-600 text-white"
+                  className="w-full bg-green-500 hover:bg-green-600 text-white border-0"
                 >
                   Access Admin Dashboard
                 </Button>
