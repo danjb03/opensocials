@@ -8,7 +8,6 @@ import CreatorCampaigns from "@/pages/creator/Campaigns";
 import CampaignDetail from "@/pages/creator/CampaignDetail";
 import ContentUpload from "@/pages/creator/ContentUpload";
 import ProfileSetup from "@/pages/creator/profile/Setup";
-import CreateProfile from "@/pages/creator/CreateProfile";
 
 export const CreatorRoutes = () => {
   return (
@@ -19,14 +18,6 @@ export const CreatorRoutes = () => {
         element={
           <ProtectedRoute requiredRole="creator">
             <CreatorDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="create-profile"
-        element={
-          <ProtectedRoute requiredRole="creator">
-            <CreateProfile />
           </ProtectedRoute>
         }
       />
