@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,9 +11,9 @@ import { BudgetSection } from './budget-deliverables/BudgetSection';
 import { DeliverablesSection } from './budget-deliverables/DeliverablesSection';
 import { TimelineSection } from './budget-deliverables/TimelineSection';
 import { BudgetTips } from './budget-deliverables/BudgetTips';
-import { BudgetValidationModal } from '../BudgetValidationModal';
-import { usePricingFloorsByType } from '@/hooks/usePricingFloorsByType';
-import { useCreatorTiers } from '@/hooks/useCreatorTiers';
+import { PricingWarning } from './budget-deliverables/PricingWarning';
+import { BudgetValidationSection } from './budget-deliverables/BudgetValidationSection';
+import { useBudgetValidation } from '@/hooks/useBudgetValidation';
 import { toast } from 'sonner';
 
 const budgetDeliverablesSchema = z.object({
@@ -44,14 +44,14 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
   onBack,
   isLoading
 }) => {
-  const [showValidationModal, setShowValidationModal] = useState(false);
-  const [validationError, setValidationError] = useState<{
-    creatorName?: string;
-    tier: string;
-    campaignType: string;
-    minPrice: number;
-    currentOffer: number;
-  } | null>(null);
+  const {
+    showValidationModal,
+    validationError,
+    validateCreatorBudgets,
+    handleUpdateOffer,
+    handleCloseValidationModal,
+    showPricingWarning
+  } = useBudgetValidation(data);
 
   const {
     register,
@@ -72,37 +72,6 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
     },
     mode: 'onChange'
   });
-
-  // Get pricing floors for the current campaign type
-  const { data: pricingFloors } = usePricingFloorsByType(data?.campaign_type || 'Single');
-  
-  // Get creator tiers for validation
-  const creatorIds = data?.selected_creators?.map(c => c.creator_id) || [];
-  const { data: creatorTiers } = useCreatorTiers(creatorIds);
-
-  const validateCreatorBudgets = (): boolean => {
-    if (!data?.selected_creators || !pricingFloors || !creatorTiers) {
-      return true; // Skip validation if data not loaded
-    }
-
-    for (const creator of data.selected_creators) {
-      const tier = creatorTiers[creator.creator_id];
-      const minPrice = pricingFloors[tier];
-      
-      if (minPrice && creator.individual_budget < minPrice) {
-        setValidationError({
-          tier,
-          campaignType: data.campaign_type || 'Single',
-          minPrice,
-          currentOffer: creator.individual_budget
-        });
-        setShowValidationModal(true);
-        return false;
-      }
-    }
-
-    return true;
-  };
 
   const onSubmit = (formData: BudgetDeliverablesForm) => {
     // First validate creator budgets if we have selected creators
@@ -129,19 +98,10 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
     });
   };
 
-  const handleUpdateOffer = () => {
-    setShowValidationModal(false);
-    setValidationError(null);
+  const handleUpdateOfferWithToast = () => {
+    handleUpdateOffer();
     toast.info('Please update the creator offers to meet minimum pricing requirements');
   };
-
-  const handleCloseValidationModal = () => {
-    setShowValidationModal(false);
-    setValidationError(null);
-  };
-
-  // Show a warning if we have selected creators but no pricing data loaded yet
-  const showPricingWarning = data?.selected_creators?.length && (!pricingFloors || !creatorTiers);
 
   return (
     <>
@@ -156,13 +116,7 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {showPricingWarning && (
-              <div className="bg-card border border-border rounded-lg p-4">
-                <p className="text-sm text-muted-foreground">
-                  Loading pricing validation for selected creators...
-                </p>
-              </div>
-            )}
+            {showPricingWarning && <PricingWarning />}
 
             <BudgetSection 
               register={register}
@@ -207,17 +161,12 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
         </div>
       </form>
 
-      {validationError && (
-        <BudgetValidationModal
-          isOpen={showValidationModal}
-          onClose={handleCloseValidationModal}
-          onUpdateOffer={handleUpdateOffer}
-          tier={validationError.tier}
-          campaignType={validationError.campaignType}
-          minPrice={validationError.minPrice}
-          currentOffer={validationError.currentOffer}
-        />
-      )}
+      <BudgetValidationSection
+        showValidationModal={showValidationModal}
+        validationError={validationError}
+        onUpdateOffer={handleUpdateOfferWithToast}
+        onCloseModal={handleCloseValidationModal}
+      />
     </>
   );
 };
