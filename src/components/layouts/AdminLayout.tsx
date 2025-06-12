@@ -116,12 +116,11 @@ const AdminLayout = memo(({ children }: AdminLayoutProps) => {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
-                    asChild 
                     isActive={item.isActive}
                     className="h-12 mr-2 hover:bg-accent hover:text-accent-foreground transition-colors"
                     tooltip={item.title}
                   >
-                    <Link to={item.url} className="flex items-center gap-3">
+                    <Link to={item.url} className="flex items-center gap-3 w-full">
                       <item.icon className="h-5 w-5" />
                       <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                     </Link>
