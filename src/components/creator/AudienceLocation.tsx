@@ -21,7 +21,7 @@ const AudienceLocation: React.FC<AudienceLocationProps> = ({
   if (!isVisible) return null;
 
   return (
-    <Card className={`${!isVisible ? 'hidden' : ''}`}>
+    <Card>
       <CardHeader>
         <CardTitle className="text-xl">Audience Location</CardTitle>
         <CardDescription>

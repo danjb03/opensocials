@@ -43,30 +43,33 @@ export const useCreatorProfile = () => {
   const profile = useMemo((): CreatorProfile | null => {
     if (!rawProfile) return null;
 
+    // Type the raw profile properly to access database fields
+    const dbProfile = rawProfile as any;
+
     return {
-      firstName: rawProfile.first_name,
-      lastName: rawProfile.last_name,
-      bio: rawProfile.bio,
-      primaryPlatform: rawProfile.primary_platform,
-      contentType: rawProfile.content_types?.[0] || null,
+      firstName: dbProfile.first_name,
+      lastName: dbProfile.last_name,
+      bio: dbProfile.bio,
+      primaryPlatform: dbProfile.primary_platform,
+      contentType: dbProfile.content_types?.[0] || null,
       audienceType: null, // Field doesn't exist in database
-      audienceLocation: rawProfile.audience_location || { primary: 'Global' },
-      industries: rawProfile.industries || null,
+      audienceLocation: dbProfile.audience_location || { primary: 'Global' },
+      industries: dbProfile.industries || null,
       creatorType: null, // Field doesn't exist in database
-      isProfileComplete: rawProfile.is_profile_complete || false,
-      platforms: rawProfile.platforms || [],
-      contentTypes: rawProfile.content_types || [],
+      isProfileComplete: dbProfile.is_profile_complete || false,
+      platforms: dbProfile.platforms || [],
+      contentTypes: dbProfile.content_types || [],
       socialConnections: {
-        instagram: !!rawProfile.social_handles?.instagram,
-        tiktok: !!rawProfile.social_handles?.tiktok,
-        youtube: !!rawProfile.social_handles?.youtube,
-        linkedin: !!rawProfile.social_handles?.linkedin,
+        instagram: !!dbProfile.social_handles?.instagram,
+        tiktok: !!dbProfile.social_handles?.tiktok,
+        youtube: !!dbProfile.social_handles?.youtube,
+        linkedin: !!dbProfile.social_handles?.linkedin,
       },
-      socialHandles: rawProfile.social_handles || {},
-      followerCount: rawProfile.follower_count?.toString() || '0', // Convert to string
-      engagementRate: rawProfile.engagement_rate?.toString() || '0', // Convert to string
-      avatarUrl: rawProfile.avatar_url,
-      bannerUrl: rawProfile.banner_url
+      socialHandles: dbProfile.social_handles || {},
+      followerCount: dbProfile.follower_count?.toString() || '0', // Convert to string
+      engagementRate: dbProfile.engagement_rate?.toString() || '0', // Convert to string
+      avatarUrl: dbProfile.avatar_url,
+      bannerUrl: dbProfile.banner_url
     };
   }, [rawProfile]);
 
