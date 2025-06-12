@@ -49,10 +49,10 @@ export const useCreatorProfile = () => {
       bio: rawProfile.bio,
       primaryPlatform: rawProfile.primary_platform,
       contentType: rawProfile.content_types?.[0] || null,
-      audienceType: rawProfile.audience_type,
+      audienceType: rawProfile.audience_type || null, // Set to null since field doesn't exist in DB
       audienceLocation: rawProfile.audience_location || { primary: 'Global' },
       industries: rawProfile.industries || null,
-      creatorType: rawProfile.creator_type,
+      creatorType: rawProfile.creator_type || null, // Set to null since field doesn't exist in DB
       isProfileComplete: rawProfile.is_profile_complete || false,
       platforms: rawProfile.platforms || [],
       contentTypes: rawProfile.content_types || [],
@@ -63,8 +63,8 @@ export const useCreatorProfile = () => {
         linkedin: !!rawProfile.social_handles?.linkedin,
       },
       socialHandles: rawProfile.social_handles || {},
-      followerCount: rawProfile.follower_count,
-      engagementRate: rawProfile.engagement_rate,
+      followerCount: rawProfile.follower_count || 0, // Keep as number
+      engagementRate: rawProfile.engagement_rate || 0, // Keep as number
       avatarUrl: rawProfile.avatar_url,
       bannerUrl: rawProfile.banner_url
     };

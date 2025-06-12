@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { CreatorProfile } from '@/hooks/useCreatorProfile';
+import { CreatorProfile } from '@/hooks/useCreatorProfile'; // Use the interface from the hook
 import { CreatorTypeDropdown } from '@/components/creator/setup/CreatorTypeDropdown';
 import { SocialMediaConnection } from '@/components/creator/SocialMediaConnection';
 import { BasicInfoSection } from './form-sections/BasicInfoSection';
