@@ -1,17 +1,17 @@
 
 import React from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { ArrowRight, ArrowLeft, Plus, X, Instagram, Video, Image, PlayCircle, Zap, Smartphone } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Smartphone } from 'lucide-react';
 import { CampaignWizardData, Platform, ContentType } from '@/types/campaignWizard';
+import { PlatformSelector } from './content-requirements/PlatformSelector';
+import { ContentTypeSelector } from './content-requirements/ContentTypeSelector';
+import { HashtagManager } from './content-requirements/HashtagManager';
+import { CampaignDescriptionField } from './content-requirements/CampaignDescriptionField';
+import { MessagingGuidelinesField } from './content-requirements/MessagingGuidelinesField';
 
 const contentRequirementsSchema = z.object({
   description: z.string().min(10, 'Campaign description must be at least 10 characters'),
@@ -31,23 +31,6 @@ interface ContentRequirementsStepProps {
   onBack?: () => void;
   isLoading?: boolean;
 }
-
-const platformOptions = [
-  { value: 'instagram', label: 'Instagram', icon: <Instagram className="h-4 w-4" />, color: 'bg-pink-100 text-pink-700' },
-  { value: 'tiktok', label: 'TikTok', icon: <Video className="h-4 w-4" />, color: 'bg-black text-white' },
-  { value: 'youtube', label: 'YouTube', icon: <PlayCircle className="h-4 w-4" />, color: 'bg-red-100 text-red-700' },
-  { value: 'twitter', label: 'Twitter/X', icon: <Zap className="h-4 w-4" />, color: 'bg-blue-100 text-blue-700' },
-  { value: 'linkedin', label: 'LinkedIn', icon: <Image className="h-4 w-4" />, color: 'bg-blue-100 text-blue-700' },
-];
-
-const contentTypeOptions = [
-  { value: 'post', label: 'Feed Posts', description: 'Standard social media posts' },
-  { value: 'story', label: 'Stories', description: '24-hour temporary content' },
-  { value: 'reel', label: 'Reels/Short Videos', description: 'Short-form vertical videos' },
-  { value: 'video', label: 'Long-form Videos', description: 'YouTube videos, IGTV' },
-  { value: 'live', label: 'Live Streams', description: 'Real-time streaming content' },
-  { value: 'carousel', label: 'Carousel Posts', description: 'Multi-image/video posts' },
-];
 
 const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
   data,
@@ -74,21 +57,6 @@ const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
       restrictions: data?.content_requirements?.restrictions?.map(restriction => ({ value: restriction })) || []
     },
     mode: 'onChange'
-  });
-
-  const { fields: hashtagFields, append: appendHashtag, remove: removeHashtag } = useFieldArray({
-    control,
-    name: 'hashtags'
-  });
-
-  const { fields: mentionFields, append: appendMention, remove: removeMention } = useFieldArray({
-    control,
-    name: 'mentions'
-  });
-
-  const { fields: restrictionFields, append: appendRestriction, remove: removeRestriction } = useFieldArray({
-    control,
-    name: 'restrictions'
   });
 
   const watchedPlatforms = watch('platforms');
@@ -140,141 +108,33 @@ const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Campaign Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium text-foreground">
-              Campaign Description *
-            </Label>
-            <Textarea
-              id="description"
-              {...register('description')}
-              placeholder="Describe your campaign goals, target audience, and key messages..."
-              rows={4}
-              className="resize-none bg-background border-border text-foreground placeholder:text-muted-foreground"
-            />
-            {errors.description && (
-              <p className="text-sm text-destructive">{errors.description.message}</p>
-            )}
-          </div>
+          <CampaignDescriptionField 
+            register={register}
+            error={errors.description?.message}
+          />
 
-          {/* Platforms */}
-          <div className="space-y-4">
-            <Label className="text-sm font-medium text-foreground">
-              Target Platforms *
-            </Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {platformOptions.map((platform) => (
-                <Label
-                  key={platform.value}
-                  className={`
-                    flex items-center space-x-3 p-3 rounded-lg border-2 cursor-pointer transition-all
-                    ${watchedPlatforms?.includes(platform.value)
-                      ? 'border-muted-foreground bg-muted text-foreground'
-                      : 'border-border hover:border-muted-foreground bg-card text-foreground'
-                    }
-                  `}
-                >
-                  <Checkbox
-                    checked={watchedPlatforms?.includes(platform.value) || false}
-                    onCheckedChange={(checked) => 
-                      handlePlatformChange(platform.value, checked as boolean)
-                    }
-                  />
-                  <div className={`p-1 rounded ${platform.color}`}>
-                    {platform.icon}
-                  </div>
-                  <span className="font-medium text-foreground">{platform.label}</span>
-                </Label>
-              ))}
-            </div>
-            {errors.platforms && (
-              <p className="text-sm text-destructive">{errors.platforms.message}</p>
-            )}
-          </div>
+          <PlatformSelector
+            selectedPlatforms={watchedPlatforms}
+            onPlatformChange={handlePlatformChange}
+            error={errors.platforms?.message}
+          />
 
-          {/* Content Types */}
-          <div className="space-y-4">
-            <Label className="text-sm font-medium text-foreground">
-              Content Types *
-            </Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {contentTypeOptions.map((contentType) => (
-                <Label
-                  key={contentType.value}
-                  className={`
-                    flex items-start space-x-3 p-3 rounded-lg border-2 cursor-pointer transition-all
-                    ${watchedContentTypes?.includes(contentType.value)
-                      ? 'border-muted-foreground bg-muted text-foreground'
-                      : 'border-border hover:border-muted-foreground bg-card text-foreground'
-                    }
-                  `}
-                >
-                  <Checkbox
-                    checked={watchedContentTypes?.includes(contentType.value) || false}
-                    onCheckedChange={(checked) => 
-                      handleContentTypeChange(contentType.value, checked as boolean)
-                    }
-                    className="mt-1"
-                  />
-                  <div className="space-y-1">
-                    <span className="font-medium text-foreground">{contentType.label}</span>
-                    <p className="text-sm text-muted-foreground">{contentType.description}</p>
-                  </div>
-                </Label>
-              ))}
-            </div>
-            {errors.content_types && (
-              <p className="text-sm text-destructive">{errors.content_types.message}</p>
-            )}
-          </div>
+          <ContentTypeSelector
+            selectedContentTypes={watchedContentTypes}
+            onContentTypeChange={handleContentTypeChange}
+            error={errors.content_types?.message}
+          />
 
-          {/* Messaging Guidelines */}
-          <div className="space-y-2">
-            <Label htmlFor="messaging_guidelines" className="text-sm font-medium text-foreground">
-              Messaging Guidelines
-            </Label>
-            <Textarea
-              id="messaging_guidelines"
-              {...register('messaging_guidelines')}
-              placeholder="Key messages, tone of voice, brand guidelines..."
-              rows={3}
-              className="resize-none bg-background border-border text-foreground placeholder:text-muted-foreground"
-            />
-          </div>
+          <MessagingGuidelinesField register={register} />
 
-          {/* Hashtags */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium text-foreground">Required Hashtags</Label>
-            <div className="flex flex-wrap gap-2">
-              {hashtagFields.map((field, index) => (
-                <Badge key={field.id} variant="secondary" className="pl-3 pr-1">
-                  #{watch(`hashtags.${index}.value`)}
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-4 w-4 p-0 ml-1"
-                    onClick={() => removeHashtag(index)}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </Badge>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => appendHashtag({ value: '' })}
-                className="h-6"
-              >
-                <Plus className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
+          <HashtagManager
+            control={control}
+            name="hashtags"
+            label="Required Hashtags"
+          />
         </CardContent>
       </Card>
 
-      {/* Navigation */}
       <div className="flex justify-between">
         <Button
           type="button"
