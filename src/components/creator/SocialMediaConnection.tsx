@@ -131,7 +131,7 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
                     placeholder={`Enter your ${platform.name} username`}
                     value={usernames[platform.key as keyof typeof usernames]}
                     onChange={(e) => handleUsernameChange(platform.key, e.target.value)}
-                    className={`bg-white/80 backdrop-blur-sm border-white/50 focus:border-white focus:ring-2 focus:ring-white/20 ${hasError ? 'border-red-300 focus:border-red-400 focus:ring-red-100' : ''}`}
+                    className={`bg-white/80 backdrop-blur-sm border-white/50 focus:border-white focus:ring-2 focus:ring-white/20 text-gray-900 placeholder:text-gray-500 ${hasError ? 'border-red-300 focus:border-red-400 focus:ring-red-100' : ''}`}
                   />
                 </div>
                 <Button
