@@ -25,12 +25,13 @@ const AgencyRoutes = () => {
         <Route path="invite" element={<AgencyInviteUsers />} />
         <Route path="projects" element={<AgencyProjectManagement />} />
         <Route path="orders" element={<AgencyOrderManagement />} />
+        <Route path="crm" element={<AgencyCRMDashboard />} />
+        <Route path="crm/brands" element={<AgencyBrandCRM />} />
         <Route path="crm/brands/leaderboard" element={<AgencyBrandLeaderboard />} />
         <Route path="crm/brands/:brandId" element={<AgencyBrandDetail />} />
-        <Route path="crm/brands" element={<AgencyBrandCRM />} />
+        <Route path="crm/creators" element={<AgencyCreatorCRM />} />
         <Route path="crm/creators/leaderboard" element={<AgencyCreatorLeaderboard />} />
         <Route path="crm/creators/:id" element={<AgencyCreatorDetail />} />
-        <Route path="crm/creators" element={<AgencyCreatorCRM />} />
         <Route path="crm/deals" element={<AgencyDealsPipeline />} />
       </Route>
     </Routes>

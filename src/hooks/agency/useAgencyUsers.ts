@@ -9,12 +9,14 @@ export interface AgencyUser {
   agency_id: string;
   role: string;
   created_at: string;
+  updated_at: string;
   profiles?: {
-    first_name: string | null;
-    last_name: string | null;
-    email: string | null;
-    role: string | null;
-    status: string | null;
+    id: string;
+    email?: string;
+    first_name?: string;
+    last_name?: string;
+    role?: string;
+    status?: string;
   };
 }
 
@@ -26,41 +28,27 @@ export const useAgencyUsers = () => {
     queryFn: async (): Promise<AgencyUser[]> => {
       if (!user?.id) return [];
 
-      // First get agency users
-      const { data: agencyUsers, error: agencyError } = await supabase
+      const { data: agencyUsers, error } = await supabase
         .from('agency_users')
-        .select('*')
-        .eq('agency_id', user.id)
-        .order('created_at', { ascending: false });
+        .select(`
+          *,
+          profiles!agency_users_user_id_fkey (
+            id,
+            email,
+            first_name,
+            last_name,
+            role,
+            status
+          )
+        `)
+        .eq('agency_id', user.id);
 
-      if (agencyError) {
-        console.error('Error fetching agency users:', agencyError);
-        throw agencyError;
+      if (error) {
+        console.error('Error fetching agency users:', error);
+        throw error;
       }
 
-      if (!agencyUsers || agencyUsers.length === 0) {
-        return [];
-      }
-
-      // Get user IDs
-      const userIds = agencyUsers.map(au => au.user_id);
-
-      // Fetch profiles separately
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, email, role, status')
-        .in('id', userIds);
-
-      if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
-        throw profilesError;
-      }
-
-      // Combine the data
-      return agencyUsers.map(agencyUser => ({
-        ...agencyUser,
-        profiles: profiles?.find(profile => profile.id === agencyUser.user_id) || null
-      }));
+      return agencyUsers || [];
     },
     enabled: !!user?.id,
   });

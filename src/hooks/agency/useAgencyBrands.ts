@@ -7,11 +7,13 @@ export interface AgencyBrand {
   user_id: string;
   company_name: string;
   email: string;
-  created_at: string;
-  status: string;
   industry: string | null;
   budget_range: string | null;
   logo_url: string | null;
+  website_url: string | null;
+  brand_bio: string | null;
+  status: string;
+  created_at: string;
 }
 
 export const useAgencyBrands = () => {
@@ -26,7 +28,8 @@ export const useAgencyBrands = () => {
       const { data: agencyUsers, error: agencyError } = await supabase
         .from('agency_users')
         .select('user_id')
-        .eq('agency_id', user.id);
+        .eq('agency_id', user.id)
+        .eq('role', 'managed_brand');
 
       if (agencyError) {
         console.error('Error fetching agency users:', agencyError);
@@ -42,7 +45,16 @@ export const useAgencyBrands = () => {
       // Get brand profiles for those users
       const { data: brandProfiles, error: brandError } = await supabase
         .from('brand_profiles')
-        .select('user_id, company_name, industry, budget_range, logo_url, created_at')
+        .select(`
+          user_id,
+          company_name,
+          industry,
+          budget_range,
+          logo_url,
+          website_url,
+          brand_bio,
+          created_at
+        `)
         .in('user_id', userIds)
         .order('created_at', { ascending: false });
 
@@ -71,13 +83,15 @@ export const useAgencyBrands = () => {
         const profile = profiles?.find(p => p.id === brand.user_id);
         return {
           user_id: brand.user_id,
-          company_name: brand.company_name || 'Unknown Company',
+          company_name: brand.company_name || 'Unknown Brand',
           email: profile?.email || 'No email',
-          created_at: brand.created_at,
-          status: profile?.status || 'unknown',
           industry: brand.industry,
           budget_range: brand.budget_range,
           logo_url: brand.logo_url,
+          website_url: brand.website_url,
+          brand_bio: brand.brand_bio,
+          status: profile?.status || 'unknown',
+          created_at: brand.created_at,
         };
       });
     },
