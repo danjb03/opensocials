@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ArrowRight, Target, Zap, TrendingUp, Heart, ShoppingCart, Lightbulb } from 'lucide-react';
+import { ArrowRight, Target, Zap, TrendingUp, Heart, ShoppingCart, Lightbulb, Clock, Calendar, Repeat, RotateCcw, Infinity } from 'lucide-react';
 import { CampaignWizardData, CampaignObjective } from '@/types/campaignWizard';
 
 const campaignBasicsSchema = z.object({
@@ -62,11 +62,36 @@ const objectiveOptions = [
 ];
 
 const campaignTypes = [
-  { value: 'Single', label: 'Single Campaign', description: 'One-time campaign with specific deliverables' },
-  { value: 'Weekly', label: 'Weekly Campaign', description: 'Recurring weekly content for short-term goals' },
-  { value: 'Monthly', label: 'Monthly Campaign', description: 'Monthly content series for ongoing engagement' },
-  { value: '12-Month Retainer', label: '12-Month Retainer', description: 'Long-term partnership with consistent content' },
-  { value: 'Evergreen', label: 'Evergreen Campaign', description: 'Ongoing campaign without fixed end date' }
+  { 
+    value: 'Single', 
+    label: 'Single Campaign', 
+    description: 'One-time campaign with specific deliverables',
+    icon: <Clock className="h-4 w-4" />
+  },
+  { 
+    value: 'Weekly', 
+    label: 'Weekly Campaign', 
+    description: 'Recurring weekly content for short-term goals',
+    icon: <Calendar className="h-4 w-4" />
+  },
+  { 
+    value: 'Monthly', 
+    label: 'Monthly Campaign', 
+    description: 'Monthly content series for ongoing engagement',
+    icon: <Repeat className="h-4 w-4" />
+  },
+  { 
+    value: '12-Month Retainer', 
+    label: '12-Month Retainer', 
+    description: 'Long-term partnership with consistent content',
+    icon: <RotateCcw className="h-4 w-4" />
+  },
+  { 
+    value: 'Evergreen', 
+    label: 'Evergreen Campaign', 
+    description: 'Ongoing campaign without fixed end date',
+    icon: <Infinity className="h-4 w-4" />
+  }
 ];
 
 const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
@@ -126,6 +151,9 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
     });
   }, [watchedName, watchedObjective, watchedCampaignType, isValid, errors]);
 
+  // Get the selected campaign type details for display
+  const selectedCampaignType = campaignTypes.find(type => type.value === watchedCampaignType);
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Card className="bg-background border-border shadow-lg">
@@ -171,8 +199,8 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
                   className={`
                     flex items-start space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-all
                     ${watchedObjective === option.value 
-                      ? 'border-foreground bg-background' 
-                      : 'border-border hover:border-foreground bg-background'
+                      ? 'border-foreground bg-card' 
+                      : 'border-border hover:border-foreground bg-card'
                     }
                   `}
                 >
@@ -197,7 +225,7 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
           </div>
 
           {/* Campaign Type */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Label htmlFor="campaign_type" className="text-sm font-medium text-foreground">
               Campaign Type *
             </Label>
@@ -205,15 +233,36 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
               value={watchedCampaignType} 
               onValueChange={handleCampaignTypeChange}
             >
-              <SelectTrigger className="bg-background border-border text-foreground">
-                <SelectValue placeholder="Select campaign duration and type" />
+              <SelectTrigger className="bg-background border-border text-foreground h-auto min-h-[60px] p-4">
+                <SelectValue placeholder="Select campaign duration and type">
+                  {selectedCampaignType && (
+                    <div className="flex items-center gap-3 text-left">
+                      <div className="text-foreground">
+                        {selectedCampaignType.icon}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-foreground">{selectedCampaignType.label}</div>
+                        <div className="text-sm text-muted-foreground">{selectedCampaignType.description}</div>
+                      </div>
+                    </div>
+                  )}
+                </SelectValue>
               </SelectTrigger>
-              <SelectContent className="bg-background border-border">
+              <SelectContent className="bg-popover border-border">
                 {campaignTypes.map((type) => (
-                  <SelectItem key={type.value} value={type.value} className="text-foreground">
-                    <div className="space-y-1">
-                      <div className="font-medium">{type.label}</div>
-                      <div className="text-sm text-muted-foreground">{type.description}</div>
+                  <SelectItem 
+                    key={type.value} 
+                    value={type.value} 
+                    className="text-foreground hover:bg-accent hover:text-accent-foreground p-4 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="text-foreground">
+                        {type.icon}
+                      </div>
+                      <div className="flex-1 text-left">
+                        <div className="font-medium text-foreground">{type.label}</div>
+                        <div className="text-sm text-muted-foreground">{type.description}</div>
+                      </div>
                     </div>
                   </SelectItem>
                 ))}
@@ -225,7 +274,7 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
           </div>
 
           {/* Quick Tips */}
-          <div className="bg-background border border-border rounded-lg p-4">
+          <div className="bg-card border border-border rounded-lg p-4">
             <h4 className="font-medium text-foreground mb-2 flex items-center gap-2">
               <Lightbulb className="h-4 w-4" />
               Quick Tips
