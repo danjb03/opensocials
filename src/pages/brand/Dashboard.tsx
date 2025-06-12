@@ -17,6 +17,8 @@ const Dashboard = () => {
   const { user, role, brandProfile: profile } = useUnifiedAuth();
   const navigate = useNavigate();
   
+  console.log('Dashboard rendering for user:', user?.id, 'role:', role);
+  
   // Initialize user data synchronization
   const { refreshUserData } = useUserDataSync();
   
@@ -33,8 +35,17 @@ const Dashboard = () => {
     navigate('/super-admin');
   };
 
-  // Show intro modal if needed
+  console.log('Dashboard state:', { 
+    introLoading, 
+    isLoading, 
+    showIntro, 
+    projectStats,
+    todoItemsCount: todoItems?.length 
+  });
+
+  // Show intro modal loading
   if (introLoading) {
+    console.log('Showing intro loading state');
     return (
       <BrandLayout>
         <div className="min-h-screen bg-background">
@@ -94,7 +105,10 @@ const Dashboard = () => {
 
             {isLoading ? (
               <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-foreground">Loading dashboard...</p>
+                </div>
               </div>
             ) : (
               <div className="space-y-8">
