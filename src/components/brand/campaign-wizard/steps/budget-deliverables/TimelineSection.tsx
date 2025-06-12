@@ -57,7 +57,7 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({
             </PopoverContent>
           </Popover>
           {errors.start_date && (
-            <p className="text-sm text-slate-300">{errors.start_date.message}</p>
+            <p className="text-sm text-slate-300">{String(errors.start_date.message || 'Invalid date')}</p>
           )}
         </div>
 
@@ -87,7 +87,7 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({
             </PopoverContent>
           </Popover>
           {errors.end_date && (
-            <p className="text-sm text-slate-300">{errors.end_date.message}</p>
+            <p className="text-sm text-slate-300">{String(errors.end_date.message || 'Invalid date')}</p>
           )}
         </div>
       </div>

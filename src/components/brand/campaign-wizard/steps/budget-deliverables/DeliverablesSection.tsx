@@ -35,7 +35,7 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
             className="bg-background border-border text-foreground"
           />
           {errors.posts_count && (
-            <p className="text-sm text-slate-300">{errors.posts_count.message}</p>
+            <p className="text-sm text-slate-300">{String(errors.posts_count.message || 'Invalid input')}</p>
           )}
         </div>
 

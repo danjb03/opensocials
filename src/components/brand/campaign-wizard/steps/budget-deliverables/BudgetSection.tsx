@@ -45,7 +45,7 @@ export const BudgetSection: React.FC<BudgetSectionProps> = ({
           />
         </div>
         {errors.total_budget && (
-          <p className="text-sm text-slate-300">{errors.total_budget.message}</p>
+          <p className="text-sm text-slate-300">{String(errors.total_budget.message || 'Invalid input')}</p>
         )}
       </div>
 
