@@ -19,25 +19,29 @@ import PricingFloors from '@/pages/admin/PricingFloors';
 
 const AdminRoutes = () => {
   return (
-    <ProtectedRoute requiredRole="admin">
-      <Routes>
-        <Route path="/*" element={<AdminLayout><Outlet /></AdminLayout>}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="users" element={<UserManagement />} />
-          <Route path="invite" element={<InviteUsers />} />
-          <Route path="projects" element={<ProjectManagement />} />
-          <Route path="orders" element={<OrderManagement />} />
-          <Route path="pricing-floors" element={<PricingFloors />} />
-          <Route path="crm/brands/leaderboard" element={<BrandLeaderboard />} />
-          <Route path="crm/brands/:brandId" element={<BrandDetail />} />
-          <Route path="crm/brands" element={<BrandCRM />} />
-          <Route path="crm/creators/leaderboard" element={<CreatorLeaderboard />} />
-          <Route path="crm/creators/:id" element={<CreatorDetail />} />
-          <Route path="crm/creators" element={<CreatorCRM />} />
-          <Route path="crm/deals" element={<DealsPipeline />} />
-        </Route>
-      </Routes>
-    </ProtectedRoute>
+    <Routes>
+      <Route path="/*" element={
+        <ProtectedRoute requiredRole="admin">
+          <AdminLayout>
+            <Outlet />
+          </AdminLayout>
+        </ProtectedRoute>
+      }>
+        <Route index element={<AdminDashboard />} />
+        <Route path="users" element={<UserManagement />} />
+        <Route path="invite" element={<InviteUsers />} />
+        <Route path="projects" element={<ProjectManagement />} />
+        <Route path="orders" element={<OrderManagement />} />
+        <Route path="pricing-floors" element={<PricingFloors />} />
+        <Route path="crm/brands/leaderboard" element={<BrandLeaderboard />} />
+        <Route path="crm/brands/:brandId" element={<BrandDetail />} />
+        <Route path="crm/brands" element={<BrandCRM />} />
+        <Route path="crm/creators/leaderboard" element={<CreatorLeaderboard />} />
+        <Route path="crm/creators/:id" element={<CreatorDetail />} />
+        <Route path="crm/creators" element={<CreatorCRM />} />
+        <Route path="crm/deals" element={<DealsPipeline />} />
+      </Route>
+    </Routes>
   );
 };
 
