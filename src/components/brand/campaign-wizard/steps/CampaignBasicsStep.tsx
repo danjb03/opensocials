@@ -99,11 +99,11 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <Card className="bg-card border-border shadow-lg">
+      <Card className="bg-background border-border shadow-lg">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-3 text-xl text-foreground">
-            <div className="p-2 bg-primary rounded-lg">
-              <Target className="h-5 w-5 text-primary-foreground" />
+            <div className="p-2 bg-foreground rounded-lg">
+              <Target className="h-5 w-5 text-background" />
             </div>
             Campaign Basics
           </CardTitle>
@@ -142,8 +142,8 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
                   className={`
                     flex items-start space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-all
                     ${watchedObjective === option.value 
-                      ? 'border-primary bg-accent/50' 
-                      : 'border-border hover:border-muted-foreground bg-card'
+                      ? 'border-foreground bg-background' 
+                      : 'border-border hover:border-foreground bg-background'
                     }
                   `}
                 >
@@ -154,7 +154,7 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
                   />
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-primary">{option.icon}</span>
+                      <span className="text-foreground">{option.icon}</span>
                       <span className="font-medium text-foreground">{option.label}</span>
                     </div>
                     <p className="text-sm text-muted-foreground">{option.description}</p>
@@ -179,7 +179,7 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
               <SelectTrigger className="bg-background border-border text-foreground">
                 <SelectValue placeholder="Select campaign duration and type" />
               </SelectTrigger>
-              <SelectContent className="bg-popover border-border">
+              <SelectContent className="bg-background border-border">
                 {campaignTypes.map((type) => (
                   <SelectItem key={type.value} value={type.value} className="text-foreground">
                     <div className="space-y-1">
@@ -196,7 +196,7 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
           </div>
 
           {/* Quick Tips */}
-          <div className="bg-muted/50 border border-border rounded-lg p-4">
+          <div className="bg-background border border-border rounded-lg p-4">
             <h4 className="font-medium text-foreground mb-2 flex items-center gap-2">
               <Lightbulb className="h-4 w-4" />
               Quick Tips
@@ -215,7 +215,7 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
         <Button 
           type="submit" 
           disabled={!isValid || isLoading}
-          className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+          className="flex items-center gap-2 bg-foreground text-background hover:bg-foreground/90"
         >
           Continue to Content Requirements
           <ArrowRight className="h-4 w-4" />
