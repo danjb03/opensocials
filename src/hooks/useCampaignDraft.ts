@@ -2,11 +2,11 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useBrandProfile } from '@/hooks/useBrandProfile';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { CampaignWizardData } from '@/types/campaignWizard';
 
 export const useCampaignDraft = () => {
-  const { profile: brandProfile } = useBrandProfile();
+  const { brandProfile } = useUnifiedAuth();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<Partial<CampaignWizardData>>({});

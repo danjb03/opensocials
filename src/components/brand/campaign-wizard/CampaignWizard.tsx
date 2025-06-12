@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Check, Save, ArrowLeft, ArrowRight, Target, Smartphone, DollarSign, Users, Rocket } from 'lucide-react';
 import { toast } from 'sonner';
 import BrandLayout from '@/components/layouts/BrandLayout';
+import { supabase } from '@/integrations/supabase/client';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 
 import { CampaignWizardData, CampaignStep, CAMPAIGN_STEPS } from '@/types/campaignWizard';
 import { useCampaignDraft } from '@/hooks/useCampaignDraft';
@@ -27,6 +29,7 @@ interface CampaignWizardProps {
 
 const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) => {
   const navigate = useNavigate();
+  const { brandProfile } = useUnifiedAuth();
   
   // Icon mapping for campaign steps
   const getStepIcon = (iconName: string) => {
@@ -55,6 +58,7 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
 
   const [steps, setSteps] = useState<CampaignStep[]>(CAMPAIGN_STEPS);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Load draft data if editing existing draft
   useEffect(() => {
@@ -97,10 +101,65 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
     }
   };
 
+  const createCampaignFromDraft = async (draftData: Partial<CampaignWizardData>) => {
+    if (!brandProfile?.user_id) {
+      throw new Error('No brand profile found');
+    }
+
+    // Create a basic campaign record in projects_new table
+    const { data: campaign, error } = await supabase
+      .from('projects_new')
+      .insert({
+        brand_id: brandProfile.user_id,
+        name: draftData.name || 'Untitled Campaign',
+        description: draftData.description || '',
+        campaign_type: draftData.campaign_type || 'Single',
+        start_date: draftData.timeline?.start_date || null,
+        end_date: draftData.timeline?.end_date || null,
+        budget: draftData.total_budget || 0,
+        content_requirements: draftData.content_requirements || {},
+        messaging_guidelines: draftData.messaging_guidelines || '',
+        platforms: draftData.content_requirements?.platforms || [],
+        deliverables: draftData.deliverables || {},
+        status: 'draft',
+        current_step: currentStep
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating campaign:', error);
+      throw error;
+    }
+
+    return campaign;
+  };
+
   const handleSaveAndExit = async () => {
-    saveDraft();
-    toast.success('Campaign draft saved! You can continue later.');
-    navigate('/brand/dashboard');
+    setIsSaving(true);
+    try {
+      // Save the current draft
+      await saveDraft();
+      
+      // If we have enough data (at least name), create a campaign record
+      if (formData.name) {
+        await createCampaignFromDraft(formData);
+        toast.success('Campaign saved successfully!', {
+          description: 'You can continue editing it later from your dashboard.'
+        });
+      } else {
+        toast.success('Campaign draft saved!', {
+          description: 'You can continue editing it later.'
+        });
+      }
+      
+      navigate('/brand/dashboard');
+    } catch (error) {
+      console.error('Error saving campaign:', error);
+      toast.error('Failed to save campaign. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleFinalSubmit = async () => {
@@ -177,10 +236,11 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
               <Button
                 variant="outline"
                 onClick={handleSaveAndExit}
+                disabled={isSaving}
                 className="flex items-center gap-2"
               >
                 <Save className="h-4 w-4" />
-                Save & Exit
+                {isSaving ? 'Saving...' : 'Save & Exit'}
               </Button>
             </div>
 
