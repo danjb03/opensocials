@@ -84,6 +84,10 @@ export const CreateOfferModal: React.FC<CreateOfferModalProps> = ({
     }
   };
 
+  const handleAdminOverrideChange = (checked: boolean | 'indeterminate') => {
+    setIsAdminOverride(checked === true);
+  };
+
   const canSubmit = validation.isValid && offerAmount > 0 && campaignType && !isSubmitting && !isTierLoading;
 
   return (
@@ -144,7 +148,7 @@ export const CreateOfferModal: React.FC<CreateOfferModalProps> = ({
               <Checkbox 
                 id="admin-override"
                 checked={isAdminOverride}
-                onCheckedChange={setIsAdminOverride}
+                onCheckedChange={handleAdminOverrideChange}
               />
               <Label htmlFor="admin-override" className="text-sm text-muted-foreground">
                 Admin Override (bypass minimum pricing)

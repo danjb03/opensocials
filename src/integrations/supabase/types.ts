@@ -772,6 +772,7 @@ export type Database = {
           company_name: string | null
           content_type: string | null
           created_at: string | null
+          creator_tier: string | null
           creator_type: string | null
           display_name: string | null
           email: string | null
@@ -825,6 +826,7 @@ export type Database = {
           company_name?: string | null
           content_type?: string | null
           created_at?: string | null
+          creator_tier?: string | null
           creator_type?: string | null
           display_name?: string | null
           email?: string | null
@@ -878,6 +880,7 @@ export type Database = {
           company_name?: string | null
           content_type?: string | null
           created_at?: string | null
+          creator_tier?: string | null
           creator_type?: string | null
           display_name?: string | null
           email?: string | null
