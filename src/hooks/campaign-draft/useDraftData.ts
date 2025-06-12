@@ -41,7 +41,7 @@ export const useDraftData = () => {
 
   const getReviewData = () => formData;
 
-  // Update specific sections
+  // Update specific sections with validation
   const updateBasicsData = (data: any) => {
     updateFormData(data);
   };
@@ -51,6 +51,8 @@ export const useDraftData = () => {
   };
 
   const updateBudgetData = (data: any) => {
+    // Note: Pricing validation is handled in the BudgetDeliverablesStep component
+    // This just updates the form data - validation happens on submit
     updateFormData(data);
   };
 

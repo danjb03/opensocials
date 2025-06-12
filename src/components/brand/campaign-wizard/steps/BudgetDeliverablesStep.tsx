@@ -105,7 +105,7 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
   };
 
   const onSubmit = (formData: BudgetDeliverablesForm) => {
-    // First validate creator budgets
+    // First validate creator budgets if we have selected creators
     if (!validateCreatorBudgets()) {
       return;
     }
@@ -140,6 +140,9 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
     setValidationError(null);
   };
 
+  // Show a warning if we have selected creators but no pricing data loaded yet
+  const showPricingWarning = data?.selected_creators?.length && (!pricingFloors || !creatorTiers);
+
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -153,6 +156,14 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
+            {showPricingWarning && (
+              <div className="bg-card border border-border rounded-lg p-4">
+                <p className="text-sm text-muted-foreground">
+                  Loading pricing validation for selected creators...
+                </p>
+              </div>
+            )}
+
             <BudgetSection 
               register={register}
               watch={watch}
@@ -187,7 +198,7 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
           </Button>
           <Button 
             type="submit" 
-            disabled={!isValid || isLoading}
+            disabled={!isValid || isLoading || showPricingWarning}
             className="flex items-center gap-2 bg-foreground text-background hover:bg-foreground/90"
           >
             Continue to Creator Selection
