@@ -11,18 +11,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ArrowRight, Target, Zap, TrendingUp, Heart, ShoppingCart, Lightbulb, Clock, Calendar, Repeat, RotateCcw, Infinity } from 'lucide-react';
 import { CampaignWizardData, CampaignObjective } from '@/types/campaignWizard';
+
 const campaignBasicsSchema = z.object({
   name: z.string().min(3, 'Campaign name must be at least 3 characters'),
   objective: z.enum(['brand_awareness', 'product_launch', 'sales_drive', 'engagement', 'conversions']),
   campaign_type: z.string().min(1, 'Please select a campaign type')
 });
+
 type CampaignBasicsForm = z.infer<typeof campaignBasicsSchema>;
+
 interface CampaignBasicsStepProps {
   data?: Partial<CampaignWizardData>;
   onComplete: (data: Partial<CampaignWizardData>) => void;
   onBack?: () => void;
   isLoading?: boolean;
 }
+
 const objectiveOptions = [{
   value: 'brand_awareness' as CampaignObjective,
   label: 'Brand Awareness',
@@ -49,6 +53,7 @@ const objectiveOptions = [{
   description: 'Drive specific actions like sign-ups or downloads',
   icon: <TrendingUp className="h-5 w-5" />
 }];
+
 const campaignTypes = [{
   value: 'Single',
   label: 'Single Campaign',
@@ -75,6 +80,7 @@ const campaignTypes = [{
   description: 'Ongoing campaign without fixed end date',
   icon: <Infinity className="h-4 w-4" />
 }];
+
 const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
   data,
   onComplete,
@@ -99,6 +105,7 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
     },
     mode: 'onChange'
   });
+
   const watchedObjective = watch('objective');
   const watchedCampaignType = watch('campaign_type');
   const watchedName = watch('name');
@@ -107,14 +114,17 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
   React.useEffect(() => {
     trigger();
   }, [watchedObjective, watchedCampaignType, watchedName, trigger]);
+
   const onSubmit = (formData: CampaignBasicsForm) => {
     console.log('Form submitted with data:', formData);
     onComplete(formData);
   };
+
   const handleObjectiveChange = (value: CampaignObjective) => {
     setValue('objective', value);
     trigger('objective');
   };
+
   const handleCampaignTypeChange = (value: string) => {
     setValue('campaign_type', value);
     trigger('campaign_type');
@@ -133,6 +143,7 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
 
   // Get the selected campaign type details for display
   const selectedCampaignType = campaignTypes.find(type => type.value === watchedCampaignType);
+
   return <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Card className="bg-background border-border shadow-lg">
         <CardHeader className="pb-4">
@@ -196,14 +207,18 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
                 </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-popover border-border">
-                {campaignTypes.map(type => <SelectItem key={type.value} value={type.value} className="text-foreground hover:bg-accent hover:text-accent-foreground p-4 cursor-pointer">
+                {campaignTypes.map(type => <SelectItem 
+                    key={type.value} 
+                    value={type.value} 
+                    className="text-popover-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground p-4 cursor-pointer data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
+                  >
                     <div className="flex items-center gap-3 w-full">
-                      <div className="text-foreground">
+                      <div className="text-current">
                         {type.icon}
                       </div>
                       <div className="flex-1 text-left">
-                        <div className="font-medium text-foreground">{type.label}</div>
-                        <div className="text-sm text-muted-foreground">{type.description}</div>
+                        <div className="font-medium text-current">{type.label}</div>
+                        <div className="text-sm text-current opacity-70">{type.description}</div>
                       </div>
                     </div>
                   </SelectItem>)}
@@ -236,4 +251,5 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
       </div>
     </form>;
 };
+
 export default CampaignBasicsStep;
