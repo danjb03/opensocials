@@ -37,10 +37,10 @@ export const useCreatorProfile = () => {
       bio: rawProfile.bio,
       primaryPlatform: rawProfile.primary_platform,
       contentType: rawProfile.content_types?.[0] || null,
-      audienceType: rawProfile.audience_type || null,
+      audienceType: null, // Field doesn't exist in current schema
       audienceLocation: rawProfile.audience_location || { primary: 'Global' },
       industries: rawProfile.industries || null,
-      creatorType: rawProfile.creator_type || null,
+      creatorType: null, // Field doesn't exist in current schema  
       isProfileComplete: rawProfile.is_profile_complete || false,
       socialConnections: {
         instagram: !!rawProfile.social_handles?.instagram,
