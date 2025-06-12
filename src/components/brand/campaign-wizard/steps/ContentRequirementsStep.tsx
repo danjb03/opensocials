@@ -169,8 +169,8 @@ const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
                   className={`
                     flex items-center space-x-3 p-3 rounded-lg border-2 cursor-pointer transition-all
                     ${watchedPlatforms?.includes(platform.value)
-                      ? 'border-foreground bg-card'
-                      : 'border-border hover:border-foreground bg-card'
+                      ? 'border-muted-foreground bg-muted text-foreground'
+                      : 'border-border hover:border-muted-foreground bg-card text-foreground'
                     }
                   `}
                 >
@@ -204,8 +204,8 @@ const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
                   className={`
                     flex items-start space-x-3 p-3 rounded-lg border-2 cursor-pointer transition-all
                     ${watchedContentTypes?.includes(contentType.value)
-                      ? 'border-foreground bg-card'
-                      : 'border-border hover:border-foreground bg-card'
+                      ? 'border-muted-foreground bg-muted text-foreground'
+                      : 'border-border hover:border-muted-foreground bg-card text-foreground'
                     }
                   `}
                 >
