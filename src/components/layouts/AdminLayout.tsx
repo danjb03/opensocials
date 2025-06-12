@@ -116,6 +116,7 @@ const AdminLayout = memo(({ children }: AdminLayoutProps) => {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
+                    asChild
                     isActive={item.isActive}
                     className="h-12 mr-2 hover:bg-accent hover:text-accent-foreground transition-colors"
                     tooltip={item.title}
