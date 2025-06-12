@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 
 const CreatorProfile = () => {
   const { user } = useCreatorAuth();
-  const { data: profile, isLoading } = useCreatorProfile();
+  const { profile, isLoading } = useCreatorProfile();
 
   if (isLoading) {
     return (
