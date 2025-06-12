@@ -53,12 +53,13 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
     goToStep,
     isDraftLoading,
     saveDraft,
-    clearDraft
+    clearDraft,
+    isSaving
   } = useCampaignDraft();
 
   const [steps, setSteps] = useState<CampaignStep[]>(CAMPAIGN_STEPS);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
 
   // Load draft data if editing existing draft
   useEffect(() => {
@@ -77,16 +78,39 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
     setSteps(updatedSteps);
   }, [currentStep]);
 
+  // Auto-save status indicator
+  const renderSaveStatus = () => {
+    if (isSaving) {
+      return (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+          Saving...
+        </div>
+      );
+    }
+    
+    if (lastSaveTime) {
+      return (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Check className="h-4 w-4 text-green-500" />
+          Saved {lastSaveTime.toLocaleTimeString()}
+        </div>
+      );
+    }
+    
+    return null;
+  };
+
   const handleStepComplete = async (stepData: Partial<CampaignWizardData>) => {
     const updatedData = { ...formData, ...stepData };
     updateFormData(stepData);
     
-    // Auto-save progress
-    saveDraft();
+    // Auto-save happens automatically in the hook, just update save time
+    setLastSaveTime(new Date());
     
     // Show completion animation
     toast.success(`Step ${currentStep} Complete`, {
-      description: `${CAMPAIGN_STEPS[currentStep - 1].title} saved successfully`
+      description: `${CAMPAIGN_STEPS[currentStep - 1].title} saved automatically`
     });
 
     // Move to next step
@@ -114,8 +138,8 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
         name: draftData.name || 'Untitled Campaign',
         description: draftData.description || '',
         campaign_type: draftData.campaign_type || 'Single',
-        start_date: draftData.timeline?.start_date || null,
-        end_date: draftData.timeline?.end_date || null,
+        start_date: draftData.timeline?.start_date ? draftData.timeline.start_date.toISOString().split('T')[0] : null,
+        end_date: draftData.timeline?.end_date ? draftData.timeline.end_date.toISOString().split('T')[0] : null,
         budget: draftData.total_budget || 0,
         content_requirements: draftData.content_requirements || {},
         messaging_guidelines: draftData.messaging_guidelines || '',
@@ -136,9 +160,8 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
   };
 
   const handleSaveAndExit = async () => {
-    setIsSaving(true);
     try {
-      // Save the current draft
+      // Save the current draft (this happens automatically but ensure it's complete)
       await saveDraft();
       
       // If we have enough data (at least name), create a campaign record
@@ -157,8 +180,6 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
     } catch (error) {
       console.error('Error saving campaign:', error);
       toast.error('Failed to save campaign. Please try again.');
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -233,15 +254,18 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
                   Follow the steps below to create an engaging campaign
                 </p>
               </div>
-              <Button
-                variant="outline"
-                onClick={handleSaveAndExit}
-                disabled={isSaving}
-                className="flex items-center gap-2"
-              >
-                <Save className="h-4 w-4" />
-                {isSaving ? 'Saving...' : 'Save & Exit'}
-              </Button>
+              <div className="flex items-center gap-4">
+                {renderSaveStatus()}
+                <Button
+                  variant="outline"
+                  onClick={handleSaveAndExit}
+                  disabled={isSaving}
+                  className="flex items-center gap-2"
+                >
+                  <Save className="h-4 w-4" />
+                  {isSaving ? 'Saving...' : 'Save & Exit'}
+                </Button>
+              </div>
             </div>
 
             {/* Progress Bar */}

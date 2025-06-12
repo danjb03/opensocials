@@ -5,11 +5,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { CampaignWizardData } from '@/types/campaignWizard';
 
+const AUTO_SAVE_DELAY = 1000; // Auto-save after 1 second of inactivity
+
 export const useCampaignDraft = () => {
   const { brandProfile } = useUnifiedAuth();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<Partial<CampaignWizardData>>({});
+  const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Fetch existing draft
   const { data: existingDraft, isLoading: isDraftLoading } = useQuery({
@@ -70,16 +73,43 @@ export const useCampaignDraft = () => {
     }
   });
 
+  // Auto-save function with debouncing
+  const triggerAutoSave = (data: Partial<CampaignWizardData>) => {
+    // Clear existing timeout
+    if (autoSaveTimeout) {
+      clearTimeout(autoSaveTimeout);
+    }
+
+    // Set new timeout for auto-save
+    const timeout = setTimeout(() => {
+      if (Object.keys(data).length > 0) {
+        saveDraftMutation.mutate(data);
+      }
+    }, AUTO_SAVE_DELAY);
+
+    setAutoSaveTimeout(timeout);
+  };
+
   // Auto-save when form data changes
   useEffect(() => {
     if (Object.keys(formData).length > 0) {
-      const timeoutId = setTimeout(() => {
-        saveDraftMutation.mutate(formData);
-      }, 2000); // Auto-save after 2 seconds of inactivity
-
-      return () => clearTimeout(timeoutId);
+      triggerAutoSave(formData);
     }
-  }, [formData, saveDraftMutation]);
+
+    // Cleanup timeout on unmount
+    return () => {
+      if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout);
+      }
+    };
+  }, [formData]);
+
+  // Auto-save when step changes
+  useEffect(() => {
+    if (Object.keys(formData).length > 0) {
+      triggerAutoSave(formData);
+    }
+  }, [currentStep]);
 
   // Load existing draft data on mount
   useEffect(() => {
@@ -111,6 +141,11 @@ export const useCampaignDraft = () => {
 
   const goToStep = (step: number) => {
     setCurrentStep(Math.max(1, Math.min(step, 5)));
+  };
+
+  // Manual save function for explicit saves
+  const saveDraft = async () => {
+    return saveDraftMutation.mutateAsync(formData);
   };
 
   // Clear draft when campaign is published
@@ -216,7 +251,7 @@ export const useCampaignDraft = () => {
     goToStep,
     clearDraft,
     loadDraft,
-    saveDraft: () => saveDraftMutation.mutate(formData),
+    saveDraft,
     isSaving: saveDraftMutation.isPending,
     
     // Section-specific getters
