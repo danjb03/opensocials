@@ -636,6 +636,7 @@ export type Database = {
       deals: {
         Row: {
           brand_id: string
+          campaign_type: string | null
           created_at: string | null
           creator_id: string
           description: string | null
@@ -648,6 +649,7 @@ export type Database = {
         }
         Insert: {
           brand_id: string
+          campaign_type?: string | null
           created_at?: string | null
           creator_id: string
           description?: string | null
@@ -660,6 +662,7 @@ export type Database = {
         }
         Update: {
           brand_id?: string
+          campaign_type?: string | null
           created_at?: string | null
           creator_id?: string
           description?: string | null
@@ -756,6 +759,33 @@ export type Database = {
           sent_at?: string | null
           status?: string
           triggered_by?: string | null
+        }
+        Relationships: []
+      }
+      pricing_floors: {
+        Row: {
+          campaign_type: string
+          created_at: string | null
+          id: string
+          min_price: number
+          tier: string
+          updated_at: string | null
+        }
+        Insert: {
+          campaign_type: string
+          created_at?: string | null
+          id?: string
+          min_price: number
+          tier: string
+          updated_at?: string | null
+        }
+        Update: {
+          campaign_type?: string
+          created_at?: string | null
+          id?: string
+          min_price?: number
+          tier?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -1708,6 +1738,14 @@ export type Database = {
           platforms?: string[] | null
           start_date?: string | null
           status?: string | null
+        }
+        Relationships: []
+      }
+      tier_averages: {
+        Row: {
+          average_offer: number | null
+          campaign_type: string | null
+          creator_tier: string | null
         }
         Relationships: []
       }

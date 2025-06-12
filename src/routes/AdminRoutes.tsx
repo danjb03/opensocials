@@ -14,6 +14,7 @@ import UserManagement from '@/pages/admin/UserManagement';
 import CreatorLeaderboard from '@/pages/admin/crm/creators/leaderboard';
 import BrandLeaderboard from '@/pages/admin/crm/brands/leaderboard';
 import InviteUsers from '@/pages/admin/InviteUsers';
+import PricingFloors from '@/pages/admin/PricingFloors';
 
 const AdminRoutes = () => {
   return (
@@ -24,6 +25,7 @@ const AdminRoutes = () => {
         <Route path="invite" element={<InviteUsers />} />
         <Route path="projects" element={<ProjectManagement />} />
         <Route path="orders" element={<OrderManagement />} />
+        <Route path="pricing-floors" element={<PricingFloors />} />
         <Route path="crm/brands/leaderboard" element={<BrandLeaderboard />} />
         <Route path="crm/brands/:brandId" element={<BrandDetail />} />
         <Route path="crm/brands" element={<BrandCRM />} />
