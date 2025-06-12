@@ -4,15 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, AlertTriangle, CheckCircle, Clock, Users } from 'lucide-react';
-import { useAgencyProjects } from '@/hooks/agency/useAgencyProjects';
 import { useAgencyDeals } from '@/hooks/agency/useAgencyDeals';
 
 const AgencyOrderManagement = () => {
-  const { data: projects = [], isLoading: projectsLoading } = useAgencyProjects();
   const { data: deals = [], isLoading: dealsLoading } = useAgencyDeals();
   const [activeTab, setActiveTab] = useState('overview');
 
-  const isLoading = projectsLoading || dealsLoading;
+  const isLoading = dealsLoading;
 
   if (isLoading) {
     return (
@@ -25,17 +23,34 @@ const AgencyOrderManagement = () => {
     );
   }
 
+  // Group deals by project/campaign (using title as campaign identifier)
+  const campaignsByTitle = deals.reduce((acc, deal) => {
+    const title = deal.title || 'Untitled Campaign';
+    if (!acc[title]) {
+      acc[title] = {
+        title,
+        deals: [],
+        brand_name: deal.brand_name,
+        created_at: deal.created_at,
+        status: 'active' // Default status since deals don't have project status
+      };
+    }
+    acc[title].deals.push(deal);
+    return acc;
+  }, {} as Record<string, any>);
+
+  const campaigns = Object.values(campaignsByTitle);
+
   // Identify campaigns that need attention
-  const campaignsNeedingAttention = projects.filter(project => {
-    const projectDeals = deals.filter(deal => deal.project_id === project.id);
-    const hasStuckDeals = projectDeals.some(deal => 
+  const campaignsNeedingAttention = campaigns.filter(campaign => {
+    const hasStuckDeals = campaign.deals.some((deal: any) => 
       deal.status === 'pending' && 
       new Date(deal.created_at) < new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // 7 days old
     );
-    return hasStuckDeals || project.status === 'paused';
+    return hasStuckDeals;
   });
 
-  const activeCampaigns = projects.filter(p => p.status === 'active' || p.status === 'in_progress');
+  const activeCampaigns = campaigns.filter(c => c.status === 'active');
   const totalDeals = deals.length;
   const completedDeals = deals.filter(d => d.status === 'completed').length;
 
@@ -54,12 +69,11 @@ const AgencyOrderManagement = () => {
     }
   };
 
-  const getUrgencyLevel = (project: any) => {
-    const projectDeals = deals.filter(deal => deal.project_id === project.id);
-    const pendingDeals = projectDeals.filter(deal => deal.status === 'pending');
+  const getUrgencyLevel = (campaign: any) => {
+    const pendingDeals = campaign.deals.filter((deal: any) => deal.status === 'pending');
     
     if (pendingDeals.length > 0) {
-      const oldestPending = new Date(Math.min(...pendingDeals.map(d => new Date(d.created_at).getTime())));
+      const oldestPending = new Date(Math.min(...pendingDeals.map((d: any) => new Date(d.created_at).getTime())));
       const daysPending = Math.floor((Date.now() - oldestPending.getTime()) / (1000 * 60 * 60 * 24));
       
       if (daysPending > 7) return 'high';
@@ -139,22 +153,21 @@ const AgencyOrderManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {campaignsNeedingAttention.map((project) => {
-                const urgency = getUrgencyLevel(project);
-                const projectDeals = deals.filter(deal => deal.project_id === project.id);
-                const pendingDeals = projectDeals.filter(deal => deal.status === 'pending');
+              {campaignsNeedingAttention.map((campaign) => {
+                const urgency = getUrgencyLevel(campaign);
+                const pendingDeals = campaign.deals.filter((deal: any) => deal.status === 'pending');
                 
                 return (
-                  <div key={project.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                  <div key={campaign.title} className="flex items-center justify-between p-3 bg-white rounded-lg border">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium">{project.name}</h4>
+                        <h4 className="font-medium">{campaign.title}</h4>
                         <Badge variant={urgency === 'high' ? 'destructive' : 'secondary'}>
                           {urgency} priority
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {pendingDeals.length} pending deal{pendingDeals.length !== 1 ? 's' : ''} • {project.brand_name}
+                        {pendingDeals.length} pending deal{pendingDeals.length !== 1 ? 's' : ''} • {campaign.brand_name}
                       </p>
                     </div>
                     <Button variant="outline" size="sm">
@@ -178,7 +191,7 @@ const AgencyOrderManagement = () => {
           </p>
         </CardHeader>
         <CardContent>
-          {projects.length === 0 ? (
+          {campaigns.length === 0 ? (
             <div className="text-center py-8">
               <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">No campaigns to monitor</h3>
@@ -188,18 +201,18 @@ const AgencyOrderManagement = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {projects.map((project) => {
-                const projectDeals = deals.filter(deal => deal.project_id === project.id);
-                const completedProjectDeals = projectDeals.filter(deal => deal.status === 'completed');
-                const urgency = getUrgencyLevel(project);
+              {campaigns.map((campaign) => {
+                const completedCampaignDeals = campaign.deals.filter((deal: any) => deal.status === 'completed');
+                const urgency = getUrgencyLevel(campaign);
+                const totalValue = campaign.deals.reduce((sum: number, deal: any) => sum + (deal.value || 0), 0);
                 
                 return (
-                  <div key={project.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50">
+                  <div key={campaign.title} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-medium">{project.name}</h4>
-                        <Badge variant={getStatusColor(project.status)}>
-                          {project.status}
+                        <h4 className="font-medium">{campaign.title}</h4>
+                        <Badge variant={getStatusColor(campaign.status)}>
+                          {campaign.status}
                         </Badge>
                         {urgency === 'high' && (
                           <Badge variant="destructive" className="text-xs">
@@ -211,16 +224,16 @@ const AgencyOrderManagement = () => {
                       
                       <div className="grid grid-cols-4 gap-4 text-sm text-muted-foreground">
                         <div>
-                          <span className="font-medium">Brand:</span> {project.brand_name}
+                          <span className="font-medium">Brand:</span> {campaign.brand_name}
                         </div>
                         <div>
-                          <span className="font-medium">Budget:</span> ${project.budget?.toLocaleString() || 0} {project.currency}
+                          <span className="font-medium">Value:</span> ${totalValue.toLocaleString()}
                         </div>
                         <div>
-                          <span className="font-medium">Deals:</span> {completedProjectDeals.length}/{projectDeals.length} completed
+                          <span className="font-medium">Deals:</span> {completedCampaignDeals.length}/{campaign.deals.length} completed
                         </div>
                         <div>
-                          <span className="font-medium">Started:</span> {project.start_date ? new Date(project.start_date).toLocaleDateString() : 'Not set'}
+                          <span className="font-medium">Started:</span> {new Date(campaign.created_at).toLocaleDateString()}
                         </div>
                       </div>
                     </div>
