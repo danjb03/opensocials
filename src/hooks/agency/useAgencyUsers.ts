@@ -28,27 +28,38 @@ export const useAgencyUsers = () => {
     queryFn: async (): Promise<AgencyUser[]> => {
       if (!user?.id) return [];
 
-      const { data: agencyUsers, error } = await supabase
+      // Get agency users first
+      const { data: agencyUsers, error: agencyError } = await supabase
         .from('agency_users')
-        .select(`
-          *,
-          profiles!agency_users_user_id_fkey (
-            id,
-            email,
-            first_name,
-            last_name,
-            role,
-            status
-          )
-        `)
+        .select('*')
         .eq('agency_id', user.id);
 
-      if (error) {
-        console.error('Error fetching agency users:', error);
-        throw error;
+      if (agencyError) {
+        console.error('Error fetching agency users:', agencyError);
+        throw agencyError;
       }
 
-      return agencyUsers || [];
+      if (!agencyUsers || agencyUsers.length === 0) {
+        return [];
+      }
+
+      // Get profiles for those users
+      const userIds = agencyUsers.map(au => au.user_id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, email, first_name, last_name, role, status')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        throw profilesError;
+      }
+
+      // Combine the data
+      return agencyUsers.map(agencyUser => ({
+        ...agencyUser,
+        profiles: profiles?.find(p => p.id === agencyUser.user_id)
+      }));
     },
     enabled: !!user?.id,
   });

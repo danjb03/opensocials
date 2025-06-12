@@ -24,7 +24,7 @@ export const useAgencyBrands = () => {
     queryFn: async (): Promise<AgencyBrand[]> => {
       if (!user?.id) return [];
 
-      // First get the users managed by this agency
+      // First get the users managed by this agency with role 'managed_brand'
       const { data: agencyUsers, error: agencyError } = await supabase
         .from('agency_users')
         .select('user_id')
@@ -42,7 +42,7 @@ export const useAgencyBrands = () => {
 
       const userIds = agencyUsers.map(au => au.user_id);
 
-      // Get brand profiles for those users
+      // Get brand profiles for those users only
       const { data: brandProfiles, error: brandError } = await supabase
         .from('brand_profiles')
         .select(`
@@ -67,7 +67,7 @@ export const useAgencyBrands = () => {
         return [];
       }
 
-      // Get profiles for email and status
+      // Get profiles for email and status - only for these specific users
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, email, status')

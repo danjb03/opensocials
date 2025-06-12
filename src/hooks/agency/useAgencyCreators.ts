@@ -24,11 +24,12 @@ export const useAgencyCreators = () => {
     queryFn: async (): Promise<AgencyCreator[]> => {
       if (!user?.id) return [];
 
-      // First get the users managed by this agency
+      // First get the users managed by this agency with role 'managed_creator'
       const { data: agencyUsers, error: agencyError } = await supabase
         .from('agency_users')
         .select('user_id')
-        .eq('agency_id', user.id);
+        .eq('agency_id', user.id)
+        .eq('role', 'managed_creator');
 
       if (agencyError) {
         console.error('Error fetching agency users:', agencyError);
@@ -41,7 +42,7 @@ export const useAgencyCreators = () => {
 
       const userIds = agencyUsers.map(au => au.user_id);
 
-      // Get creator profiles for those users
+      // Get creator profiles for those users only
       const { data: creatorProfiles, error: creatorError } = await supabase
         .from('creator_profiles')
         .select(`
@@ -66,7 +67,7 @@ export const useAgencyCreators = () => {
         return [];
       }
 
-      // Get profiles for email and status
+      // Get profiles for email and status - only for these specific users
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, email, status')
