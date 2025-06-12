@@ -79,7 +79,8 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
     handleSubmit,
     setValue,
     watch,
-    formState: { errors, isValid }
+    formState: { errors, isValid },
+    trigger
   } = useForm<CampaignBasicsForm>({
     resolver: zodResolver(campaignBasicsSchema),
     defaultValues: {
@@ -92,10 +93,38 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
 
   const watchedObjective = watch('objective');
   const watchedCampaignType = watch('campaign_type');
+  const watchedName = watch('name');
+
+  // Force validation check when values change
+  React.useEffect(() => {
+    trigger();
+  }, [watchedObjective, watchedCampaignType, watchedName, trigger]);
 
   const onSubmit = (formData: CampaignBasicsForm) => {
+    console.log('Form submitted with data:', formData);
     onComplete(formData);
   };
+
+  const handleObjectiveChange = (value: CampaignObjective) => {
+    setValue('objective', value);
+    trigger('objective');
+  };
+
+  const handleCampaignTypeChange = (value: string) => {
+    setValue('campaign_type', value);
+    trigger('campaign_type');
+  };
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log('Form state:', {
+      name: watchedName,
+      objective: watchedObjective,
+      campaign_type: watchedCampaignType,
+      isValid,
+      errors
+    });
+  }, [watchedName, watchedObjective, watchedCampaignType, isValid, errors]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -132,7 +161,7 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
             </Label>
             <RadioGroup
               value={watchedObjective}
-              onValueChange={(value) => setValue('objective', value as CampaignObjective)}
+              onValueChange={handleObjectiveChange}
               className="grid grid-cols-1 md:grid-cols-2 gap-4"
             >
               {objectiveOptions.map((option) => (
@@ -174,7 +203,7 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
             </Label>
             <Select 
               value={watchedCampaignType} 
-              onValueChange={(value) => setValue('campaign_type', value)}
+              onValueChange={handleCampaignTypeChange}
             >
               <SelectTrigger className="bg-background border-border text-foreground">
                 <SelectValue placeholder="Select campaign duration and type" />
