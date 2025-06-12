@@ -5,7 +5,6 @@ import AgencyLayout from '@/components/layouts/AgencyLayout';
 import AgencyDashboard from '@/pages/agency/Dashboard';
 import AgencyUserManagement from '@/pages/agency/UserManagement';
 import AgencyInviteUsers from '@/pages/agency/InviteUsers';
-import AgencyProjectManagement from '@/pages/agency/ProjectManagement';
 import AgencyOrderManagement from '@/pages/agency/OrderManagement';
 import AgencyCRMDashboard from '@/pages/agency/crm/index';
 import AgencyBrandCRM from '@/pages/agency/crm/brands';
@@ -23,7 +22,6 @@ const AgencyRoutes = () => {
         <Route index element={<AgencyDashboard />} />
         <Route path="users" element={<AgencyUserManagement />} />
         <Route path="invite" element={<AgencyInviteUsers />} />
-        <Route path="projects" element={<AgencyProjectManagement />} />
         <Route path="orders" element={<AgencyOrderManagement />} />
         <Route path="crm" element={<AgencyCRMDashboard />} />
         <Route path="crm/brands" element={<AgencyBrandCRM />} />

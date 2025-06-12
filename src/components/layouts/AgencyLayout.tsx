@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAgencyAuth } from '@/hooks/useUnifiedAuth';
-import { Home, Users, Building2, Settings, BarChart2, LogOut } from 'lucide-react';
+import { Home, Users, Settings, BarChart2, LogOut } from 'lucide-react';
 import Footer from './Footer';
 import {
   Sidebar,
@@ -78,13 +78,7 @@ const AgencyLayout = memo(({ children }: AgencyLayoutProps) => {
       isActive: isActiveRoute('/agency/crm')
     },
     {
-      title: "Projects",
-      url: "/agency/projects",
-      icon: Building2,
-      isActive: isActiveRoute('/agency/projects')
-    },
-    {
-      title: "Orders",
+      title: "Campaign Oversight",
       url: "/agency/orders",
       icon: Settings,
       isActive: isActiveRoute('/agency/orders')
