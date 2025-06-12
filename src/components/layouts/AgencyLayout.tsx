@@ -109,7 +109,7 @@ const AgencyLayout = memo(({ children }: AgencyLayoutProps) => {
                     className="h-12 mr-2 hover:bg-accent hover:text-accent-foreground transition-colors"
                     tooltip={item.title}
                   >
-                    <Link to={item.url} className="flex items-center gap-3">
+                    <Link to={item.url}>
                       <item.icon className="h-5 w-5" />
                       <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                     </Link>
