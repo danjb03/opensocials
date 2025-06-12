@@ -88,7 +88,7 @@ export function CreatorTypeDropdown({
       </div>
       
       <div className="space-y-4">
-        <Select value={selected.startsWith('other:') ? 'other' : selected || 'ugc-creator'} onValueChange={handleSelectChange}>
+        <Select value={selected.startsWith('other:') ? 'other' : selected || ''} onValueChange={handleSelectChange}>
           <SelectTrigger id="creator-type" className="h-auto min-h-[60px] p-4 border-2 border-border hover:border-primary/50 transition-colors">
             <SelectValue placeholder="Select your creator type">
               {selectedType && (
@@ -107,7 +107,7 @@ export function CreatorTypeDropdown({
           </SelectTrigger>
           <SelectContent className="max-h-[400px]">
             {CREATOR_TYPES.map(type => (
-              <SelectItem key={type.value} value={type.value} className="p-4 cursor-pointer">
+              <SelectItem key={type.value} value={type.value} className="p-4 cursor-pointer [&>span:first-child]:hidden">
                 <div className="flex flex-col space-y-1">
                   <span className="font-medium text-base">{type.label}</span>
                   <span className="text-sm text-muted-foreground leading-relaxed">{type.description}</span>
