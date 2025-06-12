@@ -87,12 +87,16 @@ const AgencyCRMDashboard = () => {
               Manage your brand clients, view their campaigns, and track performance.
             </p>
             <div className="space-y-2">
-              <Button asChild className="w-full" variant="outline">
-                <Link to="/agency/crm/brands">View All Brands</Link>
-              </Button>
-              <Button asChild className="w-full" variant="outline">
-                <Link to="/agency/crm/brands/leaderboard">Brand Leaderboard</Link>
-              </Button>
+              <Link to="/agency/crm/brands" className="block">
+                <Button variant="outline" className="w-full">
+                  View All Brands
+                </Button>
+              </Link>
+              <Link to="/agency/crm/brands/leaderboard" className="block">
+                <Button variant="outline" className="w-full">
+                  Brand Leaderboard
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
@@ -109,12 +113,16 @@ const AgencyCRMDashboard = () => {
               Manage your creator network, track their performance, and analyze metrics.
             </p>
             <div className="space-y-2">
-              <Button asChild className="w-full" variant="outline">
-                <Link to="/agency/crm/creators">View All Creators</Link>
-              </Button>
-              <Button asChild className="w-full" variant="outline">
-                <Link to="/agency/crm/creators/leaderboard">Creator Leaderboard</Link>
-              </Button>
+              <Link to="/agency/crm/creators" className="block">
+                <Button variant="outline" className="w-full">
+                  View All Creators
+                </Button>
+              </Link>
+              <Link to="/agency/crm/creators/leaderboard" className="block">
+                <Button variant="outline" className="w-full">
+                  Creator Leaderboard
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
@@ -131,9 +139,11 @@ const AgencyCRMDashboard = () => {
               Track deals, manage negotiations, and monitor contract status.
             </p>
             <div className="space-y-2">
-              <Button asChild className="w-full" variant="outline">
-                <Link to="/agency/crm/deals">View Deals Pipeline</Link>
-              </Button>
+              <Link to="/agency/crm/deals" className="block">
+                <Button variant="outline" className="w-full">
+                  View Deals Pipeline
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
