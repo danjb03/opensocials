@@ -1,86 +1,84 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { TikTokIcon, Instagram, Youtube } from '@/components/icons/SocialIcons';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
+import { User, Camera, Users, DollarSign } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface EmptyProfileStateProps {
-  onStartProfileSetup?: () => void;
+  onStartProfileSetup: () => void;
 }
 
-const EmptyProfileState: React.FC<EmptyProfileStateProps> = ({
-  onStartProfileSetup
-}) => {
+const EmptyProfileState: React.FC<EmptyProfileStateProps> = ({ onStartProfileSetup }) => {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const handleStartSetup = () => {
-    console.log('Button clicked! Current location:', location.pathname);
-    
-    // Always navigate directly based on the current path
-    if (location.pathname.startsWith('/super-admin')) {
-      console.log('Navigating to super admin create profile route');
-      navigate('/super-admin/creators/create-profile');
-    } else {
-      console.log('Navigating to regular creator create profile route');
-      navigate('/creator/create-profile');
-    }
+    navigate('/creator/profile/setup');
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <div className="w-full max-w-4xl">
-        <Card className="shadow-lg border-dashed border-2 bg-card">
-          <CardHeader className="text-center pb-6">
-            <CardTitle className="text-3xl font-bold">Complete Your Creator Profile</CardTitle>
-            <CardDescription className="text-lg mt-2">
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <Card className="w-full max-w-4xl mx-auto">
+        <CardContent className="p-12 text-center">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold mb-4">Complete Your Creator Profile</h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Your profile is currently empty. Add details to be discovered by brands.
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent className="space-y-8">
-            <div className="flex flex-col items-center justify-center py-8">
-              <div className="flex gap-6 mb-6">
-                <TikTokIcon size={48} className="text-muted-foreground" />
-                <Instagram size={48} className="text-muted-foreground" />
-                <Youtube size={48} className="text-muted-foreground" />
+            </p>
+          </div>
+
+          <div className="flex justify-center mb-8">
+            <div className="flex gap-4">
+              <div className="w-16 h-16 rounded-full border-2 border-muted flex items-center justify-center">
+                <User className="w-8 h-8 text-muted-foreground" />
               </div>
-              <p className="text-center text-muted-foreground max-w-2xl text-lg leading-relaxed">
-                Complete your profile so brands can find, trust, and book you instantly. 
-                Match with campaigns built for creators like you.
+              <div className="w-16 h-16 rounded-full border-2 border-muted flex items-center justify-center">
+                <Camera className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <div className="w-16 h-16 rounded-full border-2 border-muted flex items-center justify-center">
+                <Users className="w-8 h-8 text-muted-foreground" />
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-12">
+            <p className="text-lg text-muted-foreground">
+              Complete your profile so brands can find, trust, and book you instantly. Match with campaigns built for creators like you.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            <div className="p-6 border rounded-lg">
+              <h3 className="text-xl font-semibold mb-2">1. Add Profile Info</h3>
+              <p className="text-muted-foreground">
+                Upload your photo and bio. Make your first impression count.
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="border rounded-lg p-6 bg-background shadow-sm">
-                <h3 className="font-semibold text-xl mb-3">1. Add Profile Info</h3>
-                <p className="text-muted-foreground">
-                  Upload your photo and bio. Make your first impression count.
-                </p>
-              </div>
-              <div className="border rounded-lg p-6 bg-background shadow-sm">
-                <h3 className="font-semibold text-xl mb-3">2. Connect Socials</h3>
-                <p className="text-muted-foreground">
-                  Connect your audience. Prove your reach. Own your value.
-                </p>
-              </div>
-              <div className="border rounded-lg p-6 bg-background shadow-sm">
-                <h3 className="font-semibold text-xl mb-3">3. Start Earning</h3>
-                <p className="text-muted-foreground">
-                  Be seen by premium brands and start landing paid campaigns.
-                </p>
-              </div>
+            <div className="p-6 border rounded-lg">
+              <h3 className="text-xl font-semibold mb-2">2. Connect Socials</h3>
+              <p className="text-muted-foreground">
+                Connect your audience. Prove your reach. Own your value.
+              </p>
             </div>
-          </CardContent>
-          
-          <CardFooter className="flex justify-center pt-8">
-            <Button size="lg" className="px-8 py-3 text-lg" onClick={handleStartSetup}>
-              Start Setting Up My Profile
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
+            
+            <div className="p-6 border rounded-lg">
+              <h3 className="text-xl font-semibold mb-2">3. Start Earning</h3>
+              <p className="text-muted-foreground">
+                Be seen by premium brands and start landing paid campaigns.
+              </p>
+            </div>
+          </div>
+
+          <Button 
+            size="lg" 
+            onClick={handleStartSetup}
+            className="px-8 py-3 text-lg"
+          >
+            Start Setting Up My Profile
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 };
