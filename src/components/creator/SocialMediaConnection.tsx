@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { LinkIcon, Instagram, Youtube, Twitter, Loader2, CheckCircle } from 'lucide-react';
+import { LinkIcon, Instagram, Youtube, Twitter, Loader2, CheckCircle, Linkedin } from 'lucide-react';
+import { TikTokIcon } from '@/components/icons/TikTokIcon';
 import { useInsightIQData } from '@/hooks/useInsightIQData';
 
 interface SocialMediaConnectionProps {
@@ -16,7 +17,8 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
     instagram: '',
     youtube: '',
     tiktok: '',
-    twitter: ''
+    twitter: '',
+    linkedin: ''
   });
 
   const platforms = [
@@ -39,16 +41,24 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
     { 
       name: 'TikTok', 
       key: 'tiktok', 
-      icon: LinkIcon, 
+      icon: TikTokIcon, 
       color: 'from-gray-800 to-black',
       bgColor: 'bg-gray-50',
       borderColor: 'border-gray-200'
     },
     { 
-      name: 'Twitter', 
+      name: 'X', 
       key: 'twitter', 
       icon: Twitter, 
-      color: 'from-blue-400 to-blue-600',
+      color: 'from-gray-800 to-black',
+      bgColor: 'bg-gray-50',
+      borderColor: 'border-gray-200'
+    },
+    { 
+      name: 'LinkedIn', 
+      key: 'linkedin', 
+      icon: Linkedin, 
+      color: 'from-blue-600 to-blue-700',
       bgColor: 'bg-blue-50',
       borderColor: 'border-blue-200'
     }
