@@ -130,16 +130,19 @@ const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <Card>
+      <Card className="bg-background border-border shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Smartphone className="h-5 w-5" />Content Requirements
+          <CardTitle className="flex items-center gap-3 text-xl text-foreground">
+            <div className="p-2 bg-foreground rounded-lg">
+              <Smartphone className="h-5 w-5 text-background" />
+            </div>
+            Content Requirements
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Campaign Description */}
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium">
+            <Label htmlFor="description" className="text-sm font-medium text-foreground">
               Campaign Description *
             </Label>
             <Textarea
@@ -147,16 +150,16 @@ const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
               {...register('description')}
               placeholder="Describe your campaign goals, target audience, and key messages..."
               rows={4}
-              className="resize-none"
+              className="resize-none bg-background border-border text-foreground placeholder:text-muted-foreground"
             />
             {errors.description && (
-              <p className="text-sm text-red-600">{errors.description.message}</p>
+              <p className="text-sm text-destructive">{errors.description.message}</p>
             )}
           </div>
 
           {/* Platforms */}
           <div className="space-y-4">
-            <Label className="text-sm font-medium">
+            <Label className="text-sm font-medium text-foreground">
               Target Platforms *
             </Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -166,8 +169,8 @@ const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
                   className={`
                     flex items-center space-x-3 p-3 rounded-lg border-2 cursor-pointer transition-all
                     ${watchedPlatforms?.includes(platform.value)
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-foreground bg-card'
+                      : 'border-border hover:border-foreground bg-card'
                     }
                   `}
                 >
@@ -180,18 +183,18 @@ const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
                   <div className={`p-1 rounded ${platform.color}`}>
                     {platform.icon}
                   </div>
-                  <span className="font-medium">{platform.label}</span>
+                  <span className="font-medium text-foreground">{platform.label}</span>
                 </Label>
               ))}
             </div>
             {errors.platforms && (
-              <p className="text-sm text-red-600">{errors.platforms.message}</p>
+              <p className="text-sm text-destructive">{errors.platforms.message}</p>
             )}
           </div>
 
           {/* Content Types */}
           <div className="space-y-4">
-            <Label className="text-sm font-medium">
+            <Label className="text-sm font-medium text-foreground">
               Content Types *
             </Label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -201,8 +204,8 @@ const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
                   className={`
                     flex items-start space-x-3 p-3 rounded-lg border-2 cursor-pointer transition-all
                     ${watchedContentTypes?.includes(contentType.value)
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-foreground bg-card'
+                      : 'border-border hover:border-foreground bg-card'
                     }
                   `}
                 >
@@ -214,20 +217,20 @@ const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
                     className="mt-1"
                   />
                   <div className="space-y-1">
-                    <span className="font-medium">{contentType.label}</span>
-                    <p className="text-sm text-gray-600">{contentType.description}</p>
+                    <span className="font-medium text-foreground">{contentType.label}</span>
+                    <p className="text-sm text-muted-foreground">{contentType.description}</p>
                   </div>
                 </Label>
               ))}
             </div>
             {errors.content_types && (
-              <p className="text-sm text-red-600">{errors.content_types.message}</p>
+              <p className="text-sm text-destructive">{errors.content_types.message}</p>
             )}
           </div>
 
           {/* Messaging Guidelines */}
           <div className="space-y-2">
-            <Label htmlFor="messaging_guidelines" className="text-sm font-medium">
+            <Label htmlFor="messaging_guidelines" className="text-sm font-medium text-foreground">
               Messaging Guidelines
             </Label>
             <Textarea
@@ -235,13 +238,13 @@ const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
               {...register('messaging_guidelines')}
               placeholder="Key messages, tone of voice, brand guidelines..."
               rows={3}
-              className="resize-none"
+              className="resize-none bg-background border-border text-foreground placeholder:text-muted-foreground"
             />
           </div>
 
           {/* Hashtags */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Required Hashtags</Label>
+            <Label className="text-sm font-medium text-foreground">Required Hashtags</Label>
             <div className="flex flex-wrap gap-2">
               {hashtagFields.map((field, index) => (
                 <Badge key={field.id} variant="secondary" className="pl-3 pr-1">
@@ -285,7 +288,7 @@ const ContentRequirementsStep: React.FC<ContentRequirementsStepProps> = ({
         <Button 
           type="submit" 
           disabled={!isValid || isLoading}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 bg-foreground text-background hover:bg-foreground/90"
         >
           Continue to Budget & Deliverables
           <ArrowRight className="h-4 w-4" />
