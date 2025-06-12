@@ -21,17 +21,15 @@ export const BudgetValidationSection: React.FC<BudgetValidationSectionProps> = (
   onUpdateOffer,
   onCloseModal
 }) => {
-  if (!validationError) return null;
-
   return (
     <BudgetValidationModal
-      isOpen={showValidationModal}
+      isOpen={showValidationModal && !!validationError}
       onClose={onCloseModal}
       onUpdateOffer={onUpdateOffer}
-      tier={validationError.tier}
-      campaignType={validationError.campaignType}
-      minPrice={validationError.minPrice}
-      currentOffer={validationError.currentOffer}
+      tier={validationError?.tier || ''}
+      campaignType={validationError?.campaignType || ''}
+      minPrice={validationError?.minPrice || 0}
+      currentOffer={validationError?.currentOffer || 0}
     />
   );
 };

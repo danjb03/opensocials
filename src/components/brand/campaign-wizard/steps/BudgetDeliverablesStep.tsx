@@ -104,7 +104,7 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
   };
 
   return (
-    <>
+    <div className="space-y-6">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <Card className="bg-background border-border shadow-lg">
           <CardHeader className="pb-4">
@@ -167,7 +167,7 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
         onUpdateOffer={handleUpdateOfferWithToast}
         onCloseModal={handleCloseValidationModal}
       />
-    </>
+    </div>
   );
 };
 
