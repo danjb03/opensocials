@@ -209,7 +209,7 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
                   </SelectItem>)}
               </SelectContent>
             </Select>
-            {errors.campaign_type && <p className="text-sm text-destructive">{errors.campaign_type.message}</p>}
+            {errors.campaign_type && <p className="text-sm text-slate-300">{errors.campaign_type.message}</p>}
           </div>
 
           {/* Quick Tips */}
