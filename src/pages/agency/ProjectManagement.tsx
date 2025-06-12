@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, Plus, Building2, Calendar, DollarSign } from 'lucide-react';
+import { Briefcase, Building2, Calendar, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAgencyProjects } from '@/hooks/agency/useAgencyProjects';
 import { Badge } from '@/components/ui/badge';
@@ -26,12 +26,14 @@ const AgencyProjectManagement = () => {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Project Management</h1>
         </div>
-        <div className="text-center py-8 text-red-500">Error loading projects</div>
+        <div className="text-center py-8 text-red-500">
+          Error loading projects: {error.message}
+        </div>
       </div>
     );
   }
 
-  const activeProjects = projects.filter(p => p.status === 'active').length;
+  const activeProjects = projects.filter(p => p.status === 'active' || p.status === 'in_progress').length;
   const totalBudget = projects.reduce((sum, p) => sum + (p.budget || 0), 0);
 
   return (
@@ -41,10 +43,6 @@ const AgencyProjectManagement = () => {
           <Briefcase className="h-8 w-8" />
           <h1 className="text-3xl font-bold">Project Management</h1>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          New Project
-        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3 mb-6">
@@ -87,13 +85,9 @@ const AgencyProjectManagement = () => {
           <CardContent className="text-center py-12">
             <Briefcase className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No projects yet</h3>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-muted-foreground">
               Your managed brands haven't created any projects yet.
             </p>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Create First Project
-            </Button>
           </CardContent>
         </Card>
       ) : (
@@ -108,7 +102,11 @@ const AgencyProjectManagement = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="font-medium">{project.name}</h4>
-                      <Badge variant={project.status === 'active' ? 'default' : 'secondary'}>
+                      <Badge variant={
+                        project.status === 'active' || project.status === 'in_progress' 
+                          ? 'default' 
+                          : 'secondary'
+                      }>
                         {project.status}
                       </Badge>
                     </div>
