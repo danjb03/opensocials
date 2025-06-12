@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -92,55 +93,58 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />Budget & Deliverables
+      <Card className="bg-background border-border shadow-lg">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-xl text-foreground">
+            <div className="p-2 bg-foreground rounded-lg">
+              <DollarSign className="h-5 w-5 text-background" />
+            </div>
+            Budget & Deliverables
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Budget Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-green-600" />
-              <Label className="text-sm font-medium">Campaign Budget</Label>
+              <DollarSign className="h-5 w-5 text-foreground" />
+              <Label className="text-sm font-medium text-foreground">Campaign Budget</Label>
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="total_budget" className="text-sm font-medium">
+              <Label htmlFor="total_budget" className="text-sm font-medium text-foreground">
                 Total Budget *
               </Label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="total_budget"
                   type="number"
                   {...register('total_budget', { valueAsNumber: true })}
                   placeholder="5000"
-                  className="pl-10 text-lg"
+                  className="pl-10 text-lg bg-background border-border text-foreground placeholder:text-muted-foreground"
                 />
               </div>
               {errors.total_budget && (
-                <p className="text-sm text-red-600">{errors.total_budget.message}</p>
+                <p className="text-sm text-slate-300">{errors.total_budget.message}</p>
               )}
             </div>
 
             {/* Budget Breakdown */}
             {watchedBudget > 0 && (
-              <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                <h4 className="font-medium text-gray-900">Budget Breakdown</h4>
+              <div className="bg-card border border-border rounded-lg p-4 space-y-2">
+                <h4 className="font-medium text-foreground">Budget Breakdown</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span>Creator Payments:</span>
-                    <span className="font-medium">${estimatedCreatorBudget.toFixed(2)}</span>
+                    <span className="text-muted-foreground">Creator Payments:</span>
+                    <span className="font-medium text-foreground">${estimatedCreatorBudget.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Platform Fee:</span>
-                    <span className="font-medium">${(watchedBudget * 0.25).toFixed(2)}</span>
+                    <span className="text-muted-foreground">Platform Fee:</span>
+                    <span className="font-medium text-foreground">${(watchedBudget * 0.25).toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between font-medium border-t pt-1">
-                    <span>Total:</span>
-                    <span>${watchedBudget.toFixed(2)}</span>
+                  <div className="flex justify-between font-medium border-t border-border pt-1">
+                    <span className="text-foreground">Total:</span>
+                    <span className="text-foreground">${watchedBudget.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -150,13 +154,13 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
           {/* Deliverables Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-blue-600" />
-              <Label className="text-sm font-medium">Content Deliverables</Label>
+              <Target className="h-5 w-5 text-foreground" />
+              <Label className="text-sm font-medium text-foreground">Content Deliverables</Label>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="posts_count" className="text-sm font-medium">
+                <Label htmlFor="posts_count" className="text-sm font-medium text-foreground">
                   Feed Posts *
                 </Label>
                 <Input
@@ -165,14 +169,15 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
                   {...register('posts_count', { valueAsNumber: true })}
                   min="1"
                   max="100"
+                  className="bg-background border-border text-foreground"
                 />
                 {errors.posts_count && (
-                  <p className="text-sm text-red-600">{errors.posts_count.message}</p>
+                  <p className="text-sm text-slate-300">{errors.posts_count.message}</p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="stories_count" className="text-sm font-medium">
+                <Label htmlFor="stories_count" className="text-sm font-medium text-foreground">
                   Stories
                 </Label>
                 <Input
@@ -181,11 +186,12 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
                   {...register('stories_count', { valueAsNumber: true })}
                   min="0"
                   max="50"
+                  className="bg-background border-border text-foreground"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="reels_count" className="text-sm font-medium">
+                <Label htmlFor="reels_count" className="text-sm font-medium text-foreground">
                   Reels/Short Videos
                 </Label>
                 <Input
@@ -194,11 +200,12 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
                   {...register('reels_count', { valueAsNumber: true })}
                   min="0"
                   max="20"
+                  className="bg-background border-border text-foreground"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="video_length_minutes" className="text-sm font-medium">
+                <Label htmlFor="video_length_minutes" className="text-sm font-medium text-foreground">
                   Video Length (min)
                 </Label>
                 <Input
@@ -207,16 +214,17 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
                   {...register('video_length_minutes', { valueAsNumber: true })}
                   min="0"
                   max="120"
+                  className="bg-background border-border text-foreground"
                 />
               </div>
             </div>
 
             {/* Estimated cost per deliverable */}
             {estimatedPerPostBudget > 0 && (
-              <div className="bg-blue-50 rounded-lg p-3">
-                <p className="text-sm text-blue-800">
+              <div className="bg-card border border-border rounded-lg p-3">
+                <p className="text-sm text-foreground">
                   <strong>Estimated per post:</strong> ${estimatedPerPostBudget.toFixed(2)} 
-                  <span className="text-xs ml-1">(creator receives 75%)</span>
+                  <span className="text-xs ml-1 text-muted-foreground">(creator receives 75%)</span>
                 </p>
               </div>
             )}
@@ -225,19 +233,19 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
           {/* Timeline Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-purple-600" />
-              <Label className="text-sm font-medium">Campaign Timeline</Label>
+              <Clock className="h-5 w-5 text-foreground" />
+              <Label className="text-sm font-medium text-foreground">Campaign Timeline</Label>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Start Date *</Label>
+                <Label className="text-sm font-medium text-foreground">Start Date *</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       className={cn(
-                        "w-full justify-start text-left font-normal",
+                        "w-full justify-start text-left font-normal bg-background border-border",
                         !watchedStartDate && "text-muted-foreground"
                       )}
                     >
@@ -245,7 +253,7 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
                       {watchedStartDate ? format(watchedStartDate, "PPP") : "Pick a date"}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0 bg-popover border-border">
                     <Calendar
                       mode="single"
                       selected={watchedStartDate}
@@ -256,18 +264,18 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
                   </PopoverContent>
                 </Popover>
                 {errors.start_date && (
-                  <p className="text-sm text-red-600">{errors.start_date.message}</p>
+                  <p className="text-sm text-slate-300">{errors.start_date.message}</p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium">End Date *</Label>
+                <Label className="text-sm font-medium text-foreground">End Date *</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       className={cn(
-                        "w-full justify-start text-left font-normal",
+                        "w-full justify-start text-left font-normal bg-background border-border",
                         !watchedEndDate && "text-muted-foreground"
                       )}
                     >
@@ -275,7 +283,7 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
                       {watchedEndDate ? format(watchedEndDate, "PPP") : "Pick a date"}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0 bg-popover border-border">
                     <Calendar
                       mode="single"
                       selected={watchedEndDate}
@@ -286,18 +294,19 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
                   </PopoverContent>
                 </Popover>
                 {errors.end_date && (
-                  <p className="text-sm text-red-600">{errors.end_date.message}</p>
+                  <p className="text-sm text-slate-300">{errors.end_date.message}</p>
                 )}
               </div>
             </div>
           </div>
 
           {/* Quick Tips */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h4 className="font-medium text-yellow-900 mb-2 flex items-center gap-2">
-              <Lightbulb className="h-4 w-4" />Budget Tips
+          <div className="bg-card border border-border rounded-lg p-4">
+            <h4 className="font-medium text-foreground mb-2 flex items-center gap-2">
+              <Lightbulb className="h-4 w-4" />
+              Budget Tips
             </h4>
-            <ul className="text-sm text-yellow-800 space-y-1">
+            <ul className="text-sm text-muted-foreground space-y-1">
               <li>• Higher budgets attract premium creators with larger audiences</li>
               <li>• Consider your cost per engagement when setting budgets</li>
               <li>• Longer campaigns often provide better value and engagement</li>
@@ -312,7 +321,7 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
           type="button"
           variant="outline"
           onClick={onBack}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 border-border text-foreground hover:bg-accent"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
@@ -320,7 +329,7 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
         <Button 
           type="submit" 
           disabled={!isValid || isLoading}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 bg-foreground text-background hover:bg-foreground/90"
         >
           Continue to Creator Selection
           <ArrowRight className="h-4 w-4" />
