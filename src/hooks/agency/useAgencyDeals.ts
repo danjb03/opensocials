@@ -11,6 +11,7 @@ export interface AgencyDeal {
   creator_name: string;
   brand_name: string;
   created_at: string;
+  project_id?: string; // Add project_id to match the deals table structure
 }
 
 export const useAgencyDeals = () => {
@@ -92,7 +93,8 @@ export const useAgencyDeals = () => {
         return {
           ...deal,
           creator_name: creator ? `${creator.first_name} ${creator.last_name}` : 'Unknown Creator',
-          brand_name: brand?.company_name || 'Unknown Brand'
+          brand_name: brand?.company_name || 'Unknown Brand',
+          project_id: deal.id // Use deal.id as project_id for now, or we could link to actual projects if needed
         };
       });
     },
