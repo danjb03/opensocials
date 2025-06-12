@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ProfileEditForm from '@/components/creator/ProfileEditForm';
 import EmptyProfileState from '@/components/creator/EmptyProfileState';
@@ -5,7 +6,7 @@ import AudienceLocation from '@/components/creator/AudienceLocation';
 import DashboardStats from './DashboardStats';
 import SocialAnalytics from './SocialAnalytics';
 import EarningsChart from './EarningsChart';
-import { CreatorProfile } from '@/types/creatorProfile';
+import { CreatorProfile } from '@/hooks/useCreatorProfile'; // Use the interface from the hook
 
 interface DashboardContentProps {
   profile: any;
@@ -110,7 +111,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
           {profile?.audienceLocation && (
             <AudienceLocation 
               audienceLocation={profile.audienceLocation}
-              isVisible={profile.visibilitySettings.showLocation}
+              isVisible={profile.visibilitySettings?.showLocation || true}
             />
           )}
           

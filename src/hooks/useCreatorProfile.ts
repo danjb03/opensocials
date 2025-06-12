@@ -31,8 +31,8 @@ export interface CreatorProfile {
     youtube?: string;
     linkedin?: string;
   };
-  followerCount?: number;
-  engagementRate?: number;
+  followerCount?: string; // Changed to string to match types/creatorProfile.ts
+  engagementRate?: string; // Changed to string to match types/creatorProfile.ts
   avatarUrl?: string | null;
   bannerUrl?: string | null;
 }
@@ -49,10 +49,10 @@ export const useCreatorProfile = () => {
       bio: rawProfile.bio,
       primaryPlatform: rawProfile.primary_platform,
       contentType: rawProfile.content_types?.[0] || null,
-      audienceType: rawProfile.audience_type || null, // Set to null since field doesn't exist in DB
+      audienceType: null, // Field doesn't exist in database
       audienceLocation: rawProfile.audience_location || { primary: 'Global' },
       industries: rawProfile.industries || null,
-      creatorType: rawProfile.creator_type || null, // Set to null since field doesn't exist in DB
+      creatorType: null, // Field doesn't exist in database
       isProfileComplete: rawProfile.is_profile_complete || false,
       platforms: rawProfile.platforms || [],
       contentTypes: rawProfile.content_types || [],
@@ -63,8 +63,8 @@ export const useCreatorProfile = () => {
         linkedin: !!rawProfile.social_handles?.linkedin,
       },
       socialHandles: rawProfile.social_handles || {},
-      followerCount: rawProfile.follower_count || 0, // Keep as number
-      engagementRate: rawProfile.engagement_rate || 0, // Keep as number
+      followerCount: rawProfile.follower_count?.toString() || '0', // Convert to string
+      engagementRate: rawProfile.engagement_rate?.toString() || '0', // Convert to string
       avatarUrl: rawProfile.avatar_url,
       bannerUrl: rawProfile.banner_url
     };
