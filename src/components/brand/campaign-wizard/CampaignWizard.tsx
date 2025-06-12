@@ -161,16 +161,16 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
 
   return (
     <BrandLayout>
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-background py-8">
         <div className="max-w-4xl mx-auto px-4">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-3xl font-light text-foreground mb-2">
                   Create New Campaign
                 </h1>
-                <p className="text-gray-600 mt-1">
+                <p className="text-muted-foreground">
                   Follow the steps below to create an engaging campaign
                 </p>
               </div>
@@ -184,66 +184,66 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
               </Button>
             </div>
 
-          {/* Progress Bar */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-700">
-                Step {currentStep} of {CAMPAIGN_STEPS.length}
-              </span>
-              <span className="text-sm text-gray-500">
-                {Math.round(progressPercentage)}% Complete
-              </span>
+            {/* Progress Bar */}
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-foreground">
+                  Step {currentStep} of {CAMPAIGN_STEPS.length}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  {Math.round(progressPercentage)}% Complete
+                </span>
+              </div>
+              <Progress value={progressPercentage} className="h-2" />
             </div>
-            <Progress value={progressPercentage} className="h-2" />
-          </div>
 
-          {/* Step Indicators */}
-          <div className="flex justify-between mt-6">
-            {steps.map((step, index) => (
-              <motion.div
-                key={step.id}
-                className="flex flex-col items-center space-y-2"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <div
-                  className={`
-                    w-12 h-12 rounded-full flex items-center justify-center text-lg
-                    transition-all duration-300 ${
-                      step.complete
-                        ? 'bg-green-500 text-white'
-                        : step.current
-                        ? 'bg-blue-500 text-white ring-4 ring-blue-200'
-                        : 'bg-gray-200 text-gray-500'
-                    }
-                  `}
+            {/* Step Indicators */}
+            <div className="flex justify-between mt-8 px-4">
+              {steps.map((step, index) => (
+                <motion.div
+                  key={step.id}
+                  className="flex flex-col items-center space-y-3 flex-1"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
                 >
-                  {step.complete ? (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    >
-                      <Check className="h-6 w-6" />
-                    </motion.div>
-                  ) : (
-                    getStepIcon(step.icon)
-                  )}
-                </div>
-                <div className="text-center">
-                  <div className={`text-sm font-medium ${
-                    step.current ? 'text-blue-600' : 'text-gray-600'
-                  }`}>
-                    {step.title}
+                  <div
+                    className={`
+                      w-12 h-12 rounded-full flex items-center justify-center text-lg
+                      transition-all duration-300 ${
+                        step.complete
+                          ? 'bg-primary text-primary-foreground'
+                          : step.current
+                          ? 'bg-accent text-accent-foreground ring-4 ring-accent/20'
+                          : 'bg-muted text-muted-foreground'
+                      }
+                    `}
+                  >
+                    {step.complete ? (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      >
+                        <Check className="h-6 w-6" />
+                      </motion.div>
+                    ) : (
+                      getStepIcon(step.icon)
+                    )}
                   </div>
-                  <div className="text-xs text-gray-500 max-w-20">
-                    {step.description}
+                  <div className="text-center max-w-24">
+                    <div className={`text-sm font-medium ${
+                      step.current ? 'text-foreground' : 'text-muted-foreground'
+                    }`}>
+                      {step.title}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {step.description}
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
 
           {/* Step Content */}

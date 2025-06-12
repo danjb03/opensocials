@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,35 +34,30 @@ const objectiveOptions = [
     label: 'Brand Awareness',
     description: 'Increase visibility and recognition of your brand',
     icon: <Zap className="h-5 w-5" />,
-    color: 'text-blue-600'
   },
   {
     value: 'product_launch' as CampaignObjective,
     label: 'Product Launch',
     description: 'Introduce a new product or service to the market',
     icon: <Target className="h-5 w-5" />,
-    color: 'text-green-600'
   },
   {
     value: 'sales_drive' as CampaignObjective,
     label: 'Sales Drive',
     description: 'Drive direct sales and conversions',
     icon: <ShoppingCart className="h-5 w-5" />,
-    color: 'text-purple-600'
   },
   {
     value: 'engagement' as CampaignObjective,
     label: 'Engagement',
     description: 'Boost interactions and community building',
     icon: <Heart className="h-5 w-5" />,
-    color: 'text-pink-600'
   },
   {
     value: 'conversions' as CampaignObjective,
     label: 'Conversions',
     description: 'Drive specific actions like sign-ups or downloads',
     icon: <TrendingUp className="h-5 w-5" />,
-    color: 'text-orange-600'
   }
 ];
 
@@ -103,32 +99,35 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5" />Campaign Basics
+      <Card className="bg-card border-border shadow-lg">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-xl text-foreground">
+            <div className="p-2 bg-primary rounded-lg">
+              <Target className="h-5 w-5 text-primary-foreground" />
+            </div>
+            Campaign Basics
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Campaign Name */}
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium">
+            <Label htmlFor="name" className="text-sm font-medium text-foreground">
               Campaign Name *
             </Label>
             <Input
               id="name"
               {...register('name')}
               placeholder="e.g., Summer Collection Launch 2024"
-              className="text-lg"
+              className="text-lg bg-background border-border text-foreground placeholder:text-muted-foreground"
             />
             {errors.name && (
-              <p className="text-sm text-red-600">{errors.name.message}</p>
+              <p className="text-sm text-destructive">{errors.name.message}</p>
             )}
           </div>
 
           {/* Campaign Objective */}
           <div className="space-y-4">
-            <Label className="text-sm font-medium">
+            <Label className="text-sm font-medium text-foreground">
               What's your main objective? *
             </Label>
             <RadioGroup
@@ -143,8 +142,8 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
                   className={`
                     flex items-start space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-all
                     ${watchedObjective === option.value 
-                      ? 'border-blue-500 bg-blue-50' 
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-primary bg-accent/50' 
+                      : 'border-border hover:border-muted-foreground bg-card'
                     }
                   `}
                 >
@@ -155,53 +154,54 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
                   />
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className={option.color}>{option.icon}</span>
-                      <span className="font-medium">{option.label}</span>
+                      <span className="text-primary">{option.icon}</span>
+                      <span className="font-medium text-foreground">{option.label}</span>
                     </div>
-                    <p className="text-sm text-gray-600">{option.description}</p>
+                    <p className="text-sm text-muted-foreground">{option.description}</p>
                   </div>
                 </Label>
               ))}
             </RadioGroup>
             {errors.objective && (
-              <p className="text-sm text-red-600">{errors.objective.message}</p>
+              <p className="text-sm text-destructive">{errors.objective.message}</p>
             )}
           </div>
 
           {/* Campaign Type */}
           <div className="space-y-2">
-            <Label htmlFor="campaign_type" className="text-sm font-medium">
+            <Label htmlFor="campaign_type" className="text-sm font-medium text-foreground">
               Campaign Type *
             </Label>
             <Select 
               value={watchedCampaignType} 
               onValueChange={(value) => setValue('campaign_type', value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-background border-border text-foreground">
                 <SelectValue placeholder="Select campaign duration and type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-popover border-border">
                 {campaignTypes.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
+                  <SelectItem key={type.value} value={type.value} className="text-foreground">
                     <div className="space-y-1">
                       <div className="font-medium">{type.label}</div>
-                      <div className="text-sm text-gray-600">{type.description}</div>
+                      <div className="text-sm text-muted-foreground">{type.description}</div>
                     </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {errors.campaign_type && (
-              <p className="text-sm text-red-600">{errors.campaign_type.message}</p>
+              <p className="text-sm text-destructive">{errors.campaign_type.message}</p>
             )}
           </div>
 
           {/* Quick Tips */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-medium text-blue-900 mb-2 flex items-center gap-2">
-              <Lightbulb className="h-4 w-4" />Quick Tips
+          <div className="bg-muted/50 border border-border rounded-lg p-4">
+            <h4 className="font-medium text-foreground mb-2 flex items-center gap-2">
+              <Lightbulb className="h-4 w-4" />
+              Quick Tips
             </h4>
-            <ul className="text-sm text-blue-800 space-y-1">
+            <ul className="text-sm text-muted-foreground space-y-1">
               <li>• Choose a clear, memorable campaign name that reflects your goal</li>
               <li>• Your objective will help us recommend the best creators for your needs</li>
               <li>• Campaign type determines pricing and creator availability</li>
@@ -215,7 +215,7 @@ const CampaignBasicsStep: React.FC<CampaignBasicsStepProps> = ({
         <Button 
           type="submit" 
           disabled={!isValid || isLoading}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
         >
           Continue to Content Requirements
           <ArrowRight className="h-4 w-4" />
