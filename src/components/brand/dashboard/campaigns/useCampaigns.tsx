@@ -42,15 +42,16 @@ export function useCampaigns(): UseCampaignsReturn {
           status,
           start_date,
           end_date,
-          total_budget,
+          budget,
           created_at,
           creator_deals (
             id,
             creator_id,
-            gross_value,
+            deal_value,
             status,
             creator_profiles (
-              name,
+              first_name,
+              last_name,
               avatar_url,
               primary_platform
             )
@@ -129,7 +130,7 @@ export function useCampaigns(): UseCampaignsReturn {
           id: project.id,
           name: project.name || 'Untitled Campaign',
           status: (project.status as 'draft' | 'active' | 'completed' | 'paused') || 'draft',
-          budget: project.total_budget || 0,
+          budget: project.budget || 0,
           startDate: project.start_date || '',
           endDate: project.end_date || '',
           creators: deals.length,
