@@ -260,30 +260,30 @@ const CreatorProfile = () => {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-4">
-              <Button variant="outline" asChild>
-                <Link to="/creator/analytics">
+              <Link to="/creator/analytics">
+                <Button variant="outline" className="w-full">
                   View Analytics
-                </Link>
-              </Button>
+                </Button>
+              </Link>
               
-              <Button variant="outline" asChild>
-                <Link to="/creator/campaigns">
+              <Link to="/creator/campaigns">
+                <Button variant="outline" className="w-full">
                   View Campaigns
-                </Link>
-              </Button>
+                </Button>
+              </Link>
               
-              <Button variant="outline" asChild>
-                <Link to="/creator/deals">
+              <Link to="/creator/deals">
+                <Button variant="outline" className="w-full">
                   View Deals
-                </Link>
-              </Button>
+                </Button>
+              </Link>
 
-              <Button variant="outline" asChild>
-                <Link to="/creator/profile/setup">
+              <Link to="/creator/profile/setup">
+                <Button variant="outline" className="w-full">
                   <Settings className="h-4 w-4 mr-2" />
                   Profile Setup
-                </Link>
-              </Button>
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
