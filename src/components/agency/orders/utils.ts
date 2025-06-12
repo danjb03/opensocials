@@ -1,5 +1,5 @@
 
-import { Campaign } from './types';
+import { Campaign, Deal } from './types';
 
 export const getStatusColor = (status: string) => {
   switch (status) {
@@ -17,10 +17,10 @@ export const getStatusColor = (status: string) => {
 };
 
 export const getUrgencyLevel = (campaign: Campaign) => {
-  const pendingDeals = campaign.deals.filter((deal: any) => deal.status === 'pending');
+  const pendingDeals = campaign.deals.filter((deal: Deal) => deal.status === 'pending');
   
   if (pendingDeals.length > 0) {
-    const oldestPending = new Date(Math.min(...pendingDeals.map((d: any) => new Date(d.created_at).getTime())));
+    const oldestPending = new Date(Math.min(...pendingDeals.map((d: Deal) => new Date(d.created_at).getTime())));
     const daysPending = Math.floor((Date.now() - oldestPending.getTime()) / (1000 * 60 * 60 * 24));
     
     if (daysPending > 7) return 'high';
@@ -30,7 +30,7 @@ export const getUrgencyLevel = (campaign: Campaign) => {
   return 'low';
 };
 
-export const groupDealsByCampaign = (deals: any[]) => {
+export const groupDealsByCampaign = (deals: Deal[]) => {
   return deals.reduce((acc, deal) => {
     const title = deal.title || 'Untitled Campaign';
     if (!acc[title]) {
@@ -49,7 +49,7 @@ export const groupDealsByCampaign = (deals: any[]) => {
 
 export const getCampaignsNeedingAttention = (campaigns: Campaign[]) => {
   return campaigns.filter(campaign => {
-    const hasStuckDeals = campaign.deals.some((deal: any) => 
+    const hasStuckDeals = campaign.deals.some((deal: Deal) => 
       deal.status === 'pending' && 
       new Date(deal.created_at) < new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // 7 days old
     );

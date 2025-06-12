@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, AlertTriangle } from 'lucide-react';
-import { Campaign } from './types';
+import { Campaign, Deal } from './types';
 import { getUrgencyLevel } from './utils';
 
 interface AgencyAttentionCampaignsProps {
@@ -26,7 +26,7 @@ const AgencyAttentionCampaigns = ({ campaigns }: AgencyAttentionCampaignsProps) 
         <div className="space-y-3">
           {campaigns.map((campaign) => {
             const urgency = getUrgencyLevel(campaign);
-            const pendingDeals = campaign.deals.filter((deal: any) => deal.status === 'pending');
+            const pendingDeals = campaign.deals.filter((deal: Deal) => deal.status === 'pending');
             
             return (
               <div key={campaign.title} className="flex items-center justify-between p-3 bg-white rounded-lg border">

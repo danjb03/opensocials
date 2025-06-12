@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, AlertTriangle, Users } from 'lucide-react';
-import { Campaign } from './types';
+import { Campaign, Deal } from './types';
 import { getStatusColor, getUrgencyLevel } from './utils';
 
 interface AgencyAllCampaignsProps {
@@ -32,9 +32,9 @@ const AgencyAllCampaigns = ({ campaigns }: AgencyAllCampaignsProps) => {
         ) : (
           <div className="space-y-4">
             {campaigns.map((campaign) => {
-              const completedCampaignDeals = campaign.deals.filter((deal: any) => deal.status === 'completed');
+              const completedCampaignDeals = campaign.deals.filter((deal: Deal) => deal.status === 'completed');
               const urgency = getUrgencyLevel(campaign);
-              const totalValue = campaign.deals.reduce((sum: number, deal: any) => sum + (deal.value || 0), 0);
+              const totalValue = campaign.deals.reduce((sum: number, deal: Deal) => sum + (deal.value || 0), 0);
               
               return (
                 <div key={campaign.title} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50">

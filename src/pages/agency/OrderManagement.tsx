@@ -6,6 +6,7 @@ import AgencyOrderStats from '@/components/agency/orders/AgencyOrderStats';
 import AgencyAttentionCampaigns from '@/components/agency/orders/AgencyAttentionCampaigns';
 import AgencyAllCampaigns from '@/components/agency/orders/AgencyAllCampaigns';
 import { groupDealsByCampaign, getCampaignsNeedingAttention } from '@/components/agency/orders/utils';
+import { Deal } from '@/components/agency/orders/types';
 
 const AgencyOrderManagement = () => {
   const { data: deals = [], isLoading: dealsLoading } = useAgencyDeals();
@@ -22,14 +23,15 @@ const AgencyOrderManagement = () => {
     );
   }
 
-  // Group deals by campaign and get derived data
-  const campaignsByTitle = groupDealsByCampaign(deals);
+  // Cast deals to proper type and group by campaign
+  const typedDeals = deals as Deal[];
+  const campaignsByTitle = groupDealsByCampaign(typedDeals);
   const campaigns = Object.values(campaignsByTitle);
   const campaignsNeedingAttention = getCampaignsNeedingAttention(campaigns);
   
   const activeCampaigns = campaigns.filter(c => c.status === 'active');
-  const totalDeals = deals.length;
-  const completedDeals = deals.filter(d => d.status === 'completed').length;
+  const totalDeals = typedDeals.length;
+  const completedDeals = typedDeals.filter(d => d.status === 'completed').length;
   const completionRate = totalDeals > 0 ? Math.round((completedDeals / totalDeals) * 100) : 0;
 
   return (
