@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -25,8 +24,9 @@ export const IndexNavigation = ({ user }: IndexNavigationProps) => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
+            <div className="flex items-center gap-4">
               <NavigationLogo />
+              <span className="text-foreground text-lg font-medium">Open Socials</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <button 
