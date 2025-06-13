@@ -6,7 +6,7 @@ interface HeroLogoProps {
 }
 
 const HeroLogo = ({ className = '' }: HeroLogoProps) => {
-  const logoSrc = "/lovable-uploads/1d0809d8-cd41-4f30-9717-c8c13460e048.png";
+  const logoSrc = "/lovable-uploads/21ae8cf5-2c99-4851-89c8-71f69414fc49.png";
 
   return (
     <Link to="/" className={`block ${className}`}>

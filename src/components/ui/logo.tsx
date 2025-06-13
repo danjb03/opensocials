@@ -11,8 +11,8 @@ const Logo = ({ className = '' }: LogoProps) => {
   // Check if we're on the home page or auth page
   const isHomeOrAuth = location.pathname === '/' || location.pathname.startsWith('/auth');
   
-  // Use the new OS logo
-  const logoSrc = "/lovable-uploads/1d0809d8-cd41-4f30-9717-c8c13460e048.png";
+  // Use the new logo
+  const logoSrc = "/lovable-uploads/21ae8cf5-2c99-4851-89c8-71f69414fc49.png";
     
   // Use larger size for home/auth pages, smaller for others - made footer size much smaller
   const sizeClass = isHomeOrAuth ? "h-64" : "h-8";
