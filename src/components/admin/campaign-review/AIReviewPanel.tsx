@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bot, Check, X, AlertTriangle, Loader, Zap } from 'lucide-react';
@@ -79,7 +78,10 @@ export function AIReviewPanel({ campaignId, onReviewComplete }: AIReviewPanelPro
       // Ensure proper typing for brand_profiles
       const processedData = {
         ...data,
-        brand_profiles: data.brand_profiles && typeof data.brand_profiles === 'object' && 'company_name' in data.brand_profiles
+        brand_profiles: data.brand_profiles && 
+                       data.brand_profiles !== null && 
+                       typeof data.brand_profiles === 'object' && 
+                       'company_name' in data.brand_profiles
           ? data.brand_profiles
           : null
       };

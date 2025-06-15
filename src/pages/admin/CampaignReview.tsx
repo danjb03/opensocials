@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Bot, Filter, Search, RefreshCw } from 'lucide-react';
@@ -106,7 +105,10 @@ export default function CampaignReview() {
       // Transform the data to ensure proper typing
       return (data || []).map(campaign => ({
         ...campaign,
-        brand_profiles: campaign.brand_profiles && typeof campaign.brand_profiles === 'object' && 'company_name' in campaign.brand_profiles
+        brand_profiles: campaign.brand_profiles && 
+                       campaign.brand_profiles !== null && 
+                       typeof campaign.brand_profiles === 'object' && 
+                       'company_name' in campaign.brand_profiles
           ? campaign.brand_profiles
           : null
       })) as CampaignForReview[];
