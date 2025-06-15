@@ -68,51 +68,67 @@ const BrandsCRM = () => {
   // Local state for form inputs
   const [search, setSearch] = useState(searchTerm);
   
-  // Fetch brands data from the edge function
+  // Fetch brands data from the view directly (fallback approach)
   const fetchBrands = async (): Promise<BrandCRMResponse> => {
-    const token = (await supabase.auth.getSession()).data.session?.access_token;
-    
-    if (!token) {
-      throw new Error('Authentication required');
-    }
-    
-    // Build the URL with query parameters
-    const url = new URL('/functions/v1/get-admin-crm', window.location.origin);
-    url.searchParams.append('type', 'brand');
-    url.searchParams.append('page', page.toString());
-    url.searchParams.append('pageSize', pageSize.toString());
-    url.searchParams.append('orderBy', orderBy);
-    url.searchParams.append('orderDirection', orderDirection === 'asc' ? 'asc' : 'desc');
-    
-    if (searchTerm) {
-      url.searchParams.append('search', searchTerm);
-    }
-    
-    if (statusFilter && statusFilter !== 'all') {
-      url.searchParams.append('status', statusFilter);
-    }
-    
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+    try {
+      let query = supabase
+        .from('admin_crm_brands_view')
+        .select('*', { count: 'exact' });
+
+      // Apply search filter
+      if (searchTerm) {
+        query = query.or(`company_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
       }
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to fetch brand data');
+
+      // Apply status filter
+      if (statusFilter && statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
+      }
+
+      // Apply ordering and pagination
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+      
+      query = query
+        .order(orderBy, { ascending: orderDirection === 'asc' })
+        .range(from, to);
+
+      const { data, error, count } = await query;
+
+      if (error) {
+        throw new Error(`Failed to fetch brand data: ${error.message}`);
+      }
+
+      return {
+        success: true,
+        data: (data || []).map(brand => ({
+          brand_id: brand.brand_id || '',
+          company_name: brand.company_name,
+          email: brand.email,
+          industry: brand.industry,
+          budget_range: brand.budget_range,
+          total_deals: brand.total_deals,
+          active_deals: brand.active_deals,
+          last_active_at: brand.last_active_at,
+          status: brand.status || 'active'
+        })),
+        pagination: {
+          total: count || 0,
+          page,
+          pageSize,
+          pageCount: count ? Math.ceil(count / pageSize) : 0,
+        },
+      };
+    } catch (error) {
+      console.error('Error fetching brands:', error);
+      throw error;
     }
-    
-    return await response.json();
   };
   
   // Query hook for data fetching with proper type
   const { data, error, isLoading, isFetching } = useQuery<BrandCRMResponse, Error>({
     queryKey: ['adminBrands', page, pageSize, searchTerm, statusFilter, orderBy, orderDirection],
     queryFn: fetchBrands,
-    // Removed keepPreviousData as it's not supported in this version
     staleTime: 30000
   });
   
