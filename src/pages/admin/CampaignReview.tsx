@@ -43,17 +43,6 @@ export default function CampaignReview() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
 
-  // Check admin access BEFORE hooks
-  if (role !== 'admin' && role !== 'super_admin') {
-    return (
-      <AdminCRMLayout>
-        <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Access denied. Admin privileges required.</p>
-        </div>
-      </AdminCRMLayout>
-    );
-  }
-
   const { data: campaigns = [], isLoading, refetch } = useQuery({
     queryKey: ['campaigns-for-review', activeTab, searchTerm],
     queryFn: async (): Promise<CampaignForReview[]> => {
@@ -142,6 +131,17 @@ export default function CampaignReview() {
       }
     }).length;
   };
+
+  // Check admin access AFTER hooks
+  if (role !== 'admin' && role !== 'super_admin') {
+    return (
+      <AdminCRMLayout>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">Access denied. Admin privileges required.</p>
+        </div>
+      </AdminCRMLayout>
+    );
+  }
 
   return (
     <AdminCRMLayout>

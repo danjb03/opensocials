@@ -29,7 +29,7 @@ interface CampaignCardProps {
   showActions?: boolean;
 }
 
-export const CampaignCard: React.FC<CampaignCardProps> = ({ 
+const CampaignCard: React.FC<CampaignCardProps> = ({ 
   campaign, 
   showActions = true 
 }) => {
@@ -149,3 +149,6 @@ export const CampaignCard: React.FC<CampaignCardProps> = ({
     </Card>
   );
 };
+
+export default CampaignCard;
+export { CampaignCard };

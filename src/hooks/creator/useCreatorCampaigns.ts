@@ -30,15 +30,15 @@ export const useCreatorCampaigns = () => {
   const { creatorProfile } = useUnifiedAuth();
 
   return useQuery({
-    queryKey: ['creator-campaigns', creatorProfile?.id],
+    queryKey: ['creator-campaigns', creatorProfile?.user_id],
     queryFn: async (): Promise<CreatorCampaign[]> => {
-      if (!creatorProfile?.id) return [];
+      if (!creatorProfile?.user_id) return [];
 
       const { data, error } = await supabase
         .from('projects_new')
         .select(`
           *,
-          brand_profiles!inner (
+          brand_profiles (
             company_name
           ),
           creator_deals!inner (
@@ -49,7 +49,7 @@ export const useCreatorCampaigns = () => {
             responded_at
           )
         `)
-        .eq('creator_deals.creator_id', creatorProfile.id)
+        .eq('creator_deals.creator_id', creatorProfile.user_id)
         .eq('review_status', 'approved') // Only show approved campaigns
         .order('created_at', { ascending: false });
 
@@ -58,9 +58,14 @@ export const useCreatorCampaigns = () => {
         throw error;
       }
 
-      return data || [];
+      return (data || []).map(campaign => ({
+        ...campaign,
+        brand_profiles: campaign.brand_profiles && typeof campaign.brand_profiles === 'object' && 'company_name' in campaign.brand_profiles
+          ? { company_name: campaign.brand_profiles.company_name as string }
+          : undefined
+      })) as CreatorCampaign[];
     },
-    enabled: !!creatorProfile?.id,
+    enabled: !!creatorProfile?.user_id,
   });
 };
 
@@ -68,15 +73,15 @@ export const useCreatorPendingInvitations = () => {
   const { creatorProfile } = useUnifiedAuth();
 
   return useQuery({
-    queryKey: ['creator-pending-invitations', creatorProfile?.id],
+    queryKey: ['creator-pending-invitations', creatorProfile?.user_id],
     queryFn: async (): Promise<CreatorCampaign[]> => {
-      if (!creatorProfile?.id) return [];
+      if (!creatorProfile?.user_id) return [];
 
       const { data, error } = await supabase
         .from('projects_new')
         .select(`
           *,
-          brand_profiles!inner (
+          brand_profiles (
             company_name
           ),
           creator_deals!inner (
@@ -87,7 +92,7 @@ export const useCreatorPendingInvitations = () => {
             responded_at
           )
         `)
-        .eq('creator_deals.creator_id', creatorProfile.id)
+        .eq('creator_deals.creator_id', creatorProfile.user_id)
         .eq('creator_deals.status', 'invited')
         .in('review_status', ['pending_review', 'under_review']) // Show campaigns under review
         .order('created_at', { ascending: false });
@@ -97,8 +102,13 @@ export const useCreatorPendingInvitations = () => {
         throw error;
       }
 
-      return data || [];
+      return (data || []).map(campaign => ({
+        ...campaign,
+        brand_profiles: campaign.brand_profiles && typeof campaign.brand_profiles === 'object' && 'company_name' in campaign.brand_profiles
+          ? { company_name: campaign.brand_profiles.company_name as string }
+          : undefined
+      })) as CreatorCampaign[];
     },
-    enabled: !!creatorProfile?.id,
+    enabled: !!creatorProfile?.user_id,
   });
 };

@@ -76,10 +76,14 @@ export function AIReviewPanel({ campaignId, onReviewComplete }: AIReviewPanelPro
         throw error;
       }
       
+      if (!data) {
+        return null;
+      }
+      
       // Safely handle brand_profiles - it could be null, undefined, or an object
       let brandProfiles: { company_name: string; industry: string } | null = null;
       
-      if (data?.brand_profiles && 
+      if (data.brand_profiles && 
           typeof data.brand_profiles === 'object' && 
           'company_name' in data.brand_profiles &&
           'industry' in data.brand_profiles &&
