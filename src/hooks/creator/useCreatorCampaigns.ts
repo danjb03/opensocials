@@ -16,7 +16,7 @@ interface CreatorCampaign {
   created_at: string;
   brand_profiles?: {
     company_name: string;
-  };
+  } | null;
   creator_deals?: {
     id: string;
     status: string;
@@ -58,12 +58,22 @@ export const useCreatorCampaigns = () => {
         throw error;
       }
 
-      return (data || []).map(campaign => ({
-        ...campaign,
-        brand_profiles: campaign.brand_profiles && typeof campaign.brand_profiles === 'object' && 'company_name' in campaign.brand_profiles
-          ? { company_name: campaign.brand_profiles.company_name as string }
-          : undefined
-      })) as CreatorCampaign[];
+      return (data || []).map(campaign => {
+        // Safely handle brand_profiles - it could be null, undefined, or an object
+        let brandProfiles: { company_name: string } | null = null;
+        
+        if (campaign.brand_profiles && 
+            typeof campaign.brand_profiles === 'object' && 
+            'company_name' in campaign.brand_profiles &&
+            typeof campaign.brand_profiles.company_name === 'string') {
+          brandProfiles = { company_name: campaign.brand_profiles.company_name };
+        }
+
+        return {
+          ...campaign,
+          brand_profiles: brandProfiles
+        };
+      }) as CreatorCampaign[];
     },
     enabled: !!creatorProfile?.user_id,
   });
@@ -102,12 +112,22 @@ export const useCreatorPendingInvitations = () => {
         throw error;
       }
 
-      return (data || []).map(campaign => ({
-        ...campaign,
-        brand_profiles: campaign.brand_profiles && typeof campaign.brand_profiles === 'object' && 'company_name' in campaign.brand_profiles
-          ? { company_name: campaign.brand_profiles.company_name as string }
-          : undefined
-      })) as CreatorCampaign[];
+      return (data || []).map(campaign => {
+        // Safely handle brand_profiles - it could be null, undefined, or an object
+        let brandProfiles: { company_name: string } | null = null;
+        
+        if (campaign.brand_profiles && 
+            typeof campaign.brand_profiles === 'object' && 
+            'company_name' in campaign.brand_profiles &&
+            typeof campaign.brand_profiles.company_name === 'string') {
+          brandProfiles = { company_name: campaign.brand_profiles.company_name };
+        }
+
+        return {
+          ...campaign,
+          brand_profiles: brandProfiles
+        };
+      }) as CreatorCampaign[];
     },
     enabled: !!creatorProfile?.user_id,
   });
