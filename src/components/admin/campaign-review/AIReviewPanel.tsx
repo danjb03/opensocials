@@ -76,14 +76,20 @@ export function AIReviewPanel({ campaignId, onReviewComplete }: AIReviewPanelPro
         throw error;
       }
       
-      // Type guard for brand_profiles
-      const brandProfiles = data.brand_profiles && 
-                           typeof data.brand_profiles === 'object' && 
-                           data.brand_profiles !== null && 
-                           'company_name' in data.brand_profiles && 
-                           'industry' in data.brand_profiles
-        ? data.brand_profiles as { company_name: string; industry: string }
-        : null;
+      // Type guard for brand_profiles - check if it exists and has the expected structure
+      let brandProfiles: { company_name: string; industry: string } | null = null;
+      
+      if (data.brand_profiles && 
+          typeof data.brand_profiles === 'object' && 
+          'company_name' in data.brand_profiles &&
+          'industry' in data.brand_profiles &&
+          typeof data.brand_profiles.company_name === 'string' &&
+          typeof data.brand_profiles.industry === 'string') {
+        brandProfiles = {
+          company_name: data.brand_profiles.company_name,
+          industry: data.brand_profiles.industry
+        };
+      }
       
       return {
         ...data,

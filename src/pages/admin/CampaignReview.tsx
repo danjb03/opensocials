@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Bot, Filter, Search, RefreshCw } from 'lucide-react';
@@ -41,17 +42,6 @@ export default function CampaignReview() {
   const [activeTab, setActiveTab] = useState('pending');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
-
-  // Check admin access first
-  if (role !== 'admin' && role !== 'super_admin') {
-    return (
-      <AdminCRMLayout>
-        <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Access denied. Admin privileges required.</p>
-        </div>
-      </AdminCRMLayout>
-    );
-  }
 
   const { data: campaigns = [], isLoading, refetch } = useQuery({
     queryKey: ['campaigns-for-review', activeTab, searchTerm],
@@ -104,13 +94,15 @@ export default function CampaignReview() {
       
       // Transform the data to ensure proper typing
       return (data || []).map(campaign => {
-        // Type guard for brand_profiles
-        const brandProfiles = campaign.brand_profiles && 
-                             typeof campaign.brand_profiles === 'object' && 
-                             campaign.brand_profiles !== null && 
-                             'company_name' in campaign.brand_profiles
-          ? campaign.brand_profiles as { company_name: string }
-          : null;
+        // Type guard for brand_profiles - check if it exists and has the expected structure
+        let brandProfiles: { company_name: string } | null = null;
+        
+        if (campaign.brand_profiles && 
+            typeof campaign.brand_profiles === 'object' && 
+            'company_name' in campaign.brand_profiles &&
+            typeof campaign.brand_profiles.company_name === 'string') {
+          brandProfiles = { company_name: campaign.brand_profiles.company_name };
+        }
 
         return {
           ...campaign,
@@ -118,7 +110,19 @@ export default function CampaignReview() {
         };
       }) as CampaignForReview[];
     },
+    enabled: role === 'admin' || role === 'super_admin', // Only run query if user has admin access
   });
+
+  // Check admin access AFTER hooks
+  if (role !== 'admin' && role !== 'super_admin') {
+    return (
+      <AdminCRMLayout>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">Access denied. Admin privileges required.</p>
+        </div>
+      </AdminCRMLayout>
+    );
+  }
 
   const getTabCount = (status: string) => {
     return campaigns.filter(campaign => {
