@@ -43,6 +43,17 @@ export default function CampaignReview() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
 
+  // Check admin access first
+  if (role !== 'admin' && role !== 'super_admin') {
+    return (
+      <AdminCRMLayout>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">Access denied. Admin privileges required.</p>
+        </div>
+      </AdminCRMLayout>
+    );
+  }
+
   const { data: campaigns = [], isLoading, refetch } = useQuery({
     queryKey: ['campaigns-for-review', activeTab, searchTerm],
     queryFn: async (): Promise<CampaignForReview[]> => {
@@ -98,7 +109,7 @@ export default function CampaignReview() {
         brand_profiles: campaign.brand_profiles && !Array.isArray(campaign.brand_profiles) 
           ? campaign.brand_profiles 
           : null
-      })) as CampaignForReview[];
+      })) as unknown as CampaignForReview[];
     },
   });
 
@@ -120,17 +131,6 @@ export default function CampaignReview() {
       }
     }).length;
   };
-
-  // Check admin access AFTER all hooks
-  if (role !== 'admin' && role !== 'super_admin') {
-    return (
-      <AdminCRMLayout>
-        <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Access denied. Admin privileges required.</p>
-        </div>
-      </AdminCRMLayout>
-    );
-  }
 
   return (
     <AdminCRMLayout>
@@ -215,8 +215,8 @@ export default function CampaignReview() {
             </TabsTrigger>
           </TabsList>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
+          <div className={`grid gap-6 ${selectedCampaign ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}>
+            <div className={selectedCampaign ? 'lg:col-span-2' : 'col-span-1'}>
               <TabsContent value={activeTab} className="space-y-6 mt-0">
                 <CampaignReviewTable 
                   campaigns={campaigns}
