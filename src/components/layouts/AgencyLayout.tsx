@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAgencyAuth } from '@/hooks/useUnifiedAuth';
-import { Home, Users, Settings, BarChart2, LogOut } from 'lucide-react';
+import { Home, Users, Settings, BarChart2, LogOut, ArrowLeft } from 'lucide-react';
 import Footer from './Footer';
 import {
   Sidebar,
@@ -26,7 +26,7 @@ interface AgencyLayoutProps {
 }
 
 const AgencyLayout = memo(({ children }: AgencyLayoutProps) => {
-  const { user } = useAgencyAuth();
+  const { user, role } = useAgencyAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const location = useLocation();
@@ -131,6 +131,19 @@ const AgencyLayout = memo(({ children }: AgencyLayoutProps) => {
         <SidebarInset className="flex flex-col">
           <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background px-4">
             <SidebarTrigger className="text-foreground hover:bg-accent hover:text-accent-foreground transition-colors" />
+            {role === 'super_admin' && (
+              <div className="ml-auto">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate('/super-admin')}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Super Admin Dashboard
+                </Button>
+              </div>
+            )}
           </header>
           
           <main className="flex-1 overflow-auto">
