@@ -17,8 +17,8 @@ const CAMPAIGN_TYPES = ['Single', 'Weekly', 'Monthly', '12-Month Retainer', 'Eve
 export default function PricingFloors() {
   const { role } = useUnifiedAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [tierFilter, setTierFilter] = useState<string>('');
-  const [campaignTypeFilter, setCampaignTypeFilter] = useState<string>('');
+  const [tierFilter, setTierFilter] = useState<string>('all');
+  const [campaignTypeFilter, setCampaignTypeFilter] = useState<string>('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const { data: pricingFloors, isLoading, error } = usePricingFloors();
@@ -40,8 +40,8 @@ export default function PricingFloors() {
       floor.tier.toLowerCase().includes(searchTerm.toLowerCase()) ||
       floor.campaign_type.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesTier = !tierFilter || floor.tier === tierFilter;
-    const matchesCampaignType = !campaignTypeFilter || floor.campaign_type === campaignTypeFilter;
+    const matchesTier = tierFilter === 'all' || floor.tier === tierFilter;
+    const matchesCampaignType = campaignTypeFilter === 'all' || floor.campaign_type === campaignTypeFilter;
 
     return matchesSearch && matchesTier && matchesCampaignType;
   }) || [];
@@ -95,7 +95,7 @@ export default function PricingFloors() {
                       <SelectValue placeholder="Filter by tier" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Tiers</SelectItem>
+                      <SelectItem value="all">All Tiers</SelectItem>
                       {CREATOR_TIERS.map((tier) => (
                         <SelectItem key={tier} value={tier}>
                           {tier}
@@ -108,7 +108,7 @@ export default function PricingFloors() {
                       <SelectValue placeholder="Filter by campaign type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Campaign Types</SelectItem>
+                      <SelectItem value="all">All Campaign Types</SelectItem>
                       {CAMPAIGN_TYPES.map((type) => (
                         <SelectItem key={type} value={type}>
                           {type}
