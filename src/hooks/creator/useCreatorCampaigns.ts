@@ -59,15 +59,10 @@ export const useCreatorCampaigns = () => {
       }
 
       return (data || []).map(campaign => {
-        // Safely handle brand_profiles - it could be null, undefined, or an object
-        let brandProfiles: { company_name: string } | null = null;
-        
-        if (campaign.brand_profiles && 
-            typeof campaign.brand_profiles === 'object' && 
-            'company_name' in campaign.brand_profiles &&
-            typeof campaign.brand_profiles.company_name === 'string') {
-          brandProfiles = { company_name: campaign.brand_profiles.company_name };
-        }
+        // Safely handle brand_profiles using optional chaining
+        const brandProfiles = campaign.brand_profiles?.company_name 
+          ? { company_name: campaign.brand_profiles.company_name }
+          : null;
 
         return {
           ...campaign,
@@ -113,15 +108,10 @@ export const useCreatorPendingInvitations = () => {
       }
 
       return (data || []).map(campaign => {
-        // Safely handle brand_profiles - it could be null, undefined, or an object
-        let brandProfiles: { company_name: string } | null = null;
-        
-        if (campaign.brand_profiles && 
-            typeof campaign.brand_profiles === 'object' && 
-            'company_name' in campaign.brand_profiles &&
-            typeof campaign.brand_profiles.company_name === 'string') {
-          brandProfiles = { company_name: campaign.brand_profiles.company_name };
-        }
+        // Safely handle brand_profiles using optional chaining
+        const brandProfiles = campaign.brand_profiles?.company_name 
+          ? { company_name: campaign.brand_profiles.company_name }
+          : null;
 
         return {
           ...campaign,

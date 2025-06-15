@@ -80,20 +80,18 @@ export function AIReviewPanel({ campaignId, onReviewComplete }: AIReviewPanelPro
         return null;
       }
       
-      // Safely handle brand_profiles - it could be null, undefined, or an object
-      let brandProfiles: { company_name: string; industry: string } | null = null;
-      
-      if (data.brand_profiles && 
-          typeof data.brand_profiles === 'object' && 
-          'company_name' in data.brand_profiles &&
-          'industry' in data.brand_profiles &&
-          typeof data.brand_profiles.company_name === 'string' &&
-          typeof data.brand_profiles.industry === 'string') {
-        brandProfiles = {
-          company_name: data.brand_profiles.company_name,
-          industry: data.brand_profiles.industry
-        };
-      }
+      // Safely handle brand_profiles using optional chaining
+      const brandProfiles = (data.brand_profiles && 
+                           typeof data.brand_profiles === 'object' && 
+                           'company_name' in data.brand_profiles &&
+                           'industry' in data.brand_profiles &&
+                           typeof data.brand_profiles.company_name === 'string' &&
+                           typeof data.brand_profiles.industry === 'string') 
+        ? {
+            company_name: data.brand_profiles.company_name,
+            industry: data.brand_profiles.industry
+          }
+        : null;
       
       return {
         ...data,
