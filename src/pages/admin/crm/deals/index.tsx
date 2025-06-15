@@ -32,34 +32,40 @@ export default function DealPipelinePage() {
     queryKey: ['deal-pipeline', search, stage, status],
     queryFn: async (): Promise<DealPipelineItem[]> => {
       try {
-        // Since the edge function might not be working, let's fetch from deals table directly
-        let query = supabase
+        // Fetch deals without joins first
+        const { data: dealsData, error: dealsError } = await supabase
           .from('deals')
-          .select(`
-            id,
-            title,
-            status,
-            value,
-            updated_at,
-            brand_profiles!deals_brand_id_fkey(company_name),
-            creator_profiles!deals_creator_id_fkey(first_name, last_name)
-          `);
+          .select('*');
 
-        const { data, error } = await query;
+        if (dealsError) throw dealsError;
 
-        if (error) throw error;
+        // Fetch brand profiles separately
+        const { data: brandsData, error: brandsError } = await supabase
+          .from('brand_profiles')
+          .select('user_id, company_name');
 
-        return (data || []).map(deal => ({
+        if (brandsError) throw brandsError;
+
+        // Fetch creator profiles separately
+        const { data: creatorsData, error: creatorsError } = await supabase
+          .from('creator_profiles')
+          .select('user_id, first_name, last_name');
+
+        if (creatorsError) throw creatorsError;
+
+        // Create lookup maps
+        const brandMap = new Map(brandsData?.map(b => [b.user_id, b.company_name]) || []);
+        const creatorMap = new Map(creatorsData?.map(c => [c.user_id, `${c.first_name || ''} ${c.last_name || ''}`.trim()]) || []);
+
+        return (dealsData || []).map(deal => ({
           id: deal.id,
           title: deal.title,
           stage: deal.status || 'unknown',
           status: deal.status || 'active',
           value: deal.value || 0,
           updated_at: deal.updated_at,
-          brand_name: deal.brand_profiles?.company_name || 'Unknown Brand',
-          creator_name: deal.creator_profiles 
-            ? `${deal.creator_profiles.first_name || ''} ${deal.creator_profiles.last_name || ''}`.trim() || 'Unknown Creator'
-            : 'Unknown Creator',
+          brand_name: brandMap.get(deal.brand_id) || 'Unknown Brand',
+          creator_name: creatorMap.get(deal.creator_id) || 'Unknown Creator',
           is_stuck: false, // Mock data for now
         }));
       } catch (error) {
