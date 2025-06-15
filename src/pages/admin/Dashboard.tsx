@@ -1,7 +1,8 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Users, Briefcase, FileText, UserPlus, BarChart, Handshake, Shield } from 'lucide-react';
+import { Users, Briefcase, FileText, UserPlus, BarChart, Handshake, Shield, Bot } from 'lucide-react';
 
 const AdminDashboard = () => {
   const quickActions = [
@@ -22,6 +23,12 @@ const AdminDashboard = () => {
       description: 'Oversee all active projects',
       icon: FileText,
       href: '/admin/projects',
+    },
+    {
+      title: 'Campaign Review',
+      description: 'AI-powered campaign analysis and approval',
+      icon: Bot,
+      href: '/admin/campaign-review',
     },
     {
       title: 'Brand CRM',
@@ -100,7 +107,7 @@ const AdminDashboard = () => {
 
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4 text-foreground">Quick Actions</h2>
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {quickActions.map((action) => (
             <Card key={action.href} className="bg-card border-border hover:shadow-md transition-shadow">
               <CardHeader>

@@ -284,6 +284,134 @@ export type Database = {
           },
         ]
       }
+      campaign_reviews: {
+        Row: {
+          ai_analysis: Json | null
+          ai_decision: string | null
+          ai_issues: Json | null
+          ai_recommendations: Json | null
+          ai_score: number | null
+          created_at: string | null
+          human_decision: string | null
+          id: string
+          project_id: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewer_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          ai_decision?: string | null
+          ai_issues?: Json | null
+          ai_recommendations?: Json | null
+          ai_score?: number | null
+          created_at?: string | null
+          human_decision?: string | null
+          id?: string
+          project_id: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ai_analysis?: Json | null
+          ai_decision?: string | null
+          ai_issues?: Json | null
+          ai_recommendations?: Json | null
+          ai_score?: number | null
+          created_at?: string | null
+          human_decision?: string | null
+          id?: string
+          project_id?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_reviews_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_new"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "campaign_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "admin_crm_creators_view"
+            referencedColumns: ["creator_id"]
+          },
+          {
+            foreignKeyName: "campaign_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_rule_violations: {
+        Row: {
+          auto_detected: boolean | null
+          campaign_review_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          rule_id: string | null
+          rule_name: string
+          severity: string | null
+          violation_type: string
+        }
+        Insert: {
+          auto_detected?: boolean | null
+          campaign_review_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          rule_id?: string | null
+          rule_name: string
+          severity?: string | null
+          violation_type: string
+        }
+        Update: {
+          auto_detected?: boolean | null
+          campaign_review_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          rule_id?: string | null
+          rule_name?: string
+          severity?: string | null
+          violation_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_rule_violations_campaign_review_id_fkey"
+            columns: ["campaign_review_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_rule_violations_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "r4_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       connected_accounts: {
         Row: {
           account_id: string
@@ -1191,6 +1319,8 @@ export type Database = {
           name: string
           objective: string | null
           platforms: string[] | null
+          review_priority: string | null
+          review_status: string | null
           start_date: string | null
           status: string | null
           updated_at: string | null
@@ -1211,6 +1341,8 @@ export type Database = {
           name: string
           objective?: string | null
           platforms?: string[] | null
+          review_priority?: string | null
+          review_status?: string | null
           start_date?: string | null
           status?: string | null
           updated_at?: string | null
@@ -1231,6 +1363,8 @@ export type Database = {
           name?: string
           objective?: string | null
           platforms?: string[] | null
+          review_priority?: string | null
+          review_status?: string | null
           start_date?: string | null
           status?: string | null
           updated_at?: string | null

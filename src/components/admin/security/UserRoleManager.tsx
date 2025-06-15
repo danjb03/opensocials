@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, X, Eye, Search } from 'lucide-react';
@@ -20,7 +19,7 @@ interface UserRole {
     email?: string;
     first_name?: string;
     last_name?: string;
-  };
+  } | null;
 }
 
 export function UserRoleManager() {
@@ -34,7 +33,7 @@ export function UserRoleManager() {
         .from('user_roles')
         .select(`
           *,
-          profiles:user_id (
+          profiles (
             email,
             first_name,
             last_name
@@ -43,13 +42,12 @@ export function UserRoleManager() {
         .order('created_at', { ascending: false });
 
       if (searchTerm) {
-        // Note: This is a simplified search, in a real app you'd join with profiles
         query = query.ilike('role', `%${searchTerm}%`);
       }
 
       const { data, error } = await query;
       if (error) throw error;
-      return data || [];
+      return (data || []) as UserRole[];
     },
   });
 

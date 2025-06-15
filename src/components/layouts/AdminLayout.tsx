@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminAuth } from '@/hooks/useUnifiedAuth';
-import { Home, Users, Settings, Shield, FileText, BarChart2, LogOut, DollarSign } from 'lucide-react';
+import { Home, Users, Settings, Shield, FileText, BarChart2, LogOut, DollarSign, Bot } from 'lucide-react';
 import Footer from './Footer';
 import {
   Sidebar,
@@ -82,6 +82,12 @@ const AdminLayout = memo(({ children }: AdminLayoutProps) => {
       url: "/admin/projects", 
       icon: FileText,
       isActive: isActiveRoute('/admin/projects')
+    },
+    {
+      title: "Campaign Review",
+      url: "/admin/campaign-review",
+      icon: Bot,
+      isActive: isActiveRoute('/admin/campaign-review')
     },
     {
       title: "Pricing Floors",
