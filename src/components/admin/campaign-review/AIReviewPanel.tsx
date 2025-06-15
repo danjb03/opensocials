@@ -76,11 +76,10 @@ export function AIReviewPanel({ campaignId, onReviewComplete }: AIReviewPanelPro
         throw error;
       }
       
-      // Type guard for brand_profiles - check if it exists and has the expected structure
+      // Safely handle brand_profiles - it could be null, undefined, or an object
       let brandProfiles: { company_name: string; industry: string } | null = null;
       
-      if (data.brand_profiles !== null && 
-          data.brand_profiles !== undefined &&
+      if (data?.brand_profiles && 
           typeof data.brand_profiles === 'object' && 
           'company_name' in data.brand_profiles &&
           'industry' in data.brand_profiles &&

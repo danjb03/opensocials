@@ -38,7 +38,8 @@ export const useCampaignActions = (
         messaging_guidelines: draftData.messaging_guidelines || '',
         platforms: draftData.content_requirements?.platforms || [],
         deliverables: draftData.deliverables || {},
-        status: 'draft',
+        status: 'pending_approval', // Changed from 'draft' to indicate awaiting admin review
+        review_status: 'pending_review', // Set to pending review by default
         current_step: currentStep
       })
       .select()
@@ -87,21 +88,22 @@ export const useCampaignActions = (
     
     setIsSubmitting(true);
     try {
+      // Create the campaign with pending review status
+      const campaign = await createCampaignFromDraft(formData);
+      
       if (draftId) {
         await clearDraft();
       }
       
-      toast.success('Campaign launched successfully', {
-        description: 'Creator invitations are being sent out now.'
+      toast.success('Campaign submitted for review!', {
+        description: 'Your campaign is now being reviewed by our team. You will be notified once approved.'
       });
       
-      if (onComplete) {
-        // onComplete(projectId);
-      } else {
-        navigate('/brand/projects');
-      }
+      // Navigate to campaign status page instead of projects
+      navigate('/brand/campaign-status');
+      
     } catch (error) {
-      toast.error('Failed to launch campaign. Please try again.');
+      toast.error('Failed to submit campaign. Please try again.');
       console.error('Campaign creation error:', error);
     } finally {
       setIsSubmitting(false);

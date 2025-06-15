@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -88,7 +89,7 @@ serve(async (req) => {
       )
     }
 
-    // Create the project
+    // Create the project with pending review status
     const projectPayload = {
       brand_id: brandProfile.id,
       name: campaignData.name,
@@ -98,11 +99,12 @@ serve(async (req) => {
       content_requirements: campaignData.content_requirements,
       platforms: campaignData.content_requirements?.platforms || [],
       messaging_guidelines: campaignData.messaging_guidelines,
-      total_budget: campaignData.total_budget,
+      budget: campaignData.total_budget, // Changed from total_budget to budget
       deliverables: campaignData.deliverables,
       start_date: campaignData.start_date,
       end_date: campaignData.end_date,
-      status: 'active',
+      status: 'pending_approval', // Set to pending approval
+      review_status: 'pending_review', // Set to pending review
       current_step: 5
     }
 
@@ -123,11 +125,27 @@ serve(async (req) => {
       )
     }
 
-    // Create creator deals
+    // Create initial campaign review record
+    const { error: reviewError } = await supabaseClient
+      .from('campaign_reviews')
+      .insert({
+        project_id: project.id,
+        ai_analysis: {},
+        ai_issues: [],
+        ai_recommendations: [],
+        human_decision: 'pending'
+      })
+
+    if (reviewError) {
+      console.error('Campaign review creation error:', reviewError)
+      // Don't fail the whole request if review creation fails
+    }
+
+    // Create creator deals (these will be invisible to creators until approved)
     const creatorDeals = campaignData.selected_creators.map(creator => ({
       project_id: project.id,
       creator_id: creator.creator_id,
-      gross_value: creator.individual_budget, // Will auto-calculate net_value via trigger
+      deal_value: creator.individual_budget, // Use deal_value instead of gross_value
       individual_requirements: creator.custom_requirements || {},
       status: 'invited'
     }))
@@ -153,45 +171,19 @@ serve(async (req) => {
       )
     }
 
-    // TODO: Send invitation emails to creators
-    // This would call another edge function or email service
-    
-    // Get creator profiles for notifications
+    // NOTE: Don't send invitation emails yet - only after admin approval
+    // Get creator profiles for future reference
     const { data: creators } = await supabaseClient
       .from('creator_profiles')
-      .select('id, user_id, name, email')
+      .select('id, user_id, first_name, last_name')
       .in('id', campaignData.selected_creators.map(c => c.creator_id))
-
-    // Send notifications (simplified - in production, use proper email service)
-    if (creators && creators.length > 0) {
-      for (const creator of creators) {
-        // Call send-invite-email function for each creator
-        try {
-          await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-invite-email`, {
-            method: 'POST',
-            headers: {
-              'Authorization': req.headers.get('Authorization')!,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              creator_id: creator.id,
-              project_id: project.id,
-              campaign_name: campaignData.name,
-              brand_name: brandProfile.name || 'Brand'
-            })
-          })
-        } catch (error) {
-          console.error('Failed to send invitation email:', error)
-          // Don't fail the whole request if email fails
-        }
-      }
-    }
 
     return new Response(
       JSON.stringify({ 
         project_id: project.id,
-        message: 'Campaign created successfully and invitations sent',
-        creators_invited: creators?.length || 0
+        message: 'Campaign created and submitted for review',
+        creators_to_invite: creators?.length || 0,
+        review_status: 'pending_review'
       }),
       { 
         status: 200, 

@@ -103,13 +103,12 @@ export default function CampaignReview() {
         throw error;
       }
       
-      // Transform the data to ensure proper typing
+      // Transform the data to ensure proper typing and handle null brand_profiles
       return (data || []).map(campaign => {
-        // Type guard for brand_profiles - check if it exists and has the expected structure
+        // Safely handle brand_profiles - it could be null, undefined, or an object
         let brandProfiles: { company_name: string } | null = null;
         
-        if (campaign.brand_profiles !== null && 
-            campaign.brand_profiles !== undefined &&
+        if (campaign?.brand_profiles && 
             typeof campaign.brand_profiles === 'object' && 
             'company_name' in campaign.brand_profiles &&
             typeof campaign.brand_profiles.company_name === 'string') {
