@@ -52,7 +52,7 @@ export function AIReviewPanel({ campaignId, onReviewComplete }: AIReviewPanelPro
         .from('projects_new')
         .select(`
           *,
-          brand_profiles!brand_id (
+          brand_profiles!projects_new_brand_id_fkey (
             company_name,
             industry
           ),
@@ -71,9 +71,12 @@ export function AIReviewPanel({ campaignId, onReviewComplete }: AIReviewPanelPro
         .eq('id', campaignId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Campaign detail query error:', error);
+        throw error;
+      }
       
-      // Handle the brand_profiles properly
+      // Handle the brand_profiles properly and ensure proper typing
       const processedData = {
         ...data,
         brand_profiles: data.brand_profiles && !Array.isArray(data.brand_profiles) 
@@ -81,7 +84,7 @@ export function AIReviewPanel({ campaignId, onReviewComplete }: AIReviewPanelPro
           : null
       };
       
-      return processedData as CampaignDetail;
+      return processedData as unknown as CampaignDetail;
     },
     enabled: !!campaignId,
   });

@@ -50,7 +50,7 @@ export default function CampaignReview() {
         .from('projects_new')
         .select(`
           *,
-          brand_profiles!brand_id (
+          brand_profiles!projects_new_brand_id_fkey (
             company_name
           ),
           campaign_reviews (
@@ -87,13 +87,18 @@ export default function CampaignReview() {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {
+        console.error('Database query error:', error);
+        throw error;
+      }
+      
+      // Transform the data to handle the brand_profiles relationship
       return (data || []).map(campaign => ({
         ...campaign,
         brand_profiles: campaign.brand_profiles && !Array.isArray(campaign.brand_profiles) 
           ? campaign.brand_profiles 
           : null
-      }));
+      })) as CampaignForReview[];
     },
   });
 
