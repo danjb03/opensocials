@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bot, Check, X, AlertTriangle, Loader, Zap } from 'lucide-react';
@@ -79,7 +78,8 @@ export function AIReviewPanel({ campaignId, onReviewComplete }: AIReviewPanelPro
       // Type guard for brand_profiles - check if it exists and has the expected structure
       let brandProfiles: { company_name: string; industry: string } | null = null;
       
-      if (data.brand_profiles && 
+      if (data.brand_profiles !== null && 
+          data.brand_profiles !== undefined &&
           typeof data.brand_profiles === 'object' && 
           'company_name' in data.brand_profiles &&
           'industry' in data.brand_profiles &&

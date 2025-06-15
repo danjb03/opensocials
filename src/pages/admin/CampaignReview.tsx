@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Bot, Filter, Search, RefreshCw } from 'lucide-react';
@@ -97,7 +96,8 @@ export default function CampaignReview() {
         // Type guard for brand_profiles - check if it exists and has the expected structure
         let brandProfiles: { company_name: string } | null = null;
         
-        if (campaign.brand_profiles && 
+        if (campaign.brand_profiles !== null && 
+            campaign.brand_profiles !== undefined &&
             typeof campaign.brand_profiles === 'object' && 
             'company_name' in campaign.brand_profiles &&
             typeof campaign.brand_profiles.company_name === 'string') {
