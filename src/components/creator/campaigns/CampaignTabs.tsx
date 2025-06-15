@@ -62,8 +62,7 @@ const CampaignTabs: React.FC<CampaignTabsProps> = ({
           {filteredCampaigns.map((campaign) => (
             <CampaignCard 
               key={campaign.id} 
-              campaign={campaign} 
-              showUploadButton={tab === 'active'} 
+              campaign={campaign}
             />
           ))}
         </div>
