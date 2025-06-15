@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bot, Check, X, AlertTriangle, Loader, Zap } from 'lucide-react';
@@ -75,18 +76,19 @@ export function AIReviewPanel({ campaignId, onReviewComplete }: AIReviewPanelPro
         throw error;
       }
       
-      // Ensure proper typing for brand_profiles
-      const processedData = {
-        ...data,
-        brand_profiles: data.brand_profiles && 
-                       data.brand_profiles !== null && 
-                       typeof data.brand_profiles === 'object' && 
-                       'company_name' in data.brand_profiles
-          ? data.brand_profiles
-          : null
-      };
+      // Type guard for brand_profiles
+      const brandProfiles = data.brand_profiles && 
+                           typeof data.brand_profiles === 'object' && 
+                           data.brand_profiles !== null && 
+                           'company_name' in data.brand_profiles && 
+                           'industry' in data.brand_profiles
+        ? data.brand_profiles as { company_name: string; industry: string }
+        : null;
       
-      return processedData as CampaignDetail;
+      return {
+        ...data,
+        brand_profiles: brandProfiles
+      } as CampaignDetail;
     },
     enabled: !!campaignId,
   });
