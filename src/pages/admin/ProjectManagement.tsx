@@ -24,8 +24,8 @@ interface Project {
 
 const ProjectManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
 
   const { data: projects = [], isLoading, error } = useQuery({
     queryKey: ['admin-projects'],
@@ -44,8 +44,8 @@ const ProjectManagement = () => {
     const matchesSearch = !searchTerm || 
       project.name?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = !statusFilter || project.status === statusFilter;
-    const matchesType = !typeFilter || project.campaign_type === typeFilter;
+    const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
+    const matchesType = typeFilter === 'all' || project.campaign_type === typeFilter;
     
     return matchesSearch && matchesStatus && matchesType;
   });
@@ -88,7 +88,7 @@ const ProjectManagement = () => {
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
               <SelectContent className="bg-popover border-border">
-                <SelectItem value="">All Status</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="draft">Draft</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
@@ -101,7 +101,7 @@ const ProjectManagement = () => {
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent className="bg-popover border-border">
-                <SelectItem value="">All Types</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="invite">Invite</SelectItem>
                 <SelectItem value="application">Application</SelectItem>
               </SelectContent>
