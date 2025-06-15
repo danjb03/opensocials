@@ -106,9 +106,11 @@ const AdminDashboard = () => {
                 <CardDescription className="text-muted-foreground">{action.description}</CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
-                <Button asChild className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                  <Link to={action.href}>Go to {action.title}</Link>
-                </Button>
+                <Link to={action.href}>
+                  <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+                    Go to {action.title}
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           ))}
