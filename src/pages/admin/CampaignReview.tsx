@@ -61,7 +61,7 @@ export default function CampaignReview() {
         .from('projects_new')
         .select(`
           *,
-          brand_profiles!projects_new_brand_id_fkey (
+          brand_profiles!inner (
             company_name
           ),
           campaign_reviews (
@@ -103,13 +103,13 @@ export default function CampaignReview() {
         throw error;
       }
       
-      // Transform the data to handle the brand_profiles relationship
+      // Transform the data to ensure proper typing
       return (data || []).map(campaign => ({
         ...campaign,
-        brand_profiles: campaign.brand_profiles && !Array.isArray(campaign.brand_profiles) 
-          ? campaign.brand_profiles 
+        brand_profiles: campaign.brand_profiles && typeof campaign.brand_profiles === 'object' && 'company_name' in campaign.brand_profiles
+          ? campaign.brand_profiles
           : null
-      })) as unknown as CampaignForReview[];
+      })) as CampaignForReview[];
     },
   });
 
