@@ -1,8 +1,7 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Users, Briefcase, FileText, UserPlus, BarChart, Handshake } from 'lucide-react';
+import { Users, Briefcase, FileText, UserPlus, BarChart, Handshake, Shield } from 'lucide-react';
 
 const AdminDashboard = () => {
   const quickActions = [
@@ -41,6 +40,12 @@ const AdminDashboard = () => {
       description: 'Monitor deal progress',
       icon: Handshake,
       href: '/admin/crm/deals',
+    },
+    {
+      title: 'Security',
+      description: 'Manage platform security and permissions',
+      icon: Shield,
+      href: '/admin/security',
     },
   ];
 
