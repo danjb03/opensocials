@@ -20,7 +20,7 @@ interface Campaign {
   created_at: string;
   brand_profiles?: {
     company_name: string;
-  };
+  } | null;
   campaign_reviews?: {
     id: string;
     ai_decision: string;

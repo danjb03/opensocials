@@ -27,7 +27,7 @@ interface CampaignDetail {
   brand_profiles?: {
     company_name: string;
     industry: string;
-  };
+  } | null;
   campaign_reviews?: {
     id: string;
     ai_analysis: any;
@@ -72,19 +72,24 @@ export function AIReviewPanel({ campaignId, onReviewComplete }: AIReviewPanelPro
         .single();
 
       if (error) throw error;
-      return data as CampaignDetail;
+      
+      // Handle the brand_profiles properly
+      const processedData = {
+        ...data,
+        brand_profiles: data.brand_profiles && !Array.isArray(data.brand_profiles) 
+          ? data.brand_profiles 
+          : null
+      };
+      
+      return processedData as CampaignDetail;
     },
     enabled: !!campaignId,
   });
 
   const runAIAnalysisMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/ai-campaign-review', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const response = await supabase.functions.invoke('ai-campaign-review', {
+        body: {
           campaignId,
           campaignData: {
             name: campaign?.name,
@@ -94,14 +99,14 @@ export function AIReviewPanel({ campaignId, onReviewComplete }: AIReviewPanelPro
             content_requirements: campaign?.content_requirements,
             brand: campaign?.brand_profiles,
           },
-        }),
+        },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to run AI analysis');
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to run AI analysis');
       }
 
-      return response.json();
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['campaign-detail', campaignId] });

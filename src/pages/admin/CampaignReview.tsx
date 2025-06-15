@@ -27,7 +27,7 @@ interface CampaignForReview {
   created_at: string;
   brand_profiles?: {
     company_name: string;
-  };
+  } | null;
   campaign_reviews?: {
     id: string;
     ai_decision: string;
@@ -42,17 +42,6 @@ export default function CampaignReview() {
   const [activeTab, setActiveTab] = useState('pending');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
-
-  // Check admin access
-  if (role !== 'admin' && role !== 'super_admin') {
-    return (
-      <AdminCRMLayout>
-        <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Access denied. Admin privileges required.</p>
-        </div>
-      </AdminCRMLayout>
-    );
-  }
 
   const { data: campaigns = [], isLoading, refetch } = useQuery({
     queryKey: ['campaigns-for-review', activeTab, searchTerm],
@@ -99,7 +88,12 @@ export default function CampaignReview() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data || [];
+      return (data || []).map(campaign => ({
+        ...campaign,
+        brand_profiles: campaign.brand_profiles && !Array.isArray(campaign.brand_profiles) 
+          ? campaign.brand_profiles 
+          : null
+      }));
     },
   });
 
@@ -121,6 +115,17 @@ export default function CampaignReview() {
       }
     }).length;
   };
+
+  // Check admin access AFTER all hooks
+  if (role !== 'admin' && role !== 'super_admin') {
+    return (
+      <AdminCRMLayout>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">Access denied. Admin privileges required.</p>
+        </div>
+      </AdminCRMLayout>
+    );
+  }
 
   return (
     <AdminCRMLayout>
