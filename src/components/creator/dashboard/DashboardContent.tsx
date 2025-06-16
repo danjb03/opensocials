@@ -1,10 +1,9 @@
-
 import React from 'react';
 import ProfileEditForm from '@/components/creator/ProfileEditForm';
 import EmptyProfileState from '@/components/creator/EmptyProfileState';
 import DashboardStats from './DashboardStats';
 import EarningsChart from './EarningsChart';
-import { CreatorAnalyticsProfile } from '@/components/creator/CreatorAnalyticsProfile';
+import { CreatorAnalyticsProfile } from '@/components/creator/analytics/CreatorAnalyticsProfile';
 import { CreatorProfile } from '@/hooks/useCreatorProfile';
 
 interface DashboardContentProps {
