@@ -112,11 +112,11 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
   // Auto-save when form data changes (but only if there's meaningful data)
   useEffect(() => {
     const hasData = formData && (
-      formData.campaign_name || 
-      formData.campaign_type || 
-      formData.description || 
-      formData.total_budget ||
-      formData.platforms?.length
+      (formData as any).campaign_name || 
+      (formData as any).campaign_type || 
+      (formData as any).description || 
+      (formData as any).total_budget ||
+      (formData as any).platforms?.length
     );
 
     if (hasData && brandProfile?.user_id) {

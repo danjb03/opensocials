@@ -5,8 +5,8 @@ import SidebarLogo from "@/components/ui/sidebar-logo";
 import { Button } from "@/components/ui/button";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useAdminAuth } from '@/hooks/useUnifiedAuth';
-import { Home, Users, Settings, Shield, FileText, BarChart2, LogOut, DollarSign, Bot } from 'lucide-react';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { Home, Users, Settings, Shield, FileText, BarChart2, LogOut, DollarSign, Bot, ArrowLeft } from 'lucide-react';
 import Footer from './Footer';
 import {
   Sidebar,
@@ -26,7 +26,7 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout = memo(({ children }: AdminLayoutProps) => {
-  const { user } = useAdminAuth();
+  const { user, role } = useUnifiedAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const location = useLocation();
@@ -47,6 +47,10 @@ const AdminLayout = memo(({ children }: AdminLayoutProps) => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleBackToSuperAdmin = () => {
+    navigate('/super-admin');
   };
 
   const isActiveRoute = useMemo(() => {
@@ -119,6 +123,20 @@ const AdminLayout = memo(({ children }: AdminLayoutProps) => {
           
           <SidebarContent className="px-4">
             <SidebarMenu>
+              {/* Super Admin Back Button */}
+              {role === 'super_admin' && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    onClick={handleBackToSuperAdmin}
+                    className="h-12 mr-2 hover:bg-accent hover:text-accent-foreground transition-colors mb-4 border border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                    tooltip="Back to Super Admin"
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                    <span className="group-data-[collapsible=icon]:hidden">Back to Super Admin</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+              
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
@@ -155,6 +173,17 @@ const AdminLayout = memo(({ children }: AdminLayoutProps) => {
         <SidebarInset className="flex flex-col">
           <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background px-4">
             <SidebarTrigger className="text-foreground hover:bg-accent hover:text-accent-foreground transition-colors" />
+            {role === 'super_admin' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBackToSuperAdmin}
+                className="ml-auto flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Super Admin
+              </Button>
+            )}
           </header>
           
           <main className="flex-1 overflow-auto">
