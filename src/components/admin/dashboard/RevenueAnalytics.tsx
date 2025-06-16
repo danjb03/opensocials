@@ -38,11 +38,24 @@ const RevenueAnalytics = () => {
       // Mock data for demonstration
       const mockData: RevenueData[] = [];
       const [year, month] = selectedMonth.split('-').map(Number);
+      const currentDate = new Date();
+      const selectedDate = new Date(year, month - 1, 1);
+      
+      // Don't generate data for future months
+      if (selectedDate > currentDate) {
+        return [];
+      }
       
       if (timeFrame === 'monthly') {
-        // Generate data for the last 12 months
+        // Generate data for the last 12 months, but only up to current month
         for (let i = 11; i >= 0; i--) {
           const date = new Date(year, month - 1 - i, 1);
+          
+          // Skip if this month is in the future
+          if (date > currentDate) {
+            continue;
+          }
+          
           const revenue = Math.floor(Math.random() * 50000) + 10000;
           mockData.push({
             period: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
@@ -52,8 +65,17 @@ const RevenueAnalytics = () => {
           });
         }
       } else if (timeFrame === 'weekly') {
-        // Generate data for weeks in the selected month
+        // Generate data for weeks in the selected month, but only up to current week
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const currentWeek = Math.ceil(currentDate.getDate() / 7);
+        const selectedIsCurrentMonth = year === currentDate.getFullYear() && month === currentDate.getMonth() + 1;
+        
         for (let week = 1; week <= 4; week++) {
+          // Skip future weeks in current month
+          if (selectedIsCurrentMonth && week > currentWeek) {
+            continue;
+          }
+          
           const revenue = Math.floor(Math.random() * 15000) + 3000;
           mockData.push({
             period: `Week ${week}`,
@@ -63,11 +85,16 @@ const RevenueAnalytics = () => {
           });
         }
       } else {
-        // Generate data for days in the selected month
+        // Generate data for days in the selected month, but only up to current day
         const daysInMonth = new Date(year, month, 0).getDate();
-        const sampleDays = Math.min(7, daysInMonth); // Show last 7 days
+        const currentDay = currentDate.getDate();
+        const selectedIsCurrentMonth = year === currentDate.getFullYear() && month === currentDate.getMonth() + 1;
+        
+        const sampleDays = selectedIsCurrentMonth ? Math.min(7, currentDay) : Math.min(7, daysInMonth);
+        
         for (let i = sampleDays - 1; i >= 0; i--) {
-          const date = new Date(year, month - 1, daysInMonth - i);
+          const dayNum = selectedIsCurrentMonth ? currentDay - i : daysInMonth - i;
+          const date = new Date(year, month - 1, dayNum);
           const revenue = Math.floor(Math.random() * 5000) + 1000;
           mockData.push({
             period: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
