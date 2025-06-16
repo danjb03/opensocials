@@ -1,10 +1,13 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { Users, Briefcase, FileText, UserPlus, BarChart, Handshake, Shield, Bot } from 'lucide-react';
+import { usePendingCampaignReviews } from '@/hooks/admin/usePendingCampaignReviews';
 
 const AdminDashboard = () => {
+  const { data: pendingReviews = 0 } = usePendingCampaignReviews();
+
   const quickActions = [
     {
       title: 'User Management',
@@ -29,6 +32,8 @@ const AdminDashboard = () => {
       description: 'AI-powered campaign analysis and approval',
       icon: Bot,
       href: '/admin/campaign-review',
+      notificationCount: pendingReviews,
+      urgent: pendingReviews > 0
     },
     {
       title: 'Brand CRM',
@@ -62,6 +67,32 @@ const AdminDashboard = () => {
         <h1 className="text-3xl font-bold mb-2 text-foreground">Admin Dashboard</h1>
         <p className="text-muted-foreground">Manage your platform and monitor key metrics.</p>
       </div>
+
+      {/* Notification Banner for Pending Reviews */}
+      {pendingReviews > 0 && (
+        <Card className="mb-6 border-orange-500 bg-orange-50 dark:bg-orange-950">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Bot className="h-5 w-5 text-orange-600" />
+                <div>
+                  <h3 className="font-semibold text-orange-800 dark:text-orange-200">
+                    {pendingReviews} Campaign{pendingReviews > 1 ? 's' : ''} Awaiting Review
+                  </h3>
+                  <p className="text-sm text-orange-700 dark:text-orange-300">
+                    New campaigns require your approval before going live
+                  </p>
+                </div>
+              </div>
+              <Link to="/admin/campaign-review">
+                <Button variant="outline" className="border-orange-500 text-orange-700 hover:bg-orange-100">
+                  Review Now
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 mb-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
         <Card className="bg-card border-border">
@@ -109,11 +140,21 @@ const AdminDashboard = () => {
         <h2 className="text-xl font-semibold mb-4 text-foreground">Quick Actions</h2>
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {quickActions.map((action) => (
-            <Card key={action.href} className="bg-card border-border hover:shadow-md transition-shadow">
+            <Card 
+              key={action.href} 
+              className={`bg-card border-border hover:shadow-md transition-shadow relative ${
+                action.urgent ? 'ring-2 ring-orange-500 ring-opacity-50' : ''
+              }`}
+            >
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg text-foreground">
                   <action.icon className="h-5 w-5" />
                   {action.title}
+                  {action.notificationCount && action.notificationCount > 0 && (
+                    <Badge variant="destructive" className="ml-auto">
+                      {action.notificationCount}
+                    </Badge>
+                  )}
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">{action.description}</CardDescription>
               </CardHeader>

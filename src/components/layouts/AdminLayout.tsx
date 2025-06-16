@@ -1,11 +1,12 @@
-
 import { memo, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import SidebarLogo from "@/components/ui/sidebar-logo";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { usePendingCampaignReviews } from '@/hooks/admin/usePendingCampaignReviews';
 import { Home, Users, Settings, Shield, FileText, BarChart2, LogOut, DollarSign, Bot, ArrowLeft, Network } from 'lucide-react';
 import Footer from './Footer';
 import {
@@ -30,6 +31,7 @@ const AdminLayout = memo(({ children }: AdminLayoutProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const location = useLocation();
+  const { data: pendingCount = 0 } = usePendingCampaignReviews();
 
   const handleSignOut = async () => {
     try {
@@ -91,7 +93,8 @@ const AdminLayout = memo(({ children }: AdminLayoutProps) => {
       title: "Campaign Review",
       url: "/admin/campaign-review",
       icon: Bot,
-      isActive: isActiveRoute('/admin/campaign-review')
+      isActive: isActiveRoute('/admin/campaign-review'),
+      notificationCount: pendingCount
     },
     {
       title: "Pricing Floors",
@@ -151,9 +154,17 @@ const AdminLayout = memo(({ children }: AdminLayoutProps) => {
                     className="h-12 mr-2 hover:bg-accent hover:text-accent-foreground transition-colors"
                     tooltip={item.title}
                   >
-                    <Link to={item.url} className="flex items-center gap-3 w-full">
+                    <Link to={item.url} className="flex items-center gap-3 w-full relative">
                       <item.icon className="h-5 w-5" />
                       <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
+                      {item.notificationCount && item.notificationCount > 0 && (
+                        <Badge 
+                          variant="destructive" 
+                          className="ml-auto h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:top-0 group-data-[collapsible=icon]:right-0 group-data-[collapsible=icon]:-translate-y-1 group-data-[collapsible=icon]:translate-x-1"
+                        >
+                          {item.notificationCount}
+                        </Badge>
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
