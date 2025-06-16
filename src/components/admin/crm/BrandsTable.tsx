@@ -124,11 +124,12 @@ export const BrandsTable = ({ brands, isLoading }: BrandsTableProps) => {
                   variant="outline" 
                   asChild
                 >
-                  <Link to={`/admin/crm/brands/${brand.brand_id}`}>
-                    <span className="flex items-center">
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
-                    </span>
+                  <Link 
+                    to={`/admin/crm/brands/${brand.brand_id}`}
+                    className="flex items-center"
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    View
                   </Link>
                 </Button>
               </TableCell>
