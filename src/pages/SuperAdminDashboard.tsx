@@ -12,18 +12,41 @@ import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 const SuperAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const navigate = useNavigate();
-  const { user, role } = useUnifiedAuth();
+  const { user, role, isLoading, error } = useUnifiedAuth();
   
-  // Debug log to check current user and role
-  console.log('SuperAdminDashboard - Current user:', user?.id);
-  console.log('SuperAdminDashboard - Current role:', role);
+  // Only log in development or when there's an error
+  if (error) {
+    console.error('SuperAdminDashboard - Auth error:', error);
+  }
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-10 bg-background text-foreground">
+        <div className="text-center">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p>Loading Super Admin Dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !user) {
+    return (
+      <div className="container mx-auto py-10 bg-background text-foreground">
+        <div className="text-center text-red-500">
+          <p>Error loading dashboard. Please try refreshing the page.</p>
+          {error && <p className="text-sm mt-2">{error}</p>}
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="container mx-auto py-10 bg-background text-foreground">
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2 text-foreground">Super Admin Dashboard</h1>
         <div className="text-sm text-muted-foreground">
-          Logged in as: {user?.email} | Role: {role}
+          Logged in as: {user?.email} | Role: {role || 'Unknown'}
         </div>
       </div>
       
