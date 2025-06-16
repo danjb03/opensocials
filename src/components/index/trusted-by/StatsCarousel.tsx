@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { StatCard } from './StatCard';
 import { NavigationDots } from './NavigationDots';
@@ -56,36 +55,56 @@ export const StatsCarousel = ({ isVisible }: StatsCarouselProps) => {
     const baseZIndex = 50;
     const zIndex = baseZIndex - position;
     
-    // Reduced spacing and improved positioning
-    const scale = position === 0 ? 1 : position === 1 ? 0.85 : position === 2 ? 0.7 : 0.55;
-    const translateX = position === 0 ? 0 : position === 1 ? 100 : position === 2 ? 200 : 300;
-    const translateY = position === 0 ? 0 : position === 1 ? 30 : position === 2 ? 60 : 90;
-    const opacity = position === 0 ? 1 : position === 1 ? 0.6 : position === 2 ? 0.3 : 0.1;
-    const blur = position === 0 ? 0 : position === 1 ? 0.5 : position === 2 ? 1.5 : 3;
+    // Mobile-first responsive scaling and positioning
+    const isMobile = window.innerWidth < 768;
     
-    return {
-      transform: `translateX(${translateX}px) translateY(${translateY}px) scale(${scale})`,
-      zIndex,
-      opacity,
-      filter: `blur(${blur}px)`,
-      transition: 'all 0.8s cubic-bezier(0.4, 0.0, 0.2, 1)',
-    };
+    if (isMobile) {
+      // On mobile, only show current card prominently
+      const scale = position === 0 ? 1 : 0.85;
+      const translateX = position === 0 ? 0 : position === 1 ? 50 : position === 2 ? 100 : 150;
+      const translateY = position === 0 ? 0 : 20;
+      const opacity = position === 0 ? 1 : position === 1 ? 0.4 : 0.2;
+      const blur = position === 0 ? 0 : position === 1 ? 1 : 2;
+      
+      return {
+        transform: `translateX(${translateX}px) translateY(${translateY}px) scale(${scale})`,
+        zIndex,
+        opacity,
+        filter: `blur(${blur}px)`,
+        transition: 'all 0.8s cubic-bezier(0.4, 0.0, 0.2, 1)',
+      };
+    } else {
+      // Desktop styling (keep existing)
+      const scale = position === 0 ? 1 : position === 1 ? 0.85 : position === 2 ? 0.7 : 0.55;
+      const translateX = position === 0 ? 0 : position === 1 ? 100 : position === 2 ? 200 : 300;
+      const translateY = position === 0 ? 0 : position === 1 ? 30 : position === 2 ? 60 : 90;
+      const opacity = position === 0 ? 1 : position === 1 ? 0.6 : position === 2 ? 0.3 : 0.1;
+      const blur = position === 0 ? 0 : position === 1 ? 0.5 : position === 2 ? 1.5 : 3;
+      
+      return {
+        transform: `translateX(${translateX}px) translateY(${translateY}px) scale(${scale})`,
+        zIndex,
+        opacity,
+        filter: `blur(${blur}px)`,
+        transition: 'all 0.8s cubic-bezier(0.4, 0.0, 0.2, 1)',
+      };
+    }
   };
 
   return (
-    <div className="relative py-12 overflow-hidden bg-black">
+    <div className="relative py-8 md:py-12 overflow-hidden bg-black">
       {/* Enhanced gradient masks for better content hiding */}
       <div className="absolute inset-0 pointer-events-none z-40">
-        <div className="absolute top-0 left-0 w-48 h-full bg-gradient-to-r from-black via-black/90 to-transparent" />
-        <div className="absolute top-0 right-0 w-48 h-full bg-gradient-to-l from-black via-black/90 to-transparent" />
-        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black via-black/80 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black via-black/80 to-transparent" />
+        <div className="absolute top-0 left-0 w-24 md:w-48 h-full bg-gradient-to-r from-black via-black/90 to-transparent" />
+        <div className="absolute top-0 right-0 w-24 md:w-48 h-full bg-gradient-to-l from-black via-black/90 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-16 md:h-24 bg-gradient-to-b from-black via-black/80 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-16 md:h-24 bg-gradient-to-t from-black via-black/80 to-transparent" />
       </div>
 
-      {/* Main carousel container with reduced height */}
-      <div className="relative h-[480px] max-w-7xl mx-auto flex items-center justify-center px-8">
+      {/* Main carousel container with responsive height */}
+      <div className="relative h-[380px] md:h-[480px] max-w-7xl mx-auto flex items-center justify-center px-4 md:px-8">
         {/* Card stack container with better perspective */}
-        <div className="relative w-full max-w-2xl flex items-center justify-center" style={{ height: '400px', perspective: '1200px' }}>
+        <div className="relative w-full max-w-sm md:max-w-2xl flex items-center justify-center" style={{ height: '320px', perspective: '800px' }}>
           {statsData.map((stat, index) => (
             <StatCard
               key={stat.id}
@@ -105,7 +124,7 @@ export const StatsCarousel = ({ isVisible }: StatsCarouselProps) => {
       </div>
 
       {/* Navigation dots with reduced spacing */}
-      <div className="relative z-50 mt-6">
+      <div className="relative z-50 mt-4 md:mt-6">
         <NavigationDots 
           stats={statsData} 
           currentCard={currentCard} 
