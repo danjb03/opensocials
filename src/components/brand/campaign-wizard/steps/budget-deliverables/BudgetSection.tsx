@@ -19,10 +19,8 @@ export const BudgetSection: React.FC<BudgetSectionProps> = ({
   const watchedBudget = watch('total_budget');
   const watchedPosts = watch('posts_count');
 
-  // Calculate estimated creator budget (75% of total)
-  const estimatedCreatorBudget = watchedBudget * 0.75;
-  const estimatedPerPostBudget = watchedPosts > 0 ? estimatedCreatorBudget / watchedPosts : 0;
-  const costToRunCampaign = watchedBudget * 0.25;
+  // Calculate estimated per post budget for display
+  const estimatedPerPostBudget = watchedPosts > 0 ? watchedBudget / watchedPosts : 0;
 
   return (
     <div className="space-y-4">
@@ -50,33 +48,11 @@ export const BudgetSection: React.FC<BudgetSectionProps> = ({
         )}
       </div>
 
-      {/* Budget Breakdown */}
-      {watchedBudget > 0 && (
-        <div className="bg-card border border-border rounded-lg p-4 space-y-2">
-          <h4 className="font-medium text-foreground">Budget Breakdown</h4>
-          <div className="space-y-1 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Creator Payments:</span>
-              <span className="font-medium text-foreground">${estimatedCreatorBudget.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Cost to run campaign:</span>
-              <span className="font-medium text-foreground">${costToRunCampaign.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between font-medium border-t border-border pt-1">
-              <span className="text-foreground">Total:</span>
-              <span className="text-foreground">${watchedBudget.toFixed(2)}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Estimated cost per deliverable */}
       {estimatedPerPostBudget > 0 && (
         <div className="bg-card border border-border rounded-lg p-3">
           <p className="text-sm text-foreground">
-            <strong>Estimated per post:</strong> ${estimatedPerPostBudget.toFixed(2)} 
-            <span className="text-xs ml-1 text-muted-foreground">(creator receives 75%)</span>
+            <strong>Estimated per post:</strong> ${estimatedPerPostBudget.toFixed(2)}
           </p>
         </div>
       )}
