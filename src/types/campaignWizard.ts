@@ -71,7 +71,8 @@ export interface SingleCampaignData {
 
 export interface WeeklyCampaignData {
   weeks_duration: number;
-  post_day_of_week: string;
+  post_day_of_week?: string;
+  post_days_of_week?: string[];
   posts_per_week: number;
 }
 

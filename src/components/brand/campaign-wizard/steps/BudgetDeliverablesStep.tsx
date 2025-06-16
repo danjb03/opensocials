@@ -39,8 +39,19 @@ const createBudgetDeliverablesSchema = (campaignType: string) => {
       return z.object({
         ...baseSchema,
         weeks_duration: z.number().min(1, 'At least 1 week required').max(52, 'Maximum 52 weeks'),
-        post_day_of_week: z.string().min(1, 'Day of week is required'),
         posts_per_week: z.number().min(1, 'At least 1 post per week').max(7, 'Maximum 7 posts per week'),
+        post_day_of_week: z.string().optional(),
+        post_days_of_week: z.array(z.string()).optional(),
+      }).refine((data) => {
+        // If posts_per_week is 1, require post_day_of_week
+        if (data.posts_per_week === 1) {
+          return !!data.post_day_of_week;
+        }
+        // If posts_per_week > 1, require post_days_of_week with correct length
+        return data.post_days_of_week && data.post_days_of_week.length === data.posts_per_week;
+      }, {
+        message: 'Please select the correct number of posting days',
+        path: ['post_days_of_week']
       });
     case 'Monthly':
       return z.object({
@@ -115,6 +126,7 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
           ...base,
           weeks_duration: data?.campaign_type_data?.weekly?.weeks_duration || 1,
           post_day_of_week: data?.campaign_type_data?.weekly?.post_day_of_week || '',
+          post_days_of_week: data?.campaign_type_data?.weekly?.post_days_of_week || [],
           posts_per_week: data?.campaign_type_data?.weekly?.posts_per_week || 1,
         };
       case 'Monthly':
@@ -188,6 +200,7 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
         campaignTypeData.weekly = {
           weeks_duration: (formData as any).weeks_duration,
           post_day_of_week: (formData as any).post_day_of_week,
+          post_days_of_week: (formData as any).post_days_of_week,
           posts_per_week: (formData as any).posts_per_week,
         };
         break;
