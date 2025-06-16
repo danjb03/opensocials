@@ -28,10 +28,15 @@ export const useBrandCRM = (filters: BrandCRMFilters = {}) => {
       console.log('Fetching brands with filters:', filters);
       
       try {
-        // First get brand profiles
+        // Optimize by limiting initial fetch and using pagination
+        const pageSize = filters.pageSize || 50;
+        const offset = ((filters.page || 1) - 1) * pageSize;
+
+        // Use more efficient query with limits
         let brandQuery = supabase
           .from('brand_profiles')
-          .select('user_id, company_name, industry, budget_range, created_at');
+          .select('user_id, company_name, industry, budget_range, created_at')
+          .range(offset, offset + pageSize - 1);
 
         const { data: brands, error: brandError } = await brandQuery.order('created_at', { ascending: false });
 
@@ -42,7 +47,7 @@ export const useBrandCRM = (filters: BrandCRMFilters = {}) => {
 
         if (!brands) return { brands: [], pagination: { total: 0, page: 1, pageSize: 50, pageCount: 0 } };
 
-        // Get user profiles for all brand user_ids
+        // Get user profiles for all brand user_ids in batches
         const userIds = brands.map(brand => brand.user_id);
         const { data: profiles, error: profileError } = await supabase
           .from('profiles')
@@ -83,7 +88,7 @@ export const useBrandCRM = (filters: BrandCRMFilters = {}) => {
 
         console.log('Filtered brand data:', filteredBrands);
 
-        // Get deal counts for each brand
+        // Get deal counts for each brand (optimize this with a single query)
         const brandsWithDeals = await Promise.all(
           filteredBrands.map(async (brand) => {
             const { data: deals } = await supabase
@@ -121,7 +126,10 @@ export const useBrandCRM = (filters: BrandCRMFilters = {}) => {
         console.error('Error in useBrandCRM:', error);
         throw error;
       }
-    }
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 
   return {

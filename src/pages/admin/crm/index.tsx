@@ -1,53 +1,37 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Building2, Users, TrendingUp, FileText, BarChart2, Loader, DollarSign } from 'lucide-react';
+import { Building2, Users, FileText, BarChart2, DollarSign } from 'lucide-react';
 import AdminCRMLayout from '@/components/layouts/AdminCRMLayout';
-import { useBrandCRM } from '@/hooks/admin/useBrandCRM';
-import { useCreatorCRM } from '@/hooks/admin/useCreatorCRM';
+import OptimizedCRMStats from '@/components/admin/crm/OptimizedCRMStats';
 import { usePricingFloors } from '@/hooks/admin/usePricingFloors';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useOptimizedCRM } from '@/hooks/admin/useOptimizedCRM';
 
 const AdminCRM = () => {
-  // Get real brand data
-  const { brands, isLoading: brandsLoading } = useBrandCRM({ pageSize: 1000 });
+  // Use optimized CRM hook for faster loading
+  const { data: crmData, isLoading: crmLoading, error: crmError } = useOptimizedCRM();
   
-  // Get real creator data  
-  const { creators, isLoading: creatorsLoading } = useCreatorCRM({ pageSize: 1000 });
-
   // Get pricing floors data
   const { data: pricingFloors, isLoading: pricingFloorsLoading } = usePricingFloors();
 
-  // Get real deals data
-  const { data: dealsData, isLoading: dealsLoading } = useQuery({
-    queryKey: ['admin-deals-summary'],
-    queryFn: async () => {
-      const { data: deals, error } = await supabase
-        .from('deals')
-        .select('id, status, value')
-        .in('status', ['active', 'accepted', 'pending']);
-
-      if (error) throw error;
-
-      const activeDeals = deals?.filter(deal => deal.status === 'active' || deal.status === 'accepted').length || 0;
-      const totalRevenue = deals?.reduce((sum, deal) => sum + (deal.value || 0), 0) || 0;
-
-      return { activeDeals, totalRevenue };
-    }
-  });
-
-  // Calculate real statistics
-  const totalBrands = brands.length;
-  const totalCreators = creators.length;
-  const activeBrands = brands.filter(b => b.status === 'active').length;
-  const activeCreators = creators.filter(c => c.status === 'active').length;
-  const activeDeals = dealsData?.activeDeals || 0;
-  const totalRevenue = dealsData?.totalRevenue || 0;
   const totalPricingFloors = pricingFloors?.length || 0;
+  const isLoading = crmLoading || pricingFloorsLoading;
 
-  const isLoading = brandsLoading || creatorsLoading || dealsLoading || pricingFloorsLoading;
+  // Default values while loading
+  const {
+    totalBrands = 0,
+    activeBrands = 0,
+    totalCreators = 0,
+    activeCreators = 0,
+    activeDeals = 0,
+    totalRevenue = 0,
+  } = crmData || {};
+
+  if (crmError) {
+    console.error('CRM Error:', crmError);
+  }
 
   return (
     <AdminCRMLayout>
@@ -58,76 +42,16 @@ const AdminCRM = () => {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Brands</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {isLoading ? <Loader className="h-6 w-6 animate-spin" /> : totalBrands}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {activeBrands} active brand accounts
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Creators</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {isLoading ? <Loader className="h-6 w-6 animate-spin" /> : totalCreators}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {activeCreators} active creator accounts
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Deals</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {isLoading ? <Loader className="h-6 w-6 animate-spin" /> : activeDeals}
-            </div>
-            <p className="text-xs text-muted-foreground">Deals in progress</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {isLoading ? <Loader className="h-6 w-6 animate-spin" /> : `$${totalRevenue.toLocaleString()}`}
-            </div>
-            <p className="text-xs text-muted-foreground">All time</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pricing Floors</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {isLoading ? <Loader className="h-6 w-6 animate-spin" /> : totalPricingFloors}
-            </div>
-            <p className="text-xs text-muted-foreground">Active pricing rules</p>
-          </CardContent>
-        </Card>
-      </div>
+      <OptimizedCRMStats
+        totalBrands={totalBrands}
+        totalCreators={totalCreators}
+        activeBrands={activeBrands}
+        activeCreators={activeCreators}
+        activeDeals={activeDeals}
+        totalRevenue={totalRevenue}
+        totalPricingFloors={totalPricingFloors}
+        isLoading={isLoading}
+      />
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
