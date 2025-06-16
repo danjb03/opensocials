@@ -48,31 +48,13 @@ export const IndexNavigation = ({
             )}
             <div className="flex items-center space-x-4">
               {!user && (
-                <>
-                  <Button 
-                    variant="ghost" 
-                    size="default"
-                    onClick={() => navigate('/auth')}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    Sign In
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="default"
-                    onClick={() => navigate('/auth')}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    Register
-                  </Button>
-                  <Button 
-                    variant="connect" 
-                    size="connect" 
-                    onClick={() => setShowInterestModal(true)}
-                  >
-                    Get Started
-                  </Button>
-                </>
+                <Button 
+                  variant="connect" 
+                  size="connect" 
+                  onClick={() => setShowInterestModal(true)}
+                >
+                  Get Started
+                </Button>
               )}
             </div>
           </div>
