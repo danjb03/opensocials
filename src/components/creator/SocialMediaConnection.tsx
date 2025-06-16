@@ -5,14 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LinkIcon, Instagram, Youtube, Twitter, Loader2, CheckCircle, Linkedin } from 'lucide-react';
 import { TikTokIcon } from '@/components/icons/TikTokIcon';
+import { useInsightIQConnect } from '@/hooks/useInsightIQConnect';
 import { useInsightIQData } from '@/hooks/useInsightIQData';
+import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
 
 interface SocialMediaConnectionProps {
   onConnectionSuccess?: () => void;
 }
 
 export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnectionProps) => {
-  const { fetchCreatorData, getPlatformData } = useInsightIQData();
+  const { user } = useCreatorAuth();
+  const { connect, isLoading: isConnecting, isSuccess, error: connectError } = useInsightIQConnect();
+  const { data: analyticsData, isLoading: isLoadingData, refetch } = useInsightIQData(user?.id || '');
+  
   const [usernames, setUsernames] = useState({
     instagram: '',
     youtube: '',
@@ -73,16 +78,30 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
 
   const handleConnect = async (platform: string) => {
     const username = usernames[platform as keyof typeof usernames];
-    if (!username.trim()) {
+    if (!username.trim() || !user) {
       return;
     }
 
-    await fetchCreatorData(platform, username);
-    
-    // Call success callback if provided
-    if (onConnectionSuccess) {
-      onConnectionSuccess();
+    try {
+      await connect({
+        creator_id: user.id,
+        platform,
+        identifier: username.trim(),
+      });
+      
+      // Refetch data after successful connection
+      if (isSuccess) {
+        refetch();
+        onConnectionSuccess?.();
+      }
+    } catch (error) {
+      console.error('Connection failed:', error);
     }
+  };
+
+  // Get platform data for a specific platform
+  const getPlatformData = (platform: string) => {
+    return analyticsData?.find(data => data.platform === platform);
   };
 
   return (
@@ -102,9 +121,9 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
         {platforms.map((platform) => {
           const IconComponent = platform.icon;
           const platformData = getPlatformData(platform.key);
-          const isLoading = platformData?.isLoading || false;
-          const hasData = !!platformData?.data;
-          const hasError = !!platformData?.error;
+          const isLoading = isConnecting;
+          const hasData = !!platformData;
+          const hasError = !!connectError;
           
           return (
             <div key={platform.name} className={`p-4 rounded-xl border transition-all duration-200 ${platform.bgColor} ${platform.borderColor} ${hasData ? 'ring-2 ring-green-200' : ''}`}>
@@ -150,7 +169,7 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
               
               {hasError && (
                 <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-xs text-red-600">{platformData?.error}</p>
+                  <p className="text-xs text-red-600">{connectError}</p>
                 </div>
               )}
               
@@ -158,10 +177,10 @@ export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnec
                 <div className="mt-3 p-3 bg-white/50 rounded-lg border border-white/30">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700">
-                      @{platformData?.username}
+                      @{platformData.identifier}
                     </span>
                     <span className="text-sm text-gray-600">
-                      {platformData?.data?.followers.toLocaleString()} followers
+                      {platformData.follower_count?.toLocaleString() || 0} followers
                     </span>
                   </div>
                 </div>

@@ -1,7 +1,8 @@
 
 import React, { createContext, useContext } from 'react';
-import { useInsightIQData } from '@/hooks/useInsightIQData';
-import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
+
+// Legacy provider - kept for compatibility but no longer used
+// All functionality has been moved to useInsightIQData and useInsightIQConnect hooks
 
 interface InsightIQData {
   followers: number;
@@ -36,7 +37,7 @@ const InsightIQContext = createContext<InsightIQContextType | undefined>(undefin
 export const useInsightIQContext = () => {
   const context = useContext(InsightIQContext);
   if (!context) {
-    throw new Error('useInsightIQContext must be used within an InsightIQProvider');
+    throw new Error('useInsightIQContext must be used within an InsightIQProvider - this provider is deprecated, use useInsightIQData and useInsightIQConnect instead');
   }
   return context;
 };
@@ -46,44 +47,22 @@ interface InsightIQProviderProps {
 }
 
 export const InsightIQProvider: React.FC<InsightIQProviderProps> = ({ children }) => {
-  const { user } = useCreatorAuth();
-  const { data: analyticsData, isLoading } = useInsightIQData(user?.id || '');
-
-  // Transform new analytics data to legacy format
-  const platformData: PlatformData = {};
+  // Legacy provider - no longer functional
+  // Use useInsightIQData and useInsightIQConnect hooks instead
   
-  if (analyticsData) {
-    analyticsData.forEach(analytics => {
-      platformData[analytics.platform] = {
-        username: analytics.identifier,
-        isLoading: false,
-        data: {
-          followers: analytics.follower_count || 0,
-          engagement_rate: analytics.engagement_rate || 0,
-          avg_likes: analytics.average_likes || 0,
-          avg_comments: analytics.average_comments || 0,
-          avg_views: analytics.average_views || 0,
-          growth_rate: 0, // Not available in new API
-          verified: analytics.is_verified || false,
-          profile_picture: analytics.image_url,
-          bio: analytics.introduction,
-        }
-      };
-    });
-  }
+  const platformData: PlatformData = {};
 
   const fetchCreatorData = async (platform: string, username: string) => {
-    // This is handled by the new SocialPlatformConnect component
-    console.log('Use SocialPlatformConnect component instead');
+    console.warn('InsightIQProvider is deprecated. Use useInsightIQConnect hook instead.');
   };
 
   const clearPlatformData = (platform: string) => {
-    // Legacy function - not needed with new implementation
-    console.log('Platform data clearing not needed with new implementation');
+    console.warn('InsightIQProvider is deprecated. Use useInsightIQData hook instead.');
   };
 
   const getPlatformData = (platform: string) => {
-    return platformData[platform];
+    console.warn('InsightIQProvider is deprecated. Use useInsightIQData hook instead.');
+    return undefined;
   };
 
   const contextValue: InsightIQContextType = {

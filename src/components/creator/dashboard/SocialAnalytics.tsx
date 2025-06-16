@@ -3,6 +3,7 @@ import React from 'react';
 import { SocialMediaConnection } from '@/components/creator/SocialMediaConnection';
 import AnalyticsModule from '@/components/creator/AnalyticsModule';
 import { useInsightIQData } from '@/hooks/useInsightIQData';
+import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
 
 interface SocialAnalyticsProps {
   socialConnections: {
@@ -35,7 +36,8 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
   onConnect,
   isLoading
 }) => {
-  const { getPlatformData } = useInsightIQData();
+  const { user } = useCreatorAuth();
+  const { data: analyticsData } = useInsightIQData(user?.id || '');
 
   const handleConnectionSuccess = () => {
     console.log('Social media connection successful - refreshing analytics');
@@ -50,17 +52,22 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
     return num.toString();
   };
 
+  // Get platform data for a specific platform
+  const getPlatformData = (platform: string) => {
+    return analyticsData?.find(data => data.platform === platform);
+  };
+
   const getAnalyticsData = (platform: string) => {
     const insightIQData = getPlatformData(platform);
     
-    if (insightIQData?.data) {
+    if (insightIQData) {
       return {
-        followers: formatNumber(insightIQData.data.followers),
-        engagement: `${insightIQData.data.engagement_rate.toFixed(1)}%`,
-        views: formatNumber(insightIQData.data.avg_views),
-        likes: formatNumber(insightIQData.data.avg_likes),
-        verified: insightIQData.data.verified,
-        growthRate: `+${insightIQData.data.growth_rate.toFixed(1)}%`
+        followers: formatNumber(insightIQData.follower_count || 0),
+        engagement: `${(insightIQData.engagement_rate || 0).toFixed(1)}%`,
+        views: formatNumber(insightIQData.average_views || 0),
+        likes: formatNumber(insightIQData.average_likes || 0),
+        verified: insightIQData.is_verified || false,
+        growthRate: '+0%' // Not available in new API
       };
     }
 
@@ -80,7 +87,7 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
     <>
       <SocialMediaConnection onConnectionSuccess={handleConnectionSuccess} />
       
-      {(socialConnections.instagram || getPlatformData('instagram')?.data) && (
+      {(socialConnections.instagram || getPlatformData('instagram')) && (
         <AnalyticsModule 
           platform="Instagram" 
           metrics={getAnalyticsData('instagram')}
@@ -88,7 +95,7 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
         />
       )}
       
-      {(socialConnections.tiktok || getPlatformData('tiktok')?.data) && (
+      {(socialConnections.tiktok || getPlatformData('tiktok')) && (
         <AnalyticsModule 
           platform="TikTok" 
           metrics={getAnalyticsData('tiktok')}
@@ -96,7 +103,7 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
         />
       )}
       
-      {(socialConnections.youtube || getPlatformData('youtube')?.data) && (
+      {(socialConnections.youtube || getPlatformData('youtube')) && (
         <AnalyticsModule 
           platform="YouTube" 
           metrics={getAnalyticsData('youtube')}
@@ -104,7 +111,7 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
         />
       )}
 
-      {getPlatformData('twitter')?.data && (
+      {getPlatformData('twitter') && (
         <AnalyticsModule 
           platform="Twitter" 
           metrics={getAnalyticsData('twitter')}
