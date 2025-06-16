@@ -1,6 +1,5 @@
-
 import { Button } from "@/components/ui/button";
-import { HeroLogo } from "@/components/ui/hero-logo";
+import HeroLogo from "@/components/ui/hero-logo";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { User } from "@supabase/supabase-js";

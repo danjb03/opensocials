@@ -1,5 +1,5 @@
 
-import { NavigationLogo } from "@/components/ui/navigation-logo";
+import NavigationLogo from "@/components/ui/navigation-logo";
 
 export const IndexFooter = () => {
   return (

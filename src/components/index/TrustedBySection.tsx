@@ -7,7 +7,7 @@ export const TrustedBySection = () => {
     <section className="py-24 px-4 sm:px-6 lg:px-8 bg-background">
       <div className="max-w-7xl mx-auto">
         <TrustedBySectionHeader />
-        <StatsCarousel />
+        <StatsCarousel isVisible={true} />
       </div>
     </section>
   );

@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { NavigationLogo } from "@/components/ui/navigation-logo";
+import NavigationLogo from "@/components/ui/navigation-logo";
 import { Menu, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
