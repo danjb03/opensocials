@@ -80,17 +80,13 @@ export function AIReviewPanel({ campaignId, onReviewComplete }: AIReviewPanelPro
         return null;
       }
       
-      // Safely handle brand_profiles using optional chaining and type guards
-      const brandProfiles = (data.brand_profiles && 
-                           typeof data.brand_profiles === 'object' && 
-                           !Array.isArray(data.brand_profiles) &&
-                           'company_name' in data.brand_profiles &&
-                           'industry' in data.brand_profiles &&
-                           typeof data.brand_profiles.company_name === 'string' &&
-                           typeof data.brand_profiles.industry === 'string') 
+      // Safely handle brand_profiles using optional chaining and type assertion
+      const brandProfiles = data.brand_profiles && 
+                           (data.brand_profiles as any)?.company_name &&
+                           (data.brand_profiles as any)?.industry
         ? {
-            company_name: data.brand_profiles.company_name,
-            industry: data.brand_profiles.industry
+            company_name: (data.brand_profiles as any).company_name,
+            industry: (data.brand_profiles as any).industry
           }
         : null;
       

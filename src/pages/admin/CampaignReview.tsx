@@ -105,12 +105,8 @@ export default function CampaignReview() {
       
       // Transform the data to ensure proper typing and handle null brand_profiles using optional chaining
       return (data || []).map(campaign => {
-        const brandProfiles = (campaign.brand_profiles && 
-                             typeof campaign.brand_profiles === 'object' &&
-                             !Array.isArray(campaign.brand_profiles) &&
-                             'company_name' in campaign.brand_profiles &&
-                             typeof campaign.brand_profiles.company_name === 'string') 
-          ? { company_name: campaign.brand_profiles.company_name }
+        const brandProfiles = (campaign.brand_profiles as any)?.company_name
+          ? { company_name: (campaign.brand_profiles as any).company_name }
           : null;
 
         return {
