@@ -49,8 +49,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, showArrow = false, children, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
     
-    // Show arrow by default for connect variant
-    const shouldShowArrow = showArrow || variant === "connect"
+    // Show arrow by default for connect variant, but only if not using asChild
+    const shouldShowArrow = !asChild && (showArrow || variant === "connect")
     
     return (
       <Comp
