@@ -19,12 +19,12 @@ const AdminHeader = memo(({ role }: AdminHeaderProps) => {
       <SidebarTrigger className="text-foreground hover:bg-accent hover:text-accent-foreground transition-colors" />
       
       {isSuperAdmin && (
-        <Button asChild variant="outline" size="sm" className="gap-2">
-          <Link to="/super-admin">
+        <Link to="/super-admin">
+          <Button variant="outline" size="sm" className="gap-2">
             <ArrowLeft className="h-4 w-4" />
             Back to Super Admin
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       )}
     </header>
   );
