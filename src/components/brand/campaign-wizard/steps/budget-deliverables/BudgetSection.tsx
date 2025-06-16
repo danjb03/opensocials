@@ -22,6 +22,7 @@ export const BudgetSection: React.FC<BudgetSectionProps> = ({
   // Calculate estimated creator budget (75% of total)
   const estimatedCreatorBudget = watchedBudget * 0.75;
   const estimatedPerPostBudget = watchedPosts > 0 ? estimatedCreatorBudget / watchedPosts : 0;
+  const costToRunCampaign = watchedBudget * 0.25;
 
   return (
     <div className="space-y-4">
@@ -59,8 +60,8 @@ export const BudgetSection: React.FC<BudgetSectionProps> = ({
               <span className="font-medium text-foreground">${estimatedCreatorBudget.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Platform Fee:</span>
-              <span className="font-medium text-foreground">${(watchedBudget * 0.25).toFixed(2)}</span>
+              <span className="text-muted-foreground">Cost to run campaign:</span>
+              <span className="font-medium text-foreground">${costToRunCampaign.toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-medium border-t border-border pt-1">
               <span className="text-foreground">Total:</span>
