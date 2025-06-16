@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SearchInput } from '@/components/ui/search-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { PricingFloorsTable } from '@/components/admin/pricing/PricingFloorsTable';
+import { PricingFloorsGroupedTable } from '@/components/admin/pricing/PricingFloorsGroupedTable';
 import { CreatePricingFloorModal } from '@/components/admin/pricing/CreatePricingFloorModal';
 import { usePricingFloors } from '@/hooks/admin/usePricingFloors';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
@@ -20,6 +22,8 @@ export default function PricingFloors() {
   const [tierFilter, setTierFilter] = useState<string>('all');
   const [campaignTypeFilter, setCampaignTypeFilter] = useState<string>('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'table' | 'grouped'>('table');
+  const [groupBy, setGroupBy] = useState<'tier' | 'campaign_type'>('tier');
 
   const { data: pricingFloors, isLoading, error } = usePricingFloors();
 
@@ -81,7 +85,7 @@ export default function PricingFloors() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-4 mb-6">
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                 <div className="flex-1">
                   <SearchInput
                     value={searchTerm}
@@ -118,12 +122,39 @@ export default function PricingFloors() {
                   </Select>
                 </div>
               </div>
+
+              <div className="flex items-center gap-4">
+                <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'table' | 'grouped')}>
+                  <ToggleGroupItem value="table">Table View</ToggleGroupItem>
+                  <ToggleGroupItem value="grouped">Grouped View</ToggleGroupItem>
+                </ToggleGroup>
+
+                {viewMode === 'grouped' && (
+                  <Select value={groupBy} onValueChange={(value) => setGroupBy(value as 'tier' | 'campaign_type')}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="tier">Group by Creator Tier</SelectItem>
+                      <SelectItem value="campaign_type">Group by Campaign Type</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
             </div>
 
-            <PricingFloorsTable 
-              pricingFloors={filteredPricingFloors} 
-              isLoading={isLoading}
-            />
+            {viewMode === 'table' ? (
+              <PricingFloorsTable 
+                pricingFloors={filteredPricingFloors} 
+                isLoading={isLoading}
+              />
+            ) : (
+              <PricingFloorsGroupedTable
+                pricingFloors={filteredPricingFloors}
+                isLoading={isLoading}
+                groupBy={groupBy}
+              />
+            )}
           </CardContent>
         </Card>
 
