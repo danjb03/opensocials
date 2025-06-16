@@ -2,10 +2,11 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Building2, Users, TrendingUp, FileText, BarChart2, Loader } from 'lucide-react';
+import { Building2, Users, TrendingUp, FileText, BarChart2, Loader, DollarSign } from 'lucide-react';
 import AdminCRMLayout from '@/components/layouts/AdminCRMLayout';
 import { useBrandCRM } from '@/hooks/admin/useBrandCRM';
 import { useCreatorCRM } from '@/hooks/admin/useCreatorCRM';
+import { usePricingFloors } from '@/hooks/admin/usePricingFloors';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -15,6 +16,9 @@ const AdminCRM = () => {
   
   // Get real creator data  
   const { creators, isLoading: creatorsLoading } = useCreatorCRM({ pageSize: 1000 });
+
+  // Get pricing floors data
+  const { data: pricingFloors, isLoading: pricingFloorsLoading } = usePricingFloors();
 
   // Get real deals data
   const { data: dealsData, isLoading: dealsLoading } = useQuery({
@@ -41,8 +45,9 @@ const AdminCRM = () => {
   const activeCreators = creators.filter(c => c.status === 'active').length;
   const activeDeals = dealsData?.activeDeals || 0;
   const totalRevenue = dealsData?.totalRevenue || 0;
+  const totalPricingFloors = pricingFloors?.length || 0;
 
-  const isLoading = brandsLoading || creatorsLoading || dealsLoading;
+  const isLoading = brandsLoading || creatorsLoading || dealsLoading || pricingFloorsLoading;
 
   return (
     <AdminCRMLayout>
@@ -53,7 +58,7 @@ const AdminCRM = () => {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Brands</CardTitle>
@@ -109,9 +114,22 @@ const AdminCRM = () => {
             <p className="text-xs text-muted-foreground">All time</p>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pricing Floors</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {isLoading ? <Loader className="h-6 w-6 animate-spin" /> : totalPricingFloors}
+            </div>
+            <p className="text-xs text-muted-foreground">Active pricing rules</p>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -179,6 +197,27 @@ const AdminCRM = () => {
               <Link to="/admin/crm/deals" className="block">
                 <Button variant="outline" className="w-full">
                   View Deals Pipeline
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Pricing Management
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Configure minimum pricing floors for different creator tiers and campaign types.
+            </p>
+            <div className="space-y-2">
+              <Link to="/admin/pricing-floors" className="block">
+                <Button variant="outline" className="w-full">
+                  Manage Pricing Floors
                 </Button>
               </Link>
             </div>
