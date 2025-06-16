@@ -701,6 +701,133 @@ export type Database = {
           },
         ]
       }
+      creator_public_analytics: {
+        Row: {
+          age_group: string | null
+          audience: Json | null
+          average_comments: number | null
+          average_likes: number | null
+          average_reels_views: number | null
+          average_views: number | null
+          brand_affinity: Json | null
+          content_count: number | null
+          creator_id: string
+          credibility_score: number | null
+          engagement_rate: number | null
+          fetched_at: string | null
+          follower_count: number | null
+          full_name: string | null
+          gender: string | null
+          identifier: string
+          image_url: string | null
+          introduction: string | null
+          is_verified: boolean | null
+          language: string | null
+          platform: string
+          platform_account_type: string | null
+          pricing: Json | null
+          profile_url: string | null
+          recent_contents: Json | null
+          sponsored_contents: Json | null
+          sponsored_posts_performance: number | null
+          top_contents: Json | null
+          top_hashtags: Json | null
+          top_interests: Json | null
+          top_mentions: Json | null
+          work_platform_id: string | null
+        }
+        Insert: {
+          age_group?: string | null
+          audience?: Json | null
+          average_comments?: number | null
+          average_likes?: number | null
+          average_reels_views?: number | null
+          average_views?: number | null
+          brand_affinity?: Json | null
+          content_count?: number | null
+          creator_id: string
+          credibility_score?: number | null
+          engagement_rate?: number | null
+          fetched_at?: string | null
+          follower_count?: number | null
+          full_name?: string | null
+          gender?: string | null
+          identifier: string
+          image_url?: string | null
+          introduction?: string | null
+          is_verified?: boolean | null
+          language?: string | null
+          platform: string
+          platform_account_type?: string | null
+          pricing?: Json | null
+          profile_url?: string | null
+          recent_contents?: Json | null
+          sponsored_contents?: Json | null
+          sponsored_posts_performance?: number | null
+          top_contents?: Json | null
+          top_hashtags?: Json | null
+          top_interests?: Json | null
+          top_mentions?: Json | null
+          work_platform_id?: string | null
+        }
+        Update: {
+          age_group?: string | null
+          audience?: Json | null
+          average_comments?: number | null
+          average_likes?: number | null
+          average_reels_views?: number | null
+          average_views?: number | null
+          brand_affinity?: Json | null
+          content_count?: number | null
+          creator_id?: string
+          credibility_score?: number | null
+          engagement_rate?: number | null
+          fetched_at?: string | null
+          follower_count?: number | null
+          full_name?: string | null
+          gender?: string | null
+          identifier?: string
+          image_url?: string | null
+          introduction?: string | null
+          is_verified?: boolean | null
+          language?: string | null
+          platform?: string
+          platform_account_type?: string | null
+          pricing?: Json | null
+          profile_url?: string | null
+          recent_contents?: Json | null
+          sponsored_contents?: Json | null
+          sponsored_posts_performance?: number | null
+          top_contents?: Json | null
+          top_hashtags?: Json | null
+          top_interests?: Json | null
+          top_mentions?: Json | null
+          work_platform_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_public_analytics_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: true
+            referencedRelation: "admin_crm_brands_view"
+            referencedColumns: ["brand_id"]
+          },
+          {
+            foreignKeyName: "creator_public_analytics_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: true
+            referencedRelation: "admin_crm_creators_view"
+            referencedColumns: ["creator_id"]
+          },
+          {
+            foreignKeyName: "creator_public_analytics_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creator_types: {
         Row: {
           description: string | null

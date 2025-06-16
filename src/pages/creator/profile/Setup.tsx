@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { BasicInfoSection } from '@/components/creator/form-sections/BasicInfoSection';
 import { IndustryContentSection } from '@/components/creator/form-sections/IndustryContentSection';
 import { CreatorTypeDropdown } from '@/components/creator/setup/CreatorTypeDropdown';
-import { SocialMediaConnection } from '@/components/creator/SocialMediaConnection';
+import { SocialPlatformConnect } from '@/components/creator/SocialPlatformConnect';
 import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -155,7 +155,7 @@ const ProfileSetup = () => {
               <CardTitle>Connect Your Social Accounts</CardTitle>
             </CardHeader>
             <CardContent>
-              <SocialMediaConnection onConnectionSuccess={() => {}} />
+              <SocialPlatformConnect onSuccess={() => {}} />
             </CardContent>
           </Card>
         );

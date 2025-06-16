@@ -1,116 +1,82 @@
 
-import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 
-interface InsightIQData {
-  followers: number;
-  engagement_rate: number;
-  avg_likes: number;
-  avg_comments: number;
-  avg_views: number;
-  growth_rate: number;
-  verified: boolean;
-  profile_picture?: string;
-  bio?: string;
+interface InsightIQAnalytics {
+  id: string;
+  creator_id: string;
+  platform: string;
+  work_platform_id: string | null;
+  identifier: string;
+  fetched_at: string;
+  profile_url: string | null;
+  image_url: string | null;
+  full_name: string | null;
+  is_verified: boolean | null;
+  follower_count: number | null;
+  engagement_rate: number | null;
+  platform_account_type: string | null;
+  introduction: string | null;
+  gender: string | null;
+  age_group: string | null;
+  language: string | null;
+  content_count: number | null;
+  average_likes: number | null;
+  average_comments: number | null;
+  average_views: number | null;
+  average_reels_views: number | null;
+  sponsored_posts_performance: number | null;
+  credibility_score: number | null;
+  top_contents: any | null;
+  recent_contents: any | null;
+  sponsored_contents: any | null;
+  top_hashtags: any | null;
+  top_mentions: any | null;
+  top_interests: any | null;
+  brand_affinity: any | null;
+  audience: any | null;
+  pricing: any | null;
+  created_at: string;
+  updated_at: string;
 }
 
-interface PlatformData {
-  [platform: string]: {
-    username: string;
-    data?: InsightIQData;
-    isLoading: boolean;
-    error?: string;
-  };
+interface UseInsightIQDataReturn {
+  data: InsightIQAnalytics[] | null;
+  isLoading: boolean;
+  error: Error | null;
+  refetch: () => void;
 }
 
-export const useInsightIQData = () => {
-  const [platformData, setPlatformData] = useState<PlatformData>({});
-
-  const fetchCreatorData = async (platform: string, username: string) => {
-    if (!username.trim()) {
-      toast.error('Please enter a username');
-      return;
-    }
-
-    console.log(`Fetching ${platform} data for username: ${username}`);
-    
-    // Set loading state
-    setPlatformData(prev => ({
-      ...prev,
-      [platform]: {
-        username,
-        isLoading: true,
-        error: undefined,
-        data: prev[platform]?.data // Keep existing data while loading
-      }
-    }));
-
-    try {
-      const { data, error } = await supabase.functions.invoke('insightiq', {
-        body: { platform: platform.toLowerCase(), username }
-      });
+export const useInsightIQData = (creator_id: string): UseInsightIQDataReturn => {
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['insightiq-data', creator_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('creator_public_analytics')
+        .select('*')
+        .eq('creator_id', creator_id)
+        .order('fetched_at', { ascending: false });
 
       if (error) {
-        console.error('Supabase function error:', error);
-        throw new Error(error.message || 'Failed to fetch data');
+        throw error;
       }
 
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to fetch creator data');
-      }
-
-      console.log(`Successfully fetched ${platform} data:`, data.data);
-
-      // Update with successful data
-      setPlatformData(prev => ({
-        ...prev,
-        [platform]: {
-          username,
-          data: data.data,
-          isLoading: false,
-          error: undefined
-        }
-      }));
-
-      toast.success(`${platform} data updated successfully!`);
-
-    } catch (error) {
-      console.error(`Error fetching ${platform} data:`, error);
-      
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      
-      // Update with error state
-      setPlatformData(prev => ({
-        ...prev,
-        [platform]: {
-          username,
-          isLoading: false,
-          error: errorMessage,
-          data: prev[platform]?.data // Keep existing data if any
-        }
-      }));
-
-      toast.error(`Failed to fetch ${platform} data: ${errorMessage}`);
-    }
-  };
-
-  const clearPlatformData = (platform: string) => {
-    setPlatformData(prev => {
-      const newData = { ...prev };
-      delete newData[platform];
-      return newData;
-    });
-  };
-
-  const getPlatformData = (platform: string) => {
-    return platformData[platform];
-  };
+      return data as InsightIQAnalytics[];
+    },
+    enabled: !!creator_id,
+    staleTime: 1000 * 60 * 60, // 1 hour
+    gcTime: 1000 * 60 * 60 * 24, // 24 hours
+  });
 
   return {
-    platformData,
-    fetchCreatorData,
-    clearPlatformData,
-    getPlatformData
+    data,
+    isLoading,
+    error,
+    refetch,
   };
 };
