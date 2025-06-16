@@ -1,137 +1,116 @@
+
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader, Search } from 'lucide-react';
-import UserEditModal from '@/components/admin/UserEditModal';
+import { Loader, Search, Trash2, Users } from 'lucide-react';
+import { useAuthUsers } from '@/hooks/admin/useAuthUsers';
+import DeleteUserModal from '@/components/admin/DeleteUserModal';
 
-interface User {
+interface AuthUser {
   id: string;
-  email: string;
-  role: string;
-  status: string;
+  email?: string;
   created_at: string;
-  first_name?: string;
-  last_name?: string;
+  last_sign_in_at?: string;
+  email_confirmed_at?: string;
+  phone?: string;
+  role?: string;
+  user_metadata?: Record<string, any>;
 }
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('all-roles');
-  const [statusFilter, setStatusFilter] = useState('all-status');
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedUserEmail, setSelectedUserEmail] = useState<string | undefined>();
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
-  const { data: users = [], isLoading, error } = useQuery({
-    queryKey: ['admin-users'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('Error fetching users:', error);
-        throw error;
-      }
-      
-      return data as User[];
-    },
-  });
+  const perPage = 50;
+  const { data: authUsersData, isLoading, error } = useAuthUsers(currentPage, perPage);
+
+  const users = authUsersData?.users || [];
+  const totalUsers = authUsersData?.total || 0;
+  const totalPages = Math.ceil(totalUsers / perPage);
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = !searchTerm || 
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesRole = roleFilter === 'all-roles' || user.role === roleFilter;
-    const matchesStatus = statusFilter === 'all-status' || user.status === statusFilter;
-    
-    return matchesSearch && matchesRole && matchesStatus;
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      user.email?.toLowerCase().includes(searchLower) ||
+      user.id.toLowerCase().includes(searchLower) ||
+      user.user_metadata?.first_name?.toLowerCase().includes(searchLower) ||
+      user.user_metadata?.last_name?.toLowerCase().includes(searchLower)
+    );
   });
 
-  const handleEditUser = (userId: string) => {
-    setSelectedUserId(userId);
-    setModalOpen(true);
+  const handleDeleteUser = (user: AuthUser) => {
+    setSelectedUserId(user.id);
+    setSelectedUserEmail(user.email);
+    setDeleteModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setModalOpen(false);
+  const handleCloseDeleteModal = () => {
+    setDeleteModalOpen(false);
     setSelectedUserId(null);
+    setSelectedUserEmail(undefined);
   };
 
-  const getRoleBadgeVariant = (role: string) => {
-    switch (role) {
-      case 'super_admin': return 'destructive';
-      case 'admin': return 'default';
-      case 'brand': return 'secondary';
-      case 'creator': return 'outline';
-      default: return 'outline';
+  const getStatusBadge = (user: AuthUser) => {
+    if (user.email_confirmed_at) {
+      return <Badge variant="default">Confirmed</Badge>;
     }
+    return <Badge variant="secondary">Pending</Badge>;
   };
 
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'active': return 'default';
-      case 'pending': return 'secondary';
-      case 'suspended': return 'destructive';
-      default: return 'outline';
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'Never';
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  const formatDateTime = (dateString?: string) => {
+    if (!dateString) return 'Never';
+    return new Date(dateString).toLocaleString();
+  };
+
+  const getUserName = (user: AuthUser) => {
+    const firstName = user.user_metadata?.first_name;
+    const lastName = user.user_metadata?.last_name;
+    
+    if (firstName && lastName) {
+      return `${firstName} ${lastName}`;
     }
+    if (firstName) return firstName;
+    if (lastName) return lastName;
+    return 'No name set';
   };
 
   return (
     <div className="container mx-auto p-6 bg-background">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2 text-foreground">User Management</h1>
-        <p className="text-muted-foreground">Manage user accounts, roles, and permissions.</p>
+        <div className="flex items-center gap-3 mb-2">
+          <Users className="h-8 w-8 text-foreground" />
+          <h1 className="text-3xl font-bold text-foreground">User Management</h1>
+        </div>
+        <p className="text-muted-foreground">
+          Manage all users from Supabase Auth. Total users: {totalUsers}
+        </p>
       </div>
 
       <Card className="mb-6 bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-lg text-foreground">Filter Users</CardTitle>
+          <CardTitle className="text-lg text-foreground">Search Users</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 flex-wrap">
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search by name or email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 bg-background border-border text-foreground"
-              />
-            </div>
-            
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-[160px] bg-background border-border text-foreground">
-                <SelectValue placeholder="All Roles" />
-              </SelectTrigger>
-              <SelectContent className="bg-popover border-border">
-                <SelectItem value="all-roles">All Roles</SelectItem>
-                <SelectItem value="super_admin">Super Admin</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="brand">Brand</SelectItem>
-                <SelectItem value="creator">Creator</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[160px] bg-background border-border text-foreground">
-                <SelectValue placeholder="All Status" />
-              </SelectTrigger>
-              <SelectContent className="bg-popover border-border">
-                <SelectItem value="all-status">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="suspended">Suspended</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search by email, ID, or name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 bg-background border-border text-foreground"
+            />
           </div>
         </CardContent>
       </Card>
@@ -150,73 +129,105 @@ const UserManagement = () => {
       )}
 
       {!isLoading && !error && (
-        <div className="rounded-md border border-border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-border">
-                <TableHead className="text-foreground">Name</TableHead>
-                <TableHead className="text-foreground">Email</TableHead>
-                <TableHead className="text-foreground">Role</TableHead>
-                <TableHead className="text-foreground">Status</TableHead>
-                <TableHead className="text-foreground">Created</TableHead>
-                <TableHead className="text-right text-foreground">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUsers.length === 0 ? (
+        <>
+          <div className="rounded-md border border-border bg-card">
+            <Table>
+              <TableHeader>
                 <TableRow className="border-border">
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    {users.length === 0 
-                      ? "No users found in the system. This might be a permissions issue."
-                      : "No users found matching your criteria."
-                    }
-                  </TableCell>
+                  <TableHead className="text-foreground">Name</TableHead>
+                  <TableHead className="text-foreground">Email</TableHead>
+                  <TableHead className="text-foreground">User ID</TableHead>
+                  <TableHead className="text-foreground">Status</TableHead>
+                  <TableHead className="text-foreground">Created</TableHead>
+                  <TableHead className="text-foreground">Last Sign In</TableHead>
+                  <TableHead className="text-right text-foreground">Actions</TableHead>
                 </TableRow>
-              ) : (
-                filteredUsers.map((user) => (
-                  <TableRow key={user.id} className="border-border">
-                    <TableCell className="font-medium text-foreground">
-                      {user.first_name && user.last_name 
-                        ? `${user.first_name} ${user.last_name}`
-                        : 'No name set'
+              </TableHeader>
+              <TableBody>
+                {filteredUsers.length === 0 ? (
+                  <TableRow className="border-border">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      {users.length === 0 
+                        ? "No users found in Supabase Auth."
+                        : "No users found matching your search criteria."
                       }
                     </TableCell>
-                    <TableCell className="text-foreground">{user.email}</TableCell>
-                    <TableCell>
-                      <Badge variant={getRoleBadgeVariant(user.role)}>
-                        {user.role || 'No role'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusBadgeVariant(user.status)}>
-                        {user.status || 'Unknown'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-foreground">
-                      {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="border-border text-foreground hover:bg-accent"
-                        onClick={() => handleEditUser(user.id)}
-                      >
-                        Edit
-                      </Button>
-                    </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                ) : (
+                  filteredUsers.map((user) => (
+                    <TableRow key={user.id} className="border-border">
+                      <TableCell className="font-medium text-foreground">
+                        {getUserName(user)}
+                      </TableCell>
+                      <TableCell className="text-foreground">
+                        {user.email || 'No email'}
+                      </TableCell>
+                      <TableCell className="text-foreground font-mono text-sm">
+                        {user.id}
+                      </TableCell>
+                      <TableCell>
+                        {getStatusBadge(user)}
+                      </TableCell>
+                      <TableCell className="text-foreground">
+                        {formatDate(user.created_at)}
+                      </TableCell>
+                      <TableCell className="text-foreground">
+                        {formatDateTime(user.last_sign_in_at)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button 
+                          variant="destructive" 
+                          size="sm" 
+                          onClick={() => handleDeleteUser(user)}
+                          className="flex items-center gap-1"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          Delete
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between space-x-2 py-4">
+              <div className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages} ({totalUsers} total users)
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="border-border text-foreground hover:bg-accent"
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="border-border text-foreground hover:bg-accent"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
-      <UserEditModal
+      <DeleteUserModal
+        open={deleteModalOpen}
+        onClose={handleCloseDeleteModal}
         userId={selectedUserId}
-        open={modalOpen}
-        onClose={handleCloseModal}
+        userEmail={selectedUserEmail}
       />
     </div>
   );
