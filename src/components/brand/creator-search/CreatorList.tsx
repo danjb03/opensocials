@@ -31,8 +31,8 @@ export const CreatorList = ({ creators, selectedCreators, onToggleCreator, onVie
           key={creator.id}
           creator={creator}
           isSelected={selectedCreators.includes(creator.id)}
-          onToggleSelect={onToggleCreator}
-          onViewProfile={onViewProfile}
+          onToggle={() => onToggleCreator(creator.id)}
+          onViewProfile={() => onViewProfile(creator.id)}
         />
       ))}
     </div>
