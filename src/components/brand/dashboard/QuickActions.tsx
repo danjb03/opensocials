@@ -57,8 +57,8 @@ const QuickActions = React.memo(() => {
             <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer group flex flex-col h-full" onClick={() => handleActionClick(action.route)}>
               <CardHeader className="pb-3 flex-grow">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
-                    <Icon className="h-5 w-5 text-primary" />
+                  <div className="p-2 bg-black/10 rounded-lg group-hover:bg-black/20 transition-colors">
+                    <Icon className="h-5 w-5 text-black" />
                   </div>
                   <CardTitle className="text-base font-semibold text-foreground">{action.title}</CardTitle>
                 </div>
@@ -68,9 +68,9 @@ const QuickActions = React.memo(() => {
               </CardHeader>
               <CardContent className="pt-0 mt-auto">
                 <Button 
-                  variant="outline" 
+                  variant="secondary" 
                   size="sm" 
-                  className="w-full group-hover:bg-primary transition-colors"
+                  className="w-full bg-black text-white hover:bg-gray-800 border-black transition-colors"
                   onClick={(e) => handleButtonClick(e, action.route)}
                 >
                   {action.buttonText}
