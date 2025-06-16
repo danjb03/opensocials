@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,21 +28,16 @@ const UserManagement = () => {
   const { data: users = [], isLoading, error } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      console.log('🔍 Fetching users from profiles table...');
-      
-      const { data, error, count } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
-        .select('*', { count: 'exact' })
+        .select('*')
         .order('created_at', { ascending: false });
       
-      console.log('📊 Query result:', { data, error, count });
-      
       if (error) {
-        console.error('❌ Error fetching users:', error);
+        console.error('Error fetching users:', error);
         throw error;
       }
       
-      console.log('✅ Users fetched:', data?.length || 0);
       return data as User[];
     },
   });
@@ -77,24 +73,11 @@ const UserManagement = () => {
     }
   };
 
-  console.log('🎯 Rendering UserManagement with:', { 
-    totalUsers: users.length, 
-    filteredUsers: filteredUsers.length,
-    isLoading,
-    error: error?.message 
-  });
-
   return (
     <div className="container mx-auto p-6 bg-background">
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2 text-foreground">User Management</h1>
         <p className="text-muted-foreground">Manage user accounts, roles, and permissions.</p>
-        
-        {/* Debug info */}
-        <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
-          <strong>Debug:</strong> Found {users.length} total users, showing {filteredUsers.length} after filters
-          {error && <div className="text-red-600">Error: {error.message}</div>}
-        </div>
       </div>
 
       <Card className="mb-6 bg-card border-border">

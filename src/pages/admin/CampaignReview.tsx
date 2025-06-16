@@ -1,20 +1,14 @@
 
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Bot, Filter, Search, RefreshCw } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
-import AdminCRMLayout from '@/components/layouts/AdminCRMLayout';
-import { CampaignReviewTable } from '@/components/admin/campaign-review/CampaignReviewTable';
-import { ReviewStats } from '@/components/admin/campaign-review/ReviewStats';
-import { CampaignReviewModal } from '@/components/admin/campaign-review/CampaignReviewModal';
 import { supabase } from '@/integrations/supabase/client';
+import { ReviewStats } from '@/components/admin/campaign-review/ReviewStats';
+import { CampaignReviewTable } from '@/components/admin/campaign-review/CampaignReviewTable';
+import { CampaignReviewModal } from '@/components/admin/campaign-review/CampaignReviewModal';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface CampaignForReview {
+interface Campaign {
   id: string;
   name: string;
   brand_id: string;
@@ -25,224 +19,134 @@ interface CampaignForReview {
   review_status: string;
   review_priority: string;
   created_at: string;
-  description?: string;
-  start_date?: string;
-  end_date?: string;
-  content_requirements?: any;
-  platforms?: string[];
   brand_profiles?: {
     company_name: string;
   } | null;
-  campaign_reviews?: {
-    id: string;
-    ai_decision: string;
-    ai_score: number;
-    human_decision: string;
-    reviewed_at: string;
-  }[];
 }
 
-export default function CampaignReview() {
-  // ALL HOOKS MUST BE CALLED FIRST - BEFORE ANY CONDITIONAL RETURNS
-  const { role } = useUnifiedAuth();
-  const [activeTab, setActiveTab] = useState('pending');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCampaign, setSelectedCampaign] = useState<CampaignForReview | null>(null);
+const CampaignReview = () => {
+  const [statusFilter, setStatusFilter] = useState('pending_review');
+  const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
-  // This query must run regardless of role to avoid hooks violation
-  const { data: campaigns = [], isLoading, refetch } = useQuery({
-    queryKey: ['campaigns-for-review', activeTab, searchTerm],
-    queryFn: async (): Promise<CampaignForReview[]> => {
-      let query = supabase
-        .from('projects_new')
-        .select(`
-          *,
-          brand_profiles!inner (
-            company_name
-          ),
-          campaign_reviews (
+  const { data: campaigns = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['admin-campaigns', statusFilter],
+    queryFn: async (): Promise<Campaign[]> => {
+      console.log('🔍 Fetching campaigns for review with status:', statusFilter);
+      
+      try {
+        // Use a more explicit join approach to avoid foreign key relationship issues
+        const { data, error } = await supabase
+          .from('projects_new')
+          .select(`
             id,
-            ai_decision,
-            ai_score,
-            human_decision,
-            reviewed_at
-          )
-        `)
-        .order('created_at', { ascending: false });
+            name,
+            brand_id,
+            campaign_type,
+            budget,
+            currency,
+            status,
+            review_status,
+            review_priority,
+            created_at
+          `)
+          .eq('review_status', statusFilter)
+          .order('created_at', { ascending: false });
 
-      // Filter by review status based on active tab
-      switch (activeTab) {
-        case 'pending':
-          query = query.eq('review_status', 'pending_review');
-          break;
-        case 'approved':
-          query = query.eq('review_status', 'approved');
-          break;
-        case 'rejected':
-          query = query.eq('review_status', 'rejected');
-          break;
-        case 'needs_revision':
-          query = query.eq('review_status', 'needs_revision');
-          break;
-      }
+        if (error) {
+          console.error('Database query error:', error);
+          throw error;
+        }
 
-      if (searchTerm) {
-        query = query.or(`name.ilike.%${searchTerm}%,campaign_type.ilike.%${searchTerm}%`);
-      }
+        // Fetch brand profiles separately to avoid join issues
+        const campaignsWithBrands = await Promise.all(
+          (data || []).map(async (campaign) => {
+            const { data: brandProfile } = await supabase
+              .from('brand_profiles')
+              .select('company_name')
+              .eq('user_id', campaign.brand_id)
+              .single();
 
-      const { data, error } = await query;
-      if (error) {
-        console.error('Database query error:', error);
+            return {
+              ...campaign,
+              brand_profiles: brandProfile ? { company_name: brandProfile.company_name } : null
+            };
+          })
+        );
+
+        console.log('✅ Campaigns fetched:', campaignsWithBrands.length);
+        return campaignsWithBrands;
+      } catch (error) {
+        console.error('❌ Error fetching campaigns:', error);
         throw error;
       }
-      
-      // Transform the data to ensure proper typing
-      return (data || []).map(campaign => {
-        const brandProfiles = (campaign.brand_profiles as any)?.company_name
-          ? { company_name: (campaign.brand_profiles as any).company_name }
-          : null;
-
-        return {
-          ...campaign,
-          brand_profiles: brandProfiles
-        };
-      }) as CampaignForReview[];
     },
-    enabled: role === 'admin' || role === 'super_admin',
   });
 
-  // NOW we can safely do conditional rendering after all hooks are called
-  if (role !== 'admin' && role !== 'super_admin') {
-    return (
-      <AdminCRMLayout>
-        <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Access denied. Admin privileges required.</p>
-        </div>
-      </AdminCRMLayout>
-    );
-  }
-
-  const getTabCount = (status: string) => {
-    return campaigns.filter(campaign => {
-      switch (status) {
-        case 'pending':
-          return campaign.review_status === 'pending_review';
-        case 'approved':
-          return campaign.review_status === 'approved';
-        case 'rejected':
-          return campaign.review_status === 'rejected';
-        case 'needs_revision':
-          return campaign.review_status === 'needs_revision';
-        default:
-          return false;
-      }
-    }).length;
+  const handleSelectCampaign = (campaignId: string) => {
+    setSelectedCampaign(campaignId);
+    setModalOpen(true);
   };
 
-  const handleCampaignSelect = (campaignId: string) => {
-    const campaign = campaigns.find(c => c.id === campaignId);
-    if (campaign) {
-      setSelectedCampaign(campaign);
-    }
+  const handleReviewComplete = () => {
+    setModalOpen(false);
+    setSelectedCampaign(null);
+    refetch();
   };
+
+  const selectedCampaignData = campaigns.find(c => c.id === selectedCampaign);
 
   return (
-    <AdminCRMLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-              <Bot className="h-8 w-8" />
-              Campaign Review System
-            </h1>
-            <p className="text-muted-foreground">
-              Review and approve campaigns with R4 AI assistance
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => refetch()} className="gap-2">
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
-          </div>
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Campaign Review</h1>
+          <p className="text-muted-foreground">
+            AI-powered campaign analysis and approval workflow
+          </p>
         </div>
-
-        <ReviewStats />
-
-        <div className="flex items-center gap-4 mb-6">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Search campaigns..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Button variant="outline" className="gap-2">
-            <Filter className="h-4 w-4" />
-            Filters
-          </Button>
-        </div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="pending" className="gap-2">
-              Campaigns to Review
-              {getTabCount('pending') > 0 && (
-                <Badge variant="secondary" className="ml-1">
-                  {getTabCount('pending')}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="approved" className="gap-2">
-              Accepted
-              {getTabCount('approved') > 0 && (
-                <Badge variant="secondary" className="ml-1">
-                  {getTabCount('approved')}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="rejected" className="gap-2">
-              Rejected
-              {getTabCount('rejected') > 0 && (
-                <Badge variant="secondary" className="ml-1">
-                  {getTabCount('rejected')}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="needs_revision" className="gap-2">
-              Needs Revision
-              {getTabCount('needs_revision') > 0 && (
-                <Badge variant="secondary" className="ml-1">
-                  {getTabCount('needs_revision')}
-                </Badge>
-              )}
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value={activeTab} className="space-y-6 mt-0">
-            <CampaignReviewTable 
-              campaigns={campaigns}
-              isLoading={isLoading}
-              onSelectCampaign={handleCampaignSelect}
-              selectedCampaign={selectedCampaign?.id || null}
-            />
-          </TabsContent>
-        </Tabs>
-
-        {selectedCampaign && (
-          <CampaignReviewModal
-            campaign={selectedCampaign}
-            open={!!selectedCampaign}
-            onClose={() => setSelectedCampaign(null)}
-            onReviewComplete={() => {
-              refetch();
-              setSelectedCampaign(null);
-            }}
-          />
-        )}
       </div>
-    </AdminCRMLayout>
+
+      <ReviewStats />
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Campaign Queue</CardTitle>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending_review">Pending Review</SelectItem>
+                <SelectItem value="under_review">Under Review</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="needs_revision">Needs Revision</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <CampaignReviewTable
+            campaigns={campaigns}
+            isLoading={isLoading}
+            onSelectCampaign={handleSelectCampaign}
+            selectedCampaign={selectedCampaign}
+          />
+        </CardContent>
+      </Card>
+
+      {selectedCampaignData && (
+        <CampaignReviewModal
+          campaign={selectedCampaignData}
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onReviewComplete={handleReviewComplete}
+        />
+      )}
+    </div>
   );
-}
+};
+
+export default CampaignReview;
