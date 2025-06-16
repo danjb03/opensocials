@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { CampaignWizardData } from '@/types/campaignWizard';
 
-const AUTO_SAVE_DELAY = 2000; // Auto-save after 2 seconds of inactivity
+const AUTO_SAVE_DELAY = 5000; // Increased to 5 seconds to reduce frequency
 
 export const useDraftPersistence = (formData: Partial<CampaignWizardData>, currentStep: number) => {
   const { user, brandProfile } = useUnifiedAuth();
@@ -13,6 +13,7 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
   const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
   const lastSavedDataRef = useRef<string>('');
   const isLoadingDraftRef = useRef(false);
+  const isSavingRef = useRef(false);
 
   // Use user.id if brandProfile.user_id is not available
   const userId = brandProfile?.user_id || user?.id;
@@ -41,7 +42,9 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
       console.log('Fetched draft:', data);
       return data;
     },
-    enabled: !!userId
+    enabled: !!userId,
+    staleTime: 30000, // Cache for 30 seconds to reduce refetching
+    gcTime: 300000 // Keep in cache for 5 minutes
   });
 
   // Save draft mutation
@@ -52,58 +55,69 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
         throw new Error('No user authenticated');
       }
 
-      console.log('Saving draft data:', data);
-      
-      // Serialize the data properly, handling dates and other complex objects
-      const serializedData = JSON.stringify(data, (key, value) => {
-        if (value instanceof Date) {
-          return value.toISOString();
-        }
-        return value;
-      });
-
-      // Check if data has actually changed
-      if (serializedData === lastSavedDataRef.current) {
-        console.log('Data unchanged, skipping save');
+      if (isSavingRef.current) {
+        console.log('Save already in progress, skipping');
         return;
       }
 
-      if (existingDraft?.id) {
-        console.log('Updating existing draft:', existingDraft.id);
-        const { error } = await supabase
-          .from('project_drafts')
-          .update({
-            draft_data: serializedData,
-            current_step: currentStep,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existingDraft.id)
-          .eq('brand_id', userId);
+      isSavingRef.current = true;
 
-        if (error) {
-          console.error('Error updating draft:', error);
-          throw error;
-        }
-        console.log('Draft updated successfully');
-      } else {
-        console.log('Creating new draft');
-        const { error } = await supabase
-          .from('project_drafts')
-          .insert({
-            brand_id: userId,
-            draft_data: serializedData,
-            current_step: currentStep
-          });
+      try {
+        console.log('Saving draft data:', data);
+        
+        // Serialize the data properly, handling dates and other complex objects
+        const serializedData = JSON.stringify(data, (key, value) => {
+          if (value instanceof Date) {
+            return value.toISOString();
+          }
+          return value;
+        });
 
-        if (error) {
-          console.error('Error creating draft:', error);
-          throw error;
+        // Check if data has actually changed
+        if (serializedData === lastSavedDataRef.current) {
+          console.log('Data unchanged, skipping save');
+          return;
         }
-        console.log('Draft created successfully');
+
+        if (existingDraft?.id) {
+          console.log('Updating existing draft:', existingDraft.id);
+          const { error } = await supabase
+            .from('project_drafts')
+            .update({
+              draft_data: serializedData,
+              current_step: currentStep,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingDraft.id)
+            .eq('brand_id', userId);
+
+          if (error) {
+            console.error('Error updating draft:', error);
+            throw error;
+          }
+          console.log('Draft updated successfully');
+        } else {
+          console.log('Creating new draft');
+          const { error } = await supabase
+            .from('project_drafts')
+            .insert({
+              brand_id: userId,
+              draft_data: serializedData,
+              current_step: currentStep
+            });
+
+          if (error) {
+            console.error('Error creating draft:', error);
+            throw error;
+          }
+          console.log('Draft created successfully');
+        }
+
+        // Update the last saved data reference
+        lastSavedDataRef.current = serializedData;
+      } finally {
+        isSavingRef.current = false;
       }
-
-      // Update the last saved data reference
-      lastSavedDataRef.current = serializedData;
     },
     onSuccess: () => {
       console.log('Draft save successful, invalidating queries');
@@ -111,14 +125,15 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
     },
     onError: (error) => {
       console.error('Draft save failed:', error);
+      isSavingRef.current = false;
     }
   });
 
-  // Auto-save function with debouncing and change detection
+  // Auto-save function with better debouncing and change detection
   const triggerAutoSave = (data: Partial<CampaignWizardData>) => {
-    // Don't auto-save while loading draft data
-    if (isLoadingDraftRef.current || isDraftLoading) {
-      console.log('Skipping auto-save: draft is loading');
+    // Don't auto-save while loading draft data or already saving
+    if (isLoadingDraftRef.current || isDraftLoading || isSavingRef.current) {
+      console.log('Skipping auto-save: draft is loading or already saving');
       return;
     }
 
@@ -136,12 +151,13 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
       return;
     }
 
+    // Clear existing timeout
     if (autoSaveTimeout) {
       clearTimeout(autoSaveTimeout);
     }
 
     const timeout = setTimeout(() => {
-      if (Object.keys(data).length > 0) {
+      if (Object.keys(data).length > 0 && !isSavingRef.current) {
         console.log('Auto-saving draft after delay');
         saveDraftMutation.mutate(data);
       }
@@ -150,17 +166,17 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
     setAutoSaveTimeout(timeout);
   };
 
-  // Auto-save when form data changes (but only if there's meaningful data)
+  // Auto-save when form data changes (with better validation)
   useEffect(() => {
-    const hasData = formData && (
+    const hasMeaningfulData = formData && (
       formData.name || 
       formData.campaign_type || 
       formData.description || 
       formData.total_budget ||
-      formData.content_requirements?.platforms?.length
+      (formData.content_requirements?.platforms && formData.content_requirements.platforms.length > 0)
     );
 
-    if (hasData && userId && !isLoadingDraftRef.current && !isDraftLoading) {
+    if (hasMeaningfulData && userId && !isLoadingDraftRef.current && !isDraftLoading) {
       console.log('Form data changed, triggering auto-save');
       triggerAutoSave(formData);
     }
@@ -172,10 +188,10 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
     };
   }, [formData, userId]);
 
-  // Auto-save when step changes
+  // Auto-save when step changes (but only if we have data)
   useEffect(() => {
     const hasData = formData && Object.keys(formData).length > 0;
-    if (hasData && userId && !isLoadingDraftRef.current && !isDraftLoading) {
+    if (hasData && userId && !isLoadingDraftRef.current && !isDraftLoading && !isSavingRef.current) {
       console.log('Step changed, triggering auto-save');
       triggerAutoSave(formData);
     }
@@ -186,13 +202,19 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
     isLoadingDraftRef.current = isDraftLoading;
   }, [isDraftLoading]);
 
-  // Manual save function
+  // Manual save function with better error handling
   const saveDraft = async () => {
     console.log('Manual save triggered');
     if (!formData || Object.keys(formData).length === 0) {
       console.log('No data to save');
-      return;
+      throw new Error('No data to save');
     }
+    
+    if (isSavingRef.current) {
+      console.log('Save already in progress');
+      throw new Error('Save already in progress');
+    }
+    
     return saveDraftMutation.mutateAsync(formData);
   };
 
@@ -208,6 +230,7 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
 
       if (error) {
         console.error('Error clearing draft:', error);
+        throw error;
       } else {
         console.log('Draft cleared successfully');
         lastSavedDataRef.current = '';

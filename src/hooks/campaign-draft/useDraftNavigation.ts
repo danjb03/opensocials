@@ -22,13 +22,19 @@ export const useDraftNavigation = () => {
 
   const goToStep = (step: number) => {
     const newStep = Math.max(1, Math.min(step, 5));
-    console.log('Going to step:', newStep);
-    setCurrentStep(newStep);
+    if (newStep !== currentStep) {
+      console.log('Going to step:', newStep);
+      setCurrentStep(newStep);
+    }
   };
 
   return {
     currentStep,
-    setCurrentStep,
+    setCurrentStep: (step: number) => {
+      const validStep = Math.max(1, Math.min(step, 5));
+      console.log('Setting current step to:', validStep);
+      setCurrentStep(validStep);
+    },
     nextStep,
     prevStep,
     goToStep

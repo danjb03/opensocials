@@ -27,6 +27,8 @@ export const useCampaignActions = (
       throw new Error('No user authenticated');
     }
 
+    console.log('Creating campaign from draft data:', draftData);
+
     const { data: campaign, error } = await supabase
       .from('projects_new')
       .insert({
@@ -53,21 +55,25 @@ export const useCampaignActions = (
       throw error;
     }
 
+    console.log('Campaign created successfully:', campaign);
     return campaign;
   };
 
   const handleStepComplete = async (stepData: Partial<CampaignWizardData>) => {
     try {
+      console.log('Completing step with data:', stepData);
+      
       // Save the draft first
       await saveDraft();
       setLastSaveTime(new Date());
       
       toast.success(`Step ${currentStep} Complete`, {
-        description: `${CAMPAIGN_STEPS[currentStep - 1].title} saved automatically`
+        description: `${CAMPAIGN_STEPS[currentStep - 1].title} saved successfully`
       });
     } catch (error) {
       console.error('Error saving step:', error);
       toast.error('Failed to save step progress');
+      throw error;
     }
   };
 
@@ -96,12 +102,19 @@ export const useCampaignActions = (
       await saveDraft();
       setLastSaveTime(new Date());
       
-      // If we have sufficient data, create a campaign record
-      if (formData.name) {
-        await createCampaignFromDraft(formData);
-        toast.success('Campaign saved successfully!', {
-          description: 'You can continue editing it later from your dashboard.'
-        });
+      // If we have sufficient data for a campaign, create it
+      if (formData.name && formData.name.trim()) {
+        try {
+          await createCampaignFromDraft(formData);
+          toast.success('Campaign saved successfully!', {
+            description: 'You can continue editing it later from your dashboard.'
+          });
+        } catch (campaignError) {
+          console.error('Error creating campaign, but draft saved:', campaignError);
+          toast.success('Campaign draft saved!', {
+            description: 'You can continue editing it later. Note: Campaign creation failed but your progress is saved.'
+          });
+        }
       } else {
         toast.success('Campaign draft saved!', {
           description: 'You can continue editing it later.'
@@ -123,11 +136,19 @@ export const useCampaignActions = (
       return;
     }
     
+    if (!formData.name || !formData.name.trim()) {
+      toast.error('Campaign name is required');
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
+      console.log('Final submit triggered with data:', formData);
+      
       // Create the campaign with pending review status
       const campaign = await createCampaignFromDraft(formData);
       
+      // Clear the draft after successful campaign creation
       if (draftId) {
         await clearDraft();
       }
@@ -136,7 +157,7 @@ export const useCampaignActions = (
         description: 'Your campaign is now being reviewed by our team. You will be notified once approved.'
       });
       
-      // Navigate to campaign status page instead of projects
+      // Navigate to campaign status page
       navigate('/brand/campaign-status');
       
     } catch (error) {
