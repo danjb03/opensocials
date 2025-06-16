@@ -1,155 +1,77 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { PlusCircle, Info, Check, Briefcase, Heart } from 'lucide-react';
-import { useCreatorFavorites } from '@/hooks/useCreatorFavorites';
+import { Creator } from '@/types/creator';
+import { CreatorAnalyticsCard } from '@/components/creator/CreatorAnalyticsCard';
 
-type CreatorCardProps = {
-  creator: {
-    id: number;
-    name: string;
-    platform: string;
-    audience: string;
-    contentType: string;
-    followers: string;
-    engagement: string;
-    priceRange: string;
-    skills: string[];
-    imageUrl: string;
-    matchScore?: number;
-    about?: string;
-    bannerImageUrl?: string;
-    industries?: string[];
-    socialLinks?: {
-      tiktok?: string;
-      instagram?: string;
-      youtube?: string;
-      twitter?: string;
-      facebook?: string;
-    };
-    metrics?: {
-      followerCount: string;
-      engagementRate: string;
-      avgViews: string;
-      avgLikes: string;
-      growthTrend?: string;
-    };
-  };
+interface CreatorCardProps {
+  creator: Creator;
   isSelected: boolean;
-  onToggleSelect: (creatorId: number) => void;
-  onViewProfile: (creatorId: number) => void;
-};
+  onToggle: () => void;
+  onViewProfile: () => void;
+}
 
-export const CreatorCard = ({ creator, isSelected, onToggleSelect, onViewProfile }: CreatorCardProps) => {
-  const { isFavorite, toggleFavorite, isToggling } = useCreatorFavorites();
-  const creatorIsFavorite = isFavorite(creator.id.toString());
-
+export const CreatorCard: React.FC<CreatorCardProps> = ({
+  creator,
+  isSelected,
+  onToggle,
+  onViewProfile,
+}) => {
   return (
-    <Card key={creator.id} className="overflow-hidden hover:shadow-sm transition-all duration-300 group border-gray-100">
-      <div className="relative h-32">
-        <img 
-          src={creator.imageUrl} 
-          alt={creator.name} 
-          className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-        />
-        
-        {creator.matchScore && (
-          <div className="absolute top-1 right-1 bg-black/80 text-white rounded-full px-1.5 py-0.5 text-xs font-semibold">
-            {creator.matchScore}%
-          </div>
-        )}
-
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => toggleFavorite(creator.id.toString())}
-          disabled={isToggling}
-          className="absolute top-1 left-1 h-6 w-6 p-0 bg-white/80 hover:bg-white"
-        >
-          <Heart className={`h-3 w-3 ${creatorIsFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
-        </Button>
-        
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-2">
-          <div className="flex items-center">
-            <Avatar className="h-6 w-6 border-[1px] border-white mr-1.5">
+    <Card className={`transition-all duration-200 ${isSelected ? 'ring-2 ring-primary' : ''}`}>
+      <CardContent className="p-6">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0">
+            <Avatar className="h-16 w-16">
               <AvatarImage src={creator.imageUrl} alt={creator.name} />
-              <AvatarFallback>{creator.name.charAt(0)}</AvatarFallback>
+              <AvatarFallback>{creator.name.slice(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <div>
-              <h3 className="font-bold text-xs text-white">{creator.name}</h3>
-              <div className="flex items-center text-white/90">
-                <span className="flex items-center text-[10px]">
-                  {creator.platform} · {creator.followers}
-                </span>
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold text-lg truncate">{creator.name}</h3>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onViewProfile}
+                >
+                  View Profile
+                </Button>
+                <Button
+                  variant={isSelected ? "default" : "outline"}
+                  size="sm"
+                  onClick={onToggle}
+                >
+                  {isSelected ? 'Selected' : 'Select'}
+                </Button>
               </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-2 mb-3">
+              <Badge variant="secondary">{creator.platform}</Badge>
+              <Badge variant="outline">{creator.contentType}</Badge>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground mb-4">
+              <div>
+                <span className="font-medium">Followers:</span> {creator.followers}
+              </div>
+              <div>
+                <span className="font-medium">Engagement:</span> {creator.engagement}
+              </div>
+            </div>
+
+            {/* Analytics Card */}
+            <div className="mt-4">
+              <CreatorAnalyticsCard creator_id={creator.id.toString()} />
             </div>
           </div>
         </div>
-      </div>
-      
-      <CardContent className="p-2">
-        <div className="flex items-center justify-between mb-1.5">
-          <div className="bg-gray-50 px-1.5 py-0.5 rounded-full">
-            <span className="font-medium text-primary text-xs">{creator.engagement}</span>
-          </div>
-          
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-primary hover:bg-primary/10 h-6 px-2 text-xs"
-            onClick={() => onViewProfile(creator.id)}
-          >
-            <Info className="h-3 w-3 mr-1" />
-            Profile
-          </Button>
-        </div>
-        
-        <div className="flex flex-wrap gap-1 mt-1 mb-2">
-          {creator.industries && creator.industries.length > 0 && (
-            <span className="flex items-center bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded-full mr-1">
-              <Briefcase className="h-2 w-2 mr-0.5" />
-              {creator.industries[0]}
-            </span>
-          )}
-          
-          {creator.skills.slice(0, creator.industries && creator.industries.length > 0 ? 1 : 2).map(skill => (
-            <span key={skill} className="bg-gray-100 text-gray-800 text-[10px] px-1.5 py-0.5 rounded-full">
-              {skill}
-            </span>
-          ))}
-          
-          {(creator.skills.length > (creator.industries && creator.industries.length > 0 ? 1 : 2) || 
-           (creator.industries && creator.industries.length > 1)) && (
-            <span className="text-[10px] px-1 py-0.5 text-muted-foreground">
-              +{(creator.skills.length - (creator.industries && creator.industries.length > 0 ? 1 : 2)) + 
-                 (creator.industries ? creator.industries.length - 1 : 0)}
-            </span>
-          )}
-        </div>
-        
-        <Button
-          className="w-full mt-1 relative overflow-hidden group h-7 text-xs"
-          variant={isSelected ? "default" : "outline"}
-          onClick={() => onToggleSelect(creator.id)}
-        >
-          {isSelected ? (
-            <>
-              <span className="flex items-center">
-                <Check className="mr-1 h-3 w-3" />
-                Selected
-              </span>
-            </>
-          ) : (
-            <>
-              <span className="relative z-10 flex items-center">
-                <PlusCircle className="mr-1 h-3 w-3" />
-                Add
-              </span>
-            </>
-          )}
-        </Button>
       </CardContent>
     </Card>
   );

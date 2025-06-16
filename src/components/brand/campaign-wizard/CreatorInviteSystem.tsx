@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Plus, Send, DollarSign, Users, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { CreatorAnalyticsCard } from '@/components/creator/CreatorAnalyticsCard';
 
 interface CreatorInviteSystemProps {
   projectId: string;
@@ -200,7 +201,7 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
         <Separator />
 
         {/* Creator List */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           {isLoading ? (
             <div className="space-y-3">
               {[...Array(5)].map((_, i) => (
@@ -222,47 +223,55 @@ const CreatorInviteSystem: React.FC<CreatorInviteSystemProps> = ({
                 : creator.first_name || 'Unknown Creator';
 
               return (
-                <div 
-                  key={creator.id} 
-                  className={`flex items-center gap-3 p-3 border rounded-lg transition-all ${
-                    isSelected ? 'border-blue-500 bg-blue-50' : 'hover:border-gray-300'
-                  }`}
-                >
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback>{creatorName?.slice(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-medium">{creatorName}</h4>
-                      <Badge variant="outline" className="text-xs">
-                        Creator
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-gray-600">Creator Profile</p>
-                  </div>
+                <div key={creator.id} className={`border rounded-lg p-4 transition-all ${
+                  isSelected ? 'border-blue-500 bg-blue-50' : 'hover:border-gray-300'
+                }`}>
+                  <div className="flex items-start gap-4">
+                    <div className="flex items-center gap-3 flex-1">
+                      <Avatar className="h-12 w-12">
+                        <AvatarFallback>{creatorName?.slice(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-medium">{creatorName}</h4>
+                          <Badge variant="outline" className="text-xs">
+                            Creator
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600">Creator Profile</p>
+                        
+                        {isSelected && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="text-sm">Budget:</span>
+                            <Input
+                              type="number"
+                              placeholder="Amount"
+                              value={creatorBudgets[creator.user_id] || ''}
+                              onChange={(e) => handleBudgetChange(creator.user_id, Number(e.target.value))}
+                              className="w-28 h-8 text-sm"
+                              min="0"
+                              max={remainingBudget}
+                            />
+                          </div>
+                        )}
+                      </div>
 
-                  <div className="flex items-center gap-2">
-                    {isSelected && (
-                      <Input
-                        type="number"
-                        placeholder="Budget"
-                        value={creatorBudgets[creator.user_id] || ''}
-                        onChange={(e) => handleBudgetChange(creator.user_id, Number(e.target.value))}
-                        className="w-24 h-8 text-sm"
-                        min="0"
-                        max={remainingBudget}
-                      />
-                    )}
-                    <Button
-                      size="sm"
-                      variant={isSelected ? "default" : "outline"}
-                      onClick={() => handleCreatorSelect(creator.user_id, 500)} // Default budget suggestion
-                      className="flex items-center gap-1"
-                    >
-                      <Plus className="h-3 w-3" />
-                      {isSelected ? 'Selected' : 'Invite'}
-                    </Button>
+                      <Button
+                        size="sm"
+                        variant={isSelected ? "default" : "outline"}
+                        onClick={() => handleCreatorSelect(creator.user_id, 500)} // Default budget suggestion
+                        className="flex items-center gap-1"
+                      >
+                        <Plus className="h-3 w-3" />
+                        {isSelected ? 'Selected' : 'Invite'}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Analytics Card */}
+                  <div className="mt-4 pt-4 border-t">
+                    <CreatorAnalyticsCard creator_id={creator.user_id} />
                   </div>
                 </div>
               );

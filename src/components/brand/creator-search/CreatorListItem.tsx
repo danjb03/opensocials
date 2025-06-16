@@ -1,158 +1,93 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Info, Check, UserPlus, Heart } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Creator } from '@/types/creator';
-import { useCreatorInvitationActions } from '@/hooks/useCreatorInvitationActions';
-import { useCreatorFavorites } from '@/hooks/useCreatorFavorites';
-import { useToast } from '@/hooks/use-toast';
+import { CreatorAnalyticsCard } from '@/components/creator/CreatorAnalyticsCard';
 
-type CreatorListItemProps = {
+interface CreatorListItemProps {
   creator: Creator;
   isSelected: boolean;
-  onToggleSelect: (creatorId: number) => void;
-  onViewProfile: (creatorId: number) => void;
-};
+  onToggle: () => void;
+  onViewProfile: () => void;
+}
 
-export const CreatorListItem = ({ creator, isSelected, onToggleSelect, onViewProfile }: CreatorListItemProps) => {
-  const { handleInviteCreator, isLoading } = useCreatorInvitationActions();
-  const { isFavorite, toggleFavorite, isToggling } = useCreatorFavorites();
-  const { toast } = useToast();
-
-  const creatorIsFavorite = isFavorite(creator.id.toString());
-
-  const handleInvite = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    handleInviteCreator(creator.id.toString(), creator.name);
-    toast({
-      title: "Creator invited",
-      description: `${creator.name} has been invited to collaborate.`,
-    });
-  };
-
-  const handleFavoriteToggle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    toggleFavorite(creator.id.toString());
-  };
-
+export const CreatorListItem: React.FC<CreatorListItemProps> = ({
+  creator,
+  isSelected,
+  onToggle,
+  onViewProfile,
+}) => {
   return (
-    <div 
-      className="group rounded-md border border-gray-100 hover:border-primary/30 shadow-sm hover:shadow transition-all duration-300 overflow-hidden bg-white w-full"
-    >
-      <div className="flex items-center p-3">
-        <div className="relative h-16 w-16 overflow-hidden rounded-md mr-4 flex-shrink-0">
-          <img 
-            src={creator.imageUrl} 
-            alt={creator.name} 
-            className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-          />
-          
-          {creator.matchScore && (
-            <div className="absolute top-1 right-1 bg-black/80 text-white rounded-full px-1.5 py-0.5 text-xs font-semibold">
-              {creator.matchScore}%
-            </div>
-          )}
-        </div>
-        
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center">
-              <h3 className="font-bold text-sm truncate">{creator.name}</h3>
-              <div className="flex items-center ml-2">
-                <span className="text-xs text-muted-foreground">{creator.platform}</span>
-                <span className="mx-1 text-xs text-muted-foreground">•</span>
-                <span className="text-xs text-muted-foreground">{creator.followers}</span>
-              </div>
-            </div>
+    <Card className={`mb-4 transition-all duration-200 ${isSelected ? 'ring-2 ring-primary' : ''}`}>
+      <CardContent className="p-6">
+        <div className="flex items-start gap-6">
+          <div className="flex items-start gap-4 flex-1">
+            <Checkbox 
+              checked={isSelected}
+              onCheckedChange={onToggle}
+              className="mt-1"
+            />
             
-            <Badge variant="outline" className="bg-gray-50/80 hover:bg-gray-50 whitespace-nowrap text-xs px-2 py-0.5">
-              {creator.audience}
-            </Badge>
+            <Avatar className="h-16 w-16 flex-shrink-0">
+              <AvatarImage src={creator.imageUrl} alt={creator.name} />
+              <AvatarFallback>{creator.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold text-lg">{creator.name}</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onViewProfile}
+                >
+                  View Profile
+                </Button>
+              </div>
+              
+              <div className="flex flex-wrap gap-2 mb-3">
+                <Badge variant="secondary">{creator.platform}</Badge>
+                <Badge variant="outline">{creator.contentType}</Badge>
+                {creator.skills?.slice(0, 3).map((skill, index) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {skill}
+                  </Badge>
+                ))}
+              </div>
+              
+              <div className="grid grid-cols-4 gap-4 text-sm text-muted-foreground mb-3">
+                <div>
+                  <span className="font-medium">Followers:</span> {creator.followers}
+                </div>
+                <div>
+                  <span className="font-medium">Engagement:</span> {creator.engagement}
+                </div>
+                <div>
+                  <span className="font-medium">Price:</span> {creator.priceRange}
+                </div>
+                <div>
+                  <span className="font-medium">Audience:</span> {creator.audience}
+                </div>
+              </div>
+              
+              {creator.about && (
+                <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                  {creator.about}
+                </p>
+              )}
+            </div>
           </div>
           
-          <div className="flex items-center gap-1.5 flex-wrap my-1">
-            <div className="bg-primary/5 text-primary px-2 py-0.5 rounded-full text-xs">
-              {creator.engagement}
-            </div>
-            <div className="bg-primary/5 text-primary px-2 py-0.5 rounded-full text-xs">
-              {creator.priceRange}
-            </div>
-          </div>
-          
-          <div className="flex flex-wrap gap-1 mt-1">
-            {creator.skills.slice(0, 3).map(skill => (
-              <span key={skill} className="bg-gray-100 text-gray-800 text-xs px-2 py-0.5 rounded-full">
-                {skill}
-              </span>
-            ))}
-            {creator.skills.length > 3 && (
-              <span className="text-xs px-1 py-0.5 text-muted-foreground">
-                +{creator.skills.length - 3}
-              </span>
-            )}
+          {/* Analytics Card in right sidebar */}
+          <div className="w-80 flex-shrink-0">
+            <CreatorAnalyticsCard creator_id={creator.id.toString()} />
           </div>
         </div>
-        
-        <div className="flex items-center gap-2 ml-4 flex-shrink-0">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleFavoriteToggle}
-            disabled={isToggling}
-            className={`h-8 w-8 p-0 ${creatorIsFavorite ? 'text-red-500 hover:text-red-600' : 'text-gray-400 hover:text-red-500'}`}
-          >
-            <Heart className={`h-4 w-4 ${creatorIsFavorite ? 'fill-current' : ''}`} />
-          </Button>
-
-          <Button
-            size="sm"
-            variant={isSelected ? "default" : "outline"}
-            onClick={() => onToggleSelect(creator.id)}
-            className="h-8 text-xs whitespace-nowrap"
-          >
-            {isSelected ? (
-              <>
-                <Check className="mr-1 h-3.5 w-3.5" />
-                Selected
-              </>
-            ) : (
-              <>
-                <PlusCircle className="mr-1 h-3.5 w-3.5" />
-                Add
-              </>
-            )}
-          </Button>
-          
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onViewProfile(creator.id)}
-            className="h-8 text-xs"
-          >
-            <Info className="h-3.5 w-3.5 mr-1" />
-            View
-          </Button>
-          
-          <Button
-            size="sm"
-            variant="default"
-            onClick={handleInvite}
-            disabled={isLoading?.[`invite-${creator.id}`]}
-            className="h-8 text-xs whitespace-nowrap"
-          >
-            {isLoading?.[`invite-${creator.id}`] ? (
-              "..."
-            ) : (
-              <>
-                <UserPlus className="h-3.5 w-3.5 mr-1" />
-                Invite
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
