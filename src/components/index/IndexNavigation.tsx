@@ -58,6 +58,14 @@ export const IndexNavigation = ({
                     Sign In
                   </Button>
                   <Button 
+                    variant="outline" 
+                    size="default"
+                    onClick={() => navigate('/auth')}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    Register
+                  </Button>
+                  <Button 
                     variant="connect" 
                     size="connect" 
                     onClick={() => setShowInterestModal(true)}
