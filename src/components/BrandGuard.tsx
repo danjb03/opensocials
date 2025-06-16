@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 interface BrandGuardProps {
   children: React.ReactNode;
@@ -11,7 +11,7 @@ interface BrandGuardProps {
 }
 
 const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
-  const { user, role, isLoading: authLoading } = useUnifiedAuth();
+  const { user, role, isLoading: authLoading, brandProfile } = useUnifiedAuth();
   const [isChecking, setIsChecking] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,34 +48,21 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
         return;
       }
 
-      try {
-        const { data: profile, error: profileError } = await supabase
-          .from('brand_profiles')
-          .select('user_id')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (profileError) {
-          console.error('❌ Error fetching profile:', profileError);
-          setIsChecking(false);
-          return;
-        }
-
-        // Only redirect if no profile exists at all
-        if (!profile) {
-          navigate('/brand/setup-profile', { replace: true });
-          return;
-        }
-
-        setIsChecking(false);
-      } catch (err) {
-        console.error('❌ Error in guard logic:', err);
-        setIsChecking(false);
+      // Check if we have a brand profile
+      console.log('🔍 Checking brand profile status:', brandProfile);
+      
+      if (!brandProfile) {
+        console.log('⚠️ No brand profile found, redirecting to setup');
+        navigate('/brand/setup-profile', { replace: true });
+        return;
       }
+
+      console.log('✅ Brand profile found, allowing access');
+      setIsChecking(false);
     };
 
     checkBrandAccess();
-  }, [user, role, authLoading, navigate, redirectTo, location.pathname]);
+  }, [user, role, authLoading, brandProfile, navigate, redirectTo, location.pathname]);
 
   if (authLoading || isChecking) {
     return (

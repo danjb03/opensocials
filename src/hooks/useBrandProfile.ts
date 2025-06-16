@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 interface BrandProfile {
   user_id: string;
@@ -35,6 +35,8 @@ export const useBrandProfile = () => {
       setError(null);
 
       try {
+        console.log('🔍 Fetching brand profile for user:', user.id);
+        
         // Get the brand profile for the current user
         const { data, error } = await supabase
           .from('brand_profiles')
@@ -42,10 +44,17 @@ export const useBrandProfile = () => {
           .eq('user_id', user.id)
           .maybeSingle();
 
-        if (error) throw error;
+        if (error) {
+          console.error('❌ Error fetching brand profile:', error);
+          throw error;
+        }
         
         if (data) {
+          console.log('✅ Brand profile found:', data);
           setProfile(data);
+        } else {
+          console.log('⚠️ No brand profile found for user');
+          setProfile(null);
         }
       } catch (err: any) {
         console.error('Error fetching brand profile:', err);
@@ -65,21 +74,25 @@ export const useBrandProfile = () => {
     }
 
     try {
-      const { error } = await supabase
+      console.log('🔄 Updating brand profile:', updates);
+      
+      const { data, error } = await supabase
         .from('brand_profiles')
         .update({
           ...updates,
           updated_at: new Date().toISOString()
         })
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error updating profile:', error);
+        throw error;
+      }
       
-      setProfile(prev => prev ? {
-        ...prev,
-        ...updates,
-        updated_at: new Date().toISOString()
-      } : null);
+      console.log('✅ Profile updated successfully:', data);
+      setProfile(data);
       
       toast.success('Profile updated successfully');
       return { success: true };
@@ -97,6 +110,8 @@ export const useBrandProfile = () => {
     }
 
     try {
+      console.log('📝 Creating new brand profile:', profileData);
+      
       const newProfile = {
         user_id: user.id,
         ...profileData,
@@ -104,13 +119,19 @@ export const useBrandProfile = () => {
         updated_at: new Date().toISOString()
       };
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('brand_profiles')
-        .insert(newProfile);
+        .insert(newProfile)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error creating profile:', error);
+        throw error;
+      }
       
-      setProfile(newProfile);
+      console.log('✅ Profile created successfully:', data);
+      setProfile(data);
       toast.success('Profile created successfully');
       return { success: true };
     } catch (err: any) {

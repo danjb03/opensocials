@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 import { useLogoUpload } from './brand/useLogoUpload';
 import { useBrandNavigation } from './brand/useBrandNavigation';
 
@@ -25,7 +25,7 @@ export const useProfileSetup = () => {
     useLogoUpload(user?.id);
   const { redirectToDashboard } = useBrandNavigation();
 
-  // Simplified profile check - only load when component mounts, don't auto-redirect
+  // Load existing profile when component mounts
   useEffect(() => {
     const loadExistingProfile = async () => {
       if (!user) return;
@@ -86,15 +86,24 @@ export const useProfileSetup = () => {
 
       console.log("💾 Creating minimal brand profile:", profileData);
 
+      // Use upsert to handle existing profiles
       const { error } = await supabase
         .from('brand_profiles')
-        .insert(profileData);
+        .upsert(profileData, { 
+          onConflict: 'user_id',
+          ignoreDuplicates: false 
+        });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Database error:', error);
+        throw error;
+      }
 
+      console.log('✅ Brand profile saved successfully');
       toast.success('Welcome to your brand dashboard!');
-      localStorage.setItem('bypass_brand_check', 'true');
-
+      
+      // Clear any bypass flags and redirect
+      localStorage.removeItem('bypass_brand_check');
       setTimeout(() => {
         window.location.href = '/brand';
       }, 500);
@@ -126,36 +135,49 @@ export const useProfileSetup = () => {
     try {
       let uploadedLogoUrl = null;
       if (logoFile) {
+        console.log("🖼️ Uploading logo...");
         uploadedLogoUrl = await uploadLogo();
         console.log("🖼️ Logo uploaded:", uploadedLogoUrl);
       }
 
       const profileData = {
         user_id: user.id,
-        company_name: companyName,
-        website_url: website || null,
+        company_name: companyName.trim(),
+        website_url: website.trim() || null,
         industry: industry || null,
-        brand_bio: brandBio || null,
+        brand_bio: brandBio.trim() || null,
         budget_range: budgetRange || null,
-        logo_url: uploadedLogoUrl || logoUrl,
+        logo_url: uploadedLogoUrl || logoUrl || null,
         brand_goal: null,
         campaign_focus: null,
-        created_at: new Date().toISOString(),
+        created_at: existingProfile ? existingProfile.created_at : new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
 
-      console.log("💾 Creating brand profile with data:", profileData);
+      console.log("💾 Saving brand profile with data:", profileData);
 
-      // Use upsert instead of insert to handle existing profiles
-      const { error } = await supabase
+      // Use upsert to handle both create and update scenarios
+      const { data: savedProfile, error } = await supabase
         .from('brand_profiles')
-        .upsert(profileData, { onConflict: 'user_id' });
+        .upsert(profileData, { 
+          onConflict: 'user_id',
+          ignoreDuplicates: false 
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Database error:', error);
+        throw error;
+      }
 
+      console.log('✅ Brand profile saved successfully:', savedProfile);
       toast.success('Profile setup complete!');
-      localStorage.setItem('bypass_brand_check', 'true');
-
+      
+      // Clear any bypass flags
+      localStorage.removeItem('bypass_brand_check');
+      
+      // Force a page refresh to ensure the profile is loaded in auth context
       setTimeout(() => {
         window.location.href = '/brand';
       }, 500);
