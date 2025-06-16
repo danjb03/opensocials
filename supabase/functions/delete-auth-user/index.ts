@@ -85,6 +85,31 @@ async function validateSuperAdmin(supabase: any, token: string) {
   }
 }
 
+// Helper function to verify cleanup completion
+async function verifyCleanupComplete(supabaseAdmin: any, userId: string, table: string, column: string = 'user_id') {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from(table)
+      .select('id')
+      .eq(column, userId)
+      .limit(1);
+    
+    if (error) {
+      console.warn(`Error checking ${table}:`, error.message);
+      return false;
+    }
+    
+    const hasRemaining = data && data.length > 0;
+    if (hasRemaining) {
+      console.warn(`Warning: ${table} still has ${data.length} records for user ${userId}`);
+    }
+    return !hasRemaining;
+  } catch (err) {
+    console.warn(`Error verifying cleanup for ${table}:`, err);
+    return false;
+  }
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -138,6 +163,14 @@ Deno.serve(async (req) => {
     }
 
     console.log(`Admin ${validation.userId} attempting to delete user: ${user_id}`);
+
+    // First, get existing audit logs count before cleanup
+    const { data: initialAuditLogs } = await supabaseAdmin
+      .from('security_audit_log')
+      .select('id')
+      .eq('user_id', user_id);
+    
+    console.log(`Found ${initialAuditLogs?.length || 0} initial audit log entries for user ${user_id}`);
 
     // Comprehensive cleanup of all related data to avoid foreign key constraints
     try {
@@ -212,9 +245,41 @@ Deno.serve(async (req) => {
       await supabaseAdmin.from('creator_industry_tags').delete().eq('creator_id', user_id);
       console.log(`Cleaned up creator_industry_tags for user: ${user_id}`);
 
-      // 17. Security audit logs for this user
-      await supabaseAdmin.from('security_audit_log').delete().eq('user_id', user_id);
-      console.log(`Cleaned up security_audit_log for user: ${user_id}`);
+      // 17. Multiple passes on security audit logs to ensure complete cleanup
+      console.log(`Starting thorough security_audit_log cleanup for user: ${user_id}`);
+      
+      // First pass - direct user_id match
+      const { data: deletedLogs1 } = await supabaseAdmin
+        .from('security_audit_log')
+        .delete()
+        .eq('user_id', user_id)
+        .select('id');
+      console.log(`First pass deleted ${deletedLogs1?.length || 0} audit logs`);
+
+      // Second pass - check for any remaining entries
+      const { data: remainingLogs } = await supabaseAdmin
+        .from('security_audit_log')
+        .select('id, action, resource_type')
+        .eq('user_id', user_id);
+      
+      if (remainingLogs && remainingLogs.length > 0) {
+        console.log(`Found ${remainingLogs.length} remaining audit logs, attempting force delete`);
+        for (const log of remainingLogs) {
+          try {
+            await supabaseAdmin
+              .from('security_audit_log')
+              .delete()
+              .eq('id', log.id);
+            console.log(`Force deleted audit log: ${log.id}`);
+          } catch (logError) {
+            console.warn(`Failed to delete audit log ${log.id}:`, logError);
+          }
+        }
+      }
+
+      // Final verification
+      const auditCleanupComplete = await verifyCleanupComplete(supabaseAdmin, user_id, 'security_audit_log');
+      console.log(`Audit log cleanup complete: ${auditCleanupComplete}`);
 
       // 18. User roles
       await supabaseAdmin.from('user_roles').delete().eq('user_id', user_id);
@@ -234,20 +299,52 @@ Deno.serve(async (req) => {
 
       console.log(`Completed comprehensive cleanup for user: ${user_id}`);
 
+      // Verify all key foreign key constraints are resolved
+      const verifications = [
+        await verifyCleanupComplete(supabaseAdmin, user_id, 'security_audit_log'),
+        await verifyCleanupComplete(supabaseAdmin, user_id, 'user_roles'),
+        await verifyCleanupComplete(supabaseAdmin, user_id, 'profiles', 'id'),
+      ];
+
+      const allCleanupComplete = verifications.every(v => v);
+      console.log(`All cleanup verifications passed: ${allCleanupComplete}`);
+
+      if (!allCleanupComplete) {
+        console.warn('Some cleanup verifications failed, but proceeding with deletion attempt');
+      }
+
     } catch (cleanupError) {
       console.warn('Error during cleanup, but continuing with user deletion:', cleanupError);
       // Continue with deletion attempt even if some cleanup fails
     }
 
     // Now delete user from auth
+    console.log(`Attempting to delete auth user: ${user_id}`);
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user_id);
 
     if (deleteError) {
       console.error('Error deleting user:', deleteError);
+      
+      // If deletion fails, check what's still referencing the user
+      const remainingRefs = await Promise.all([
+        supabaseAdmin.from('security_audit_log').select('id').eq('user_id', user_id).limit(5),
+        supabaseAdmin.from('user_roles').select('id').eq('user_id', user_id).limit(5),
+        supabaseAdmin.from('profiles').select('id').eq('id', user_id).limit(5),
+      ]);
+
+      const debugInfo = {
+        audit_logs: remainingRefs[0].data?.length || 0,
+        user_roles: remainingRefs[1].data?.length || 0,
+        profiles: remainingRefs[2].data?.length || 0,
+      };
+
+      console.error('Remaining references after cleanup:', debugInfo);
+
       return new Response(
         JSON.stringify({ 
           error: `Failed to delete user: ${deleteError.message}`,
-          details: deleteError
+          details: deleteError,
+          remainingReferences: debugInfo
         }),
         { status: 500, headers: corsHeaders }
       );
