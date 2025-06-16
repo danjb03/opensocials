@@ -58,10 +58,8 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
   
   if (!data) return null;
   
-  // Calculate budget breakdown with 25% margin system
-  const totalGrossBudget = data.total_budget || 0;
-  const platformMargin = totalGrossBudget * 0.25;
-  const totalNetBudget = totalGrossBudget - platformMargin;
+  // Only show total budget - no platform margin breakdown
+  const totalBudget = data.total_budget || 0;
   const estimatedReach = selectedCreators.length * 50000; // Mock calculation
   const campaignDuration = data.timeline?.start_date && data.timeline?.end_date 
     ? Math.ceil((data.timeline.end_date.getTime() - data.timeline.start_date.getTime()) / (1000 * 60 * 60 * 24))
@@ -95,25 +93,25 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
   return (
     <div className="space-y-6">
       {/* Campaign Overview */}
-      <Card>
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Rocket className="h-5 w-5" />Review & Launch Campaign
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Readiness Checklist */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-gray-900">Launch Readiness</h3>
+            <h3 className="font-semibold text-foreground">Launch Readiness</h3>
             <div className="space-y-2">
               {readinessChecks.map((check, index) => (
                 <div key={index} className="flex items-center gap-3">
                   {check.complete ? (
-                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <CheckCircle className="h-5 w-5 text-green-400" />
                   ) : (
-                    <AlertCircle className="h-5 w-5 text-yellow-600" />
+                    <AlertCircle className="h-5 w-5 text-yellow-400" />
                   )}
-                  <span className={check.complete ? 'text-gray-900' : 'text-gray-600'}>
+                  <span className={check.complete ? 'text-foreground' : 'text-muted-foreground'}>
                     {check.label}
                   </span>
                   {check.complete && <Badge variant="secondary" className="ml-auto">Complete</Badge>}
@@ -122,77 +120,77 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
             </div>
           </div>
 
-          <Separator />
+          <Separator className="border-border" />
 
           {/* Campaign Summary */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h3 className="font-semibold text-gray-900">Campaign Details</h3>
+              <h3 className="font-semibold text-foreground">Campaign Details</h3>
               <div className="space-y-3">
                 <div>
-                  <Label className="text-sm font-medium text-gray-600">Campaign Name</Label>
-                  <p className="font-medium">{data.name}</p>
+                  <Label className="text-sm font-medium text-muted-foreground">Campaign Name</Label>
+                  <p className="font-medium text-foreground">{data.name}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-600">Objective</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">Objective</Label>
                   <Badge variant="outline" className="ml-2">
                     {data.objective?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                   </Badge>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-600">Campaign Type</Label>
-                  <p className="font-medium">{data.campaign_type}</p>
+                  <Label className="text-sm font-medium text-muted-foreground">Campaign Type</Label>
+                  <p className="font-medium text-foreground">{data.campaign_type}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-600">Description</Label>
-                  <p className="text-sm text-gray-700 line-clamp-3">{data.description}</p>
+                  <Label className="text-sm font-medium text-muted-foreground">Description</Label>
+                  <p className="text-sm text-muted-foreground line-clamp-3">{data.description}</p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-4">
-              <h3 className="font-semibold text-gray-900">Timeline & Budget</h3>
+              <h3 className="font-semibold text-foreground">Timeline & Budget</h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-400" />
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <Label className="text-sm font-medium text-gray-600">Duration</Label>
-                    <p className="font-medium">
+                    <Label className="text-sm font-medium text-muted-foreground">Duration</Label>
+                    <p className="font-medium text-foreground">
                       {data.timeline?.start_date && data.timeline?.end_date ? (
                         <>
                           {format(data.timeline.start_date, 'MMM d')} - {format(data.timeline.end_date, 'MMM d, yyyy')}
-                          <span className="text-sm text-gray-500 ml-2">({campaignDuration} days)</span>
+                          <span className="text-sm text-muted-foreground ml-2">({campaignDuration} days)</span>
                         </>
                       ) : 'Not set'}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-gray-400" />
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <Label className="text-sm font-medium text-gray-600">Total Budget</Label>
-                    <p className="font-medium">${(data.total_budget || 0).toFixed(2)}</p>
+                    <Label className="text-sm font-medium text-muted-foreground">Total Budget</Label>
+                    <p className="font-medium text-foreground">${totalBudget.toFixed(2)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-gray-400" />
+                  <Users className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <Label className="text-sm font-medium text-gray-600">Estimated Reach</Label>
-                    <p className="font-medium">{estimatedReach.toLocaleString()} people</p>
+                    <Label className="text-sm font-medium text-muted-foreground">Estimated Reach</Label>
+                    <p className="font-medium text-foreground">{estimatedReach.toLocaleString()} people</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <Separator />
+          <Separator className="border-border" />
 
           {/* Content Requirements */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-gray-900">Content Requirements</h3>
+            <h3 className="font-semibold text-foreground">Content Requirements</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-sm font-medium text-gray-600">Platforms</Label>
+                <Label className="text-sm font-medium text-muted-foreground">Platforms</Label>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {data.content_requirements?.platforms?.map(platform => (
                     <Badge key={platform} variant="outline" className="text-xs">
@@ -202,7 +200,7 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
                 </div>
               </div>
               <div>
-                <Label className="text-sm font-medium text-gray-600">Content Types</Label>
+                <Label className="text-sm font-medium text-muted-foreground">Content Types</Label>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {data.content_requirements?.content_types?.map(type => (
                     <Badge key={type} variant="outline" className="text-xs">
@@ -213,32 +211,32 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
               </div>
             </div>
             <div>
-              <Label className="text-sm font-medium text-gray-600">Deliverables</Label>
+              <Label className="text-sm font-medium text-muted-foreground">Deliverables</Label>
               <div className="flex gap-4 mt-1 text-sm">
-                <span>{data.deliverables?.posts_count || 0} posts</span>
+                <span className="text-foreground">{data.deliverables?.posts_count || 0} posts</span>
                 {(data.deliverables?.stories_count || 0) > 0 && (
-                  <span>{data.deliverables.stories_count} stories</span>
+                  <span className="text-foreground">{data.deliverables.stories_count} stories</span>
                 )}
                 {(data.deliverables?.reels_count || 0) > 0 && (
-                  <span>{data.deliverables.reels_count} reels</span>
+                  <span className="text-foreground">{data.deliverables.reels_count} reels</span>
                 )}
               </div>
             </div>
           </div>
 
-          <Separator />
+          <Separator className="border-border" />
 
           {/* Selected Creators */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-gray-900">Selected Creators ({selectedCreators.length})</h3>
+            <h3 className="font-semibold text-foreground">Selected Creators ({selectedCreators.length})</h3>
             {creatorsLoading ? (
               <div className="space-y-3">
                 {[...Array(selectedCreators.length)].map((_, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse" />
+                  <div key={i} className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                    <div className="h-10 w-10 bg-muted-foreground rounded-full animate-pulse" />
                     <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-gray-200 rounded animate-pulse" />
-                      <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4" />
+                      <div className="h-4 bg-muted-foreground rounded animate-pulse" />
+                      <div className="h-3 bg-muted-foreground rounded animate-pulse w-3/4" />
                     </div>
                   </div>
                 ))}
@@ -252,20 +250,20 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
                     : creator?.first_name || 'Unknown Creator';
                   
                   return (
-                    <div key={creatorData.creator_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div key={creatorData.creator_id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarFallback>{creatorName.slice(0, 2).toUpperCase()}</AvatarFallback>
+                          <AvatarFallback className="bg-background text-foreground">{creatorName.slice(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium">{creatorName}</p>
-                          <p className="text-sm text-gray-600">@creator</p>
-                          <p className="text-xs text-blue-600">Creator</p>
+                          <p className="font-medium text-foreground">{creatorName}</p>
+                          <p className="text-sm text-muted-foreground">@creator</p>
+                          <p className="text-xs text-blue-400">Creator</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">${creatorData.individual_budget}</p>
-                        <p className="text-sm text-gray-600">creator payout</p>
+                        <p className="font-medium text-foreground">${creatorData.individual_budget}</p>
+                        <p className="text-sm text-muted-foreground">creator payout</p>
                       </div>
                     </div>
                   );
@@ -274,73 +272,52 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
             )}
           </div>
 
-          <Separator />
+          <Separator className="border-border" />
 
-          {/* Budget Breakdown */}
+          {/* Total Investment Summary - Simple */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-gray-900">Budget Breakdown</h3>
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Total Campaign Budget:</span>
-                <span className="font-medium">${totalGrossBudget.toFixed(2)}</span>
+            <h3 className="font-semibold text-foreground">Campaign Investment</h3>
+            <div className="bg-muted rounded-lg p-4">
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-medium text-foreground">Total Campaign Cost:</span>
+                <span className="text-2xl font-bold text-foreground">${totalBudget.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-sm text-gray-600">
-                <span className="flex items-center gap-1">
-                  Platform Margin (25%):
-                  <span className="text-xs bg-blue-100 text-blue-700 px-1 rounded">includes fees & support</span>
-                </span>
-                <span>-${platformMargin.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Creator Pool Budget:</span>
-                <span className="font-medium text-green-600">${totalNetBudget.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Currently Allocated:</span>
-                <span>${totalCreatorBudget.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Remaining for Rolling Invites:</span>
-                <span className="font-medium text-blue-600">${(totalNetBudget - totalCreatorBudget).toFixed(2)}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between font-medium text-lg">
-                <span>Total Investment:</span>
-                <span>${totalGrossBudget.toFixed(2)}</span>
-              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                All-inclusive campaign cost covering creator payments, platform fees, and support.
+              </p>
             </div>
-            <div className="text-xs text-gray-500 bg-blue-50 p-3 rounded-lg flex items-start gap-2">
-              <Lightbulb className="h-4 w-4 mt-0.5 flex-shrink-0" />
-              <span><strong>Rolling Creator System:</strong> You can invite additional creators later if some decline or if you want to expand reach, using your remaining budget pool.</span>
+            <div className="text-xs text-muted-foreground bg-blue-950/20 border border-blue-800/20 p-3 rounded-lg flex items-start gap-2">
+              <Lightbulb className="h-4 w-4 mt-0.5 flex-shrink-0 text-blue-400" />
+              <span className="text-foreground"><strong>Rolling Creator System:</strong> You can invite additional creators later if some decline or if you want to expand reach, using your remaining budget pool.</span>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* What Happens Next */}
-      <Card>
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
+          <CardTitle className="text-lg flex items-center gap-2 text-foreground">
             <Target className="h-5 w-5" />What Happens Next?
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3 text-sm">
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-medium">1</div>
-              <p>Selected creators will receive campaign invitations immediately</p>
+              <div className="w-6 h-6 rounded-full bg-blue-600/20 text-blue-400 border border-blue-600/30 flex items-center justify-center text-xs font-medium">1</div>
+              <p className="text-foreground">Selected creators will receive campaign invitations immediately</p>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-medium">2</div>
-              <p>Creators have 48 hours to accept or decline the collaboration</p>
+              <div className="w-6 h-6 rounded-full bg-blue-600/20 text-blue-400 border border-blue-600/30 flex items-center justify-center text-xs font-medium">2</div>
+              <p className="text-foreground">Creators have 48 hours to accept or decline the collaboration</p>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-medium">3</div>
-              <p>You'll receive notifications as creators respond to your campaign</p>
+              <div className="w-6 h-6 rounded-full bg-blue-600/20 text-blue-400 border border-blue-600/30 flex items-center justify-center text-xs font-medium">3</div>
+              <p className="text-foreground">You'll receive notifications as creators respond to your campaign</p>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-medium">4</div>
-              <p>Campaign tracking and analytics become available once creators start posting</p>
+              <div className="w-6 h-6 rounded-full bg-blue-600/20 text-blue-400 border border-blue-600/30 flex items-center justify-center text-xs font-medium">4</div>
+              <p className="text-foreground">Campaign tracking and analytics become available once creators start posting</p>
             </div>
           </div>
         </CardContent>
@@ -382,7 +359,7 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
 
 // Helper component for labels
 const Label: React.FC<{ className?: string; children: React.ReactNode }> = ({ className = '', children }) => (
-  <span className={`text-sm font-medium text-gray-600 ${className}`}>{children}</span>
+  <span className={`text-sm font-medium ${className}`}>{children}</span>
 );
 
 export default ReviewLaunchStep;
