@@ -62,6 +62,45 @@ export interface Deliverables {
   custom_deliverables?: string[];
 }
 
+// Campaign type specific interfaces
+export interface SingleCampaignData {
+  live_date: Date;
+  end_date: Date;
+  upload_deadline: Date;
+}
+
+export interface WeeklyCampaignData {
+  weeks_duration: number;
+  post_day_of_week: string;
+  posts_per_week: number;
+}
+
+export interface MonthlyCampaignData {
+  months_duration: number;
+  monthly_schedule: string;
+  same_creators_monthly: boolean;
+}
+
+export interface RetainerCampaignData {
+  posting_type: 'fixed' | 'flexible';
+  min_posts_per_month: number;
+  blackout_dates?: Date[];
+}
+
+export interface EvergreenCampaignData {
+  rolling_basis: boolean;
+  monthly_budget_cap?: number;
+  scaling_triggers: string[];
+}
+
+export interface CampaignTypeSpecificData {
+  single?: SingleCampaignData;
+  weekly?: WeeklyCampaignData;
+  monthly?: MonthlyCampaignData;
+  retainer?: RetainerCampaignData;
+  evergreen?: EvergreenCampaignData;
+}
+
 export interface EnhancedProject {
   id: string;
   brand_id: string;
@@ -161,6 +200,9 @@ export interface CampaignWizardData {
     start_date?: Date; 
     end_date?: Date; 
   };
+  
+  // Campaign type specific data
+  campaign_type_data?: CampaignTypeSpecificData;
   
   // Step 4: Creator Selection
   selected_creators: Array<{

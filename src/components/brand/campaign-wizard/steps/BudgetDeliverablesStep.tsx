@@ -16,20 +16,61 @@ import { BudgetValidationSection } from './budget-deliverables/BudgetValidationS
 import { useBudgetValidation } from '@/hooks/useBudgetValidation';
 import { toast } from 'sonner';
 
-const budgetDeliverablesSchema = z.object({
-  total_budget: z.number().min(100, 'Minimum budget is $100').max(1000000, 'Maximum budget is $1,000,000'),
-  posts_count: z.number().min(1, 'At least 1 post required').max(100, 'Maximum 100 posts'),
-  stories_count: z.number().min(0).max(50).optional(),
-  reels_count: z.number().min(0).max(20).optional(),
-  video_length_minutes: z.number().min(0).max(120).optional(),
-  start_date: z.date({ required_error: 'Start date is required' }),
-  end_date: z.date({ required_error: 'End date is required' }),
-}).refine((data) => data.end_date >= data.start_date, {
-  message: "End date must be after start date",
-  path: ["end_date"],
-});
+// Create dynamic schema based on campaign type
+const createBudgetDeliverablesSchema = (campaignType: string) => {
+  const baseSchema = {
+    total_budget: z.number().min(100, 'Minimum budget is $100').max(1000000, 'Maximum budget is $1,000,000'),
+    posts_count: z.number().min(1, 'At least 1 post required').max(100, 'Maximum 100 posts'),
+    stories_count: z.number().min(0).max(50).optional(),
+    reels_count: z.number().min(0).max(20).optional(),
+    video_length_minutes: z.number().min(0).max(120).optional(),
+  };
 
-type BudgetDeliverablesForm = z.infer<typeof budgetDeliverablesSchema>;
+  // Add campaign type specific validation
+  switch (campaignType) {
+    case 'Single':
+      return z.object({
+        ...baseSchema,
+        live_date: z.date({ required_error: 'Live date is required' }),
+        end_date: z.date({ required_error: 'End date is required' }),
+        upload_deadline: z.date({ required_error: 'Upload deadline is required' }),
+      });
+    case 'Weekly':
+      return z.object({
+        ...baseSchema,
+        weeks_duration: z.number().min(1, 'At least 1 week required').max(52, 'Maximum 52 weeks'),
+        post_day_of_week: z.string().min(1, 'Day of week is required'),
+        posts_per_week: z.number().min(1, 'At least 1 post per week').max(7, 'Maximum 7 posts per week'),
+      });
+    case 'Monthly':
+      return z.object({
+        ...baseSchema,
+        months_duration: z.number().min(1, 'At least 1 month required').max(24, 'Maximum 24 months'),
+        monthly_schedule: z.string().min(1, 'Monthly schedule is required'),
+        same_creators_monthly: z.boolean().optional(),
+      });
+    case '12-Month Retainer':
+      return z.object({
+        ...baseSchema,
+        posting_type: z.enum(['fixed', 'flexible'], { required_error: 'Posting type is required' }),
+        min_posts_per_month: z.number().min(1, 'At least 1 post per month').max(30, 'Maximum 30 posts per month'),
+        blackout_dates: z.array(z.date()).optional(),
+      });
+    case 'Evergreen':
+      return z.object({
+        ...baseSchema,
+        rolling_basis: z.boolean().optional(),
+        monthly_budget_cap: z.number().min(0).optional(),
+        scaling_triggers: z.array(z.string()).optional(),
+      });
+    default:
+      return z.object({
+        ...baseSchema,
+        start_date: z.date({ required_error: 'Start date is required' }),
+        end_date: z.date({ required_error: 'End date is required' }),
+      });
+  }
+};
 
 interface BudgetDeliverablesStepProps {
   data?: Partial<CampaignWizardData>;
@@ -44,6 +85,10 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
   onBack,
   isLoading
 }) => {
+  const campaignType = data?.campaign_type || 'Single';
+  const budgetDeliverablesSchema = createBudgetDeliverablesSchema(campaignType);
+  type BudgetDeliverablesForm = z.infer<typeof budgetDeliverablesSchema>;
+
   const {
     showValidationModal,
     validationError,
@@ -53,6 +98,56 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
     showPricingWarning
   } = useBudgetValidation(data);
 
+  // Create default values based on campaign type and existing data
+  const getDefaultValues = () => {
+    const base = {
+      total_budget: data?.total_budget || 0,
+      posts_count: data?.deliverables?.posts_count || 1,
+      stories_count: data?.deliverables?.stories_count || 0,
+      reels_count: data?.deliverables?.reels_count || 0,
+      video_length_minutes: data?.deliverables?.video_length_minutes || 0,
+    };
+
+    // Add campaign type specific defaults
+    switch (campaignType) {
+      case 'Weekly':
+        return {
+          ...base,
+          weeks_duration: data?.campaign_type_data?.weekly?.weeks_duration || 1,
+          post_day_of_week: data?.campaign_type_data?.weekly?.post_day_of_week || '',
+          posts_per_week: data?.campaign_type_data?.weekly?.posts_per_week || 1,
+        };
+      case 'Monthly':
+        return {
+          ...base,
+          months_duration: data?.campaign_type_data?.monthly?.months_duration || 1,
+          monthly_schedule: data?.campaign_type_data?.monthly?.monthly_schedule || '',
+          same_creators_monthly: data?.campaign_type_data?.monthly?.same_creators_monthly || false,
+        };
+      case '12-Month Retainer':
+        return {
+          ...base,
+          posting_type: data?.campaign_type_data?.retainer?.posting_type || 'fixed',
+          min_posts_per_month: data?.campaign_type_data?.retainer?.min_posts_per_month || 1,
+          blackout_dates: data?.campaign_type_data?.retainer?.blackout_dates || [],
+        };
+      case 'Evergreen':
+        return {
+          ...base,
+          rolling_basis: data?.campaign_type_data?.evergreen?.rolling_basis || false,
+          monthly_budget_cap: data?.campaign_type_data?.evergreen?.monthly_budget_cap || 0,
+          scaling_triggers: data?.campaign_type_data?.evergreen?.scaling_triggers || [],
+        };
+      default:
+        return {
+          ...base,
+          live_date: data?.campaign_type_data?.single?.live_date || undefined,
+          end_date: data?.campaign_type_data?.single?.end_date || undefined,
+          upload_deadline: data?.campaign_type_data?.single?.upload_deadline || undefined,
+        };
+    }
+  };
+
   const {
     register,
     handleSubmit,
@@ -61,15 +156,7 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
     formState: { errors, isValid }
   } = useForm<BudgetDeliverablesForm>({
     resolver: zodResolver(budgetDeliverablesSchema),
-    defaultValues: {
-      total_budget: data?.total_budget || 0,
-      posts_count: data?.deliverables?.posts_count || 1,
-      stories_count: data?.deliverables?.stories_count || 0,
-      reels_count: data?.deliverables?.reels_count || 0,
-      video_length_minutes: data?.deliverables?.video_length_minutes || 0,
-      start_date: data?.timeline?.start_date || undefined,
-      end_date: data?.timeline?.end_date || undefined,
-    },
+    defaultValues: getDefaultValues(),
     mode: 'onChange'
   });
 
@@ -86,15 +173,58 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
       video_length_minutes: formData.video_length_minutes || 0,
     };
 
-    const timeline = {
-      start_date: formData.start_date,
-      end_date: formData.end_date,
-    };
+    // Create campaign type specific data structure
+    const campaignTypeData: any = {};
+    
+    switch (campaignType) {
+      case 'Single':
+        campaignTypeData.single = {
+          live_date: (formData as any).live_date,
+          end_date: (formData as any).end_date,
+          upload_deadline: (formData as any).upload_deadline,
+        };
+        break;
+      case 'Weekly':
+        campaignTypeData.weekly = {
+          weeks_duration: (formData as any).weeks_duration,
+          post_day_of_week: (formData as any).post_day_of_week,
+          posts_per_week: (formData as any).posts_per_week,
+        };
+        break;
+      case 'Monthly':
+        campaignTypeData.monthly = {
+          months_duration: (formData as any).months_duration,
+          monthly_schedule: (formData as any).monthly_schedule,
+          same_creators_monthly: (formData as any).same_creators_monthly,
+        };
+        break;
+      case '12-Month Retainer':
+        campaignTypeData.retainer = {
+          posting_type: (formData as any).posting_type,
+          min_posts_per_month: (formData as any).min_posts_per_month,
+          blackout_dates: (formData as any).blackout_dates,
+        };
+        break;
+      case 'Evergreen':
+        campaignTypeData.evergreen = {
+          rolling_basis: (formData as any).rolling_basis,
+          monthly_budget_cap: (formData as any).monthly_budget_cap,
+          scaling_triggers: (formData as any).scaling_triggers,
+        };
+        break;
+    }
+
+    // For legacy compatibility, still set timeline if it's a single campaign
+    const timeline = campaignType === 'Single' ? {
+      start_date: (formData as any).live_date,
+      end_date: (formData as any).end_date,
+    } : data?.timeline || {};
 
     onComplete({
       total_budget: formData.total_budget,
       deliverables,
-      timeline
+      timeline,
+      campaign_type_data: campaignTypeData
     });
   };
 
@@ -133,6 +263,7 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
               setValue={setValue}
               watch={watch}
               errors={errors}
+              campaignType={campaignType}
             />
 
             <BudgetTips />

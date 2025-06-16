@@ -14,6 +14,7 @@ export const useDraftData = () => {
     name: formData.name || '',
     description: formData.description || '',
     campaign_type: formData.campaign_type || 'Single',
+    objective: formData.objective,
     timeline: formData.timeline || { start_date: undefined, end_date: undefined }
   });
 
@@ -36,7 +37,8 @@ export const useDraftData = () => {
       posts_count: 0,
       stories_count: 0,
       reels_count: 0
-    }
+    },
+    campaign_type_data: formData.campaign_type_data || {}
   });
 
   const getReviewData = () => formData;
@@ -51,8 +53,7 @@ export const useDraftData = () => {
   };
 
   const updateBudgetData = (data: any) => {
-    // Note: Pricing validation is handled in the BudgetDeliverablesStep component
-    // This just updates the form data - validation happens on submit
+    // Handle campaign type specific data
     updateFormData(data);
   };
 
