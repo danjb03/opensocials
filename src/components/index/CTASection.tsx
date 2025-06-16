@@ -1,59 +1,49 @@
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { User } from "@supabase/supabase-js";
+import { InterestRegistrationModal } from "./InterestRegistrationModal";
 
 interface CTASectionProps {
-  user: User | null;
+  user: any;
 }
 
 export const CTASection = ({ user }: CTASectionProps) => {
-  const navigate = useNavigate();
-
-  const handleGetStarted = () => {
-    if (user) {
-      navigate('/brand');
-    } else {
-      navigate('/auth');
-    }
-  };
+  const [showInterestModal, setShowInterestModal] = useState(false);
 
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-950/50">
-      <div className="max-w-4xl mx-auto text-center space-y-8">
-        <div className="space-y-4">
-          <h2 className="text-4xl sm:text-5xl font-light text-white">
-            Ready to transform your creator partnerships?
+    <>
+      <section className="py-20 px-6 relative overflow-hidden">
+        {/* Faded background design */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-gradient-to-br from-white/20 to-transparent rounded-[40px] rotate-12"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-gradient-to-br from-white/15 to-transparent rounded-[30px] -rotate-6"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[400px] h-[200px] bg-gradient-to-br from-white/10 to-transparent rounded-[20px] rotate-3"></div>
+        </div>
+        
+        <div className="container mx-auto max-w-4xl text-center relative z-10">
+          <h2 className="text-5xl md:text-6xl font-light mb-8">
+            Partnerships done properly.<br />
+            Built for brands that move quickly and think bigger.
           </h2>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Join thousands of brands and creators who trust our platform 
-            for their collaboration needs. Start your first campaign today.
+          <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
+            The best creators are already vetted, briefed, and ready to go. Deals land fast. Campaigns launch faster.
           </p>
+          {!user && (
+            <Button 
+              variant="connect"
+              size="connect"
+              onClick={() => setShowInterestModal(true)}
+            >
+              Register
+            </Button>
+          )}
         </div>
-
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Button 
-            onClick={handleGetStarted}
-            size="lg" 
-            className="bg-white text-black hover:bg-gray-200 text-lg px-8 py-6 h-auto"
-          >
-            {user ? 'Go to Dashboard' : 'Start Free Trial'}
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
-          <Button 
-            variant="outline" 
-            size="lg"
-            className="border-gray-600 text-white hover:bg-gray-900 text-lg px-8 py-6 h-auto"
-          >
-            Schedule Demo
-          </Button>
-        </div>
-
-        <p className="text-sm text-gray-500">
-          No credit card required • Setup in minutes • Cancel anytime
-        </p>
-      </div>
-    </section>
+      </section>
+      
+      <InterestRegistrationModal 
+        open={showInterestModal} 
+        onOpenChange={setShowInterestModal} 
+      />
+    </>
   );
 };

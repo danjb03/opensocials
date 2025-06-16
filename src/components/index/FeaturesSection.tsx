@@ -1,56 +1,58 @@
-
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Users, BarChart3, CreditCard } from "lucide-react";
+import { TrendingUp, Target, BarChart3 } from "lucide-react";
 
 export const FeaturesSection = () => {
-  const features = [
-    {
-      icon: Search,
-      title: "Smart Discovery",
-      description: "Find the perfect creators for your brand using AI-powered matching and comprehensive analytics."
-    },
-    {
-      icon: Users,
-      title: "Campaign Management",
-      description: "Streamline your influencer campaigns from brief to delivery with our intuitive workflow tools."
-    },
-    {
-      icon: BarChart3,
-      title: "Performance Analytics",
-      description: "Track campaign performance with detailed insights and ROI metrics across all platforms."
-    },
-    {
-      icon: CreditCard,
-      title: "Secure Payments",
-      description: "Automated payment processing with milestone-based releases and transparent fee structure."
-    }
-  ];
-
   return (
-    <section id="features" className="py-24 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center space-y-4 mb-16">
-          <h2 className="text-4xl sm:text-5xl font-light text-white">
-            Everything you need to scale
+    <section id="features" className="py-20 px-6">
+      <div className="container mx-auto max-w-6xl">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center space-x-2 bg-gray-900 rounded-full px-4 py-2 mb-8">
+            <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+            <span className="text-blue-400 text-sm uppercase tracking-wider">What you'll get</span>
+          </div>
+          <h2 className="text-5xl md:text-6xl font-light mb-8">
+            We don't just manage,<br />
+            <span className="text-gray-400">we monetise.</span>
           </h2>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            Our platform provides all the tools you need to discover, manage, and measure 
-            successful creator partnerships.
-          </p>
+          <p className="mb-12 max-w-4xl mx-auto leading-relaxed text-slate-300 text-lg">High-performing creators. Zero back-and-forth.Smart filters. Instant launch. Upload briefs, set budgets, track performance, every tool you need. </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature, index) => (
-            <Card key={index} className="bg-gray-900/50 border-gray-800">
-              <CardContent className="p-6 space-y-4">
-                <div className="h-12 w-12 bg-white/10 rounded-lg flex items-center justify-center">
-                  <feature.icon className="h-6 w-6 text-white" />
+        <div className="grid md:grid-cols-3 gap-8">
+          <Card className="border border-gray-700/50 p-8 rounded-3xl backdrop-blur-sm shadow-2xl shadow-gray-900/20 bg-slate-300">
+            <CardContent className="p-0">
+              <div className="mb-8">
+                <div className="w-20 h-20 bg-gradient-to-br from-gray-500 to-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-gray-900/30">
+                  <TrendingUp className="w-10 h-10 text-white stroke-[1.5]" />
                 </div>
-                <h3 className="text-xl font-medium text-white">{feature.title}</h3>
-                <p className="text-gray-400 leading-relaxed">{feature.description}</p>
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+              <h3 className="text-2xl font-light text-white mb-4">High-performing creators.</h3>
+              <p className="text-lg leading-relaxed text-slate-200">Pre-vetted. High-performing. Ready to go live.</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-900/80 border border-gray-700/50 p-8 rounded-3xl backdrop-blur-sm shadow-2xl shadow-gray-900/20">
+            <CardContent className="p-0">
+              <div className="mb-8">
+                <div className="w-20 h-20 bg-gradient-to-br from-gray-600 to-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-gray-900/30">
+                  <Target className="w-10 h-10 text-white stroke-[1.5]" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-light text-white mb-4">Zero back-and-forth.</h3>
+              <p className="text-lg leading-relaxed text-slate-300">Drop in your own briefs, set your terms, and start the deal.</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-900/80 border border-gray-700/50 p-8 rounded-3xl backdrop-blur-sm shadow-2xl shadow-gray-900/20 px-[30px]">
+            <CardContent className="p-0">
+              <div className="mb-8">
+                <div className="w-20 h-20 bg-gradient-to-br from-gray-500 to-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-gray-900/30">
+                  <BarChart3 className="w-10 h-10 text-white stroke-[1.5]" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-light text-white mb-4">Smart filters, Instant launch.</h3>
+              <p className="text-lg leading-relaxed text-slate-300">See ROI, engagement, and creator performance live.</p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>

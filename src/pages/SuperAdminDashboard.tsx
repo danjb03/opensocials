@@ -1,81 +1,208 @@
 
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
-import AdminLayout from "@/components/layouts/AdminLayout";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import UserRoleFixer from '@/components/admin/UserRoleFixer';
+import { CreatorLeaderboard } from '@/components/admin/CreatorLeaderboard';
+import { Users, LayoutDashboard, User, Settings, Briefcase, Award } from 'lucide-react';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 
 const SuperAdminDashboard = () => {
-  const { user, role, isLoading } = useUnifiedAuth();
+  const [activeTab, setActiveTab] = useState('overview');
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isLoading && (!user || role !== 'super_admin')) {
-      navigate('/auth');
-    }
-  }, [user, role, isLoading, navigate]);
+  const { user, role, isLoading } = useUnifiedAuth();
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="container mx-auto py-10 bg-background text-foreground">
+        <div className="text-center">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p>Loading Super Admin Dashboard...</p>
+        </div>
       </div>
     );
   }
 
+  if (!user) {
+    return (
+      <div className="container mx-auto py-10 bg-background text-foreground">
+        <div className="text-center text-red-500">
+          <p>Error loading dashboard. Please try refreshing the page.</p>
+        </div>
+      </div>
+    );
+  }
+  
   return (
-    <AdminLayout>
-      <div className="min-h-screen bg-background text-foreground">
-        <div className="space-y-6 p-6">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Super Admin Dashboard</h1>
-            <p className="text-muted-foreground">
-              Welcome to the super admin dashboard. You have access to all system functions.
+    <div className="container mx-auto py-10 bg-background text-foreground">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-2 text-foreground">Super Admin Dashboard</h1>
+        <div className="text-sm text-muted-foreground">
+          Logged in as: {user?.email} | Role: {role || 'Unknown'}
+        </div>
+      </div>
+      
+      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="bg-background">
+        <TabsList className="mb-4 bg-card border border-border">
+          <TabsTrigger value="overview" className="text-foreground data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Overview</TabsTrigger>
+          <TabsTrigger value="dashboards" className="text-foreground data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Dashboard Access</TabsTrigger>
+          <TabsTrigger value="leaderboard" className="text-foreground data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Creator Earnings</TabsTrigger>
+          <TabsTrigger value="tools" className="text-foreground data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Admin Tools</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="overview">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-foreground">Agencies</CardTitle>
+                <CardDescription className="text-muted-foreground">Manage all agency accounts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => navigate('/super-admin/users/agencies')} 
+                  className="w-full bg-card text-foreground border border-border hover:bg-muted"
+                >
+                  View All Agencies
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-foreground">Brands</CardTitle>
+                <CardDescription className="text-muted-foreground">Manage brand accounts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => navigate('/super-admin/users/brands')} 
+                  className="w-full bg-card text-foreground border border-border hover:bg-muted"
+                >
+                  View All Brands
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-foreground">Creators</CardTitle>
+                <CardDescription className="text-muted-foreground">Manage creator accounts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => navigate('/super-admin/users/creators')} 
+                  className="w-full bg-card text-foreground border border-border hover:bg-muted"
+                >
+                  View All Creators
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="dashboards">
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold mb-2 text-foreground">Dashboard Access (Super Admin Only)</h2>
+            <p className="text-muted-foreground mb-6">
+              As a super admin, you can access any dashboard in the system. Use these buttons to navigate to different user dashboards.
             </p>
           </div>
           
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <div className="p-6 border border-border rounded-lg bg-card">
-              <h3 className="text-lg font-semibold mb-2 text-card-foreground">User Management</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Manage all users across agencies, brands, and creators
-              </p>
-              <button 
-                onClick={() => navigate('/super-admin/users/agencies')}
-                className="text-sm text-primary hover:text-primary/80 hover:underline"
-              >
-                View Users →
-              </button>
-            </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <Card className="bg-card border-border border-l-4 border-l-violet-500">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-foreground">Brand Dashboard</CardTitle>
+                  <Users className="h-5 w-5 text-violet-500" />
+                </div>
+                <CardDescription className="text-muted-foreground">Access brand dashboard as super admin</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  onClick={() => navigate('/brand')}
+                  className="w-full bg-violet-500 hover:bg-violet-600 text-white border-0"
+                >
+                  Access Brand Dashboard
+                </Button>
+              </CardContent>
+            </Card>
             
-            <div className="p-6 border border-border rounded-lg bg-card">
-              <h3 className="text-lg font-semibold mb-2 text-card-foreground">System Overview</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                View system-wide analytics and health
-              </p>
-              <button 
-                onClick={() => navigate('/admin')}
-                className="text-sm text-primary hover:text-primary/80 hover:underline"
-              >
-                View Admin Dashboard →
-              </button>
-            </div>
+            <Card className="bg-card border-border border-l-4 border-l-blue-500">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-foreground">Creator Dashboard</CardTitle>
+                  <User className="h-5 w-5 text-blue-500" />
+                </div>
+                <CardDescription className="text-muted-foreground">Access creator dashboard as super admin</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  onClick={() => navigate('/creator')} 
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white border-0"
+                >
+                  Access Creator Dashboard
+                </Button>
+              </CardContent>
+            </Card>
             
-            <div className="p-6 border border-border rounded-lg bg-card">
-              <h3 className="text-lg font-semibold mb-2 text-card-foreground">Platform Control</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Access all platform management tools
-              </p>
-              <button 
-                onClick={() => navigate('/admin/security')}
-                className="text-sm text-primary hover:text-primary/80 hover:underline"
-              >
-                View Security →
-              </button>
+            <Card className="bg-card border-border border-l-4 border-l-orange-500">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-foreground">Agency Dashboard</CardTitle>
+                  <Settings className="h-5 w-5 text-orange-500" />
+                </div>
+                <CardDescription className="text-muted-foreground">Access agency dashboard as super admin</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  onClick={() => navigate('/agency')} 
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white border-0"
+                >
+                  Access Agency Dashboard
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-card border-border border-l-4 border-l-green-500">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-foreground">Admin Dashboard</CardTitle>
+                  <Briefcase className="h-5 w-5 text-green-500" />
+                </div>
+                <CardDescription className="text-muted-foreground">Access admin dashboard system</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  onClick={() => navigate('/admin')} 
+                  className="w-full bg-green-500 hover:bg-green-600 text-white border-0"
+                >
+                  Access Admin Dashboard
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="leaderboard">
+          <div className="grid gap-6">
+            <CreatorLeaderboard />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="tools">
+          <div className="grid gap-8">
+            <div>
+              <h2 className="text-xl font-semibold mb-4 text-foreground">User Role Fixer</h2>
+              <UserRoleFixer />
             </div>
           </div>
-        </div>
-      </div>
-    </AdminLayout>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 

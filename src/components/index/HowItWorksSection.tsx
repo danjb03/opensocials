@@ -1,59 +1,50 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 
 export const HowItWorksSection = () => {
-  const steps = [
-    {
-      number: "1",
-      title: "Create Your Campaign",
-      description: "Define your campaign goals, target audience, and budget. Our AI will suggest the best creators for your needs."
-    },
-    {
-      number: "2", 
-      title: "Connect with Creators",
-      description: "Send invitations to selected creators with detailed briefs. Review proposals and negotiate terms directly on the platform."
-    },
-    {
-      number: "3",
-      title: "Manage & Monitor", 
-      description: "Track progress with real-time updates, provide feedback, and ensure deliverables meet your standards."
-    },
-    {
-      number: "4",
-      title: "Measure Success",
-      description: "Access comprehensive analytics to measure campaign performance and calculate ROI across all platforms."
-    }
-  ];
-
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center space-y-4 mb-16">
-          <h2 className="text-4xl sm:text-5xl font-light text-white">
-            Simple process, powerful results
+    <section id="how-it-works" className="py-20 px-6">
+      <div className="container mx-auto max-w-6xl">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center space-x-2 bg-gray-900 rounded-full px-4 py-2 mb-8">
+            <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+            <span className="text-blue-400 text-sm uppercase tracking-wider">How it works</span>
+          </div>
+          <h2 className="text-5xl md:text-6xl font-light mb-8">
+            Sponsorships, streamlined.<br />
+            <span className="text-gray-400">Results, delivered.</span>
           </h2>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            Our proven methodology takes the complexity out of influencer marketing 
-            while maximizing your campaign effectiveness.
-          </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          {steps.map((step, index) => (
-            <Card key={index} className="bg-gray-900/30 border-gray-800">
-              <CardContent className="p-8">
-                <div className="flex items-start space-x-6">
-                  <div className="h-12 w-12 bg-white text-black rounded-full flex items-center justify-center font-medium text-lg flex-shrink-0">
-                    {step.number}
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="text-2xl font-light text-white">{step.title}</h3>
-                    <p className="text-gray-400 leading-relaxed">{step.description}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="grid md:grid-cols-3 gap-8">
+          <Card className="bg-gray-900 border-gray-800 p-8 rounded-3xl text-center">
+            <CardContent className="p-0">
+              <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <div className="w-8 h-8 border-2 border-white rounded"></div>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-4">Drop the brief</h3>
+              <p className="text-gray-400">Tell us what you need, audience, goals, budget.</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-900 border-gray-800 p-8 rounded-3xl text-center">
+            <CardContent className="p-0">
+              <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <div className="w-8 h-8 bg-blue-400 rounded-full"></div>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-4">Get matched</h3>
+              <p className="text-gray-400">Sit back and relax; our expert team will turn your vision into reality.</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-900 border-gray-800 p-8 rounded-3xl text-center">
+            <CardContent className="p-0">
+              <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <div className="w-8 h-8 bg-white rounded-lg"></div>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-4">Launch & scale</h3>
+              <p className="text-gray-400">Campaign goes live. We handle the logistics. You stay focused on results.</p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>

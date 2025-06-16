@@ -1,69 +1,59 @@
+
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import HeroLogo from "@/components/ui/hero-logo";
-import { ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { User } from "@supabase/supabase-js";
+import { InterestRegistrationModal } from "./InterestRegistrationModal";
 
 interface HeroSectionProps {
-  user: User | null;
+  user: any;
 }
 
 export const HeroSection = ({ user }: HeroSectionProps) => {
   const navigate = useNavigate();
-
-  const handleGetStarted = () => {
-    if (user) {
-      navigate('/brand');
-    } else {
-      navigate('/auth');
-    }
-  };
+  const [showInterestModal, setShowInterestModal] = useState(false);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto text-center space-y-8">
-        <div className="space-y-6">
-          <HeroLogo />
-          <h1 className="text-6xl sm:text-7xl lg:text-8xl font-light tracking-tight text-white">
-            Creator Partnership
-            <br />
-            <span className="text-6xl sm:text-7xl lg:text-8xl font-light">Marketplace</span>
-          </h1>
-          <p className="text-xl sm:text-2xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            Connect brands with authentic creators. Streamline collaborations, 
-            manage campaigns, and drive meaningful results at scale.
-          </p>
-        </div>
+    <>
+      <section className="pt-32 pb-20 px-6">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <div className="flex justify-center mb-2">
+              <HeroLogo />
+            </div>
+            <h1 className="text-6xl md:text-8xl font-light mb-8 tracking-tight">
+              Creator partnerships,<br />
+              <span className="text-gray-400">the efficient way</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-400 mb-12 max-w-4xl mx-auto leading-relaxed">
+              The fastest way to close creator deals, without cutting any corners.
+            </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
-          <Button 
-            onClick={handleGetStarted}
-            size="lg" 
-            className="bg-white text-black hover:bg-gray-200 text-lg px-8 py-6 h-auto"
-          >
-            {user ? 'Go to Dashboard' : 'Get Started'}
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
-          <Button 
-            variant="outline" 
-            size="lg"
-            className="border-gray-600 text-white hover:bg-gray-900 text-lg px-8 py-6 h-auto"
-          >
-            Watch Demo
-          </Button>
-        </div>
-
-        <div className="pt-12">
-          <p className="text-sm text-gray-500 mb-6">Trusted by leading brands and creators worldwide</p>
-          <div className="flex justify-center items-center space-x-8 opacity-60">
-            {/* Brand logos would go here */}
-            <div className="h-8 w-24 bg-gray-800 rounded"></div>
-            <div className="h-8 w-24 bg-gray-800 rounded"></div>
-            <div className="h-8 w-24 bg-gray-800 rounded"></div>
-            <div className="h-8 w-24 bg-gray-800 rounded"></div>
+            {!user ? (
+              <div className="space-y-6">
+                <div className="flex gap-4 justify-center">
+                  <Button 
+                    variant="outline"
+                    size="connect"
+                    onClick={() => setShowInterestModal(true)}
+                    className="border-white text-white hover:bg-white hover:text-black"
+                  >
+                    Register Interest
+                  </Button>
+                </div>
+                <p className="text-sm text-gray-500">
+                  Join thousands of creators and brands already using our platform
+                </p>
+              </div>
+            ) : null}
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+      
+      <InterestRegistrationModal 
+        open={showInterestModal} 
+        onOpenChange={setShowInterestModal} 
+      />
+    </>
   );
 };

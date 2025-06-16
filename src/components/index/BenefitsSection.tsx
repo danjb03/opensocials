@@ -1,55 +1,76 @@
-
 import { Card, CardContent } from "@/components/ui/card";
-import { Shield, Zap, Globe, Award } from "lucide-react";
 
 export const BenefitsSection = () => {
   const benefits = [
     {
-      icon: Shield,
-      title: "Verified Network",
-      description: "All creators are verified and vetted for authenticity, engagement quality, and brand safety."
+      title: "Creator matching",
+      description: "Get matched with high-performing creators based on niche, audience, and conversion data."
     },
     {
-      icon: Zap,
-      title: "Fast Execution",
-      description: "Launch campaigns 3x faster with our streamlined workflow and automated processes."
+      title: "Campaign management", 
+      description: "Upload briefs, assign creators, track deliverables all from one streamlined dashboard."
     },
     {
-      icon: Globe,
-      title: "Global Reach",
-      description: "Access creators worldwide across all major platforms and market segments."
+      title: "Performance tracking",
+      description: "Live analytics on reach, clicks, and ROI. See what's working as it happens."
     },
     {
-      icon: Award,
-      title: "Proven Results",
-      description: "Our platform delivers 40% higher engagement rates compared to traditional influencer marketing."
+      title: "Asset management",
+      description: "One hub for briefs, contracts, and content: no lost files, no scattered links."
+    },
+    {
+      title: "Secure payments",
+      description: "Pay creators with confidence. Tracked and protected."
+    },
+    {
+      title: "Brand safety",
+      description: "Advanced content moderation and brand guideline enforcement tools"
+    },
+    {
+      title: "Multi-platform support",
+      description: "Run seamless campaigns across all major social channels"
     }
   ];
 
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-950/30">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center space-y-4 mb-16">
-          <h2 className="text-4xl sm:text-5xl font-light text-white">
-            Why brands choose us
+    <section className="py-32 px-6">
+      <div className="container mx-auto max-w-7xl">
+        <div className="text-center mb-20">
+          <h2 className="text-5xl md:text-6xl font-light mb-8">
+            Everything you need to<br />
+            <span className="text-gray-400">scale your influence.</span>
           </h2>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            We've built the most comprehensive platform for creator partnerships, 
-            trusted by leading brands worldwide.
-          </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {benefits.map((benefit, index) => (
-            <Card key={index} className="bg-black/40 border-gray-800">
-              <CardContent className="p-6 text-center space-y-4">
-                <div className="h-16 w-16 bg-white/10 rounded-full flex items-center justify-center mx-auto">
-                  <benefit.icon className="h-8 w-8 text-white" />
-                </div>
-                <h3 className="text-xl font-medium text-white">{benefit.title}</h3>
-                <p className="text-gray-400 leading-relaxed">{benefit.description}</p>
-              </CardContent>
-            </Card>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {benefits.slice(0, 4).map((benefit, index) => (
+            <div key={index} className="bg-gray-800/60 border border-gray-700/40 rounded-2xl p-8 backdrop-blur-sm hover:bg-gray-800/80 transition-all duration-300 group relative">
+              {/* Green accent dot */}
+              <div className="absolute top-6 left-6">
+                <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+              </div>
+              
+              <div className="mt-8">
+                <h3 className="text-xl font-medium text-white mb-4">{benefit.title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">{benefit.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6 mt-6">
+          {benefits.slice(4).map((benefit, index) => (
+            <div key={index + 4} className="bg-gray-800/60 border border-gray-700/40 rounded-2xl p-8 backdrop-blur-sm hover:bg-gray-800/80 transition-all duration-300 group relative">
+              {/* Green accent dot */}
+              <div className="absolute top-6 left-6">
+                <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+              </div>
+              
+              <div className="mt-8">
+                <h3 className="text-xl font-medium text-white mb-4">{benefit.title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">{benefit.description}</p>
+              </div>
+            </div>
           ))}
         </div>
       </div>

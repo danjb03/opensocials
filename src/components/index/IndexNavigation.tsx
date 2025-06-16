@@ -1,108 +1,66 @@
+
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import NavigationLogo from "@/components/ui/navigation-logo";
-import { Menu, X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { User } from "@supabase/supabase-js";
+import { InterestRegistrationModal } from "./InterestRegistrationModal";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface IndexNavigationProps {
-  user: User | null;
+  user: any;
 }
 
-export const IndexNavigation = ({ user }: IndexNavigationProps) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+export const IndexNavigation = ({
+  user
+}: IndexNavigationProps) => {
   const navigate = useNavigate();
+  const [showInterestModal, setShowInterestModal] = useState(false);
+  const isMobile = useIsMobile();
 
-  const handleGetStarted = () => {
-    if (user) {
-      // User is logged in, redirect based on their role or to dashboard
-      navigate('/brand'); // Default to brand for now
-    } else {
-      navigate('/auth');
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({
+        behavior: 'smooth'
+      });
     }
   };
 
-  return (
-    <nav className="border-b border-border/10 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <NavigationLogo />
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
-              Features
-            </a>
-            <a href="#workflow" className="text-muted-foreground hover:text-foreground transition-colors">
-              How it Works
-            </a>
-            <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
-              Pricing
-            </a>
-          </div>
-
-          {/* Desktop CTA */}
-          <div className="hidden md:flex items-center space-x-4">
-            {user ? (
-              <Button onClick={() => navigate('/brand')} className="bg-white text-black hover:bg-gray-200">
-                Go to Dashboard
-              </Button>
-            ) : (
-              <>
-                <Button variant="ghost" onClick={() => navigate('/auth')}>
-                  Sign In
-                </Button>
-                <Button onClick={handleGetStarted} className="bg-white text-black hover:bg-gray-200">
+  return <>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-sm border-b border-border">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <NavigationLogo />
+            </div>
+            {!isMobile && (
+              <div className="hidden md:flex items-center space-x-8">
+                <button onClick={() => scrollToSection('features')} className="text-muted-foreground hover:text-foreground transition-colors">
+                  Features
+                </button>
+                <button onClick={() => scrollToSection('how-it-works')} className="text-muted-foreground hover:text-foreground transition-colors">
+                  How it works
+                </button>
+                <button onClick={() => scrollToSection('faqs')} className="text-muted-foreground hover:text-foreground transition-colors">
+                  FAQs
+                </button>
+              </div>
+            )}
+            <div className="flex items-center space-x-4">
+              {!user && (
+                <Button 
+                  variant="connect" 
+                  size="connect" 
+                  onClick={() => setShowInterestModal(true)}
+                >
                   Get Started
                 </Button>
-              </>
-            )}
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2"
-            >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden border-t border-border/10 py-4">
-            <div className="flex flex-col space-y-4">
-              <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
-                Features
-              </a>
-              <a href="#workflow" className="text-muted-foreground hover:text-foreground transition-colors">
-                How it Works
-              </a>
-              <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
-                Pricing
-              </a>
-              {user ? (
-                <Button onClick={() => navigate('/brand')} className="bg-white text-black hover:bg-gray-200 w-full">
-                  Go to Dashboard
-                </Button>
-              ) : (
-                <div className="space-y-2">
-                  <Button variant="ghost" onClick={() => navigate('/auth')} className="w-full">
-                    Sign In
-                  </Button>
-                  <Button onClick={handleGetStarted} className="bg-white text-black hover:bg-gray-200 w-full">
-                    Get Started
-                  </Button>
-                </div>
               )}
             </div>
           </div>
-        )}
-      </div>
-    </nav>
-  );
+        </div>
+      </nav>
+      
+      <InterestRegistrationModal open={showInterestModal} onOpenChange={setShowInterestModal} />
+    </>;
 };
