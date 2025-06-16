@@ -19,6 +19,7 @@ import InviteUsers from '@/pages/admin/InviteUsers';
 import PricingFloors from '@/pages/admin/PricingFloors';
 import SecurityPage from '@/pages/admin/Security';
 import CampaignReview from '@/pages/admin/CampaignReview';
+import AdminSettings from '@/pages/admin/Settings';
 
 const AdminRoutes = () => {
   return (
@@ -35,6 +36,7 @@ const AdminRoutes = () => {
               <Route path="campaign-review" element={<CampaignReview />} />
               <Route path="pricing-floors" element={<PricingFloors />} />
               <Route path="security" element={<SecurityPage />} />
+              <Route path="settings" element={<AdminSettings />} />
               <Route path="crm" element={<AdminCRM />} />
               <Route path="crm/brands/leaderboard" element={<BrandLeaderboard />} />
               <Route path="crm/brands/:brandId" element={<BrandDetail />} />
