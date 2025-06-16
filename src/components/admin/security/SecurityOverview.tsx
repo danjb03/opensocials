@@ -39,14 +39,14 @@ export function SecurityOverview() {
       <div className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="bg-gray-100 rounded-2xl p-6 animate-pulse">
+            <div key={i} className="bg-card rounded-2xl p-6 animate-pulse border border-border">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
-                <div className="w-12 h-6 bg-gray-300 rounded-full"></div>
+                <div className="w-8 h-8 bg-muted rounded-full"></div>
+                <div className="w-12 h-6 bg-muted rounded-full"></div>
               </div>
               <div className="space-y-2">
-                <div className="w-24 h-5 bg-gray-300 rounded"></div>
-                <div className="w-32 h-4 bg-gray-300 rounded"></div>
+                <div className="w-24 h-5 bg-muted rounded"></div>
+                <div className="w-32 h-4 bg-muted rounded"></div>
               </div>
             </div>
           ))}
@@ -58,12 +58,12 @@ export function SecurityOverview() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-8 border border-gray-700">
+      <div className="bg-gradient-to-r from-card to-muted rounded-2xl p-8 border border-border">
         <div className="flex items-center gap-3 mb-2">
-          <Database className="h-6 w-6 text-white" />
-          <h2 className="text-2xl font-semibold text-white">Security Overview</h2>
+          <Database className="h-6 w-6 text-foreground" />
+          <h2 className="text-2xl font-semibold text-foreground">Security Overview</h2>
         </div>
-        <p className="text-gray-300">
+        <p className="text-muted-foreground">
           Real-time security metrics and platform health indicators
         </p>
       </div>

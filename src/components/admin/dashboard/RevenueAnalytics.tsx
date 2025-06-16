@@ -31,81 +31,82 @@ const RevenueAnalytics = () => {
   });
   const [showPipelineDetails, setShowPipelineDetails] = useState(false);
 
-  // Mock revenue data - in production this would come from your analytics system
+  // Real revenue data from deal_earnings table
   const { data: revenueData, isLoading: revenueLoading } = useQuery({
     queryKey: ['admin-revenue', timeFrame, selectedMonth],
     queryFn: async (): Promise<RevenueData[]> => {
-      // Mock data for demonstration
-      const mockData: RevenueData[] = [];
       const [year, month] = selectedMonth.split('-').map(Number);
-      const currentDate = new Date();
-      const selectedDate = new Date(year, month - 1, 1);
       
-      // Don't generate data for future months
-      if (selectedDate > currentDate) {
-        return [];
-      }
+      let dateFormat = '';
+      let groupBy = '';
+      let orderBy = '';
       
       if (timeFrame === 'monthly') {
-        // Generate data for the last 12 months, but only up to current month
-        for (let i = 11; i >= 0; i--) {
-          const date = new Date(year, month - 1 - i, 1);
-          
-          // Skip if this month is in the future
-          if (date > currentDate) {
-            continue;
-          }
-          
-          const revenue = Math.floor(Math.random() * 50000) + 10000;
-          mockData.push({
-            period: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-            revenue,
-            profit: revenue * 0.25, // 25% margin
-            transactions: Math.floor(Math.random() * 50) + 10
-          });
-        }
+        // Group by month
+        dateFormat = "to_char(earned_at, 'Mon YYYY')";
+        groupBy = "date_trunc('month', earned_at)";
+        orderBy = "date_trunc('month', earned_at)";
       } else if (timeFrame === 'weekly') {
-        // Generate data for weeks in the selected month, but only up to current week
-        const daysInMonth = new Date(year, month, 0).getDate();
-        const currentWeek = Math.ceil(currentDate.getDate() / 7);
-        const selectedIsCurrentMonth = year === currentDate.getFullYear() && month === currentDate.getMonth() + 1;
+        // Group by week for the selected month
+        dateFormat = "'Week ' || extract(week from earned_at)::text";
+        groupBy = "date_trunc('week', earned_at)";
+        orderBy = "date_trunc('week', earned_at)";
+      } else {
+        // Group by day for the selected month
+        dateFormat = "to_char(earned_at, 'Mon DD')";
+        groupBy = "date_trunc('day', earned_at)";
+        orderBy = "date_trunc('day', earned_at)";
+      }
+
+      const { data, error } = await supabase.rpc('get_revenue_analytics', {
+        time_frame: timeFrame,
+        selected_year: year,
+        selected_month: month
+      });
+
+      if (error) {
+        console.error('Error fetching revenue data:', error);
+        // Fallback to basic query if RPC fails
+        const { data: basicData, error: basicError } = await supabase
+          .from('deal_earnings')
+          .select('amount, earned_at')
+          .gte('earned_at', new Date(year, month - 1, 1).toISOString())
+          .lt('earned_at', new Date(year, month, 1).toISOString());
+
+        if (basicError) throw basicError;
+
+        // Process basic data
+        const groupedData: { [key: string]: { revenue: number; count: number } } = {};
         
-        for (let week = 1; week <= 4; week++) {
-          // Skip future weeks in current month
-          if (selectedIsCurrentMonth && week > currentWeek) {
-            continue;
+        basicData?.forEach(earning => {
+          const date = new Date(earning.earned_at);
+          let key = '';
+          
+          if (timeFrame === 'monthly') {
+            key = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+          } else if (timeFrame === 'weekly') {
+            const weekNum = Math.ceil(date.getDate() / 7);
+            key = `Week ${weekNum}`;
+          } else {
+            key = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
           }
           
-          const revenue = Math.floor(Math.random() * 15000) + 3000;
-          mockData.push({
-            period: `Week ${week}`,
-            revenue,
-            profit: revenue * 0.25,
-            transactions: Math.floor(Math.random() * 15) + 3
-          });
-        }
-      } else {
-        // Generate data for days in the selected month, but only up to current day
-        const daysInMonth = new Date(year, month, 0).getDate();
-        const currentDay = currentDate.getDate();
-        const selectedIsCurrentMonth = year === currentDate.getFullYear() && month === currentDate.getMonth() + 1;
-        
-        const sampleDays = selectedIsCurrentMonth ? Math.min(7, currentDay) : Math.min(7, daysInMonth);
-        
-        for (let i = sampleDays - 1; i >= 0; i--) {
-          const dayNum = selectedIsCurrentMonth ? currentDay - i : daysInMonth - i;
-          const date = new Date(year, month - 1, dayNum);
-          const revenue = Math.floor(Math.random() * 5000) + 1000;
-          mockData.push({
-            period: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-            revenue,
-            profit: revenue * 0.25,
-            transactions: Math.floor(Math.random() * 8) + 1
-          });
-        }
+          if (!groupedData[key]) {
+            groupedData[key] = { revenue: 0, count: 0 };
+          }
+          groupedData[key].revenue += earning.amount || 0;
+          groupedData[key].count++;
+        });
+
+        return Object.entries(groupedData).map(([period, data]) => ({
+          period,
+          revenue: data.revenue,
+          profit: data.revenue * 0.25, // 25% platform margin
+          transactions: data.count
+        }));
       }
-      
-      return mockData;
+
+      return data || [];
     },
   });
 
