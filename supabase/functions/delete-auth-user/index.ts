@@ -59,30 +59,104 @@ Deno.serve(async (req) => {
 
     console.log(`Admin ${validation.userId} attempting to delete user: ${user_id}`);
 
-    // First, clean up related data to avoid foreign key constraints
+    // Comprehensive cleanup of all related data to avoid foreign key constraints
     try {
-      // Delete audit logs for this user
+      console.log(`Starting comprehensive cleanup for user: ${user_id}`);
+
+      // 1. Agency users (both as agency and as managed user)
+      await supabaseAdmin.from('agency_users').delete().eq('agency_id', user_id);
+      await supabaseAdmin.from('agency_users').delete().eq('user_id', user_id);
+      console.log(`Cleaned up agency_users for user: ${user_id}`);
+
+      // 2. Connected accounts
+      await supabaseAdmin.from('connected_accounts').delete().eq('user_id', user_id);
+      console.log(`Cleaned up connected_accounts for user: ${user_id}`);
+
+      // 3. Creator public analytics
+      await supabaseAdmin.from('creator_public_analytics').delete().eq('creator_id', user_id);
+      console.log(`Cleaned up creator_public_analytics for user: ${user_id}`);
+
+      // 4. Brand creator connections (both as brand and as creator)
+      await supabaseAdmin.from('brand_creator_connections').delete().eq('brand_id', user_id);
+      await supabaseAdmin.from('brand_creator_connections').delete().eq('creator_id', user_id);
+      console.log(`Cleaned up brand_creator_connections for user: ${user_id}`);
+
+      // 5. Brand creator favorites (both as brand and as creator)
+      await supabaseAdmin.from('brand_creator_favorites').delete().eq('brand_id', user_id);
+      await supabaseAdmin.from('brand_creator_favorites').delete().eq('creator_id', user_id);
+      console.log(`Cleaned up brand_creator_favorites for user: ${user_id}`);
+
+      // 6. Campaign content
+      await supabaseAdmin.from('campaign_content').delete().eq('creator_id', user_id);
+      console.log(`Cleaned up campaign_content for user: ${user_id}`);
+
+      // 7. Creator deals
+      await supabaseAdmin.from('creator_deals').delete().eq('creator_id', user_id);
+      console.log(`Cleaned up creator_deals for user: ${user_id}`);
+
+      // 8. Project creators
+      await supabaseAdmin.from('project_creators').delete().eq('creator_id', user_id);
+      console.log(`Cleaned up project_creators for user: ${user_id}`);
+
+      // 9. Deals (both as creator and brand)
+      await supabaseAdmin.from('deals').delete().eq('creator_id', user_id);
+      await supabaseAdmin.from('deals').delete().eq('brand_id', user_id);
+      console.log(`Cleaned up deals for user: ${user_id}`);
+
+      // 10. Deal earnings
+      await supabaseAdmin.from('deal_earnings').delete().eq('creator_id', user_id);
+      console.log(`Cleaned up deal_earnings for user: ${user_id}`);
+
+      // 11. Projects (as brand)
+      await supabaseAdmin.from('projects').delete().eq('brand_id', user_id);
+      await supabaseAdmin.from('projects_new').delete().eq('brand_id', user_id);
+      console.log(`Cleaned up projects for user: ${user_id}`);
+
+      // 12. Project drafts
+      await supabaseAdmin.from('project_drafts').delete().eq('brand_id', user_id);
+      console.log(`Cleaned up project_drafts for user: ${user_id}`);
+
+      // 13. Campaign reviews (as reviewer)
+      await supabaseAdmin.from('campaign_reviews').delete().eq('reviewer_id', user_id);
+      console.log(`Cleaned up campaign_reviews for user: ${user_id}`);
+
+      // 14. Invite logs (as triggered_by)
+      await supabaseAdmin.from('invite_logs').delete().eq('triggered_by', user_id);
+      console.log(`Cleaned up invite_logs for user: ${user_id}`);
+
+      // 15. Social profiles
+      await supabaseAdmin.from('social_profiles').delete().eq('creator_id', user_id);
+      console.log(`Cleaned up social_profiles for user: ${user_id}`);
+
+      // 16. Creator industry tags
+      await supabaseAdmin.from('creator_industry_tags').delete().eq('creator_id', user_id);
+      console.log(`Cleaned up creator_industry_tags for user: ${user_id}`);
+
+      // 17. Security audit logs for this user
       await supabaseAdmin.from('security_audit_log').delete().eq('user_id', user_id);
-      console.log(`Cleaned up audit logs for user: ${user_id}`);
+      console.log(`Cleaned up security_audit_log for user: ${user_id}`);
 
-      // Delete user roles
+      // 18. User roles
       await supabaseAdmin.from('user_roles').delete().eq('user_id', user_id);
-      console.log(`Cleaned up user roles for user: ${user_id}`);
+      console.log(`Cleaned up user_roles for user: ${user_id}`);
 
-      // Delete profile
-      await supabaseAdmin.from('profiles').delete().eq('id', user_id);
-      console.log(`Cleaned up profile for user: ${user_id}`);
-
-      // Delete creator profile if exists
+      // 19. Creator profile
       await supabaseAdmin.from('creator_profiles').delete().eq('user_id', user_id);
-      console.log(`Cleaned up creator profile for user: ${user_id}`);
+      console.log(`Cleaned up creator_profiles for user: ${user_id}`);
 
-      // Delete brand profile if exists
+      // 20. Brand profile
       await supabaseAdmin.from('brand_profiles').delete().eq('user_id', user_id);
-      console.log(`Cleaned up brand profile for user: ${user_id}`);
+      console.log(`Cleaned up brand_profiles for user: ${user_id}`);
+
+      // 21. Profile (should be last as other cleanups might reference it)
+      await supabaseAdmin.from('profiles').delete().eq('id', user_id);
+      console.log(`Cleaned up profiles for user: ${user_id}`);
+
+      console.log(`Completed comprehensive cleanup for user: ${user_id}`);
 
     } catch (cleanupError) {
       console.warn('Error during cleanup, but continuing with user deletion:', cleanupError);
+      // Continue with deletion attempt even if some cleanup fails
     }
 
     // Now delete user from auth
