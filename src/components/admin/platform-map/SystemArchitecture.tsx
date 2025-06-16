@@ -50,17 +50,17 @@ export default function SystemArchitecture() {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-white">System Overview</CardTitle>
-          <CardDescription className="text-gray-300">
+          <CardTitle className="text-foreground">System Overview</CardTitle>
+          <CardDescription className="text-muted-foreground">
             High-level architecture showing major components and their interactions
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {architectureComponents.map((component) => (
-              <Card key={component.name} className="border-l-4 border-l-blue-500 bg-gray-800 border-gray-600">
+              <Card key={component.name} className="border-l-4 border-l-blue-500 bg-card border-border">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <component.icon className="h-6 w-6 text-blue-400" />
@@ -68,17 +68,17 @@ export default function SystemArchitecture() {
                       {component.status}
                     </Badge>
                   </div>
-                  <CardTitle className="text-lg text-white">{component.name}</CardTitle>
-                  <CardDescription className="text-sm text-gray-300">
+                  <CardTitle className="text-lg text-foreground">{component.name}</CardTitle>
+                  <CardDescription className="text-sm text-muted-foreground">
                     {component.description}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <h4 className="font-medium text-sm mb-2 text-white">Connections</h4>
+                    <h4 className="font-medium text-sm mb-2 text-foreground">Connections</h4>
                     <div className="flex flex-wrap gap-1">
                       {component.connections.map((conn) => (
-                        <Badge key={conn} variant="outline" className="text-xs bg-gray-700 text-gray-200 border-gray-600">
+                        <Badge key={conn} variant="outline" className="text-xs bg-muted text-muted-foreground border-border">
                           {conn}
                         </Badge>
                       ))}
@@ -102,9 +102,9 @@ export default function SystemArchitecture() {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="bg-gray-900 border-gray-700">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <Users className="h-5 w-5" />
               User Roles & Access
             </CardTitle>
@@ -112,28 +112,32 @@ export default function SystemArchitecture() {
           <CardContent>
             <div className="space-y-3">
               <div className="flex justify-between items-center p-3 bg-blue-900/30 rounded-lg border border-blue-500/30">
-                <span className="font-medium text-white">Super Admin</span>
+                <span className="font-medium text-foreground">Super Admin</span>
                 <Badge variant="default" className="bg-blue-600 text-white border-blue-500">Full Access</Badge>
               </div>
               <div className="flex justify-between items-center p-3 bg-green-900/30 rounded-lg border border-green-500/30">
-                <span className="font-medium text-white">Admin</span>
+                <span className="font-medium text-foreground">Admin</span>
                 <Badge variant="secondary" className="bg-green-700 text-white border-green-600">CRM + Platform Management</Badge>
               </div>
+              <div className="flex justify-between items-center p-3 bg-indigo-900/30 rounded-lg border border-indigo-500/30">
+                <span className="font-medium text-foreground">Agency</span>
+                <Badge variant="outline" className="bg-muted text-muted-foreground border-border">Multi-User Management</Badge>
+              </div>
               <div className="flex justify-between items-center p-3 bg-purple-900/30 rounded-lg border border-purple-500/30">
-                <span className="font-medium text-white">Brand</span>
-                <Badge variant="outline" className="bg-gray-700 text-gray-200 border-gray-600">Campaign Creation + Creator Search</Badge>
+                <span className="font-medium text-foreground">Brand</span>
+                <Badge variant="outline" className="bg-muted text-muted-foreground border-border">Campaign Creation + Creator Search</Badge>
               </div>
               <div className="flex justify-between items-center p-3 bg-orange-900/30 rounded-lg border border-orange-500/30">
-                <span className="font-medium text-white">Creator</span>
-                <Badge variant="outline" className="bg-gray-700 text-gray-200 border-gray-600">Profile + Content Submission</Badge>
+                <span className="font-medium text-foreground">Creator</span>
+                <Badge variant="outline" className="bg-muted text-muted-foreground border-border">Profile + Content Submission</Badge>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gray-900 border-gray-700">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <FileText className="h-5 w-5" />
               Key Performance Metrics
             </CardTitle>
@@ -141,24 +145,24 @@ export default function SystemArchitecture() {
           <CardContent>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-300">Campaign Creation Time</span>
-                <Badge variant="secondary" className="bg-gray-700 text-gray-200 border-gray-600">~5 minutes</Badge>
+                <span className="text-sm text-muted-foreground">Campaign Creation Time</span>
+                <Badge variant="secondary" className="bg-muted text-muted-foreground border-border">~5 minutes</Badge>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-300">Creator Onboarding</span>
-                <Badge variant="secondary" className="bg-gray-700 text-gray-200 border-gray-600">~10 minutes</Badge>
+                <span className="text-sm text-muted-foreground">Creator Onboarding</span>
+                <Badge variant="secondary" className="bg-muted text-muted-foreground border-border">~10 minutes</Badge>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-300">Deal Processing</span>
-                <Badge variant="secondary" className="bg-gray-700 text-gray-200 border-gray-600">Real-time</Badge>
+                <span className="text-sm text-muted-foreground">Deal Processing</span>
+                <Badge variant="secondary" className="bg-muted text-muted-foreground border-border">Real-time</Badge>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-300">Payment Processing</span>
-                <Badge variant="secondary" className="bg-gray-700 text-gray-200 border-gray-600">24-48 hours</Badge>
+                <span className="text-sm text-muted-foreground">Payment Processing</span>
+                <Badge variant="secondary" className="bg-muted text-muted-foreground border-border">24-48 hours</Badge>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-300">Analytics Refresh</span>
-                <Badge variant="secondary" className="bg-gray-700 text-gray-200 border-gray-600">Daily</Badge>
+                <span className="text-sm text-muted-foreground">Analytics Refresh</span>
+                <Badge variant="secondary" className="bg-muted text-muted-foreground border-border">Daily</Badge>
               </div>
             </div>
           </CardContent>
