@@ -88,11 +88,11 @@ export function useSignIn() {
 
       console.log('✅ Sign in successful for user:', data.user.id);
 
-      // Try to get role with improved error handling
+      // Try to get role and check account status
       try {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('role, is_complete')
+          .select('role, is_complete, status')
           .eq('id', data.user.id)
           .maybeSingle();
 
@@ -117,6 +117,16 @@ export function useSignIn() {
             setIsLoading(false);
             return;
           }
+        }
+
+        // Check if account is suspended
+        if (profileData?.status === 'suspended') {
+          toast.error('Your account is currently under review. Please contact support for assistance.');
+          
+          // Sign out the user immediately
+          await supabase.auth.signOut();
+          setIsLoading(false);
+          return;
         }
 
         // Normal routing based on profile data

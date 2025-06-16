@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Loader, Save, X } from 'lucide-react';
+import { Loader, Save, X, Pause, Trash2 } from 'lucide-react';
 
 interface User {
   id: string;
@@ -88,6 +88,73 @@ const UserEditModal = ({ userId, open, onClose }: UserEditModalProps) => {
     },
   });
 
+  const suspendUserMutation = useMutation({
+    mutationFn: async () => {
+      if (!userId) throw new Error('No user ID provided');
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ status: 'suspended' })
+        .eq('id', userId)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "User account suspended successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['user-details', userId] });
+    },
+    onError: (error) => {
+      console.error('Error suspending user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to suspend user account.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async () => {
+      if (!userId) throw new Error('No user ID provided');
+      
+      // First delete from profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+      
+      if (profileError) throw profileError;
+
+      // Then delete from auth.users using admin function
+      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+      
+      if (authError) throw authError;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "User deleted successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      onClose();
+    },
+    onError: (error) => {
+      console.error('Error deleting user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete user. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSave = () => {
     if (Object.keys(editData).length > 0) {
       updateUserMutation.mutate(editData);
@@ -103,6 +170,18 @@ const UserEditModal = ({ userId, open, onClose }: UserEditModalProps) => {
 
   const handleFieldChange = (field: keyof User, value: string) => {
     setEditData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSuspendUser = () => {
+    if (window.confirm('Are you sure you want to suspend this user account? They will not be able to log in until reactivated.')) {
+      suspendUserMutation.mutate();
+    }
+  };
+
+  const handleDeleteUser = () => {
+    if (window.confirm('Are you sure you want to permanently delete this user? This action cannot be undone.')) {
+      deleteUserMutation.mutate();
+    }
   };
 
   const getRoleBadgeVariant = (role: string) => {
@@ -133,13 +212,35 @@ const UserEditModal = ({ userId, open, onClose }: UserEditModalProps) => {
           <DialogTitle className="flex items-center justify-between">
             User Details
             {user && !isEditing && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setIsEditing(true)}
-              >
-                Edit User
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setIsEditing(true)}
+                >
+                  Edit User
+                </Button>
+                {user.status !== 'suspended' && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleSuspendUser}
+                    disabled={suspendUserMutation.isPending}
+                  >
+                    <Pause className="h-4 w-4 mr-2" />
+                    Suspend
+                  </Button>
+                )}
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={handleDeleteUser}
+                  disabled={deleteUserMutation.isPending}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
             )}
           </DialogTitle>
         </DialogHeader>
