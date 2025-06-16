@@ -28,41 +28,64 @@ export const useBrandCRM = (filters: BrandCRMFilters = {}) => {
       console.log('Fetching brands with filters:', filters);
       
       try {
-        let query = supabase
+        // First get brand profiles
+        let brandQuery = supabase
           .from('brand_profiles')
-          .select(`
-            user_id,
-            company_name,
-            industry,
-            budget_range,
-            created_at,
-            profiles!brand_profiles_user_id_fkey(email, status)
-          `);
+          .select('user_id, company_name, industry, budget_range, created_at');
+
+        const { data: brands, error: brandError } = await brandQuery.order('created_at', { ascending: false });
+
+        if (brandError) {
+          console.error('Brand query error:', brandError);
+          throw brandError;
+        }
+
+        if (!brands) return { brands: [], pagination: { total: 0, page: 1, pageSize: 50, pageCount: 0 } };
+
+        // Get user profiles for all brand user_ids
+        const userIds = brands.map(brand => brand.user_id);
+        const { data: profiles, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, email, status')
+          .in('id', userIds);
+
+        if (profileError) {
+          console.error('Profile query error:', profileError);
+          throw profileError;
+        }
+
+        // Create a map for quick lookup
+        const profileMap = new Map(profiles?.map(profile => [profile.id, profile]) || []);
+
+        // Apply search filter on the combined data
+        let filteredBrands = brands.map(brand => {
+          const profile = profileMap.get(brand.user_id);
+          return {
+            ...brand,
+            email: profile?.email || 'No email',
+            status: profile?.status || 'active'
+          };
+        });
 
         // Apply search filter
         if (filters.search) {
-          query = query.or(`company_name.ilike.%${filters.search}%,profiles.email.ilike.%${filters.search}%`);
+          const searchTerm = filters.search.toLowerCase();
+          filteredBrands = filteredBrands.filter(brand => 
+            brand.company_name?.toLowerCase().includes(searchTerm) ||
+            brand.email.toLowerCase().includes(searchTerm)
+          );
         }
 
         // Apply status filter
         if (filters.status && filters.status !== 'all') {
-          query = query.eq('profiles.status', filters.status);
+          filteredBrands = filteredBrands.filter(brand => brand.status === filters.status);
         }
 
-        const { data: brands, error } = await query.order('created_at', { ascending: false });
-
-        if (error) {
-          console.error('Query error:', error);
-          throw error;
-        }
-
-        console.log('Raw brand data:', brands);
-
-        if (!brands) return { brands: [], pagination: { total: 0, page: 1, pageSize: 50, pageCount: 0 } };
+        console.log('Filtered brand data:', filteredBrands);
 
         // Get deal counts for each brand
         const brandsWithDeals = await Promise.all(
-          brands.map(async (brand) => {
+          filteredBrands.map(async (brand) => {
             const { data: deals } = await supabase
               .from('deals')
               .select('status')
@@ -74,10 +97,10 @@ export const useBrandCRM = (filters: BrandCRMFilters = {}) => {
             return {
               id: brand.user_id,
               companyName: brand.company_name || 'Unknown Company',
-              email: brand.profiles?.email || 'No email',
+              email: brand.email,
               industry: brand.industry || 'Not specified',
               budgetRange: brand.budget_range || 'Not specified',
-              status: brand.profiles?.status || 'active',
+              status: brand.status,
               lastActive: brand.created_at || new Date().toISOString(),
               totalDeals,
               activeDeals,

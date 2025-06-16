@@ -24,21 +24,32 @@ const AgencyBrandCRM = () => {
   const { data: brands = [], isLoading, error } = useQuery({
     queryKey: ['agency-brands'],
     queryFn: async (): Promise<AgencyBrand[]> => {
-      const { data, error } = await supabase
+      // First get brand profiles
+      const { data: brandProfiles, error: brandError } = await supabase
         .from('brand_profiles')
-        .select(`
-          user_id,
-          company_name,
-          industry,
-          budget_range,
-          profiles!brand_profiles_user_id_fkey(email, status)
-        `);
+        .select('user_id, company_name, industry, budget_range');
 
-      if (error) throw error;
+      if (brandError) throw brandError;
+
+      if (!brandProfiles) return [];
+
+      // Get user profiles for all brand user_ids
+      const userIds = brandProfiles.map(brand => brand.user_id);
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, email, status')
+        .in('id', userIds);
+
+      if (profileError) throw profileError;
+
+      // Create a map for quick lookup
+      const profileMap = new Map(profiles?.map(profile => [profile.id, profile]) || []);
 
       // Get deal counts for each brand
       const brandsWithDeals = await Promise.all(
-        (data || []).map(async (brand) => {
+        brandProfiles.map(async (brand) => {
+          const profile = profileMap.get(brand.user_id);
+          
           const { data: deals } = await supabase
             .from('deals')
             .select('status')
@@ -49,10 +60,10 @@ const AgencyBrandCRM = () => {
           return {
             user_id: brand.user_id,
             company_name: brand.company_name || 'Unknown Company',
-            email: brand.profiles?.email || 'No email',
+            email: profile?.email || 'No email',
             industry: brand.industry || 'Not specified',
             budget_range: brand.budget_range || 'Not specified',
-            status: brand.profiles?.status || 'active',
+            status: profile?.status || 'active',
             active_deals: activeDeals,
           };
         })
