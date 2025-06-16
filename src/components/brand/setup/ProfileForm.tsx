@@ -52,15 +52,16 @@ const ProfileForm = ({
   budgetRanges
 }: ProfileFormProps) => {
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={onSubmit} className="space-y-4 sm:space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="companyName">Company Name *</Label>
+        <Label htmlFor="companyName" className="text-sm sm:text-base">Company Name *</Label>
         <Input 
           id="companyName"
           value={companyName}
           onChange={(e) => setCompanyName(e.target.value)}
           placeholder="Your company name"
           required
+          className="h-10 sm:h-11 text-sm sm:text-base"
         />
       </div>
       
@@ -72,24 +73,25 @@ const ProfileForm = ({
       />
       
       <div className="space-y-2">
-        <Label htmlFor="website">Website</Label>
+        <Label htmlFor="website" className="text-sm sm:text-base">Website</Label>
         <Input 
           id="website"
           value={website}
           onChange={(e) => setWebsite(e.target.value)}
           placeholder="https://your-company.com"
+          className="h-10 sm:h-11 text-sm sm:text-base"
         />
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="industry">Industry</Label>
+        <Label htmlFor="industry" className="text-sm sm:text-base">Industry</Label>
         <Select value={industry} onValueChange={setIndustry}>
-          <SelectTrigger>
+          <SelectTrigger className="h-10 sm:h-11 text-sm sm:text-base">
             <SelectValue placeholder="Select an industry" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-h-60 overflow-y-auto">
             {industries.map((ind) => (
-              <SelectItem key={ind} value={ind}>
+              <SelectItem key={ind} value={ind} className="text-sm sm:text-base">
                 {ind}
               </SelectItem>
             ))}
@@ -98,14 +100,14 @@ const ProfileForm = ({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="budgetRange">Budget Range</Label>
+        <Label htmlFor="budgetRange" className="text-sm sm:text-base">Budget Range</Label>
         <Select value={budgetRange} onValueChange={setBudgetRange}>
-          <SelectTrigger>
+          <SelectTrigger className="h-10 sm:h-11 text-sm sm:text-base">
             <SelectValue placeholder="Select budget range" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-h-60 overflow-y-auto">
             {budgetRanges.map((range) => (
-              <SelectItem key={range} value={range}>
+              <SelectItem key={range} value={range} className="text-sm sm:text-base">
                 {range}
               </SelectItem>
             ))}
@@ -114,27 +116,33 @@ const ProfileForm = ({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="brandBio">Brand Bio</Label>
+        <Label htmlFor="brandBio" className="text-sm sm:text-base">Brand Bio</Label>
         <Textarea 
           id="brandBio"
           value={brandBio}
           onChange={(e) => setBrandBio(e.target.value)}
           placeholder="Tell us about your brand..."
           rows={4}
+          className="text-sm sm:text-base resize-none"
         />
       </div>
       
-      <div className="flex justify-between pt-4">
+      <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4">
         <Button
           type="button"
           variant="outline"
           onClick={onSkip}
-          className="flex items-center gap-2"
+          className="flex items-center justify-center gap-2 h-10 sm:h-11 text-sm sm:text-base order-2 sm:order-1"
           disabled={isLoading}
         >
-          <ArrowLeft size={16} /> Skip for now
+          <ArrowLeft size={16} className="hidden sm:inline" />
+          Skip for now
         </Button>
-        <Button type="submit" disabled={isLoading}>
+        <Button 
+          type="submit" 
+          disabled={isLoading}
+          className="h-10 sm:h-11 text-sm sm:text-base order-1 sm:order-2"
+        >
           {isLoading ? 'Saving...' : 'Complete Setup'}
         </Button>
       </div>

@@ -52,25 +52,25 @@ const SetupProfile = () => {
 
   return (
     <BrandLayout>
-      <div className="container mx-auto p-6 bg-background">
+      <div className="container mx-auto p-4 sm:p-6 bg-background min-h-screen">
         <div className="max-w-2xl mx-auto">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2 text-foreground">
+          <div className="mb-4 sm:mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-foreground">
               {existingProfile ? 'Edit Your Brand Profile' : 'Set Up Your Brand Profile'}
             </h1>
-            <p className="text-foreground">
+            <p className="text-sm sm:text-base text-foreground">
               {existingProfile ? 'Update your profile information' : 'Complete your profile to get started'}
             </p>
           </div>
           
           <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-foreground">Brand Information</CardTitle>
-              <CardDescription className="text-foreground">
+            <CardHeader className="px-4 sm:px-6">
+              <CardTitle className="text-lg sm:text-xl text-foreground">Brand Information</CardTitle>
+              <CardDescription className="text-sm sm:text-base text-foreground">
                 Tell us about your brand to help creators understand who you are
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-4 sm:px-6">
               <ProfileForm
                 companyName={companyName}
                 setCompanyName={setCompanyName}
