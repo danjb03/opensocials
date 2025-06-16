@@ -59,7 +59,15 @@ export function PlatformSelector({ platforms, setPlatforms }: PlatformSelectorPr
       <Label>Primary Platforms * (select multiple)</Label>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
         {platformOptions.map((platform) => (
-          <div key={platform} className="flex items-center space-x-2 p-2 border rounded-md hover:bg-gray-50">
+          <div 
+            key={platform} 
+            className={`flex items-center space-x-2 p-3 border border-gray-600 rounded-md transition-all cursor-pointer ${
+              platforms.includes(platform) 
+                ? 'bg-white/10 border-white/40 text-white' 
+                : 'bg-transparent hover:bg-gray-800 hover:border-gray-500 text-foreground'
+            }`}
+            onClick={() => handlePlatformToggle(platform)}
+          >
             <Checkbox 
               id={`platform-${platform}`}
               checked={platforms.includes(platform)}
@@ -74,7 +82,14 @@ export function PlatformSelector({ platforms, setPlatforms }: PlatformSelectorPr
           </div>
         ))}
         
-        <div className="flex items-center space-x-2 p-2 border rounded-md hover:bg-gray-50">
+        <div 
+          className={`flex items-center space-x-2 p-3 border border-gray-600 rounded-md transition-all cursor-pointer ${
+            showOtherPlatform 
+              ? 'bg-white/10 border-white/40 text-white' 
+              : 'bg-transparent hover:bg-gray-800 hover:border-gray-500 text-foreground'
+          }`}
+          onClick={() => handlePlatformToggle('Other')}
+        >
           <Checkbox 
             id="platform-other"
             checked={showOtherPlatform}
@@ -113,13 +128,13 @@ export function PlatformSelector({ platforms, setPlatforms }: PlatformSelectorPr
           {platforms.map((platform) => (
             <div 
               key={platform}
-              className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm"
+              className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/10 text-white text-sm border border-white/20"
             >
               {platform}
               <button
                 type="button"
                 onClick={() => removePlatform(platform)}
-                className="ml-1 rounded-full hover:bg-blue-200"
+                className="ml-1 rounded-full hover:bg-white/20 p-1 transition-colors"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M18 6L6 18M6 6l12 12" />

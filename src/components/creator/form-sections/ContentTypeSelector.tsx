@@ -45,7 +45,15 @@ export function ContentTypeSelector({ contentTypes, setContentTypes }: ContentTy
       <Label>Content Formats * (select multiple)</Label>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
         {contentTypeOptions.map((contentType) => (
-          <div key={contentType} className="flex items-center space-x-2 p-2 border rounded-md hover:bg-gray-50">
+          <div 
+            key={contentType} 
+            className={`flex items-center space-x-2 p-3 border border-gray-600 rounded-md transition-all cursor-pointer ${
+              contentTypes.includes(contentType) 
+                ? 'bg-white/10 border-white/40 text-white' 
+                : 'bg-transparent hover:bg-gray-800 hover:border-gray-500 text-foreground'
+            }`}
+            onClick={() => handleContentTypeToggle(contentType)}
+          >
             <Checkbox 
               id={`content-${contentType}`}
               checked={contentTypes.includes(contentType)}
