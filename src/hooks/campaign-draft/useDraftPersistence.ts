@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { CampaignWizardData } from '@/types/campaignWizard';
 
-const AUTO_SAVE_DELAY = 1000; // Auto-save after 1 second of inactivity
+const AUTO_SAVE_DELAY = 2000; // Auto-save after 2 seconds of inactivity
 
 export const useDraftPersistence = (formData: Partial<CampaignWizardData>, currentStep: number) => {
   const { brandProfile } = useUnifiedAuth();
@@ -18,6 +18,8 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
     queryFn: async () => {
       if (!brandProfile?.user_id) return null;
       
+      console.log('Fetching draft for brand:', brandProfile.user_id);
+      
       const { data, error } = await supabase
         .from('project_drafts')
         .select('*')
@@ -27,9 +29,11 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching draft:', error);
         throw error;
       }
 
+      console.log('Fetched draft:', data);
       return data;
     },
     enabled: !!brandProfile?.user_id
@@ -38,11 +42,16 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
   // Save draft mutation
   const saveDraftMutation = useMutation({
     mutationFn: async (data: Partial<CampaignWizardData>) => {
-      if (!brandProfile?.user_id) throw new Error('No brand profile');
+      if (!brandProfile?.user_id) {
+        console.error('No brand profile available');
+        throw new Error('No brand profile');
+      }
 
+      console.log('Saving draft data:', data);
       const draftData = JSON.stringify(data) as any;
 
       if (existingDraft?.id) {
+        console.log('Updating existing draft:', existingDraft.id);
         const { error } = await supabase
           .from('project_drafts')
           .update({
@@ -53,8 +62,13 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
           .eq('id', existingDraft.id)
           .eq('brand_id', brandProfile.user_id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error updating draft:', error);
+          throw error;
+        }
+        console.log('Draft updated successfully');
       } else {
+        console.log('Creating new draft');
         const { error } = await supabase
           .from('project_drafts')
           .insert({
@@ -63,11 +77,19 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
             current_step: currentStep
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error creating draft:', error);
+          throw error;
+        }
+        console.log('Draft created successfully');
       }
     },
     onSuccess: () => {
+      console.log('Draft save successful, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['campaign-draft'] });
+    },
+    onError: (error) => {
+      console.error('Draft save failed:', error);
     }
   });
 
@@ -79,6 +101,7 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
 
     const timeout = setTimeout(() => {
       if (Object.keys(data).length > 0) {
+        console.log('Auto-saving draft after delay');
         saveDraftMutation.mutate(data);
       }
     }, AUTO_SAVE_DELAY);
@@ -86,9 +109,18 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
     setAutoSaveTimeout(timeout);
   };
 
-  // Auto-save when form data changes
+  // Auto-save when form data changes (but only if there's meaningful data)
   useEffect(() => {
-    if (Object.keys(formData).length > 0) {
+    const hasData = formData && (
+      formData.campaign_name || 
+      formData.campaign_type || 
+      formData.description || 
+      formData.total_budget ||
+      formData.platforms?.length
+    );
+
+    if (hasData && brandProfile?.user_id) {
+      console.log('Form data changed, triggering auto-save');
       triggerAutoSave(formData);
     }
 
@@ -97,23 +129,27 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
         clearTimeout(autoSaveTimeout);
       }
     };
-  }, [formData]);
+  }, [formData, brandProfile?.user_id]);
 
   // Auto-save when step changes
   useEffect(() => {
-    if (Object.keys(formData).length > 0) {
+    const hasData = formData && Object.keys(formData).length > 0;
+    if (hasData && brandProfile?.user_id) {
+      console.log('Step changed, triggering auto-save');
       triggerAutoSave(formData);
     }
   }, [currentStep]);
 
   // Manual save function
   const saveDraft = async () => {
+    console.log('Manual save triggered');
     return saveDraftMutation.mutateAsync(formData);
   };
 
   // Clear draft when campaign is published
   const clearDraft = async () => {
     if (existingDraft?.id && brandProfile?.user_id) {
+      console.log('Clearing draft');
       const { error } = await supabase
         .from('project_drafts')
         .delete()
@@ -123,6 +159,7 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
       if (error) {
         console.error('Error clearing draft:', error);
       } else {
+        console.log('Draft cleared successfully');
         queryClient.invalidateQueries({ queryKey: ['campaign-draft'] });
       }
     }
