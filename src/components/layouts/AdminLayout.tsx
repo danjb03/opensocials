@@ -1,24 +1,13 @@
+
 import { memo, useMemo } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import SidebarLogo from "@/components/ui/sidebar-logo";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useLocation } from 'react-router-dom';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { usePendingCampaignReviews } from '@/hooks/admin/usePendingCampaignReviews';
-import { Home, Users, Settings, Shield, FileText, BarChart2, LogOut, DollarSign, Bot, ArrowLeft, Network } from 'lucide-react';
 import Footer from './Footer';
+import AdminSidebar from './admin/AdminSidebar';
+import AdminHeader from './admin/AdminHeader';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarProvider,
-  SidebarTrigger,
   SidebarInset,
 } from "@/components/ui/sidebar";
 
@@ -28,32 +17,8 @@ interface AdminLayoutProps {
 
 const AdminLayout = memo(({ children }: AdminLayoutProps) => {
   const { user, role } = useUnifiedAuth();
-  const navigate = useNavigate();
-  const { toast } = useToast();
   const location = useLocation();
   const { data: pendingCount = 0 } = usePendingCampaignReviews();
-
-  const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      navigate('/');
-      toast({
-        title: "Signed out",
-        description: "You have been signed out successfully.",
-      });
-    } catch (error) {
-      console.error('Error signing out:', error);
-      toast({
-        title: "Error",
-        description: "There was an error signing out. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleBackToSuperAdmin = () => {
-    navigate('/super-admin');
-  };
 
   const isActiveRoute = useMemo(() => {
     return (path: string, exact = false) => {
@@ -64,144 +29,18 @@ const AdminLayout = memo(({ children }: AdminLayoutProps) => {
     };
   }, [location.pathname]);
 
-  const menuItems = [
-    {
-      title: "Dashboard",
-      url: "/admin",
-      icon: Home,
-      isActive: isActiveRoute('/admin', true)
-    },
-    {
-      title: "User Management",
-      url: "/admin/users",
-      icon: Users,
-      isActive: isActiveRoute('/admin/users')
-    },
-    {
-      title: "CRM",
-      url: "/admin/crm",
-      icon: BarChart2,
-      isActive: isActiveRoute('/admin/crm')
-    },
-    {
-      title: "Projects",
-      url: "/admin/projects", 
-      icon: FileText,
-      isActive: isActiveRoute('/admin/projects')
-    },
-    {
-      title: "Campaign Review",
-      url: "/admin/campaign-review",
-      icon: Bot,
-      isActive: isActiveRoute('/admin/campaign-review'),
-      notificationCount: pendingCount
-    },
-    {
-      title: "Pricing Floors",
-      url: "/admin/pricing-floors",
-      icon: DollarSign,
-      isActive: isActiveRoute('/admin/pricing-floors')
-    },
-    {
-      title: "Platform Map",
-      url: "/admin/platform-map",
-      icon: Network,
-      isActive: isActiveRoute('/admin/platform-map')
-    },
-    {
-      title: "Security",
-      url: "/admin/security",
-      icon: Shield,
-      isActive: isActiveRoute('/admin/security')
-    },
-    {
-      title: "Settings",
-      url: "/admin/settings",
-      icon: Settings,
-      isActive: isActiveRoute('/admin/settings')
-    }
-  ];
-
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
-        <Sidebar collapsible="icon" className="bg-sidebar border-r border-sidebar-border">
-          <SidebarHeader className="p-4 flex items-center justify-center min-h-[80px]">
-            <SidebarLogo className="group-data-[collapsible=icon]:scale-75" />
-          </SidebarHeader>
-          
-          <SidebarContent className="px-4">
-            <SidebarMenu>
-              {/* Super Admin Back Button */}
-              {role === 'super_admin' && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    onClick={handleBackToSuperAdmin}
-                    className="h-12 mr-2 hover:bg-accent hover:text-accent-foreground transition-colors mb-4 border border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100"
-                    tooltip="Back to Super Admin"
-                  >
-                    <ArrowLeft className="h-5 w-5" />
-                    <span className="group-data-[collapsible=icon]:hidden">Back to Super Admin</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
-              
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild
-                    isActive={item.isActive}
-                    className="h-12 mr-2 hover:bg-accent hover:text-accent-foreground transition-colors"
-                    tooltip={item.title}
-                  >
-                    <Link to={item.url} className="flex items-center gap-3 w-full relative">
-                      <item.icon className="h-5 w-5" />
-                      <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
-                      {item.notificationCount && item.notificationCount > 0 && (
-                        <Badge 
-                          variant="destructive" 
-                          className="ml-auto h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:top-0 group-data-[collapsible=icon]:right-0 group-data-[collapsible=icon]:-translate-y-1 group-data-[collapsible=icon]:translate-x-1"
-                        >
-                          {item.notificationCount}
-                        </Badge>
-                      )}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarContent>
-          
-          <SidebarFooter className="p-4 border-t border-sidebar-border">
-            <div className="text-sm text-sidebar-foreground/70 mb-2 truncate group-data-[collapsible=icon]:hidden">
-              {user?.email}
-            </div>
-            <Button 
-              variant="default" 
-              onClick={handleSignOut}
-              className="w-full h-12 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:text-xs hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
-              <LogOut className="hidden group-data-[collapsible=icon]:block h-4 w-4" />
-            </Button>
-          </SidebarFooter>
-        </Sidebar>
+        <AdminSidebar 
+          userEmail={user?.email}
+          role={role}
+          isActiveRoute={isActiveRoute}
+          pendingCount={pendingCount}
+        />
         
         <SidebarInset className="flex flex-col">
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background px-4">
-            <SidebarTrigger className="text-foreground hover:bg-accent hover:text-accent-foreground transition-colors" />
-            {role === 'super_admin' && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleBackToSuperAdmin}
-                className="ml-auto flex items-center gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Super Admin
-              </Button>
-            )}
-          </header>
+          <AdminHeader role={role} />
           
           <main className="flex-1 overflow-auto">
             {children}
