@@ -125,8 +125,10 @@ export const BrandsTable = ({ brands, isLoading }: BrandsTableProps) => {
                   asChild
                 >
                   <Link to={`/admin/crm/brands/${brand.brand_id}`}>
-                    <Eye className="h-4 w-4 mr-1" />
-                    View
+                    <span className="flex items-center">
+                      <Eye className="h-4 w-4 mr-1" />
+                      View
+                    </span>
                   </Link>
                 </Button>
               </TableCell>
