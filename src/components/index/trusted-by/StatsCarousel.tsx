@@ -53,7 +53,8 @@ export const StatsCarousel = ({ isVisible }: StatsCarouselProps) => {
     let position = index - currentIndex;
     if (position < 0) position += totalCards;
     
-    const baseZIndex = 50;
+    // Cards get high z-index to be in front
+    const baseZIndex = 100;
     const zIndex = baseZIndex - position;
     
     // Mobile-first responsive scaling and positioning
@@ -94,16 +95,16 @@ export const StatsCarousel = ({ isVisible }: StatsCarouselProps) => {
 
   return (
     <div className="relative py-8 md:py-12 overflow-hidden bg-black">
-      {/* Lighter gradient masks for mobile */}
-      <div className="absolute inset-0 pointer-events-none z-40">
-        <div className="absolute top-0 left-0 w-16 md:w-48 h-full bg-gradient-to-r from-black via-black/60 to-transparent md:via-black/90" />
-        <div className="absolute top-0 right-0 w-16 md:w-48 h-full bg-gradient-to-l from-black via-black/60 to-transparent md:via-black/90" />
-        <div className="absolute top-0 left-0 right-0 h-12 md:h-24 bg-gradient-to-b from-black via-black/60 to-transparent md:via-black/80" />
-        <div className="absolute bottom-0 left-0 right-0 h-12 md:h-24 bg-gradient-to-t from-black via-black/60 to-transparent md:via-black/80" />
+      {/* Background gradient masks with low z-index and reduced opacity */}
+      <div className="absolute inset-0 pointer-events-none z-10">
+        <div className="absolute top-0 left-0 w-16 md:w-48 h-full bg-gradient-to-r from-black/80 via-black/30 to-transparent md:via-black/70" />
+        <div className="absolute top-0 right-0 w-16 md:w-48 h-full bg-gradient-to-l from-black/80 via-black/30 to-transparent md:via-black/70" />
+        <div className="absolute top-0 left-0 right-0 h-12 md:h-24 bg-gradient-to-b from-black/80 via-black/30 to-transparent md:via-black/60" />
+        <div className="absolute bottom-0 left-0 right-0 h-12 md:h-24 bg-gradient-to-t from-black/80 via-black/30 to-transparent md:via-black/60" />
       </div>
 
       {/* Main carousel container with responsive height */}
-      <div className="relative h-[420px] md:h-[480px] max-w-7xl mx-auto flex items-center justify-center px-4 md:px-8">
+      <div className="relative h-[420px] md:h-[480px] max-w-7xl mx-auto flex items-center justify-center px-4 md:px-8 z-50">
         {/* Card stack container with better perspective */}
         <div className="relative w-full max-w-sm md:max-w-2xl flex items-center justify-center" style={{ height: '360px', perspective: '800px' }}>
           {statsData.map((stat, index) => (
@@ -124,8 +125,8 @@ export const StatsCarousel = ({ isVisible }: StatsCarouselProps) => {
         </div>
       </div>
 
-      {/* Navigation dots with reduced spacing */}
-      <div className="relative z-50 mt-4 md:mt-6">
+      {/* Navigation dots with high z-index to stay in front */}
+      <div className="relative z-60 mt-4 md:mt-6">
         <NavigationDots 
           stats={statsData} 
           currentCard={currentCard} 
@@ -133,15 +134,17 @@ export const StatsCarousel = ({ isVisible }: StatsCarouselProps) => {
         />
       </div>
 
-      {/* Refined background elements */}
-      <BackgroundElements />
+      {/* Refined background elements with low z-index */}
+      <div className="relative z-5">
+        <BackgroundElements />
+      </div>
       
-      {/* Enhanced atmospheric elements with blue tints */}
-      <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-blue-400/10 rounded-full animate-pulse" 
+      {/* Enhanced atmospheric elements with blue tints and low z-index */}
+      <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-blue-400/10 rounded-full animate-pulse z-5" 
         style={{ animationDelay: '0.5s', animationDuration: '3s' }} />
-      <div className="absolute bottom-1/3 right-1/4 w-2 h-2 bg-blue-300/15 rounded-full animate-pulse" 
+      <div className="absolute bottom-1/3 right-1/4 w-2 h-2 bg-blue-300/15 rounded-full animate-pulse z-5" 
         style={{ animationDelay: '1.5s', animationDuration: '4s' }} />
-      <div className="absolute top-1/2 left-1/6 w-1 h-1 bg-blue-500/20 rounded-full animate-pulse" 
+      <div className="absolute top-1/2 left-1/6 w-1 h-1 bg-blue-500/20 rounded-full animate-pulse z-5" 
         style={{ animationDelay: '2.5s', animationDuration: '5s' }} />
     </div>
   );
