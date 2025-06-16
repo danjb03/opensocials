@@ -57,8 +57,11 @@ export const useInsightIQData = (creator_id: string): UseInsightIQDataReturn => 
     queryKey: ['insightiq-data', creator_id],
     queryFn: async () => {
       if (!creator_id) {
+        console.log('No creator_id provided to useInsightIQData');
         return [];
       }
+
+      console.log('Fetching InsightIQ data for creator:', creator_id);
 
       const { data, error } = await supabase
         .from('creator_public_analytics')
@@ -71,11 +74,12 @@ export const useInsightIQData = (creator_id: string): UseInsightIQDataReturn => 
         throw error;
       }
 
+      console.log('InsightIQ data fetched:', data);
       return data as InsightIQAnalytics[] || [];
     },
     enabled: !!creator_id,
-    staleTime: 1000 * 60 * 60, // 1 hour
-    gcTime: 1000 * 60 * 60 * 24, // 24 hours
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 30, // 30 minutes
     retry: 1,
     retryOnMount: false,
   });

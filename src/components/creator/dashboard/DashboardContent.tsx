@@ -6,6 +6,7 @@ import AudienceLocation from '@/components/creator/AudienceLocation';
 import DashboardStats from './DashboardStats';
 import SocialAnalytics from './SocialAnalytics';
 import EarningsChart from './EarningsChart';
+import { AnalyticsDebugger } from '@/components/creator/AnalyticsDebugger';
 import { CreatorProfile } from '@/hooks/useCreatorProfile';
 
 interface DashboardContentProps {
@@ -89,6 +90,9 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         pipelineValue={pipelineValue} 
         connectionStats={connectionStats}
       />
+
+      {/* Temporary Analytics Debugger */}
+      <AnalyticsDebugger />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">

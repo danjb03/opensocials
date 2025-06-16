@@ -4,6 +4,7 @@ import { SocialMediaConnection } from '@/components/creator/SocialMediaConnectio
 import AnalyticsModule from '@/components/creator/AnalyticsModule';
 import { useInsightIQData } from '@/hooks/useInsightIQData';
 import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface SocialAnalyticsProps {
   socialConnections: {
@@ -37,13 +38,14 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
   isLoading
 }) => {
   const { user } = useCreatorAuth();
-  const { data: analyticsData } = useInsightIQData(user?.id || '');
+  const { data: analyticsData, isLoading: analyticsLoading } = useInsightIQData(user?.id || '');
 
   const handleConnectionSuccess = () => {
     console.log('Social media connection successful - refreshing analytics');
   };
 
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number | null) => {
+    if (!num) return '0';
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1) + 'M';
     } else if (num >= 1000) {
@@ -62,12 +64,15 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
     
     if (insightIQData) {
       return {
-        followers: formatNumber(insightIQData.follower_count || 0),
+        followers: formatNumber(insightIQData.follower_count),
         engagement: `${(insightIQData.engagement_rate || 0).toFixed(1)}%`,
-        views: formatNumber(insightIQData.average_views || 0),
-        likes: formatNumber(insightIQData.average_likes || 0),
+        views: formatNumber(insightIQData.average_views),
+        likes: formatNumber(insightIQData.average_likes),
+        comments: formatNumber(insightIQData.average_comments),
         verified: insightIQData.is_verified || false,
-        growthRate: '+0%' // Not available in new API
+        growthRate: '+0%', // Not available in current API
+        contentCount: insightIQData.content_count || 0,
+        credibilityScore: insightIQData.credibility_score || 0
       };
     }
 
@@ -78,15 +83,57 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
       engagement: platformData?.engagement || '0%',
       views: '0',
       likes: '0',
+      comments: '0',
       verified: false,
-      growthRate: platformData?.growth || '0%'
+      growthRate: platformData?.growth || '0%',
+      contentCount: 0,
+      credibilityScore: 0
     };
   };
 
+  if (analyticsLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Social Analytics</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-32">
+            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <>
-      <SocialMediaConnection onConnectionSuccess={handleConnectionSuccess} />
+    <div className="space-y-6">
+      {/* Show connection interface if no data */}
+      {(!analyticsData || analyticsData.length === 0) && (
+        <SocialMediaConnection onConnectionSuccess={handleConnectionSuccess} />
+      )}
       
+      {/* Debug info */}
+      {analyticsData && analyticsData.length > 0 && (
+        <Card className="mb-4">
+          <CardHeader>
+            <CardTitle className="text-sm">Connected Platforms ({analyticsData.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {analyticsData.map((data, index) => (
+                <div key={index} className="text-xs text-muted-foreground">
+                  <strong>{data.platform}</strong>: @{data.identifier} 
+                  {data.follower_count && ` - ${formatNumber(data.follower_count)} followers`}
+                  {data.engagement_rate && ` - ${data.engagement_rate.toFixed(1)}% engagement`}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Platform Analytics */}
       {(socialConnections.instagram || getPlatformData('instagram')) && (
         <AnalyticsModule 
           platform="Instagram" 
@@ -118,7 +165,15 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
           isVisible={visibilitySettings.showLinkedin}
         />
       )}
-    </>
+
+      {getPlatformData('linkedin') && (
+        <AnalyticsModule 
+          platform="LinkedIn" 
+          metrics={getAnalyticsData('linkedin')}
+          isVisible={visibilitySettings.showLinkedin}
+        />
+      )}
+    </div>
   );
 };
 
