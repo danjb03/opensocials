@@ -20,45 +20,45 @@ export function SecurityMetrics({ stats }: SecurityMetricsProps) {
       value: stats?.totalUsers || 0,
       icon: Users,
       description: "Registered platform users",
-      bgColor: "bg-blue-50",
-      iconColor: "text-blue-600",
-      textColor: "text-blue-900"
+      bgColor: "bg-card border-border",
+      iconColor: "text-blue-400",
+      textColor: "text-foreground"
     },
     {
       title: "Pending Role Requests",
       value: stats?.pendingRoles || 0,
       icon: AlertTriangle,
       description: "Awaiting approval",
-      bgColor: stats?.pendingRoles && stats.pendingRoles > 0 ? "bg-yellow-50" : "bg-green-50",
-      iconColor: stats?.pendingRoles && stats.pendingRoles > 0 ? "text-yellow-600" : "text-green-600",
-      textColor: stats?.pendingRoles && stats.pendingRoles > 0 ? "text-yellow-900" : "text-green-900"
+      bgColor: stats?.pendingRoles && stats.pendingRoles > 0 ? "bg-card border-yellow-500/30" : "bg-card border-border",
+      iconColor: stats?.pendingRoles && stats.pendingRoles > 0 ? "text-yellow-400" : "text-green-400",
+      textColor: "text-foreground"
     },
     {
       title: "Active Security Rules",
       value: stats?.activeRules || 0,
       icon: Shield,
       description: "R4 rules monitoring platform",
-      bgColor: "bg-blue-50",
-      iconColor: "text-blue-600",
-      textColor: "text-blue-900"
+      bgColor: "bg-card border-border",
+      iconColor: "text-blue-400",
+      textColor: "text-foreground"
     },
     {
       title: "Recent Audit Events",
       value: stats?.recentAudits || 0,
       icon: Activity,
       description: "Last 24 hours",
-      bgColor: "bg-blue-50",
-      iconColor: "text-blue-600",
-      textColor: "text-blue-900"
+      bgColor: "bg-card border-border",
+      iconColor: "text-blue-400",
+      textColor: "text-foreground"
     },
     {
       title: "Flagged Users",
       value: stats?.flaggedUsers || 0,
       icon: Flag,
       description: "Requiring attention",
-      bgColor: stats?.flaggedUsers && stats.flaggedUsers > 0 ? "bg-red-50" : "bg-green-50",
-      iconColor: stats?.flaggedUsers && stats.flaggedUsers > 0 ? "text-red-600" : "text-green-600",
-      textColor: stats?.flaggedUsers && stats.flaggedUsers > 0 ? "text-red-900" : "text-green-900"
+      bgColor: stats?.flaggedUsers && stats.flaggedUsers > 0 ? "bg-card border-red-500/30" : "bg-card border-border",
+      iconColor: stats?.flaggedUsers && stats.flaggedUsers > 0 ? "text-red-400" : "text-green-400",
+      textColor: "text-foreground"
     }
   ];
 
