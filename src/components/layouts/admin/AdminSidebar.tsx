@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -47,10 +47,6 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount }: Adm
     }
   };
 
-  const handleBackToSuperAdmin = () => {
-    navigate('/super-admin');
-  };
-
   const menuItems = getAdminMenuItems(isActiveRoute, pendingCount);
 
   return (
@@ -61,20 +57,6 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount }: Adm
       
       <SidebarContent className="px-4">
         <SidebarMenu>
-          {/* Super Admin Back Button */}
-          {role === 'super_admin' && (
-            <SidebarMenuItem>
-              <SidebarMenuButton 
-                onClick={handleBackToSuperAdmin}
-                className="h-12 mr-2 hover:bg-accent hover:text-accent-foreground transition-colors mb-4 border border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100"
-                tooltip="Back to Super Admin"
-              >
-                <ArrowLeft className="h-5 w-5" />
-                <span className="group-data-[collapsible=icon]:hidden">Back to Super Admin</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          )}
-          
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton 
