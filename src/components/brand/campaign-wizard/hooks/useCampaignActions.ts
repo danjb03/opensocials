@@ -20,14 +20,14 @@ export const useCampaignActions = (
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
 
   const createCampaignFromDraft = async (draftData: Partial<CampaignWizardData>) => {
-    if (!brandProfile?.user_id) {
+    if (!brandProfile?.id) {
       throw new Error('No brand profile found');
     }
 
     const { data: campaign, error } = await supabase
       .from('projects_new')
       .insert({
-        brand_id: brandProfile.user_id,
+        brand_id: brandProfile.id,
         name: draftData.name || 'Untitled Campaign',
         description: draftData.description || '',
         campaign_type: draftData.campaign_type || 'Single',
@@ -38,8 +38,8 @@ export const useCampaignActions = (
         messaging_guidelines: draftData.messaging_guidelines || '',
         platforms: draftData.content_requirements?.platforms || [],
         deliverables: draftData.deliverables || {},
-        status: 'pending_approval', // Changed from 'draft' to indicate awaiting admin review
-        review_status: 'pending_review', // Set to pending review by default
+        status: 'pending_approval',
+        review_status: 'pending_review',
         current_step: currentStep
       })
       .select()
@@ -54,18 +54,34 @@ export const useCampaignActions = (
   };
 
   const handleStepComplete = async (stepData: Partial<CampaignWizardData>) => {
-    setLastSaveTime(new Date());
-    
-    toast.success(`Step ${currentStep} Complete`, {
-      description: `${CAMPAIGN_STEPS[currentStep - 1].title} saved automatically`
-    });
+    try {
+      // Save the draft first
+      await saveDraft();
+      setLastSaveTime(new Date());
+      
+      toast.success(`Step ${currentStep} Complete`, {
+        description: `${CAMPAIGN_STEPS[currentStep - 1].title} saved automatically`
+      });
+    } catch (error) {
+      console.error('Error saving step:', error);
+      toast.error('Failed to save step progress');
+    }
   };
 
   const handleSaveAndExit = async () => {
     try {
+      console.log('Save and exit triggered with data:', formData);
+      
+      if (!formData || Object.keys(formData).length === 0) {
+        toast.error('No data to save');
+        return;
+      }
+
+      // First save the draft
       await saveDraft();
       
-      if (formData.name) {
+      // If we have sufficient data, create a campaign record
+      if (formData.name && brandProfile?.id) {
         await createCampaignFromDraft(formData);
         toast.success('Campaign saved successfully!', {
           description: 'You can continue editing it later from your dashboard.'
@@ -84,7 +100,10 @@ export const useCampaignActions = (
   };
 
   const handleFinalSubmit = async () => {
-    if (!formData) return;
+    if (!formData || Object.keys(formData).length === 0) {
+      toast.error('No campaign data to submit');
+      return;
+    }
     
     setIsSubmitting(true);
     try {

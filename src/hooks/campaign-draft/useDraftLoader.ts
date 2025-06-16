@@ -1,7 +1,5 @@
 
 import { useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { CampaignWizardData } from '@/types/campaignWizard';
 
 export const useDraftLoader = (
@@ -9,53 +7,48 @@ export const useDraftLoader = (
   setFormData: (data: Partial<CampaignWizardData>) => void,
   setCurrentStep: (step: number) => void
 ) => {
-  const { brandProfile } = useUnifiedAuth();
-
-  // Load existing draft data on mount
-  useEffect(() => {
+  const loadDraft = () => {
     if (existingDraft?.draft_data) {
       try {
-        const parsedData = typeof existingDraft.draft_data === 'string' 
-          ? JSON.parse(existingDraft.draft_data)
-          : existingDraft.draft_data;
+        console.log('Loading draft data:', existingDraft.draft_data);
         
+        let parsedData;
+        if (typeof existingDraft.draft_data === 'string') {
+          parsedData = JSON.parse(existingDraft.draft_data);
+        } else {
+          parsedData = existingDraft.draft_data;
+        }
+        
+        // Handle date parsing
+        if (parsedData.timeline) {
+          if (parsedData.timeline.start_date) {
+            parsedData.timeline.start_date = new Date(parsedData.timeline.start_date);
+          }
+          if (parsedData.timeline.end_date) {
+            parsedData.timeline.end_date = new Date(parsedData.timeline.end_date);
+          }
+        }
+        
+        console.log('Parsed draft data:', parsedData);
         setFormData(parsedData);
-        setCurrentStep(existingDraft.current_step || 1);
+        
+        if (existingDraft.current_step) {
+          setCurrentStep(existingDraft.current_step);
+        }
+        
+        console.log('Draft loaded successfully');
       } catch (error) {
         console.error('Error parsing draft data:', error);
       }
     }
-  }, [existingDraft, setFormData, setCurrentStep]);
-
-  // Load existing draft from URL parameter if provided
-  const loadDraft = async (draftId: string) => {
-    if (!brandProfile?.user_id) return;
-    
-    const { data, error } = await supabase
-      .from('project_drafts')
-      .select('*')
-      .eq('id', draftId)
-      .eq('brand_id', brandProfile.user_id)
-      .single();
-
-    if (error) {
-      console.error('Error loading draft:', error);
-      return;
-    }
-
-    try {
-      const parsedData = typeof data.draft_data === 'string' 
-        ? JSON.parse(data.draft_data)
-        : data.draft_data;
-      
-      setFormData(parsedData);
-      setCurrentStep(data.current_step || 1);
-    } catch (error) {
-      console.error('Error parsing draft data:', error);
-    }
   };
 
-  return {
-    loadDraft
-  };
+  // Auto-load draft when it becomes available
+  useEffect(() => {
+    if (existingDraft) {
+      loadDraft();
+    }
+  }, [existingDraft]);
+
+  return { loadDraft };
 };

@@ -234,13 +234,6 @@ export type Database = {
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "campaign_content_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "slim_projects"
-            referencedColumns: ["id"]
-          },
         ]
       }
       campaign_content_files: {
@@ -1166,13 +1159,6 @@ export type Database = {
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "project_creators_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "slim_projects"
-            referencedColumns: ["id"]
-          },
         ]
       }
       project_drafts: {
@@ -1833,56 +1819,6 @@ export type Database = {
           },
         ]
       }
-      slim_projects: {
-        Row: {
-          brand_id: string | null
-          budget: number | null
-          campaign_type: string | null
-          currency: string | null
-          end_date: string | null
-          id: string | null
-          is_priority: boolean | null
-          name: string | null
-          platforms: string[] | null
-          start_date: string | null
-          status: string | null
-        }
-        Insert: {
-          brand_id?: string | null
-          budget?: number | null
-          campaign_type?: string | null
-          currency?: string | null
-          end_date?: string | null
-          id?: string | null
-          is_priority?: boolean | null
-          name?: string | null
-          platforms?: string[] | null
-          start_date?: string | null
-          status?: string | null
-        }
-        Update: {
-          brand_id?: string | null
-          budget?: number | null
-          campaign_type?: string | null
-          currency?: string | null
-          end_date?: string | null
-          id?: string | null
-          is_priority?: boolean | null
-          name?: string | null
-          platforms?: string[] | null
-          start_date?: string | null
-          status?: string | null
-        }
-        Relationships: []
-      }
-      tier_averages: {
-        Row: {
-          average_offer: number | null
-          campaign_type: string | null
-          creator_tier: string | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
       create_user_role: {
@@ -1894,14 +1830,11 @@ export type Database = {
         Returns: string
       }
       duplicate_project: {
-        Args:
-          | Record<PropertyKey, never>
-          | { original_project_id: string }
-          | {
-              original_project_id: string
-              new_start_date: string
-              new_end_date: string
-            }
+        Args: {
+          original_project_id: string
+          new_start_date: string
+          new_end_date: string
+        }
         Returns: string
       }
       get_current_user_role: {
