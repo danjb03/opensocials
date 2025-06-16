@@ -42,6 +42,23 @@ const formatPercentage = (num: number | null): string => {
   return `${num.toFixed(1)}%`;
 };
 
+// Helper function to safely convert unknown to number
+const safeToNumber = (value: unknown): number => {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    const parsed = parseFloat(value);
+    return isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+};
+
+// Helper function to safely convert unknown to string
+const safeToString = (value: unknown): string => {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return value.toString();
+  return String(value || '');
+};
+
 export const CreatorAnalyticsProfile: React.FC = () => {
   const { user } = useCreatorAuth();
   const { data: analyticsData, isLoading, error } = useInsightIQData(user?.id || '');
@@ -214,8 +231,8 @@ export const CreatorAnalyticsProfile: React.FC = () => {
                     <div key={gender} className="flex items-center justify-between">
                       <span className="capitalize font-medium">{gender}</span>
                       <div className="flex items-center gap-2 flex-1 ml-4">
-                        <Progress value={percentage as number} className="flex-1" />
-                        <span className="text-sm font-semibold w-12">{percentage}%</span>
+                        <Progress value={safeToNumber(percentage)} className="flex-1" />
+                        <span className="text-sm font-semibold w-12">{safeToNumber(percentage)}%</span>
                       </div>
                     </div>
                   ))}
@@ -239,8 +256,8 @@ export const CreatorAnalyticsProfile: React.FC = () => {
                     <div key={age} className="flex items-center justify-between">
                       <span className="font-medium">{age}</span>
                       <div className="flex items-center gap-2 flex-1 ml-4">
-                        <Progress value={percentage as number} className="flex-1" />
-                        <span className="text-sm font-semibold w-12">{percentage}%</span>
+                        <Progress value={safeToNumber(percentage)} className="flex-1" />
+                        <span className="text-sm font-semibold w-12">{safeToNumber(percentage)}%</span>
                       </div>
                     </div>
                   ))}
@@ -267,7 +284,7 @@ export const CreatorAnalyticsProfile: React.FC = () => {
                 .map(([location, percentage]) => (
                 <div key={location} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                   <span className="font-medium">{location}</span>
-                  <Badge variant="secondary">{percentage}%</Badge>
+                  <Badge variant="secondary">{safeToNumber(percentage)}%</Badge>
                 </div>
               ))}
             </div>
@@ -291,7 +308,7 @@ export const CreatorAnalyticsProfile: React.FC = () => {
                 .map(([brand, score]) => (
                 <div key={brand} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                   <span className="font-medium">{brand}</span>
-                  <Badge variant="outline">{typeof score === 'number' ? score.toFixed(1) : score}%</Badge>
+                  <Badge variant="outline">{safeToNumber(score).toFixed(1)}%</Badge>
                 </div>
               ))}
             </div>

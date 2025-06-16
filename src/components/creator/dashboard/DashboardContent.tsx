@@ -80,14 +80,14 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Comprehensive Creator Analytics Profile - moved to top */}
+      <CreatorAnalyticsProfile />
+      
       <DashboardStats 
         totalEarnings={totalEarnings} 
         pipelineValue={pipelineValue} 
         connectionStats={connectionStats}
       />
-
-      {/* Comprehensive Creator Analytics Profile */}
-      <CreatorAnalyticsProfile />
       
       <EarningsChart earningsData={earningsData} />
     </div>
