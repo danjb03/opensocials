@@ -31,7 +31,7 @@ const AgencyBrandCRM = () => {
           company_name,
           industry,
           budget_range,
-          profiles!inner(email, status)
+          profiles!brand_profiles_user_id_fkey(email, status)
         `);
 
       if (error) throw error;
@@ -40,9 +40,9 @@ const AgencyBrandCRM = () => {
       const brandsWithDeals = await Promise.all(
         (data || []).map(async (brand) => {
           const { data: deals } = await supabase
-            .from('creator_deals')
+            .from('deals')
             .select('status')
-            .eq('project_id', brand.user_id);
+            .eq('brand_id', brand.user_id);
 
           const activeDeals = deals?.filter(deal => deal.status === 'active' || deal.status === 'accepted').length || 0;
 

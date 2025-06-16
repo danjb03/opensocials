@@ -36,7 +36,7 @@ export const useBrandCRM = (filters: BrandCRMFilters = {}) => {
             industry,
             budget_range,
             created_at,
-            profiles!inner(email, status)
+            profiles!brand_profiles_user_id_fkey(email, status)
           `);
 
         // Apply search filter
@@ -64,9 +64,9 @@ export const useBrandCRM = (filters: BrandCRMFilters = {}) => {
         const brandsWithDeals = await Promise.all(
           brands.map(async (brand) => {
             const { data: deals } = await supabase
-              .from('creator_deals')
-              .select('status, project_id')
-              .eq('project_id', brand.user_id);
+              .from('deals')
+              .select('status')
+              .eq('brand_id', brand.user_id);
 
             const totalDeals = deals?.length || 0;
             const activeDeals = deals?.filter(deal => deal.status === 'active' || deal.status === 'accepted').length || 0;
