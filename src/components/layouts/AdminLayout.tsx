@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
-import { Home, Users, Settings, Shield, FileText, BarChart2, LogOut, DollarSign, Bot, ArrowLeft } from 'lucide-react';
+import { Home, Users, Settings, Shield, FileText, BarChart2, LogOut, DollarSign, Bot, ArrowLeft, Network } from 'lucide-react';
 import Footer from './Footer';
 import {
   Sidebar,
@@ -98,6 +98,12 @@ const AdminLayout = memo(({ children }: AdminLayoutProps) => {
       url: "/admin/pricing-floors",
       icon: DollarSign,
       isActive: isActiveRoute('/admin/pricing-floors')
+    },
+    {
+      title: "Platform Map",
+      url: "/admin/platform-map",
+      icon: Network,
+      isActive: isActiveRoute('/admin/platform-map')
     },
     {
       title: "Security",
