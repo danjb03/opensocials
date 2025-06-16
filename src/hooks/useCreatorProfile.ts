@@ -1,6 +1,7 @@
 
 import { useMemo } from 'react';
 import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
+import { useInsightIQData } from '@/hooks/useInsightIQData';
 
 export interface CreatorProfile {
   firstName: string | null;
@@ -31,50 +32,68 @@ export interface CreatorProfile {
     youtube?: string;
     linkedin?: string;
   };
-  followerCount?: string; // Changed to string to match types/creatorProfile.ts
-  engagementRate?: string; // Changed to string to match types/creatorProfile.ts
+  followerCount?: string;
+  engagementRate?: string;
   avatarUrl?: string | null;
   bannerUrl?: string | null;
 }
 
 export const useCreatorProfile = () => {
-  const { profile: rawProfile, isLoading } = useCreatorAuth();
+  const { user, profile: rawProfile, isLoading: authLoading } = useCreatorAuth();
+  const { data: analyticsData, isLoading: analyticsLoading } = useInsightIQData(user?.id || '');
 
   const profile = useMemo((): CreatorProfile | null => {
-    if (!rawProfile) return null;
+    if (!rawProfile && !analyticsData) return null;
 
     // Type the raw profile properly to access database fields
     const dbProfile = rawProfile as any;
 
-    return {
-      firstName: dbProfile.first_name,
-      lastName: dbProfile.last_name,
-      bio: dbProfile.bio,
-      primaryPlatform: dbProfile.primary_platform,
-      contentType: dbProfile.content_types?.[0] || null,
-      audienceType: null, // Field doesn't exist in database
-      audienceLocation: dbProfile.audience_location || { primary: 'Global' },
-      industries: dbProfile.industries || null,
-      creatorType: null, // Field doesn't exist in database
-      isProfileComplete: dbProfile.is_profile_complete || false,
-      platforms: dbProfile.platforms || [],
-      contentTypes: dbProfile.content_types || [],
-      socialConnections: {
-        instagram: !!dbProfile.social_handles?.instagram,
-        tiktok: !!dbProfile.social_handles?.tiktok,
-        youtube: !!dbProfile.social_handles?.youtube,
-        linkedin: !!dbProfile.social_handles?.linkedin,
-      },
-      socialHandles: dbProfile.social_handles || {},
-      followerCount: dbProfile.follower_count?.toString() || '0', // Convert to string
-      engagementRate: dbProfile.engagement_rate?.toString() || '0', // Convert to string
-      avatarUrl: dbProfile.avatar_url,
-      bannerUrl: dbProfile.banner_url
+    // Check if user has connected social profiles
+    const hasConnectedSocials = analyticsData && analyticsData.length > 0;
+    
+    // Determine if profile is complete based on social connections OR database profile completion
+    const isProfileComplete = hasConnectedSocials || (dbProfile?.is_profile_complete === true);
+
+    // Build social connections based on analytics data
+    const socialConnections = {
+      instagram: analyticsData?.some(data => data.platform === 'instagram') || false,
+      tiktok: analyticsData?.some(data => data.platform === 'tiktok') || false,
+      youtube: analyticsData?.some(data => data.platform === 'youtube') || false,
+      linkedin: analyticsData?.some(data => data.platform === 'linkedin') || false,
     };
-  }, [rawProfile]);
+
+    // Build social handles from analytics data
+    const socialHandles: { [key: string]: string } = {};
+    analyticsData?.forEach(data => {
+      if (data.platform && data.identifier) {
+        socialHandles[data.platform] = data.identifier;
+      }
+    });
+
+    return {
+      firstName: dbProfile?.first_name || null,
+      lastName: dbProfile?.last_name || null,
+      bio: dbProfile?.bio || null,
+      primaryPlatform: dbProfile?.primary_platform || (analyticsData?.[0]?.platform) || null,
+      contentType: dbProfile?.content_types?.[0] || null,
+      audienceType: null,
+      audienceLocation: dbProfile?.audience_location || { primary: 'Global' },
+      industries: dbProfile?.industries || null,
+      creatorType: null,
+      isProfileComplete,
+      platforms: dbProfile?.platforms || [],
+      contentTypes: dbProfile?.content_types || [],
+      socialConnections,
+      socialHandles,
+      followerCount: analyticsData?.[0]?.follower_count?.toString() || dbProfile?.follower_count?.toString() || '0',
+      engagementRate: analyticsData?.[0]?.engagement_rate?.toString() || dbProfile?.engagement_rate?.toString() || '0',
+      avatarUrl: dbProfile?.avatar_url,
+      bannerUrl: dbProfile?.banner_url
+    };
+  }, [rawProfile, analyticsData]);
 
   return {
     profile,
-    isLoading
+    isLoading: authLoading || analyticsLoading
   };
 };

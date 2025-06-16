@@ -6,7 +6,7 @@ import AudienceLocation from '@/components/creator/AudienceLocation';
 import DashboardStats from './DashboardStats';
 import SocialAnalytics from './SocialAnalytics';
 import EarningsChart from './EarningsChart';
-import { CreatorProfile } from '@/hooks/useCreatorProfile'; // Use the interface from the hook
+import { CreatorProfile } from '@/hooks/useCreatorProfile';
 
 interface DashboardContentProps {
   profile: any;
@@ -74,7 +74,14 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     );
   }
 
-  if (!profile?.isProfileComplete && !isPreviewMode) {
+  // Check if user has any social connections or profile data
+  const hasSocialConnections = profile?.socialConnections && 
+    Object.values(profile.socialConnections).some(connected => connected === true);
+  
+  const hasBasicProfile = profile && (profile.firstName || profile.lastName || profile.bio);
+  
+  // Show empty state only if no social connections AND no basic profile data AND not in preview mode
+  if (!hasSocialConnections && !hasBasicProfile && !isPreviewMode) {
     return <EmptyProfileState onStartProfileSetup={onStartProfileSetup} />;
   }
 
