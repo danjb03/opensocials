@@ -18,9 +18,14 @@ export const BudgetSection: React.FC<BudgetSectionProps> = ({
 }) => {
   const watchedBudget = watch('total_budget');
   const watchedPosts = watch('posts_count');
+  const watchedStories = watch('stories_count') || 0;
+  const watchedReels = watch('reels_count') || 0;
 
-  // Calculate estimated per post budget for display
-  const estimatedPerPostBudget = watchedPosts > 0 ? watchedBudget / watchedPosts : 0;
+  // Calculate total deliverables count
+  const totalDeliverables = watchedPosts + watchedStories + watchedReels;
+  
+  // Calculate estimated per deliverable budget for display
+  const estimatedPerDeliverable = totalDeliverables > 0 ? watchedBudget / totalDeliverables : 0;
 
   return (
     <div className="space-y-4">
@@ -49,10 +54,13 @@ export const BudgetSection: React.FC<BudgetSectionProps> = ({
       </div>
 
       {/* Estimated cost per deliverable */}
-      {estimatedPerPostBudget > 0 && (
+      {estimatedPerDeliverable > 0 && (
         <div className="bg-card border border-border rounded-lg p-3">
           <p className="text-sm text-foreground">
-            <strong>Estimated per post:</strong> ${estimatedPerPostBudget.toFixed(2)}
+            <strong>Estimated per deliverable:</strong> ${estimatedPerDeliverable.toFixed(2)}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Based on {totalDeliverables} total deliverable{totalDeliverables !== 1 ? 's' : ''} ({watchedPosts} post{watchedPosts !== 1 ? 's' : ''}{watchedStories > 0 ? `, ${watchedStories} stor${watchedStories !== 1 ? 'ies' : 'y'}` : ''}{watchedReels > 0 ? `, ${watchedReels} reel${watchedReels !== 1 ? 's' : ''}` : ''})
           </p>
         </div>
       )}
