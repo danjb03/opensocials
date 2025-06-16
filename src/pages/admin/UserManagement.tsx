@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,12 +27,21 @@ const UserManagement = () => {
   const { data: users = [], isLoading, error } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      console.log('🔍 Fetching users from profiles table...');
+      
+      const { data, error, count } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*', { count: 'exact' })
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      console.log('📊 Query result:', { data, error, count });
+      
+      if (error) {
+        console.error('❌ Error fetching users:', error);
+        throw error;
+      }
+      
+      console.log('✅ Users fetched:', data?.length || 0);
       return data as User[];
     },
   });
@@ -69,11 +77,24 @@ const UserManagement = () => {
     }
   };
 
+  console.log('🎯 Rendering UserManagement with:', { 
+    totalUsers: users.length, 
+    filteredUsers: filteredUsers.length,
+    isLoading,
+    error: error?.message 
+  });
+
   return (
     <div className="container mx-auto p-6 bg-background">
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2 text-foreground">User Management</h1>
         <p className="text-muted-foreground">Manage user accounts, roles, and permissions.</p>
+        
+        {/* Debug info */}
+        <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
+          <strong>Debug:</strong> Found {users.length} total users, showing {filteredUsers.length} after filters
+          {error && <div className="text-red-600">Error: {error.message}</div>}
+        </div>
       </div>
 
       <Card className="mb-6 bg-card border-border">
@@ -129,6 +150,7 @@ const UserManagement = () => {
       {error && (
         <div className="text-destructive-foreground text-center py-6">
           <p>Failed to load users. Please try again later.</p>
+          <p className="text-sm mt-2">Error: {error.message}</p>
         </div>
       )}
 
@@ -149,7 +171,10 @@ const UserManagement = () => {
               {filteredUsers.length === 0 ? (
                 <TableRow className="border-border">
                   <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No users found matching your criteria.
+                    {users.length === 0 
+                      ? "No users found in the system. This might be a permissions issue."
+                      : "No users found matching your criteria."
+                    }
                   </TableCell>
                 </TableRow>
               ) : (
