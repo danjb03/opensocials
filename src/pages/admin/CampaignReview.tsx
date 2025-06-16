@@ -38,22 +38,13 @@ interface CampaignForReview {
 }
 
 export default function CampaignReview() {
+  // ALL HOOKS MUST BE CALLED FIRST - BEFORE ANY CONDITIONAL RETURNS
   const { role } = useUnifiedAuth();
   const [activeTab, setActiveTab] = useState('pending');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
 
-  // Check admin access FIRST before any hooks
-  if (role !== 'admin' && role !== 'super_admin') {
-    return (
-      <AdminCRMLayout>
-        <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Access denied. Admin privileges required.</p>
-        </div>
-      </AdminCRMLayout>
-    );
-  }
-
+  // This query must run regardless of role to avoid hooks violation
   const { data: campaigns = [], isLoading, refetch } = useQuery({
     queryKey: ['campaigns-for-review', activeTab, searchTerm],
     queryFn: async (): Promise<CampaignForReview[]> => {
@@ -117,6 +108,17 @@ export default function CampaignReview() {
     },
     enabled: role === 'admin' || role === 'super_admin', // Only run query if user has admin access
   });
+
+  // NOW we can safely do conditional rendering after all hooks are called
+  if (role !== 'admin' && role !== 'super_admin') {
+    return (
+      <AdminCRMLayout>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">Access denied. Admin privileges required.</p>
+        </div>
+      </AdminCRMLayout>
+    );
+  }
 
   const getTabCount = (status: string) => {
     return campaigns.filter(campaign => {
