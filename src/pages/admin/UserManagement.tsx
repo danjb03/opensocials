@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader, Search } from 'lucide-react';
+import UserEditModal from '@/components/admin/UserEditModal';
 
 interface User {
   id: string;
@@ -24,6 +24,8 @@ const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all-roles');
   const [statusFilter, setStatusFilter] = useState('all-status');
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const { data: users = [], isLoading, error } = useQuery({
     queryKey: ['admin-users'],
@@ -53,6 +55,16 @@ const UserManagement = () => {
     
     return matchesSearch && matchesRole && matchesStatus;
   });
+
+  const handleEditUser = (userId: string) => {
+    setSelectedUserId(userId);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedUserId(null);
+  };
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
@@ -184,7 +196,12 @@ const UserManagement = () => {
                       {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="outline" size="sm" className="border-border text-foreground hover:bg-accent">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="border-border text-foreground hover:bg-accent"
+                        onClick={() => handleEditUser(user.id)}
+                      >
                         Edit
                       </Button>
                     </TableCell>
@@ -195,6 +212,12 @@ const UserManagement = () => {
           </Table>
         </div>
       )}
+
+      <UserEditModal
+        userId={selectedUserId}
+        open={modalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 };
