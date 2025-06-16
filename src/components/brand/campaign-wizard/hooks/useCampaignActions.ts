@@ -20,14 +20,14 @@ export const useCampaignActions = (
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
 
   const createCampaignFromDraft = async (draftData: Partial<CampaignWizardData>) => {
-    if (!brandProfile?.id) {
+    if (!brandProfile?.user_id) {
       throw new Error('No brand profile found');
     }
 
     const { data: campaign, error } = await supabase
       .from('projects_new')
       .insert({
-        brand_id: brandProfile.id,
+        brand_id: brandProfile.user_id,
         name: draftData.name || 'Untitled Campaign',
         description: draftData.description || '',
         campaign_type: draftData.campaign_type || 'Single',
@@ -81,7 +81,7 @@ export const useCampaignActions = (
       await saveDraft();
       
       // If we have sufficient data, create a campaign record
-      if (formData.name && brandProfile?.id) {
+      if (formData.name && brandProfile?.user_id) {
         await createCampaignFromDraft(formData);
         toast.success('Campaign saved successfully!', {
           description: 'You can continue editing it later from your dashboard.'

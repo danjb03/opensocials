@@ -14,16 +14,16 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
 
   // Fetch existing draft
   const { data: existingDraft, isLoading: isDraftLoading } = useQuery({
-    queryKey: ['campaign-draft', brandProfile?.id],
+    queryKey: ['campaign-draft', brandProfile?.user_id],
     queryFn: async () => {
-      if (!brandProfile?.id) return null;
+      if (!brandProfile?.user_id) return null;
       
-      console.log('Fetching draft for brand:', brandProfile.id);
+      console.log('Fetching draft for brand:', brandProfile.user_id);
       
       const { data, error } = await supabase
         .from('project_drafts')
         .select('*')
-        .eq('brand_id', brandProfile.id)
+        .eq('brand_id', brandProfile.user_id)
         .order('updated_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -36,13 +36,13 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
       console.log('Fetched draft:', data);
       return data;
     },
-    enabled: !!brandProfile?.id
+    enabled: !!brandProfile?.user_id
   });
 
   // Save draft mutation
   const saveDraftMutation = useMutation({
     mutationFn: async (data: Partial<CampaignWizardData>) => {
-      if (!brandProfile?.id) {
+      if (!brandProfile?.user_id) {
         console.error('No brand profile available for draft save');
         throw new Error('No brand profile');
       }
@@ -67,7 +67,7 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
             updated_at: new Date().toISOString()
           })
           .eq('id', existingDraft.id)
-          .eq('brand_id', brandProfile.id);
+          .eq('brand_id', brandProfile.user_id);
 
         if (error) {
           console.error('Error updating draft:', error);
@@ -79,7 +79,7 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
         const { error } = await supabase
           .from('project_drafts')
           .insert({
-            brand_id: brandProfile.id,
+            brand_id: brandProfile.user_id,
             draft_data: serializedData,
             current_step: currentStep
           });
@@ -126,7 +126,7 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
       formData.content_requirements?.platforms?.length
     );
 
-    if (hasData && brandProfile?.id) {
+    if (hasData && brandProfile?.user_id) {
       console.log('Form data changed, triggering auto-save');
       triggerAutoSave(formData);
     }
@@ -136,12 +136,12 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
         clearTimeout(autoSaveTimeout);
       }
     };
-  }, [formData, brandProfile?.id]);
+  }, [formData, brandProfile?.user_id]);
 
   // Auto-save when step changes
   useEffect(() => {
     const hasData = formData && Object.keys(formData).length > 0;
-    if (hasData && brandProfile?.id) {
+    if (hasData && brandProfile?.user_id) {
       console.log('Step changed, triggering auto-save');
       triggerAutoSave(formData);
     }
@@ -159,13 +159,13 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
 
   // Clear draft when campaign is published
   const clearDraft = async () => {
-    if (existingDraft?.id && brandProfile?.id) {
+    if (existingDraft?.id && brandProfile?.user_id) {
       console.log('Clearing draft');
       const { error } = await supabase
         .from('project_drafts')
         .delete()
         .eq('id', existingDraft.id)
-        .eq('brand_id', brandProfile.id);
+        .eq('brand_id', brandProfile.user_id);
 
       if (error) {
         console.error('Error clearing draft:', error);
