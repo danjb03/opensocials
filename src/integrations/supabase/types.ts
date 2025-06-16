@@ -734,6 +734,7 @@ export type Database = {
           top_hashtags: Json | null
           top_interests: Json | null
           top_mentions: Json | null
+          updated_at: string
           work_platform_id: string | null
         }
         Insert: {
@@ -768,6 +769,7 @@ export type Database = {
           top_hashtags?: Json | null
           top_interests?: Json | null
           top_mentions?: Json | null
+          updated_at?: string
           work_platform_id?: string | null
         }
         Update: {
@@ -802,6 +804,7 @@ export type Database = {
           top_hashtags?: Json | null
           top_interests?: Json | null
           top_mentions?: Json | null
+          updated_at?: string
           work_platform_id?: string | null
         }
         Relationships: [
