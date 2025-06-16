@@ -32,7 +32,6 @@ export const IndexNavigation = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <NavigationLogo />
-              <span className="font-light text-4xl text-center text-primary-DEFAULT my-0 py-0 px-0 mx-0">Open Socials</span>
             </div>
             {!isMobile && (
               <div className="hidden md:flex items-center space-x-8">
