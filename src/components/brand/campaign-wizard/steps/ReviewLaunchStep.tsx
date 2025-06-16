@@ -283,7 +283,7 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
                 <span className="text-2xl font-bold text-foreground">${totalBudget.toFixed(2)}</span>
               </div>
               <p className="text-sm text-muted-foreground mt-2">
-                All-inclusive campaign cost covering creator payments, platform fees, and support.
+                All-inclusive campaign cost covering creator payments and full campaign support.
               </p>
             </div>
             <div className="text-xs text-muted-foreground bg-blue-950/20 border border-blue-800/20 p-3 rounded-lg flex items-start gap-2">
