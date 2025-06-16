@@ -26,10 +26,22 @@ export const useDraftLoader = (
         if (parsedData.timeline) {
           try {
             if (parsedData.timeline.start_date) {
-              parsedData.timeline.start_date = new Date(parsedData.timeline.start_date);
+              const startDate = new Date(parsedData.timeline.start_date);
+              // Check if date is valid
+              if (!isNaN(startDate.getTime())) {
+                parsedData.timeline.start_date = startDate;
+              } else {
+                parsedData.timeline.start_date = undefined;
+              }
             }
             if (parsedData.timeline.end_date) {
-              parsedData.timeline.end_date = new Date(parsedData.timeline.end_date);
+              const endDate = new Date(parsedData.timeline.end_date);
+              // Check if date is valid
+              if (!isNaN(endDate.getTime())) {
+                parsedData.timeline.end_date = endDate;
+              } else {
+                parsedData.timeline.end_date = undefined;
+              }
             }
           } catch (dateError) {
             console.warn('Error parsing timeline dates:', dateError);
@@ -40,6 +52,14 @@ export const useDraftLoader = (
             };
           }
         }
+
+        // Ensure content_requirements has proper structure
+        if (!parsedData.content_requirements) {
+          parsedData.content_requirements = {
+            content_types: [],
+            platforms: []
+          };
+        }
         
         console.log('Parsed draft data:', parsedData);
         
@@ -48,7 +68,8 @@ export const useDraftLoader = (
         
         // Then set the current step if available
         if (existingDraft.current_step && existingDraft.current_step > 0) {
-          setCurrentStep(Math.min(existingDraft.current_step, 5)); // Ensure step is between 1-5
+          const validStep = Math.max(1, Math.min(existingDraft.current_step, 5));
+          setCurrentStep(validStep);
         }
         
         hasLoadedRef.current = true;
@@ -67,7 +88,7 @@ export const useDraftLoader = (
       // Add small delay to prevent race conditions with form initialization
       loadTimeoutRef.current = setTimeout(() => {
         loadDraft();
-      }, 100);
+      }, 200); // Slightly longer delay to ensure form is ready
     }
 
     return () => {

@@ -33,6 +33,10 @@ export const useDraftMutation = (
           if (value instanceof Date) {
             return value.toISOString();
           }
+          // Handle undefined values
+          if (value === undefined) {
+            return null;
+          }
           return value;
         });
 
@@ -42,6 +46,8 @@ export const useDraftMutation = (
           return;
         }
 
+        const now = new Date().toISOString();
+
         if (existingDraft?.id) {
           console.log('Updating existing draft:', existingDraft.id);
           const { error } = await supabase
@@ -49,7 +55,7 @@ export const useDraftMutation = (
             .update({
               draft_data: serializedData,
               current_step: currentStep,
-              updated_at: new Date().toISOString()
+              updated_at: now
             })
             .eq('id', existingDraft.id)
             .eq('brand_id', userId);
@@ -66,7 +72,9 @@ export const useDraftMutation = (
             .insert({
               brand_id: userId,
               draft_data: serializedData,
-              current_step: currentStep
+              current_step: currentStep,
+              created_at: now,
+              updated_at: now
             });
 
           if (error) {

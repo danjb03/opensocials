@@ -63,8 +63,14 @@ export const useCampaignActions = (
     try {
       console.log('Completing step with data:', stepData);
       
-      // Save the draft first
-      await saveDraft();
+      // Save the draft with a timeout to prevent hanging
+      await Promise.race([
+        saveDraft(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Save timeout')), 10000)
+        )
+      ]);
+      
       setLastSaveTime(new Date());
       
       toast.success(`Step ${currentStep} Complete`, {
@@ -72,8 +78,8 @@ export const useCampaignActions = (
       });
     } catch (error) {
       console.error('Error saving step:', error);
-      toast.error('Failed to save step progress');
-      throw error;
+      // Don't block progression if save fails
+      toast.error('Failed to save step progress, but continuing');
     }
   };
 
@@ -98,9 +104,20 @@ export const useCampaignActions = (
         return;
       }
 
-      // First save the draft
-      await saveDraft();
-      setLastSaveTime(new Date());
+      // First save the draft with timeout
+      try {
+        await Promise.race([
+          saveDraft(),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Save timeout')), 10000)
+          )
+        ]);
+        setLastSaveTime(new Date());
+      } catch (saveError) {
+        console.error('Error saving draft:', saveError);
+        toast.error('Failed to save draft');
+        return;
+      }
       
       // If we have sufficient data for a campaign, create it
       if (formData.name && formData.name.trim()) {
@@ -150,7 +167,11 @@ export const useCampaignActions = (
       
       // Clear the draft after successful campaign creation
       if (draftId) {
-        await clearDraft();
+        try {
+          await clearDraft();
+        } catch (clearError) {
+          console.warn('Failed to clear draft after campaign creation:', clearError);
+        }
       }
       
       toast.success('Campaign submitted for review!', {

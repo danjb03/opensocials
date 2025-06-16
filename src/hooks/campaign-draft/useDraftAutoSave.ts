@@ -1,8 +1,8 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { CampaignWizardData } from '@/types/campaignWizard';
 
-const AUTO_SAVE_DELAY = 5000; // 5 seconds to reduce frequency
+const AUTO_SAVE_DELAY = 3000; // 3 seconds to reduce frequency
 
 export const useDraftAutoSave = (
   formData: Partial<CampaignWizardData>,
@@ -16,11 +16,29 @@ export const useDraftAutoSave = (
 ) => {
   const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
 
+  // Memoized function to check if data has meaningful content
+  const hasMeaningfulData = useCallback((data: Partial<CampaignWizardData>) => {
+    return data && (
+      (data.name && data.name.trim().length > 0) || 
+      data.campaign_type || 
+      (data.description && data.description.trim().length > 0) || 
+      (data.total_budget && data.total_budget > 0) ||
+      (data.content_requirements?.platforms && data.content_requirements.platforms.length > 0) ||
+      (data.content_requirements?.content_types && data.content_requirements.content_types.length > 0)
+    );
+  }, []);
+
   // Auto-save function with better debouncing and change detection
-  const triggerAutoSave = (data: Partial<CampaignWizardData>) => {
+  const triggerAutoSave = useCallback((data: Partial<CampaignWizardData>) => {
     // Don't auto-save while loading draft data or already saving
-    if (isLoadingDraftRef.current || isDraftLoading || isSavingRef.current) {
-      console.log('Skipping auto-save: draft is loading or already saving');
+    if (isLoadingDraftRef.current || isDraftLoading || isSavingRef.current || !userId) {
+      console.log('Skipping auto-save: draft is loading, already saving, or no user');
+      return;
+    }
+
+    // Check if data has meaningful content
+    if (!hasMeaningfulData(data)) {
+      console.log('Skipping auto-save: no meaningful data');
       return;
     }
 
@@ -44,26 +62,28 @@ export const useDraftAutoSave = (
     }
 
     const timeout = setTimeout(() => {
-      if (Object.keys(data).length > 0 && !isSavingRef.current) {
+      if (!isSavingRef.current && hasMeaningfulData(data)) {
         console.log('Auto-saving draft after delay');
         triggerSave(data, currentStep);
       }
     }, AUTO_SAVE_DELAY);
 
     setAutoSaveTimeout(timeout);
-  };
+  }, [
+    autoSaveTimeout, 
+    currentStep, 
+    hasMeaningfulData, 
+    isDraftLoading, 
+    isLoadingDraftRef, 
+    isSavingRef, 
+    lastSavedDataRef, 
+    triggerSave, 
+    userId
+  ]);
 
   // Auto-save when form data changes (with better validation)
   useEffect(() => {
-    const hasMeaningfulData = formData && (
-      formData.name || 
-      formData.campaign_type || 
-      formData.description || 
-      formData.total_budget ||
-      (formData.content_requirements?.platforms && formData.content_requirements.platforms.length > 0)
-    );
-
-    if (hasMeaningfulData && userId && !isLoadingDraftRef.current && !isDraftLoading) {
+    if (userId && !isLoadingDraftRef.current && !isDraftLoading && hasMeaningfulData(formData)) {
       console.log('Form data changed, triggering auto-save');
       triggerAutoSave(formData);
     }
@@ -73,16 +93,15 @@ export const useDraftAutoSave = (
         clearTimeout(autoSaveTimeout);
       }
     };
-  }, [formData, userId]);
+  }, [formData, userId, isDraftLoading, triggerAutoSave, hasMeaningfulData, autoSaveTimeout]);
 
   // Auto-save when step changes (but only if we have data)
   useEffect(() => {
-    const hasData = formData && Object.keys(formData).length > 0;
-    if (hasData && userId && !isLoadingDraftRef.current && !isDraftLoading && !isSavingRef.current) {
+    if (hasMeaningfulData(formData) && userId && !isLoadingDraftRef.current && !isDraftLoading && !isSavingRef.current) {
       console.log('Step changed, triggering auto-save');
       triggerAutoSave(formData);
     }
-  }, [currentStep]);
+  }, [currentStep, formData, hasMeaningfulData, isDraftLoading, isLoadingDraftRef, isSavingRef, triggerAutoSave, userId]);
 
   return { triggerAutoSave };
 };

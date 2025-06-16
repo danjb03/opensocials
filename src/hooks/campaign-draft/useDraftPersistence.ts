@@ -12,6 +12,7 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
   const lastSavedDataRef = useRef<string>('');
   const isLoadingDraftRef = useRef(false);
   const isSavingRef = useRef(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Use user.id if brandProfile.user_id is not available
   const userId = brandProfile?.user_id || user?.id;
@@ -30,7 +31,7 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
   // Draft clearing functionality
   const { clearDraft } = useDraftClear(userId, existingDraft, lastSavedDataRef);
 
-  // Auto-save functionality
+  // Auto-save functionality with debouncing
   const { triggerAutoSave } = useDraftAutoSave(
     formData,
     currentStep,
@@ -39,7 +40,19 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
     isLoadingDraftRef,
     isSavingRef,
     lastSavedDataRef,
-    (data, step) => saveDraftMutation.mutate({ data, currentStep: step })
+    (data, step) => {
+      // Clear any existing timeout
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      
+      // Debounce the save operation
+      saveTimeoutRef.current = setTimeout(() => {
+        if (!isSavingRef.current) {
+          saveDraftMutation.mutate({ data, currentStep: step });
+        }
+      }, 1000); // 1 second debounce
+    }
   );
 
   // Track when draft is loading
@@ -47,9 +60,24 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
     isLoadingDraftRef.current = isDraftLoading;
   }, [isDraftLoading]);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Manual save function with better error handling
   const saveDraft = async () => {
     console.log('Manual save triggered');
+    
+    // Clear any pending auto-save
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
     if (!formData || Object.keys(formData).length === 0) {
       console.log('No data to save');
       throw new Error('No data to save');
@@ -57,7 +85,7 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
     
     if (isSavingRef.current) {
       console.log('Save already in progress');
-      throw new Error('Save already in progress');
+      return Promise.resolve(); // Return resolved promise instead of throwing
     }
     
     return saveDraftMutation.mutateAsync({ data: formData, currentStep });
