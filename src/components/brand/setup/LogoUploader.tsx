@@ -8,10 +8,11 @@ interface LogoUploaderProps {
   logoPreview: string | null;
   logoUrl: string | null;
   onLogoChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onLogoFileSelect: (file: File) => void;
   onClearLogo: () => void;
 }
 
-const LogoUploader = ({ logoPreview, logoUrl, onLogoChange, onClearLogo }: LogoUploaderProps) => {
+const LogoUploader = ({ logoPreview, logoUrl, onLogoChange, onLogoFileSelect, onClearLogo }: LogoUploaderProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const currentLogo = logoPreview || logoUrl;
 
@@ -33,11 +34,7 @@ const LogoUploader = ({ logoPreview, logoUrl, onLogoChange, onClearLogo }: LogoU
     if (files.length > 0) {
       const file = files[0];
       if (file.type.startsWith('image/')) {
-        // Create a synthetic event to match the expected type
-        const syntheticEvent = {
-          target: { files: [file] }
-        } as React.ChangeEvent<HTMLInputElement>;
-        onLogoChange(syntheticEvent);
+        onLogoFileSelect(file);
       }
     }
   };

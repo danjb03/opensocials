@@ -25,6 +25,17 @@ export const useProfileSetup = () => {
     useLogoUpload(user?.id);
   const { redirectToDashboard } = useBrandNavigation();
 
+  // Handle direct file selection from drag and drop
+  const handleLogoFileSelect = (file: File) => {
+    const preview = URL.createObjectURL(file);
+    const syntheticEvent = {
+      target: {
+        files: [file]
+      }
+    } as any;
+    handleLogoChange(syntheticEvent);
+  };
+
   // Load existing profile when component mounts
   useEffect(() => {
     const loadExistingProfile = async () => {
@@ -206,6 +217,7 @@ export const useProfileSetup = () => {
     isLoading,
     existingProfile,
     handleLogoChange,
+    handleLogoFileSelect,
     clearLogo,
     handleSkipForNow,
     handleSubmit

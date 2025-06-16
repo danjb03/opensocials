@@ -22,6 +22,7 @@ interface ProfileFormProps {
   logoPreview: string | null;
   logoUrl: string | null;
   onLogoChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onLogoFileSelect: (file: File) => void;
   onClearLogo: () => void;
   isLoading: boolean;
   onSubmit: (e: React.FormEvent) => void;
@@ -44,6 +45,7 @@ const ProfileForm = ({
   logoPreview,
   logoUrl,
   onLogoChange,
+  onLogoFileSelect,
   onClearLogo,
   isLoading,
   onSubmit,
@@ -69,6 +71,7 @@ const ProfileForm = ({
         logoPreview={logoPreview}
         logoUrl={logoUrl}
         onLogoChange={onLogoChange}
+        onLogoFileSelect={onLogoFileSelect}
         onClearLogo={onClearLogo}
       />
       
