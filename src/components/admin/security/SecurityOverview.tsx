@@ -5,7 +5,6 @@ import { Database } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { SecurityMetrics } from './SecurityMetrics';
 import { AlertsCard } from './AlertsCard';
-import { ActionsCard } from './ActionsCard';
 
 export function SecurityOverview() {
   const { data: stats, isLoading } = useQuery({
@@ -72,13 +71,12 @@ export function SecurityOverview() {
       {/* Metrics Grid */}
       <SecurityMetrics stats={stats} />
 
-      {/* Action Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Alerts Card - Single column layout */}
+      <div className="max-w-2xl">
         <AlertsCard 
           pendingRoles={stats?.pendingRoles} 
           flaggedUsers={stats?.flaggedUsers} 
         />
-        <ActionsCard />
       </div>
     </div>
   );
