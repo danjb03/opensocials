@@ -17,9 +17,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useUserDataSync();
 
   useEffect(() => {
+    console.log('🔐 Setting up auth state listener...');
+    
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log('🔐 Auth state change:', event, session?.user?.id);
         
         setSession(session);
@@ -29,10 +31,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (session?.user) {
           setEmailConfirmed(!!session.user.email_confirmed_at);
           
-          // Fetch user role with improved priority logic
-          setTimeout(() => {
-            retrieveRole(session.user.id);
-          }, 0);
+          // Only fetch role if email is confirmed or if email confirmation is disabled
+          if (session.user.email_confirmed_at || event === 'SIGNED_IN') {
+            console.log('👤 User authenticated, fetching role...');
+            // Defer role fetching to prevent potential auth deadlocks
+            setTimeout(() => {
+              retrieveRole(session.user.id);
+            }, 100);
+          } else {
+            console.log('📧 Email not confirmed yet, skipping role fetch');
+            setRole(null);
+            setIsLoading(false);
+          }
         } else {
           setRole(null);
           setEmailConfirmed(null);
@@ -50,7 +60,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (session?.user) {
         setEmailConfirmed(!!session.user.email_confirmed_at);
-        retrieveRole(session.user.id);
+        if (session.user.email_confirmed_at) {
+          retrieveRole(session.user.id);
+        } else {
+          setIsLoading(false);
+        }
       } else {
         setIsLoading(false);
       }

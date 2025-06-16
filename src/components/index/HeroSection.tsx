@@ -31,13 +31,27 @@ export const HeroSection = ({ user }: HeroSectionProps) => {
 
             {!user ? (
               <div className="space-y-6">
-                <Button 
-                  variant="connect"
-                  size="connect"
-                  onClick={() => setShowInterestModal(true)}
-                >
-                  Register
-                </Button>
+                <div className="flex gap-4 justify-center">
+                  <Button 
+                    variant="connect"
+                    size="connect"
+                    onClick={() => navigate('/auth')}
+                    className="bg-white text-black hover:bg-gray-200"
+                  >
+                    Get Started
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    size="connect"
+                    onClick={() => setShowInterestModal(true)}
+                    className="border-white text-white hover:bg-white hover:text-black"
+                  >
+                    Register Interest
+                  </Button>
+                </div>
+                <p className="text-sm text-gray-500">
+                  Join thousands of creators and brands already using our platform
+                </p>
               </div>
             ) : null}
           </div>
