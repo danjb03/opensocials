@@ -11,7 +11,7 @@ import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import AdminCRMLayout from '@/components/layouts/AdminCRMLayout';
 import { CampaignReviewTable } from '@/components/admin/campaign-review/CampaignReviewTable';
 import { ReviewStats } from '@/components/admin/campaign-review/ReviewStats';
-import { AIReviewPanel } from '@/components/admin/campaign-review/AIReviewPanel';
+import { CampaignReviewModal } from '@/components/admin/campaign-review/CampaignReviewModal';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CampaignForReview {
@@ -25,6 +25,11 @@ interface CampaignForReview {
   review_status: string;
   review_priority: string;
   created_at: string;
+  description?: string;
+  start_date?: string;
+  end_date?: string;
+  content_requirements?: any;
+  platforms?: string[];
   brand_profiles?: {
     company_name: string;
   } | null;
@@ -42,7 +47,7 @@ export default function CampaignReview() {
   const { role } = useUnifiedAuth();
   const [activeTab, setActiveTab] = useState('pending');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
+  const [selectedCampaign, setSelectedCampaign] = useState<CampaignForReview | null>(null);
 
   // This query must run regardless of role to avoid hooks violation
   const { data: campaigns = [], isLoading, refetch } = useQuery({
@@ -70,9 +75,6 @@ export default function CampaignReview() {
         case 'pending':
           query = query.eq('review_status', 'pending_review');
           break;
-        case 'under_review':
-          query = query.eq('review_status', 'under_review');
-          break;
         case 'approved':
           query = query.eq('review_status', 'approved');
           break;
@@ -94,7 +96,7 @@ export default function CampaignReview() {
         throw error;
       }
       
-      // Transform the data to ensure proper typing and handle null brand_profiles using optional chaining
+      // Transform the data to ensure proper typing
       return (data || []).map(campaign => {
         const brandProfiles = (campaign.brand_profiles as any)?.company_name
           ? { company_name: (campaign.brand_profiles as any).company_name }
@@ -106,7 +108,7 @@ export default function CampaignReview() {
         };
       }) as CampaignForReview[];
     },
-    enabled: role === 'admin' || role === 'super_admin', // Only run query if user has admin access
+    enabled: role === 'admin' || role === 'super_admin',
   });
 
   // NOW we can safely do conditional rendering after all hooks are called
@@ -125,8 +127,6 @@ export default function CampaignReview() {
       switch (status) {
         case 'pending':
           return campaign.review_status === 'pending_review';
-        case 'under_review':
-          return campaign.review_status === 'under_review';
         case 'approved':
           return campaign.review_status === 'approved';
         case 'rejected':
@@ -139,6 +139,13 @@ export default function CampaignReview() {
     }).length;
   };
 
+  const handleCampaignSelect = (campaignId: string) => {
+    const campaign = campaigns.find(c => c.id === campaignId);
+    if (campaign) {
+      setSelectedCampaign(campaign);
+    }
+  };
+
   return (
     <AdminCRMLayout>
       <div className="space-y-6">
@@ -146,10 +153,10 @@ export default function CampaignReview() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
               <Bot className="h-8 w-8" />
-              AI Campaign Review System
+              Campaign Review System
             </h1>
             <p className="text-muted-foreground">
-              AI-powered campaign analysis and approval workflow
+              Review and approve campaigns with R4 AI assistance
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -179,25 +186,17 @@ export default function CampaignReview() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="pending" className="gap-2">
-              Pending Review
+              Campaigns to Review
               {getTabCount('pending') > 0 && (
                 <Badge variant="secondary" className="ml-1">
                   {getTabCount('pending')}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="under_review" className="gap-2">
-              Under Review
-              {getTabCount('under_review') > 0 && (
-                <Badge variant="secondary" className="ml-1">
-                  {getTabCount('under_review')}
-                </Badge>
-              )}
-            </TabsTrigger>
             <TabsTrigger value="approved" className="gap-2">
-              Approved
+              Accepted
               {getTabCount('approved') > 0 && (
                 <Badge variant="secondary" className="ml-1">
                   {getTabCount('approved')}
@@ -222,28 +221,27 @@ export default function CampaignReview() {
             </TabsTrigger>
           </TabsList>
 
-          <div className={`grid gap-6 ${selectedCampaign ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}>
-            <div className={selectedCampaign ? 'lg:col-span-2' : 'col-span-1'}>
-              <TabsContent value={activeTab} className="space-y-6 mt-0">
-                <CampaignReviewTable 
-                  campaigns={campaigns}
-                  isLoading={isLoading}
-                  onSelectCampaign={setSelectedCampaign}
-                  selectedCampaign={selectedCampaign}
-                />
-              </TabsContent>
-            </div>
-
-            {selectedCampaign && (
-              <div className="lg:col-span-1">
-                <AIReviewPanel 
-                  campaignId={selectedCampaign}
-                  onReviewComplete={() => refetch()}
-                />
-              </div>
-            )}
-          </div>
+          <TabsContent value={activeTab} className="space-y-6 mt-0">
+            <CampaignReviewTable 
+              campaigns={campaigns}
+              isLoading={isLoading}
+              onSelectCampaign={handleCampaignSelect}
+              selectedCampaign={selectedCampaign?.id || null}
+            />
+          </TabsContent>
         </Tabs>
+
+        {selectedCampaign && (
+          <CampaignReviewModal
+            campaign={selectedCampaign}
+            open={!!selectedCampaign}
+            onClose={() => setSelectedCampaign(null)}
+            onReviewComplete={() => {
+              refetch();
+              setSelectedCampaign(null);
+            }}
+          />
+        )}
       </div>
     </AdminCRMLayout>
   );

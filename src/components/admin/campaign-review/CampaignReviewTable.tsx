@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Eye, Bot, AlertTriangle } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { formatCurrency } from '@/utils/project';
 
 interface Campaign {
@@ -21,13 +21,6 @@ interface Campaign {
   brand_profiles?: {
     company_name: string;
   } | null;
-  campaign_reviews?: {
-    id: string;
-    ai_decision: string;
-    ai_score: number;
-    human_decision: string;
-    reviewed_at: string;
-  }[];
 }
 
 interface CampaignReviewTableProps {
@@ -47,8 +40,6 @@ export function CampaignReviewTable({
     switch (status) {
       case 'pending_review':
         return <Badge variant="secondary">Pending Review</Badge>;
-      case 'under_review':
-        return <Badge className="bg-blue-100 text-blue-800">Under Review</Badge>;
       case 'approved':
         return <Badge className="bg-green-100 text-green-800">Approved</Badge>;
       case 'rejected':
@@ -75,35 +66,6 @@ export function CampaignReviewTable({
     }
   };
 
-  const getAIDecisionBadge = (decision: string | undefined) => {
-    if (!decision) return null;
-    
-    switch (decision) {
-      case 'approved':
-        return <Badge className="bg-green-100 text-green-800 gap-1">
-          <Bot className="h-3 w-3" />
-          AI Approved
-        </Badge>;
-      case 'rejected':
-        return <Badge variant="destructive" className="gap-1">
-          <Bot className="h-3 w-3" />
-          AI Rejected
-        </Badge>;
-      case 'flagged':
-        return <Badge className="bg-yellow-100 text-yellow-800 gap-1">
-          <AlertTriangle className="h-3 w-3" />
-          AI Flagged
-        </Badge>;
-      case 'needs_review':
-        return <Badge variant="secondary" className="gap-1">
-          <Bot className="h-3 w-3" />
-          Needs Review
-        </Badge>;
-      default:
-        return null;
-    }
-  };
-
   if (isLoading) {
     return (
       <Card>
@@ -125,7 +87,6 @@ export function CampaignReviewTable({
                 <TableHead>Brand</TableHead>
                 <TableHead>Budget</TableHead>
                 <TableHead>Priority</TableHead>
-                <TableHead>AI Decision</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -134,13 +95,12 @@ export function CampaignReviewTable({
             <TableBody>
               {campaigns.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     No campaigns found for this status
                   </TableCell>
                 </TableRow>
               ) : (
                 campaigns.map((campaign) => {
-                  const latestReview = campaign.campaign_reviews?.[0];
                   const isSelected = selectedCampaign === campaign.id;
                   
                   return (
@@ -165,9 +125,6 @@ export function CampaignReviewTable({
                       </TableCell>
                       <TableCell>
                         {getPriorityBadge(campaign.review_priority)}
-                      </TableCell>
-                      <TableCell>
-                        {getAIDecisionBadge(latestReview?.ai_decision)}
                       </TableCell>
                       <TableCell>
                         {getReviewStatusBadge(campaign.review_status)}
