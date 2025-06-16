@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Network, Database, Users, FileText, CreditCard, Shield, Zap } from 'lucide-react';
+import { Network, Database, Users, FileText, CreditCard, Shield, Zap, Map } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -10,10 +10,11 @@ import SystemArchitecture from '@/components/admin/platform-map/SystemArchitectu
 import DatabaseSchema from '@/components/admin/platform-map/DatabaseSchema';
 import UserFlows from '@/components/admin/platform-map/UserFlows';
 import DealWorkflow from '@/components/admin/platform-map/DealWorkflow';
+import InteractiveSystemMap from '@/components/admin/platform-map/InteractiveSystemMap';
 
 export default function PlatformMap() {
   const { role } = useUnifiedAuth();
-  const [activeTab, setActiveTab] = useState('architecture');
+  const [activeTab, setActiveTab] = useState('map');
 
   // Check admin access
   if (role !== 'admin' && role !== 'super_admin') {
@@ -46,7 +47,11 @@ export default function PlatformMap() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="map" className="gap-2">
+              <Map className="h-4 w-4" />
+              Interactive Map
+            </TabsTrigger>
             <TabsTrigger value="architecture" className="gap-2">
               <Zap className="h-4 w-4" />
               System Architecture
@@ -64,6 +69,20 @@ export default function PlatformMap() {
               Deal Process
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="map" className="space-y-6">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-foreground">Interactive System Architecture</CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  Drag, zoom, and explore the platform's architecture with real-time connections and bottleneck visualization
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <InteractiveSystemMap />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="architecture" className="space-y-6">
             <SystemArchitecture />
