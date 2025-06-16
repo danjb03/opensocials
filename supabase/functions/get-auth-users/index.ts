@@ -14,6 +14,7 @@ Deno.serve(async (req) => {
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      console.error('No authorization header provided');
       return new Response(
         JSON.stringify({ error: 'Authorization header required' }),
         { status: 401, headers: corsHeaders }
@@ -21,11 +22,20 @@ Deno.serve(async (req) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    // Create admin client with service role key
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
 
-    // Validate admin access
-    const validation = await validateSuperAdmin(supabase, token);
+    // Validate admin access using the user's token
+    const supabaseUser = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!);
+    const validation = await validateSuperAdmin(supabaseUser, token);
     if (!validation.isValid) {
+      console.error('Admin validation failed:', validation.message);
       return new Response(
         JSON.stringify({ error: validation.message }),
         { status: validation.status, headers: corsHeaders }
@@ -43,8 +53,8 @@ Deno.serve(async (req) => {
 
     console.log(`Admin ${validation.userId} fetching auth users - page: ${page}, per_page: ${per_page}`);
 
-    // Get users from auth.users table using admin API
-    const { data, error } = await supabase.auth.admin.listUsers({
+    // Get users from auth.users table using admin client
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({
       page,
       perPage: per_page
     });
@@ -56,6 +66,8 @@ Deno.serve(async (req) => {
         { status: 500, headers: corsHeaders }
       );
     }
+
+    console.log(`Successfully fetched ${data.users?.length || 0} users (total: ${data.total || 0})`);
 
     const response = {
       users: data.users || [],
@@ -70,7 +82,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error in get-auth-users function:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Internal server error', details: error.message }),
       { status: 500, headers: corsHeaders }
     );
   }

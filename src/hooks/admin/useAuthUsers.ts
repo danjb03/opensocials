@@ -22,6 +22,8 @@ export const useAuthUsers = (page = 1, perPage = 50) => {
   return useQuery({
     queryKey: ['auth-users', page, perPage],
     queryFn: async (): Promise<AuthUsersResponse> => {
+      console.log('Fetching auth users from edge function...');
+      
       // Call edge function to get auth users (requires admin privileges)
       const { data, error } = await supabase.functions.invoke('get-auth-users', {
         body: { page, per_page: perPage }
@@ -32,8 +34,10 @@ export const useAuthUsers = (page = 1, perPage = 50) => {
         throw new Error(`Failed to fetch users: ${error.message}`);
       }
 
+      console.log('Successfully fetched users:', data);
       return data;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 2,
   });
 };
