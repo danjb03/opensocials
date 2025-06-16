@@ -33,14 +33,6 @@ export const HeroSection = ({ user }: HeroSectionProps) => {
               <div className="space-y-6">
                 <div className="flex gap-4 justify-center">
                   <Button 
-                    variant="connect"
-                    size="connect"
-                    onClick={() => navigate('/auth')}
-                    className="bg-white text-black hover:bg-gray-200"
-                  >
-                    Get Started
-                  </Button>
-                  <Button 
                     variant="outline"
                     size="connect"
                     onClick={() => setShowInterestModal(true)}
