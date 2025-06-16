@@ -49,11 +49,7 @@ const Dashboard = () => {
     <>
       <CreatorLayout>
         <DashboardContent 
-          profile={{
-            ...profile,
-            // Map the database field to what the component expects
-            isProfileComplete: profile?.is_profile_complete || false
-          }}
+          profile={profile}
           isLoading={isLoading}
           isEditing={false}
           isPreviewMode={false}
