@@ -77,7 +77,7 @@ const ProfileSetup = () => {
     setIsLoading(true);
 
     try {
-      // Update creator profile
+      // Update creator profile with all required fields
       const { error } = await supabase
         .from('creator_profiles')
         .upsert({
@@ -86,14 +86,19 @@ const ProfileSetup = () => {
           last_name: lastName.trim(),
           bio: bio.trim(),
           primary_platform: primaryPlatforms.join(', '),
+          content_type: contentTypes.join(', '),
           content_types: contentTypes,
           platforms: primaryPlatforms,
           industries: selectedIndustries,
+          creator_type: creatorType,
+          audience_type: audienceType,
           audience_location: {
             primary: audienceLocation
           },
           is_profile_complete: true,
           updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
         });
 
       if (error) {
