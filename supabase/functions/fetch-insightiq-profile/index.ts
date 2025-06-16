@@ -46,7 +46,10 @@ serve(async (req) => {
     // Parse request body
     const { creator_id, platform, identifier }: FetchProfileRequest = await req.json();
 
+    console.log('Received request:', { creator_id, platform, identifier });
+
     if (!creator_id || !platform || !identifier) {
+      console.error('Missing required fields');
       return new Response(
         JSON.stringify({ error: "Missing required fields: creator_id, platform, identifier" }),
         { status: 400, headers: corsHeaders }
@@ -58,6 +61,7 @@ serve(async (req) => {
 
     // Handle LinkedIn manually (skip InsightIQ call)
     if (platform === "linkedin") {
+      console.log('Processing LinkedIn profile manually');
       const { error: upsertError } = await supabase
         .from("creator_public_analytics")
         .upsert({
@@ -86,6 +90,7 @@ serve(async (req) => {
 
     // For other platforms, call InsightIQ API
     if (!work_platform_id) {
+      console.error('Unsupported platform:', platform);
       return new Response(
         JSON.stringify({ error: `Unsupported platform: ${platform}` }),
         { status: 400, headers: corsHeaders }
@@ -98,14 +103,38 @@ serve(async (req) => {
 
     if (!clientId || !secret) {
       console.error("Missing InsightIQ credentials");
-      return new Response(JSON.stringify({ error: "Server configuration error" }), {
-        status: 500,
-        headers: corsHeaders,
-      });
+      // For now, save a basic record without calling InsightIQ
+      const { error: basicUpsertError } = await supabase
+        .from("creator_public_analytics")
+        .upsert({
+          creator_id,
+          platform,
+          work_platform_id,
+          identifier,
+          fetched_at: new Date().toISOString(),
+        }, { onConflict: 'creator_id,platform' });
+
+      if (basicUpsertError) {
+        console.error('Basic upsert error:', basicUpsertError);
+        return new Response(JSON.stringify({ error: "Failed to save profile data" }), {
+          status: 500,
+          headers: corsHeaders,
+        });
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: "Profile saved (InsightIQ credentials not configured)" 
+        }),
+        { headers: corsHeaders }
+      );
     }
 
     // Create Basic Auth header
     const credentials = btoa(`${clientId}:${secret}`);
+
+    console.log('Calling InsightIQ API for platform:', platform);
 
     // Call InsightIQ API
     const insightIQResponse = await fetch("https://api.sandbox.insightiq.ai/v1/social/creators/profiles/analytics", {
@@ -124,26 +153,33 @@ serve(async (req) => {
       const errorText = await insightIQResponse.text();
       console.error('InsightIQ API error:', insightIQResponse.status, errorText);
       
-      // Store error in database
-      await supabase.from("creator_public_analytics").upsert({
-        creator_id,
-        platform,
-        work_platform_id,
-        identifier,
-        fetched_at: new Date().toISOString(),
-      }, { onConflict: 'creator_id,platform' });
+      // Store basic record even if InsightIQ fails
+      const { error: fallbackError } = await supabase
+        .from("creator_public_analytics")
+        .upsert({
+          creator_id,
+          platform,
+          work_platform_id,
+          identifier,
+          fetched_at: new Date().toISOString(),
+        }, { onConflict: 'creator_id,platform' });
+
+      if (fallbackError) {
+        console.error('Fallback upsert error:', fallbackError);
+      }
 
       return new Response(JSON.stringify({ 
-        error: `InsightIQ API error: ${insightIQResponse.status}`,
-        details: errorText 
+        success: true,
+        message: "Profile saved (InsightIQ data unavailable)",
+        warning: `InsightIQ API error: ${insightIQResponse.status}`
       }), {
-        status: 500,
+        status: 200, // Changed to 200 for graceful degradation
         headers: corsHeaders,
       });
     }
 
     const insightIQData = await insightIQResponse.json();
-    console.log('InsightIQ response:', JSON.stringify(insightIQData, null, 2));
+    console.log('InsightIQ response received successfully');
 
     // Extract and map data from InsightIQ response
     const analyticsData = {
@@ -193,6 +229,8 @@ serve(async (req) => {
         headers: corsHeaders,
       });
     }
+
+    console.log('Profile analytics saved successfully');
 
     return new Response(
       JSON.stringify({ 
