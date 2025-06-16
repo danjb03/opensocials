@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
@@ -11,6 +11,8 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
   const { user, brandProfile } = useUnifiedAuth();
   const queryClient = useQueryClient();
   const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  const lastSavedDataRef = useRef<string>('');
+  const isLoadingDraftRef = useRef(false);
 
   // Use user.id if brandProfile.user_id is not available
   const userId = brandProfile?.user_id || user?.id;
@@ -60,6 +62,12 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
         return value;
       });
 
+      // Check if data has actually changed
+      if (serializedData === lastSavedDataRef.current) {
+        console.log('Data unchanged, skipping save');
+        return;
+      }
+
       if (existingDraft?.id) {
         console.log('Updating existing draft:', existingDraft.id);
         const { error } = await supabase
@@ -93,6 +101,9 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
         }
         console.log('Draft created successfully');
       }
+
+      // Update the last saved data reference
+      lastSavedDataRef.current = serializedData;
     },
     onSuccess: () => {
       console.log('Draft save successful, invalidating queries');
@@ -103,8 +114,28 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
     }
   });
 
-  // Auto-save function with debouncing
+  // Auto-save function with debouncing and change detection
   const triggerAutoSave = (data: Partial<CampaignWizardData>) => {
+    // Don't auto-save while loading draft data
+    if (isLoadingDraftRef.current || isDraftLoading) {
+      console.log('Skipping auto-save: draft is loading');
+      return;
+    }
+
+    // Serialize to check for changes
+    const serializedData = JSON.stringify(data, (key, value) => {
+      if (value instanceof Date) {
+        return value.toISOString();
+      }
+      return value;
+    });
+
+    // Skip if data hasn't changed
+    if (serializedData === lastSavedDataRef.current) {
+      console.log('No changes detected, skipping auto-save');
+      return;
+    }
+
     if (autoSaveTimeout) {
       clearTimeout(autoSaveTimeout);
     }
@@ -129,7 +160,7 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
       formData.content_requirements?.platforms?.length
     );
 
-    if (hasData && userId) {
+    if (hasData && userId && !isLoadingDraftRef.current && !isDraftLoading) {
       console.log('Form data changed, triggering auto-save');
       triggerAutoSave(formData);
     }
@@ -144,11 +175,16 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
   // Auto-save when step changes
   useEffect(() => {
     const hasData = formData && Object.keys(formData).length > 0;
-    if (hasData && userId) {
+    if (hasData && userId && !isLoadingDraftRef.current && !isDraftLoading) {
       console.log('Step changed, triggering auto-save');
       triggerAutoSave(formData);
     }
   }, [currentStep]);
+
+  // Track when draft is loading
+  useEffect(() => {
+    isLoadingDraftRef.current = isDraftLoading;
+  }, [isDraftLoading]);
 
   // Manual save function
   const saveDraft = async () => {
@@ -174,6 +210,7 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
         console.error('Error clearing draft:', error);
       } else {
         console.log('Draft cleared successfully');
+        lastSavedDataRef.current = '';
         queryClient.invalidateQueries({ queryKey: ['campaign-draft'] });
       }
     }

@@ -72,6 +72,13 @@ export const useCampaignActions = (
   };
 
   const handleSaveAndExit = async () => {
+    if (isSubmitting) {
+      console.log('Save already in progress, ignoring');
+      return;
+    }
+
+    setIsSubmitting(true);
+    
     try {
       console.log('Save and exit triggered with data:', formData);
       
@@ -80,11 +87,17 @@ export const useCampaignActions = (
         return;
       }
 
+      if (!userId) {
+        toast.error('User not authenticated');
+        return;
+      }
+
       // First save the draft
       await saveDraft();
+      setLastSaveTime(new Date());
       
       // If we have sufficient data, create a campaign record
-      if (formData.name && userId) {
+      if (formData.name) {
         await createCampaignFromDraft(formData);
         toast.success('Campaign saved successfully!', {
           description: 'You can continue editing it later from your dashboard.'
@@ -99,6 +112,8 @@ export const useCampaignActions = (
     } catch (error) {
       console.error('Error saving campaign:', error);
       toast.error('Failed to save campaign. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { CampaignWizardData } from '@/types/campaignWizard';
 
 export const useDraftLoader = (
@@ -7,8 +7,10 @@ export const useDraftLoader = (
   setFormData: (data: Partial<CampaignWizardData>) => void,
   setCurrentStep: (step: number) => void
 ) => {
+  const hasLoadedRef = useRef(false);
+
   const loadDraft = () => {
-    if (existingDraft?.draft_data) {
+    if (existingDraft?.draft_data && !hasLoadedRef.current) {
       try {
         console.log('Loading draft data:', existingDraft.draft_data);
         
@@ -36,6 +38,7 @@ export const useDraftLoader = (
           setCurrentStep(existingDraft.current_step);
         }
         
+        hasLoadedRef.current = true;
         console.log('Draft loaded successfully');
       } catch (error) {
         console.error('Error parsing draft data:', error);
@@ -43,9 +46,9 @@ export const useDraftLoader = (
     }
   };
 
-  // Auto-load draft when it becomes available
+  // Auto-load draft when it becomes available, but only once
   useEffect(() => {
-    if (existingDraft) {
+    if (existingDraft && !hasLoadedRef.current) {
       loadDraft();
     }
   }, [existingDraft]);
