@@ -2,16 +2,71 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users } from 'lucide-react';
-import { useAgencyCreators } from '@/hooks/agency/useAgencyCreators';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { DataTable } from '@/components/ui/data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { AgencyCreator } from '@/hooks/agency/useAgencyCreators';
+
+interface AgencyCreator {
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  primary_platform: string;
+  follower_count: number;
+  engagement_rate: number;
+  status: string;
+  active_deals: number;
+}
 
 const AgencyCreatorCRM = () => {
-  const { data: creators = [], isLoading, error } = useAgencyCreators();
+  const { data: creators = [], isLoading, error } = useQuery({
+    queryKey: ['agency-creators'],
+    queryFn: async (): Promise<AgencyCreator[]> => {
+      const { data, error } = await supabase
+        .from('creator_profiles')
+        .select(`
+          user_id,
+          first_name,
+          last_name,
+          primary_platform,
+          follower_count,
+          engagement_rate,
+          profiles!inner(email, status)
+        `);
+
+      if (error) throw error;
+
+      // Get deal counts for each creator
+      const creatorsWithDeals = await Promise.all(
+        (data || []).map(async (creator) => {
+          const { data: deals } = await supabase
+            .from('creator_deals')
+            .select('status')
+            .eq('creator_id', creator.user_id);
+
+          const activeDeals = deals?.filter(deal => deal.status === 'active' || deal.status === 'accepted').length || 0;
+
+          return {
+            user_id: creator.user_id,
+            first_name: creator.first_name || '',
+            last_name: creator.last_name || '',
+            email: creator.profiles?.email || 'No email',
+            primary_platform: creator.primary_platform || 'Not specified',
+            follower_count: creator.follower_count || 0,
+            engagement_rate: creator.engagement_rate || 0,
+            status: creator.profiles?.status || 'active',
+            active_deals: activeDeals,
+          };
+        })
+      );
+
+      return creatorsWithDeals;
+    },
+  });
 
   const columns: ColumnDef<AgencyCreator>[] = [
     {
@@ -36,7 +91,6 @@ const AgencyCreatorCRM = () => {
     {
       accessorKey: 'primary_platform',
       header: 'Platform',
-      cell: ({ row }) => row.getValue('primary_platform') || 'Not specified',
     },
     {
       accessorKey: 'follower_count',
@@ -67,11 +121,10 @@ const AgencyCreatorCRM = () => {
       },
     },
     {
-      id: 'deals',
+      accessorKey: 'active_deals',
       header: 'Active Deals',
-      cell: () => {
-        // Mock data - in real app this would come from deals query
-        const activeDeals = Math.floor(Math.random() * 3);
+      cell: ({ row }) => {
+        const activeDeals = row.getValue('active_deals') as number;
         return <span className="font-medium">{activeDeals}</span>;
       },
     },
@@ -98,6 +151,10 @@ const AgencyCreatorCRM = () => {
       </div>
     );
   }
+
+  const activeCreators = creators.filter(c => c.status === 'active').length;
+  const totalReach = creators.reduce((total, creator) => total + (creator.follower_count || 0), 0);
+  const totalDeals = creators.reduce((sum, creator) => sum + creator.active_deals, 0);
 
   return (
     <div className="container mx-auto p-6">
@@ -126,9 +183,7 @@ const AgencyCreatorCRM = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {creators.filter(c => c.status === 'active').length}
-            </div>
+            <div className="text-2xl font-bold">{activeCreators}</div>
             <p className="text-xs text-muted-foreground">Currently active</p>
           </CardContent>
         </Card>
@@ -139,9 +194,7 @@ const AgencyCreatorCRM = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {creators.reduce((total, creator) => total + (creator.follower_count || 0), 0).toLocaleString()}
-            </div>
+            <div className="text-2xl font-bold">{totalReach.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">Combined followers</p>
           </CardContent>
         </Card>

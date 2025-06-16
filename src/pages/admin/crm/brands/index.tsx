@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,45 +12,10 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import AdminCRMLayout from '@/components/layouts/AdminCRMLayout';
 import { BrandsTable } from '@/components/admin/crm/BrandsTable';
-import { BrandPagination } from '@/components/admin/crm/BrandPagination';
 import { Search } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-
-// Brand data interface
-interface Brand {
-  brand_id: string;
-  company_name: string | null;
-  email: string | null;
-  industry: string | null;
-  budget_range: string | null;
-  total_deals: number | null;
-  active_deals: number | null;
-  last_active_at: string | null;
-  status: string | null;
-}
-
-// Response interface for the API
-interface BrandCRMResponse {
-  success: boolean;
-  data: Brand[];
-  pagination: {
-    total: number;
-    page: number;
-    pageSize: number;
-    pageCount: number;
-  };
-}
-
-// Pagination metadata interface
-interface PaginationMeta {
-  total: number;
-  page: number;
-  pageSize: number;
-  pageCount: number;
-}
+import { useBrandCRM } from '@/hooks/admin/useBrandCRM';
 
 const BrandsCRM = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -62,74 +26,16 @@ const BrandsCRM = () => {
   const pageSize = parseInt(searchParams.get('pageSize') || '10');
   const searchTerm = searchParams.get('search') || '';
   const statusFilter = searchParams.get('status') || 'all';
-  const orderBy = searchParams.get('orderBy') || 'last_active_at';
-  const orderDirection = searchParams.get('orderDirection') || 'desc';
   
   // Local state for form inputs
   const [search, setSearch] = useState(searchTerm);
   
-  // Fetch brands data from the view directly (fallback approach)
-  const fetchBrands = async (): Promise<BrandCRMResponse> => {
-    try {
-      let query = supabase
-        .from('admin_crm_brands_view')
-        .select('*', { count: 'exact' });
-
-      // Apply search filter
-      if (searchTerm) {
-        query = query.or(`company_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
-      }
-
-      // Apply status filter
-      if (statusFilter && statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
-      }
-
-      // Apply ordering and pagination
-      const from = (page - 1) * pageSize;
-      const to = from + pageSize - 1;
-      
-      query = query
-        .order(orderBy, { ascending: orderDirection === 'asc' })
-        .range(from, to);
-
-      const { data, error, count } = await query;
-
-      if (error) {
-        throw new Error(`Failed to fetch brand data: ${error.message}`);
-      }
-
-      return {
-        success: true,
-        data: (data || []).map(brand => ({
-          brand_id: brand.brand_id || '',
-          company_name: brand.company_name,
-          email: brand.email,
-          industry: brand.industry,
-          budget_range: brand.budget_range,
-          total_deals: brand.total_deals,
-          active_deals: brand.active_deals,
-          last_active_at: brand.last_active_at,
-          status: brand.status || 'active'
-        })),
-        pagination: {
-          total: count || 0,
-          page,
-          pageSize,
-          pageCount: count ? Math.ceil(count / pageSize) : 0,
-        },
-      };
-    } catch (error) {
-      console.error('Error fetching brands:', error);
-      throw error;
-    }
-  };
-  
-  // Query hook for data fetching with proper type
-  const { data, error, isLoading, isFetching } = useQuery<BrandCRMResponse, Error>({
-    queryKey: ['adminBrands', page, pageSize, searchTerm, statusFilter, orderBy, orderDirection],
-    queryFn: fetchBrands,
-    staleTime: 30000
+  // Use real brand CRM hook
+  const { brands, pagination, isLoading, error } = useBrandCRM({
+    search: searchTerm,
+    status: statusFilter,
+    page,
+    pageSize
   });
   
   // Update URL parameters when filters change
@@ -161,12 +67,6 @@ const BrandsCRM = () => {
     updateFilters({ status: value });
   };
   
-  // Handle pagination change
-  const handlePageChange = (newPage: number) => {
-    updateFilters({ page: newPage.toString() });
-    window.scrollTo(0, 0);
-  };
-  
   // Show error toast if fetch fails
   useEffect(() => {
     if (error) {
@@ -178,85 +78,59 @@ const BrandsCRM = () => {
     }
   }, [error, toast]);
   
-  // Get pagination data from the response
-  const pagination: PaginationMeta = data?.pagination || {
-    total: 0,
-    page,
-    pageSize,
-    pageCount: 0
-  };
-  
-  // Get brands data from the response
-  const brands: Brand[] = data?.data || [];
+  // Transform data for BrandsTable component
+  const tableData = brands.map(brand => ({
+    brand_id: brand.id,
+    company_name: brand.companyName,
+    email: brand.email,
+    industry: brand.industry,
+    budget_range: brand.budgetRange,
+    total_deals: brand.totalDeals,
+    active_deals: brand.activeDeals,
+    last_active_at: brand.lastActive,
+    status: brand.status
+  }));
   
   return (
     <AdminCRMLayout>
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-2xl">Brand Management</CardTitle>
+          <p className="text-muted-foreground">
+            Total Brands: {pagination?.total || 0}
+          </p>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4 mb-6">
-            {/* Search form */}
-            <form onSubmit={handleSearch} className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <form onSubmit={handleSearch} className="flex gap-2 flex-1">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="Search by company name or email"
+                  placeholder="Search brands by name or email..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-8"
+                  className="pl-9"
                 />
               </div>
+              <Button type="submit" variant="outline">
+                Search
+              </Button>
             </form>
             
-            {/* Status filter */}
-            <div className="w-full md:w-64">
-              <Select
-                value={statusFilter}
-                onValueChange={handleStatusChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="suspended">Suspended</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={statusFilter} onValueChange={handleStatusChange}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="suspended">Suspended</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-
-          {/* Show loading state */}
-          {isLoading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <Skeleton key={index} className="h-12 w-full" />
-              ))}
-            </div>
-          ) : (
-            <>
-              {/* Display brands table */}
-              <BrandsTable 
-                brands={brands} 
-                isLoading={isFetching} 
-              />
-              
-              {/* Pagination controls */}
-              {pagination?.total > 0 && (
-                <div className="mt-4 flex justify-center">
-                  <BrandPagination 
-                    currentPage={pagination.page} 
-                    totalPages={pagination.pageCount} 
-                    onPageChange={handlePageChange} 
-                  />
-                </div>
-              )}
-            </>
-          )}
+          
+          <BrandsTable brands={tableData} isLoading={isLoading} />
         </CardContent>
       </Card>
     </AdminCRMLayout>

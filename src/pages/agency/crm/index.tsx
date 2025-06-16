@@ -4,16 +4,59 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Building2, Users, TrendingUp, FileText, BarChart2 } from 'lucide-react';
-import { useAgencyBrands } from '@/hooks/agency/useAgencyBrands';
-import { useAgencyCreators } from '@/hooks/agency/useAgencyCreators';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const AgencyCRMDashboard = () => {
-  const { data: brands = [], isLoading: brandsLoading } = useAgencyBrands();
-  const { data: creators = [], isLoading: creatorsLoading } = useAgencyCreators();
+  const { data: brandCount = 0 } = useQuery({
+    queryKey: ['agency-brand-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('brand_profiles')
+        .select('*', { count: 'exact', head: true });
+      
+      if (error) throw error;
+      return count || 0;
+    },
+  });
 
-  // Calculate totals - in a real app this would come from deal tracking
-  const totalActiveDeals = 23; // Mock data
-  const totalRevenue = 24500; // Mock data
+  const { data: creatorCount = 0 } = useQuery({
+    queryKey: ['agency-creator-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('creator_profiles')
+        .select('*', { count: 'exact', head: true });
+      
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
+  const { data: activeDeals = 0 } = useQuery({
+    queryKey: ['agency-active-deals'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('creator_deals')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['active', 'accepted']);
+      
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
+  const { data: totalRevenue = 0 } = useQuery({
+    queryKey: ['agency-revenue'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('deal_earnings')
+        .select('amount')
+        .gte('earned_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString());
+      
+      if (error) throw error;
+      return data?.reduce((sum, earning) => sum + (earning.amount || 0), 0) || 0;
+    },
+  });
 
   return (
     <div className="container mx-auto p-6">
@@ -31,9 +74,7 @@ const AgencyCRMDashboard = () => {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {brandsLoading ? '...' : brands.length}
-            </div>
+            <div className="text-2xl font-bold">{brandCount}</div>
             <p className="text-xs text-muted-foreground">Active brand accounts</p>
           </CardContent>
         </Card>
@@ -44,9 +85,7 @@ const AgencyCRMDashboard = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {creatorsLoading ? '...' : creators.length}
-            </div>
+            <div className="text-2xl font-bold">{creatorCount}</div>
             <p className="text-xs text-muted-foreground">Active creator accounts</p>
           </CardContent>
         </Card>
@@ -57,7 +96,7 @@ const AgencyCRMDashboard = () => {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalActiveDeals}</div>
+            <div className="text-2xl font-bold">{activeDeals}</div>
             <p className="text-xs text-muted-foreground">Deals in progress</p>
           </CardContent>
         </Card>

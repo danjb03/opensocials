@@ -37,76 +37,65 @@ const RevenueAnalytics = () => {
     queryFn: async (): Promise<RevenueData[]> => {
       const [year, month] = selectedMonth.split('-').map(Number);
       
-      let dateFormat = '';
-      let groupBy = '';
-      let orderBy = '';
+      // Query deal_earnings directly for real revenue data
+      let startDate: Date;
+      let endDate: Date;
       
       if (timeFrame === 'monthly') {
-        // Group by month
-        dateFormat = "to_char(earned_at, 'Mon YYYY')";
-        groupBy = "date_trunc('month', earned_at)";
-        orderBy = "date_trunc('month', earned_at)";
+        // Get past 12 months
+        startDate = new Date(year - 1, month - 1, 1);
+        endDate = new Date(year, month, 1);
       } else if (timeFrame === 'weekly') {
-        // Group by week for the selected month
-        dateFormat = "'Week ' || extract(week from earned_at)::text";
-        groupBy = "date_trunc('week', earned_at)";
-        orderBy = "date_trunc('week', earned_at)";
+        // Get weeks in selected month
+        startDate = new Date(year, month - 1, 1);
+        endDate = new Date(year, month, 1);
       } else {
-        // Group by day for the selected month
-        dateFormat = "to_char(earned_at, 'Mon DD')";
-        groupBy = "date_trunc('day', earned_at)";
-        orderBy = "date_trunc('day', earned_at)";
+        // Get days in selected month
+        startDate = new Date(year, month - 1, 1);
+        endDate = new Date(year, month, 1);
       }
 
-      const { data, error } = await supabase.rpc('get_revenue_analytics', {
-        time_frame: timeFrame,
-        selected_year: year,
-        selected_month: month
-      });
+      const { data: earnings, error } = await supabase
+        .from('deal_earnings')
+        .select('amount, earned_at')
+        .gte('earned_at', startDate.toISOString())
+        .lt('earned_at', endDate.toISOString())
+        .order('earned_at', { ascending: true });
 
       if (error) {
-        console.error('Error fetching revenue data:', error);
-        // Fallback to basic query if RPC fails
-        const { data: basicData, error: basicError } = await supabase
-          .from('deal_earnings')
-          .select('amount, earned_at')
-          .gte('earned_at', new Date(year, month - 1, 1).toISOString())
-          .lt('earned_at', new Date(year, month, 1).toISOString());
-
-        if (basicError) throw basicError;
-
-        // Process basic data
-        const groupedData: { [key: string]: { revenue: number; count: number } } = {};
-        
-        basicData?.forEach(earning => {
-          const date = new Date(earning.earned_at);
-          let key = '';
-          
-          if (timeFrame === 'monthly') {
-            key = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-          } else if (timeFrame === 'weekly') {
-            const weekNum = Math.ceil(date.getDate() / 7);
-            key = `Week ${weekNum}`;
-          } else {
-            key = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-          }
-          
-          if (!groupedData[key]) {
-            groupedData[key] = { revenue: 0, count: 0 };
-          }
-          groupedData[key].revenue += earning.amount || 0;
-          groupedData[key].count++;
-        });
-
-        return Object.entries(groupedData).map(([period, data]) => ({
-          period,
-          revenue: data.revenue,
-          profit: data.revenue * 0.25, // 25% platform margin
-          transactions: data.count
-        }));
+        console.error('Error fetching earnings:', error);
+        return [];
       }
 
-      return data || [];
+      // Group earnings by time period
+      const groupedData: { [key: string]: { revenue: number; count: number } } = {};
+      
+      earnings?.forEach(earning => {
+        const date = new Date(earning.earned_at);
+        let key = '';
+        
+        if (timeFrame === 'monthly') {
+          key = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        } else if (timeFrame === 'weekly') {
+          const weekNum = Math.ceil(date.getDate() / 7);
+          key = `Week ${weekNum}`;
+        } else {
+          key = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+        
+        if (!groupedData[key]) {
+          groupedData[key] = { revenue: 0, count: 0 };
+        }
+        groupedData[key].revenue += earning.amount || 0;
+        groupedData[key].count++;
+      });
+
+      return Object.entries(groupedData).map(([period, data]) => ({
+        period,
+        revenue: data.revenue,
+        profit: data.revenue * 0.25, // 25% platform margin
+        transactions: data.count
+      }));
     },
   });
 

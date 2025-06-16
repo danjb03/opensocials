@@ -2,16 +2,65 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building2 } from 'lucide-react';
-import { useAgencyBrands } from '@/hooks/agency/useAgencyBrands';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { DataTable } from '@/components/ui/data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { AgencyBrand } from '@/hooks/agency/useAgencyBrands';
+
+interface AgencyBrand {
+  user_id: string;
+  company_name: string;
+  email: string;
+  industry: string;
+  budget_range: string;
+  status: string;
+  active_deals: number;
+}
 
 const AgencyBrandCRM = () => {
-  const { data: brands = [], isLoading, error } = useAgencyBrands();
+  const { data: brands = [], isLoading, error } = useQuery({
+    queryKey: ['agency-brands'],
+    queryFn: async (): Promise<AgencyBrand[]> => {
+      const { data, error } = await supabase
+        .from('brand_profiles')
+        .select(`
+          user_id,
+          company_name,
+          industry,
+          budget_range,
+          profiles!inner(email, status)
+        `);
+
+      if (error) throw error;
+
+      // Get deal counts for each brand
+      const brandsWithDeals = await Promise.all(
+        (data || []).map(async (brand) => {
+          const { data: deals } = await supabase
+            .from('creator_deals')
+            .select('status')
+            .eq('project_id', brand.user_id);
+
+          const activeDeals = deals?.filter(deal => deal.status === 'active' || deal.status === 'accepted').length || 0;
+
+          return {
+            user_id: brand.user_id,
+            company_name: brand.company_name || 'Unknown Company',
+            email: brand.profiles?.email || 'No email',
+            industry: brand.industry || 'Not specified',
+            budget_range: brand.budget_range || 'Not specified',
+            status: brand.profiles?.status || 'active',
+            active_deals: activeDeals,
+          };
+        })
+      );
+
+      return brandsWithDeals;
+    },
+  });
 
   const columns: ColumnDef<AgencyBrand>[] = [
     {
@@ -36,12 +85,10 @@ const AgencyBrandCRM = () => {
     {
       accessorKey: 'industry',
       header: 'Industry',
-      cell: ({ row }) => row.getValue('industry') || 'Not specified',
     },
     {
       accessorKey: 'budget_range',
       header: 'Budget Range',
-      cell: ({ row }) => row.getValue('budget_range') || 'Not specified',
     },
     {
       accessorKey: 'status',
@@ -56,11 +103,10 @@ const AgencyBrandCRM = () => {
       },
     },
     {
-      id: 'deals',
+      accessorKey: 'active_deals',
       header: 'Active Deals',
-      cell: () => {
-        // Mock data - in real app this would come from deals query
-        const activeDeals = Math.floor(Math.random() * 5);
+      cell: ({ row }) => {
+        const activeDeals = row.getValue('active_deals') as number;
         return <span className="font-medium">{activeDeals}</span>;
       },
     },
@@ -87,6 +133,9 @@ const AgencyBrandCRM = () => {
       </div>
     );
   }
+
+  const activeBrands = brands.filter(b => b.status === 'active').length;
+  const totalDeals = brands.reduce((sum, brand) => sum + brand.active_deals, 0);
 
   return (
     <div className="container mx-auto p-6">
@@ -115,9 +164,7 @@ const AgencyBrandCRM = () => {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {brands.filter(b => b.status === 'active').length}
-            </div>
+            <div className="text-2xl font-bold">{activeBrands}</div>
             <p className="text-xs text-muted-foreground">Currently active</p>
           </CardContent>
         </Card>
@@ -128,8 +175,8 @@ const AgencyBrandCRM = () => {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">47</div>
-            <p className="text-xs text-muted-foreground">All time</p>
+            <div className="text-2xl font-bold">{totalDeals}</div>
+            <p className="text-xs text-muted-foreground">Active deals</p>
           </CardContent>
         </Card>
       </div>

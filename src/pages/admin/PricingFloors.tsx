@@ -63,7 +63,7 @@ export default function PricingFloors() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Pricing Floors</h1>
             <p className="text-muted-foreground">
-              Manage minimum pricing for different creator tiers and campaign types
+              Total Pricing Floors: {pricingFloors?.length || 0} | Manage minimum pricing for different creator tiers and campaign types
             </p>
           </div>
           <Button onClick={() => setIsCreateModalOpen(true)} className="gap-2">
