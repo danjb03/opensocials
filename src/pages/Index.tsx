@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { IndexNavigation } from "@/components/index/IndexNavigation";
 import { HeroSection } from "@/components/index/HeroSection";
 import { TrustedBySection } from "@/components/index/TrustedBySection";
@@ -18,6 +19,7 @@ import { IndexFooter } from "@/components/index/IndexFooter";
 const Index = () => {
   const { user, role, isLoading } = useUnifiedAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   console.log('Index - User:', user?.id);
   console.log('Index - Role:', role);
@@ -71,14 +73,14 @@ const Index = () => {
       <IndexNavigation user={user} />
       <HeroSection user={user} />
       <TrustedBySection />
-      <FeaturesSection />
+      {!isMobile && <FeaturesSection />}
       <WorkflowSection />
       <CreatorSelectionSection />
       <BenefitsSection />
-      <HowItWorksSection />
+      {!isMobile && <HowItWorksSection />}
       <StatsSection />
       <CTASection user={user} />
-      <FAQSection />
+      {!isMobile && <FAQSection />}
       <IndexFooter />
     </div>
   );
