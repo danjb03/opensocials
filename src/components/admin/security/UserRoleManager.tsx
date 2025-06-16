@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, X, Eye, Search } from 'lucide-react';
@@ -9,17 +10,15 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
-interface UserRole {
+interface UserRoleData {
   id: string;
   user_id: string;
   role: string;
   status: string;
   created_at: string;
-  profiles?: {
-    email?: string;
-    first_name?: string;
-    last_name?: string;
-  } | null;
+  user_email?: string;
+  user_first_name?: string;
+  user_last_name?: string;
 }
 
 export function UserRoleManager() {
@@ -28,26 +27,47 @@ export function UserRoleManager() {
 
   const { data: userRoles, isLoading } = useQuery({
     queryKey: ['user-roles', searchTerm],
-    queryFn: async (): Promise<UserRole[]> => {
-      let query = supabase
+    queryFn: async (): Promise<UserRoleData[]> => {
+      // First get all user roles
+      const { data: roles, error: rolesError } = await supabase
         .from('user_roles')
-        .select(`
-          *,
-          profiles (
-            email,
-            first_name,
-            last_name
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
+      if (rolesError) throw rolesError;
+
+      // Then get all profiles to map user data
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, email, first_name, last_name');
+
+      if (profilesError) throw profilesError;
+
+      // Create a map for quick lookup
+      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+      // Combine the data
+      const combinedData = (roles || []).map(role => {
+        const profile = profileMap.get(role.user_id);
+        return {
+          ...role,
+          user_email: profile?.email || 'No email',
+          user_first_name: profile?.first_name || '',
+          user_last_name: profile?.last_name || ''
+        };
+      });
+
+      // Apply search filter
       if (searchTerm) {
-        query = query.ilike('role', `%${searchTerm}%`);
+        return combinedData.filter(item => 
+          item.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.user_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.user_first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.user_last_name?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return (data || []) as UserRole[];
+      return combinedData;
     },
   });
 
@@ -121,7 +141,7 @@ export function UserRoleManager() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Search by role..."
+                placeholder="Search by role, email, or name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -155,12 +175,12 @@ export function UserRoleManager() {
                     userRoles?.map((userRole) => (
                       <TableRow key={userRole.id}>
                         <TableCell className="font-medium">
-                          {userRole.profiles?.first_name || userRole.profiles?.last_name 
-                            ? `${userRole.profiles.first_name || ''} ${userRole.profiles.last_name || ''}`.trim()
+                          {userRole.user_first_name || userRole.user_last_name 
+                            ? `${userRole.user_first_name || ''} ${userRole.user_last_name || ''}`.trim()
                             : 'Unknown User'
                           }
                         </TableCell>
-                        <TableCell>{userRole.profiles?.email || 'No email'}</TableCell>
+                        <TableCell>{userRole.user_email}</TableCell>
                         <TableCell>{getRoleBadge(userRole.role)}</TableCell>
                         <TableCell>{getStatusBadge(userRole.status)}</TableCell>
                         <TableCell>

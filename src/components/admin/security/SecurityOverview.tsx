@@ -1,218 +1,202 @@
 
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Shield, Users, AlertTriangle, Activity, Lock, Flag } from 'lucide-react';
+import { Shield, Users, AlertTriangle, Activity, Database, Flag } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 
-interface SecurityStats {
-  totalUsers: number;
-  pendingRoles: number;
-  recentAuditEvents: number;
-  activeRules: number;
-  flaggedUsers: number;
-  suspiciousActivity: number;
-}
-
 export function SecurityOverview() {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['security-overview'],
-    queryFn: async (): Promise<SecurityStats> => {
-      try {
-        // Get total users count
-        const { count: totalUsers } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true });
+    queryFn: async () => {
+      const [
+        { count: totalUsers },
+        { count: pendingRoles },
+        { count: recentAudits },
+        { count: activeRules },
+        { count: flaggedUsers }
+      ] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('user_roles').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('security_audit_log').select('*', { count: 'exact', head: true }).gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()),
+        supabase.from('r4_rules').select('*', { count: 'exact', head: true }).eq('enabled', true),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('flagged', true)
+      ]);
 
-        // Get pending roles count
-        const { count: pendingRoles } = await supabase
-          .from('user_roles')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'pending');
-
-        // Get recent audit events (last 24 hours)
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        
-        const { count: recentAuditEvents } = await supabase
-          .from('security_audit_log')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', yesterday.toISOString());
-
-        // Get active R4 rules count
-        const { count: activeRules } = await supabase
-          .from('r4_rules')
-          .select('*', { count: 'exact', head: true })
-          .eq('enabled', true);
-
-        // Get flagged users count
-        const { count: flaggedUsers } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true })
-          .eq('flagged', true);
-
-        return {
-          totalUsers: totalUsers || 0,
-          pendingRoles: pendingRoles || 0,
-          recentAuditEvents: recentAuditEvents || 0,
-          activeRules: activeRules || 0,
-          flaggedUsers: flaggedUsers || 0,
-          suspiciousActivity: 0, // Mock data for now
-        };
-      } catch (error) {
-        console.error('Error fetching security stats:', error);
-        return {
-          totalUsers: 0,
-          pendingRoles: 0,
-          recentAuditEvents: 0,
-          activeRules: 0,
-          flaggedUsers: 0,
-          suspiciousActivity: 0,
-        };
-      }
+      return {
+        totalUsers: totalUsers || 0,
+        pendingRoles: pendingRoles || 0,
+        recentAudits: recentAudits || 0,
+        activeRules: activeRules || 0,
+        flaggedUsers: flaggedUsers || 0
+      };
     },
   });
 
+  const securityMetrics = [
+    {
+      title: "Total Users",
+      value: stats?.totalUsers || 0,
+      icon: Users,
+      description: "Registered platform users",
+      status: "info"
+    },
+    {
+      title: "Pending Role Requests",
+      value: stats?.pendingRoles || 0,
+      icon: AlertTriangle,
+      description: "Awaiting approval",
+      status: stats?.pendingRoles && stats.pendingRoles > 0 ? "warning" : "success"
+    },
+    {
+      title: "Active Security Rules",
+      value: stats?.activeRules || 0,
+      icon: Shield,
+      description: "R4 rules monitoring platform",
+      status: "info"
+    },
+    {
+      title: "Recent Audit Events",
+      value: stats?.recentAudits || 0,
+      icon: Activity,
+      description: "Last 24 hours",
+      status: "info"
+    },
+    {
+      title: "Flagged Users",
+      value: stats?.flaggedUsers || 0,
+      icon: Flag,
+      description: "Requiring attention",
+      status: stats?.flaggedUsers && stats.flaggedUsers > 0 ? "warning" : "success"
+    }
+  ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'success': return 'bg-green-100 text-green-800 border-green-200';
+      case 'warning': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'error': return 'bg-red-100 text-red-800 border-red-200';
+      default: return 'bg-blue-100 text-blue-800 border-blue-200';
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Card key={i}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Loading...</CardTitle>
-              <div className="h-4 w-4 bg-muted rounded animate-pulse" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">-</div>
-              <p className="text-xs text-muted-foreground">Loading...</p>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-6">
+                <div className="h-16 bg-gray-200 rounded"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
 
-  const securityCards = [
-    {
-      title: 'Total Users',
-      value: stats?.totalUsers || 0,
-      description: 'Registered platform users',
-      icon: Users,
-      color: 'text-blue-600',
-    },
-    {
-      title: 'Pending Roles',
-      value: stats?.pendingRoles || 0,
-      description: 'Role requests awaiting approval',
-      icon: Lock,
-      color: 'text-yellow-600',
-      alert: (stats?.pendingRoles || 0) > 0,
-    },
-    {
-      title: 'Recent Activity',
-      value: stats?.recentAuditEvents || 0,
-      description: 'Audit events in last 24h',
-      icon: Activity,
-      color: 'text-green-600',
-    },
-    {
-      title: 'Active Rules',
-      value: stats?.activeRules || 0,
-      description: 'Security rules enabled',
-      icon: Shield,
-      color: 'text-purple-600',
-    },
-    {
-      title: 'Flagged Users',
-      value: stats?.flaggedUsers || 0,
-      description: 'Users requiring attention',
-      icon: Flag,
-      color: 'text-red-600',
-      alert: (stats?.flaggedUsers || 0) > 0,
-    },
-    {
-      title: 'Suspicious Activity',
-      value: stats?.suspiciousActivity || 0,
-      description: 'Potential security threats',
-      icon: AlertTriangle,
-      color: 'text-orange-600',
-      alert: (stats?.suspiciousActivity || 0) > 0,
-    },
-  ];
-
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {securityCards.map((card) => (
-          <Card key={card.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
-              <div className="flex items-center gap-2">
-                {card.alert && (
-                  <Badge variant="destructive" className="text-xs">
-                    Alert
-                  </Badge>
-                )}
-                <card.icon className={`h-4 w-4 ${card.color}`} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{card.value}</div>
-              <p className="text-xs text-muted-foreground">{card.description}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
       <Card>
         <CardHeader>
-          <CardTitle>Security Status</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Security Overview
+          </CardTitle>
           <CardDescription>
-            Current security configuration and recommendations
+            Real-time security metrics and platform health indicators
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <Shield className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="font-medium">Row Level Security</p>
-                <p className="text-sm text-muted-foreground">All tables protected</p>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {securityMetrics.map((metric) => (
+              <div
+                key={metric.title}
+                className={`p-4 rounded-lg border ${getStatusColor(metric.status)}`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <metric.icon className="h-6 w-6" />
+                  <Badge variant="outline" className="font-mono">
+                    {metric.value}
+                  </Badge>
+                </div>
+                <h3 className="font-medium">{metric.title}</h3>
+                <p className="text-sm opacity-80">{metric.description}</p>
               </div>
-            </div>
-            <Badge variant="outline" className="text-green-600">
-              Active
-            </Badge>
-          </div>
-
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <Lock className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="font-medium">Authentication</p>
-                <p className="text-sm text-muted-foreground">Supabase Auth enabled</p>
-              </div>
-            </div>
-            <Badge variant="outline" className="text-green-600">
-              Configured
-            </Badge>
-          </div>
-
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <Activity className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="font-medium">Audit Logging</p>
-                <p className="text-sm text-muted-foreground">Security events tracked</p>
-              </div>
-            </div>
-            <Badge variant="outline" className="text-green-600">
-              Active
-            </Badge>
+            ))}
           </div>
         </CardContent>
       </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Security Alerts</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {stats?.pendingRoles && stats.pendingRoles > 0 ? (
+                <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                  <div>
+                    <p className="font-medium text-yellow-900">
+                      {stats.pendingRoles} pending role request{stats.pendingRoles > 1 ? 's' : ''}
+                    </p>
+                    <p className="text-sm text-yellow-700">Review user role requests</p>
+                  </div>
+                </div>
+              ) : null}
+              
+              {stats?.flaggedUsers && stats.flaggedUsers > 0 ? (
+                <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                  <Flag className="h-5 w-5 text-red-600" />
+                  <div>
+                    <p className="font-medium text-red-900">
+                      {stats.flaggedUsers} flagged user{stats.flaggedUsers > 1 ? 's' : ''}
+                    </p>
+                    <p className="text-sm text-red-700">Requires immediate attention</p>
+                  </div>
+                </div>
+              ) : null}
+              
+              {(!stats?.pendingRoles || stats.pendingRoles === 0) && 
+               (!stats?.flaggedUsers || stats.flaggedUsers === 0) && (
+                <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                  <Shield className="h-5 w-5 text-green-600" />
+                  <div>
+                    <p className="font-medium text-green-900">All systems secure</p>
+                    <p className="text-sm text-green-700">No security alerts detected</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <button className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors">
+                <div className="font-medium">Review Pending Roles</div>
+                <div className="text-sm text-muted-foreground">Approve or reject user role requests</div>
+              </button>
+              <button className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors">
+                <div className="font-medium">View Audit Logs</div>
+                <div className="text-sm text-muted-foreground">Check recent security events</div>
+              </button>
+              <button className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors">
+                <div className="font-medium">Manage R4 Rules</div>
+                <div className="text-sm text-muted-foreground">Configure automated security rules</div>
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

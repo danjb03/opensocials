@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { CreateRuleModal } from './CreateRuleModal';
 
 interface R4Rule {
   id: string;
@@ -21,6 +22,52 @@ interface R4Rule {
   created_at: string;
   updated_at: string;
 }
+
+const ruleTemplates = [
+  {
+    name: "Rate Limiting",
+    description: "Prevent excessive API requests from users",
+    condition: {
+      type: "rate_limit",
+      window: "1m",
+      max_requests: 100,
+      target: "user_requests"
+    },
+    action: {
+      type: "block",
+      duration: "5m",
+      severity: "medium"
+    }
+  },
+  {
+    name: "Suspicious Activity",
+    description: "Flag unusual user behavior patterns",
+    condition: {
+      type: "behavior_analysis",
+      metrics: ["login_frequency", "location_changes", "device_changes"],
+      threshold: 0.8
+    },
+    action: {
+      type: "flag",
+      severity: "high",
+      notify_admin: true
+    }
+  },
+  {
+    name: "Content Moderation",
+    description: "Automatically moderate user-generated content",
+    condition: {
+      type: "content_analysis",
+      filters: ["spam", "inappropriate", "harmful"],
+      confidence_threshold: 0.7
+    },
+    action: {
+      type: "quarantine",
+      severity: "medium",
+      review_required: true
+    }
+  }
+];
 
 export function R4RulesManager() {
   const queryClient = useQueryClient();
@@ -94,10 +141,7 @@ export function R4RulesManager() {
               Configure and manage automated security rules and enforcement
             </CardDescription>
           </div>
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" />
-            Add Rule
-          </Button>
+          <CreateRuleModal />
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -119,7 +163,7 @@ export function R4RulesManager() {
                   {rules?.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        No security rules configured
+                        No security rules configured. Use the templates below to get started.
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -192,35 +236,19 @@ export function R4RulesManager() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <div className="p-4 border rounded-lg space-y-2">
-              <h3 className="font-medium">Rate Limiting</h3>
-              <p className="text-sm text-muted-foreground">
-                Prevent excessive API requests from users
-              </p>
-              <Button size="sm" variant="outline" className="w-full">
-                Create Rule
-              </Button>
-            </div>
-            
-            <div className="p-4 border rounded-lg space-y-2">
-              <h3 className="font-medium">Suspicious Activity</h3>
-              <p className="text-sm text-muted-foreground">
-                Flag unusual user behavior patterns
-              </p>
-              <Button size="sm" variant="outline" className="w-full">
-                Create Rule
-              </Button>
-            </div>
-            
-            <div className="p-4 border rounded-lg space-y-2">
-              <h3 className="font-medium">Content Moderation</h3>
-              <p className="text-sm text-muted-foreground">
-                Automatically moderate user-generated content
-              </p>
-              <Button size="sm" variant="outline" className="w-full">
-                Create Rule
-              </Button>
-            </div>
+            {ruleTemplates.map((template) => (
+              <div key={template.name} className="p-4 border rounded-lg space-y-2">
+                <h3 className="font-medium">{template.name}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {template.description}
+                </p>
+                <CreateRuleModal templateRule={template}>
+                  <Button size="sm" variant="outline" className="w-full">
+                    Create Rule
+                  </Button>
+                </CreateRuleModal>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
