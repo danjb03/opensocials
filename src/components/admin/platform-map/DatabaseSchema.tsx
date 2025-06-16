@@ -65,35 +65,35 @@ export default function DatabaseSchema() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="bg-card text-card-foreground border-border">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Database className="h-6 w-6" />
             Database Architecture Overview
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             PostgreSQL via Supabase with Row Level Security and real-time subscriptions
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {coreTableGroups.map((group) => (
-              <Card key={group.name} className="border-l-4 border-l-green-500">
+              <Card key={group.name} className="border-l-4 border-l-green-500 bg-card">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
                     <group.icon className="h-5 w-5 text-green-600" />
-                    <CardTitle className="text-lg">{group.name}</CardTitle>
+                    <CardTitle className="text-lg text-foreground">{group.name}</CardTitle>
                   </div>
-                  <CardDescription className="text-sm">
+                  <CardDescription className="text-sm text-muted-foreground">
                     {group.relationships}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     {group.tables.map((table) => (
-                      <div key={table.name} className="border rounded-lg p-3 bg-gray-50">
+                      <div key={table.name} className="border border-border rounded-lg p-3 bg-muted/30">
                         <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-mono text-sm font-medium">{table.name}</h4>
+                          <h4 className="font-mono text-sm font-medium text-foreground">{table.name}</h4>
                           <Badge variant="outline" className="text-xs">
                             {table.records}
                           </Badge>
@@ -110,45 +110,45 @@ export default function DatabaseSchema() {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
+        <Card className="bg-card text-card-foreground border-border">
           <CardHeader>
-            <CardTitle>Key Database Bottlenecks</CardTitle>
+            <CardTitle className="text-foreground">Key Database Bottlenecks</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="p-3 bg-red-50 rounded-lg border-l-4 border-l-red-500">
-                <h4 className="font-medium text-red-900">Complex RLS Policies</h4>
-                <p className="text-sm text-red-700">Role resolution checks impact query performance</p>
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border-l-4 border-l-red-500">
+                <h4 className="font-medium text-red-900 dark:text-red-100">Complex RLS Policies</h4>
+                <p className="text-sm text-red-700 dark:text-red-200">Role resolution checks impact query performance</p>
               </div>
-              <div className="p-3 bg-orange-50 rounded-lg border-l-4 border-l-orange-500">
-                <h4 className="font-medium text-orange-900">Multiple Creator Tables</h4>
-                <p className="text-sm text-orange-700">creator_profiles vs profiles duplication</p>
+              <div className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border-l-4 border-l-orange-500">
+                <h4 className="font-medium text-orange-900 dark:text-orange-100">Multiple Creator Tables</h4>
+                <p className="text-sm text-orange-700 dark:text-orange-200">creator_profiles vs profiles duplication</p>
               </div>
-              <div className="p-3 bg-yellow-50 rounded-lg border-l-4 border-l-yellow-500">
-                <h4 className="font-medium text-yellow-900">Legacy vs New Systems</h4>
-                <p className="text-sm text-yellow-700">projects vs projects_new parallel systems</p>
+              <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border-l-4 border-l-yellow-500">
+                <h4 className="font-medium text-yellow-900 dark:text-yellow-100">Legacy vs New Systems</h4>
+                <p className="text-sm text-yellow-700 dark:text-yellow-200">projects vs projects_new parallel systems</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-card text-card-foreground border-border">
           <CardHeader>
-            <CardTitle>Performance Optimizations</CardTitle>
+            <CardTitle className="text-foreground">Performance Optimizations</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="p-3 bg-green-50 rounded-lg border-l-4 border-l-green-500">
-                <h4 className="font-medium text-green-900">Indexed Relationships</h4>
-                <p className="text-sm text-green-700">Foreign keys and user_id columns indexed</p>
+              <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border-l-4 border-l-green-500">
+                <h4 className="font-medium text-green-900 dark:text-green-100">Indexed Relationships</h4>
+                <p className="text-sm text-green-700 dark:text-green-200">Foreign keys and user_id columns indexed</p>
               </div>
-              <div className="p-3 bg-blue-50 rounded-lg border-l-4 border-l-blue-500">
-                <h4 className="font-medium text-blue-900">View Materialization</h4>
-                <p className="text-sm text-blue-700">admin_crm_* views for complex aggregations</p>
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-l-4 border-l-blue-500">
+                <h4 className="font-medium text-blue-900 dark:text-blue-100">View Materialization</h4>
+                <p className="text-sm text-blue-700 dark:text-blue-200">admin_crm_* views for complex aggregations</p>
               </div>
-              <div className="p-3 bg-purple-50 rounded-lg border-l-4 border-l-purple-500">
-                <h4 className="font-medium text-purple-900">JSONB Usage</h4>
-                <p className="text-sm text-purple-700">Flexible schemas for content requirements</p>
+              <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border-l-4 border-l-purple-500">
+                <h4 className="font-medium text-purple-900 dark:text-purple-100">JSONB Usage</h4>
+                <p className="text-sm text-purple-700 dark:text-purple-200">Flexible schemas for content requirements</p>
               </div>
             </div>
           </CardContent>
