@@ -1,17 +1,48 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Building2, Users, TrendingUp, FileText, BarChart2 } from 'lucide-react';
+import { Building2, Users, TrendingUp, FileText, BarChart2, Loader } from 'lucide-react';
 import AdminCRMLayout from '@/components/layouts/AdminCRMLayout';
+import { useBrandCRM } from '@/hooks/admin/useBrandCRM';
+import { useCreatorCRM } from '@/hooks/admin/useCreatorCRM';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const AdminCRM = () => {
-  // Mock data - in a real app this would come from the CRM hooks
-  const totalBrands = 156;
-  const totalCreators = 892;
-  const activeDeals = 47;
-  const totalRevenue = 124500;
+  // Get real brand data
+  const { brands, isLoading: brandsLoading } = useBrandCRM({ pageSize: 1000 });
+  
+  // Get real creator data  
+  const { creators, isLoading: creatorsLoading } = useCreatorCRM({ pageSize: 1000 });
+
+  // Get real deals data
+  const { data: dealsData, isLoading: dealsLoading } = useQuery({
+    queryKey: ['admin-deals-summary'],
+    queryFn: async () => {
+      const { data: deals, error } = await supabase
+        .from('deals')
+        .select('id, status, value')
+        .in('status', ['active', 'accepted', 'pending']);
+
+      if (error) throw error;
+
+      const activeDeals = deals?.filter(deal => deal.status === 'active' || deal.status === 'accepted').length || 0;
+      const totalRevenue = deals?.reduce((sum, deal) => sum + (deal.value || 0), 0) || 0;
+
+      return { activeDeals, totalRevenue };
+    }
+  });
+
+  // Calculate real statistics
+  const totalBrands = brands.length;
+  const totalCreators = creators.length;
+  const activeBrands = brands.filter(b => b.status === 'active').length;
+  const activeCreators = creators.filter(c => c.status === 'active').length;
+  const activeDeals = dealsData?.activeDeals || 0;
+  const totalRevenue = dealsData?.totalRevenue || 0;
+
+  const isLoading = brandsLoading || creatorsLoading || dealsLoading;
 
   return (
     <AdminCRMLayout>
@@ -29,8 +60,12 @@ const AdminCRM = () => {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalBrands}</div>
-            <p className="text-xs text-muted-foreground">Active brand accounts</p>
+            <div className="text-2xl font-bold">
+              {isLoading ? <Loader className="h-6 w-6 animate-spin" /> : totalBrands}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {activeBrands} active brand accounts
+            </p>
           </CardContent>
         </Card>
 
@@ -40,8 +75,12 @@ const AdminCRM = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalCreators}</div>
-            <p className="text-xs text-muted-foreground">Active creator accounts</p>
+            <div className="text-2xl font-bold">
+              {isLoading ? <Loader className="h-6 w-6 animate-spin" /> : totalCreators}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {activeCreators} active creator accounts
+            </p>
           </CardContent>
         </Card>
 
@@ -51,7 +90,9 @@ const AdminCRM = () => {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeDeals}</div>
+            <div className="text-2xl font-bold">
+              {isLoading ? <Loader className="h-6 w-6 animate-spin" /> : activeDeals}
+            </div>
             <p className="text-xs text-muted-foreground">Deals in progress</p>
           </CardContent>
         </Card>
@@ -62,8 +103,10 @@ const AdminCRM = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">This month</p>
+            <div className="text-2xl font-bold">
+              {isLoading ? <Loader className="h-6 w-6 animate-spin" /> : `$${totalRevenue.toLocaleString()}`}
+            </div>
+            <p className="text-xs text-muted-foreground">All time</p>
           </CardContent>
         </Card>
       </div>
