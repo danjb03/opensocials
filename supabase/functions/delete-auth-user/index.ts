@@ -21,11 +21,20 @@ Deno.serve(async (req) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    // Create admin client with service role key
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
 
-    // Validate admin access
-    const validation = await validateSuperAdmin(supabase, token);
+    // Validate admin access using the user's token
+    const supabaseUser = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!);
+    const validation = await validateSuperAdmin(supabaseUser, token);
     if (!validation.isValid) {
+      console.error('Admin validation failed:', validation.message);
       return new Response(
         JSON.stringify({ error: validation.message }),
         { status: validation.status, headers: corsHeaders }
@@ -50,8 +59,34 @@ Deno.serve(async (req) => {
 
     console.log(`Admin ${validation.userId} attempting to delete user: ${user_id}`);
 
-    // Delete user from auth
-    const { error: deleteError } = await supabase.auth.admin.deleteUser(user_id);
+    // First, clean up related data to avoid foreign key constraints
+    try {
+      // Delete audit logs for this user
+      await supabaseAdmin.from('security_audit_log').delete().eq('user_id', user_id);
+      console.log(`Cleaned up audit logs for user: ${user_id}`);
+
+      // Delete user roles
+      await supabaseAdmin.from('user_roles').delete().eq('user_id', user_id);
+      console.log(`Cleaned up user roles for user: ${user_id}`);
+
+      // Delete profile
+      await supabaseAdmin.from('profiles').delete().eq('id', user_id);
+      console.log(`Cleaned up profile for user: ${user_id}`);
+
+      // Delete creator profile if exists
+      await supabaseAdmin.from('creator_profiles').delete().eq('user_id', user_id);
+      console.log(`Cleaned up creator profile for user: ${user_id}`);
+
+      // Delete brand profile if exists
+      await supabaseAdmin.from('brand_profiles').delete().eq('user_id', user_id);
+      console.log(`Cleaned up brand profile for user: ${user_id}`);
+
+    } catch (cleanupError) {
+      console.warn('Error during cleanup, but continuing with user deletion:', cleanupError);
+    }
+
+    // Now delete user from auth
+    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user_id);
 
     if (deleteError) {
       console.error('Error deleting user:', deleteError);
@@ -61,14 +96,19 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Log the deletion for audit
-    await supabase.from('security_audit_log').insert({
-      user_id: validation.userId,
-      action: 'DELETE_USER',
-      resource_type: 'auth_user',
-      resource_id: user_id,
-      details: { deleted_user_id: user_id }
-    });
+    // Log the deletion for audit (using the admin's user ID since the deleted user no longer exists)
+    try {
+      await supabaseAdmin.from('security_audit_log').insert({
+        user_id: validation.userId,
+        action: 'DELETE_USER',
+        resource_type: 'auth_user',
+        resource_id: user_id,
+        details: { deleted_user_id: user_id }
+      });
+    } catch (auditError) {
+      console.warn('Could not log deletion to audit log:', auditError);
+      // Don't fail the operation if audit logging fails
+    }
 
     console.log(`User ${user_id} successfully deleted by admin ${validation.userId}`);
 
@@ -80,7 +120,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error in delete-auth-user function:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Internal server error', details: error.message }),
       { status: 500, headers: corsHeaders }
     );
   }
