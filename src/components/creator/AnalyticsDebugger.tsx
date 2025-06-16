@@ -39,9 +39,9 @@ export const AnalyticsDebugger: React.FC = () => {
   };
 
   return (
-    <Card className="border-yellow-200 bg-yellow-50">
+    <Card className="bg-card border-border">
       <CardHeader>
-        <CardTitle className="text-sm text-yellow-800">Analytics Debugger</CardTitle>
+        <CardTitle className="text-foreground">Analytics Debugger</CardTitle>
       </CardHeader>
       <CardContent>
         <Button 
@@ -49,14 +49,15 @@ export const AnalyticsDebugger: React.FC = () => {
           disabled={isLoading || !user?.id}
           size="sm"
           variant="outline"
+          className="mb-4"
         >
           {isLoading ? 'Testing...' : 'Test Analytics Data'}
         </Button>
         
         {result && (
           <div className="mt-4">
-            <h4 className="font-medium text-sm mb-2">Results:</h4>
-            <pre className="text-xs bg-white p-2 rounded border overflow-auto max-h-40">
+            <h4 className="font-medium text-sm mb-2 text-foreground">Results:</h4>
+            <pre className="text-xs bg-muted text-foreground p-4 rounded border border-border overflow-auto max-h-96 whitespace-pre-wrap">
               {JSON.stringify(result, null, 2)}
             </pre>
           </div>
