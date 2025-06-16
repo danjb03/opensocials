@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -7,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Calendar, TrendingUp, DollarSign, GitBranch } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface RevenueData {
   period: string;
@@ -26,34 +26,75 @@ interface PipelineCampaign {
 
 const RevenueAnalytics = () => {
   const [timeFrame, setTimeFrame] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
-  const [periodOffset, setPeriodOffset] = useState(0); // 0 = current, 1 = last, 2 = before that
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
   const [showPipelineDetails, setShowPipelineDetails] = useState(false);
+
+  // Generate month options for the dropdown
+  const generateMonthOptions = () => {
+    const options = [];
+    const now = new Date();
+    
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const label = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+      options.push({ value, label });
+    }
+    
+    return options;
+  };
+
+  const monthOptions = generateMonthOptions();
 
   // Mock revenue data - in production this would come from your analytics system
   const { data: revenueData, isLoading: revenueLoading } = useQuery({
-    queryKey: ['admin-revenue', timeFrame, periodOffset],
+    queryKey: ['admin-revenue', timeFrame, selectedMonth],
     queryFn: async (): Promise<RevenueData[]> => {
       // Mock data for demonstration
       const mockData: RevenueData[] = [];
-      const now = new Date();
+      const [year, month] = selectedMonth.split('-').map(Number);
       
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date(now);
-        if (timeFrame === 'daily') {
-          date.setDate(date.getDate() - i - (periodOffset * 7));
-        } else if (timeFrame === 'weekly') {
-          date.setDate(date.getDate() - (i * 7) - (periodOffset * 7 * 7));
-        } else {
-          date.setMonth(date.getMonth() - i - (periodOffset * 7));
+      if (timeFrame === 'monthly') {
+        // Generate data for the last 12 months
+        for (let i = 11; i >= 0; i--) {
+          const date = new Date(year, month - 1 - i, 1);
+          const revenue = Math.floor(Math.random() * 50000) + 10000;
+          mockData.push({
+            period: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+            revenue,
+            profit: revenue * 0.25, // 25% margin
+            transactions: Math.floor(Math.random() * 50) + 10
+          });
         }
-        
-        const revenue = Math.floor(Math.random() * 50000) + 10000;
-        mockData.push({
-          period: date.toLocaleDateString(),
-          revenue,
-          profit: revenue * 0.25, // 25% margin
-          transactions: Math.floor(Math.random() * 50) + 10
-        });
+      } else if (timeFrame === 'weekly') {
+        // Generate data for weeks in the selected month
+        const daysInMonth = new Date(year, month, 0).getDate();
+        for (let week = 1; week <= 4; week++) {
+          const revenue = Math.floor(Math.random() * 15000) + 3000;
+          mockData.push({
+            period: `Week ${week}`,
+            revenue,
+            profit: revenue * 0.25,
+            transactions: Math.floor(Math.random() * 15) + 3
+          });
+        }
+      } else {
+        // Generate data for days in the selected month
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const sampleDays = Math.min(7, daysInMonth); // Show last 7 days
+        for (let i = sampleDays - 1; i >= 0; i--) {
+          const date = new Date(year, month - 1, daysInMonth - i);
+          const revenue = Math.floor(Math.random() * 5000) + 1000;
+          mockData.push({
+            period: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            revenue,
+            profit: revenue * 0.25,
+            transactions: Math.floor(Math.random() * 8) + 1
+          });
+        }
       }
       
       return mockData;
@@ -104,14 +145,10 @@ const RevenueAnalytics = () => {
   const totalTransactions = revenueData?.reduce((sum, item) => sum + item.transactions, 0) || 0;
   const pipelineValue = pipelineCampaigns?.reduce((sum, campaign) => sum + (campaign.budget || 0), 0) || 0;
 
-  const getPeriodLabel = () => {
-    const labels = ['Current', 'Last', 'Previous'];
-    const periods = {
-      daily: 'Week',
-      weekly: 'Month', 
-      monthly: 'Period'
-    };
-    return `${labels[periodOffset] || 'Previous'} ${periods[timeFrame]}`;
+  const getSelectedMonthLabel = () => {
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const date = new Date(year, month - 1, 1);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
   };
 
   return (
@@ -131,15 +168,16 @@ const RevenueAnalytics = () => {
             </SelectContent>
           </Select>
           
-          <Select value={periodOffset.toString()} onValueChange={(value) => setPeriodOffset(parseInt(value))}>
-            <SelectTrigger className="w-[160px]">
+          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+            <SelectTrigger className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="0">Current Period</SelectItem>
-              <SelectItem value="1">Last Period</SelectItem>
-              <SelectItem value="2">2 Periods Ago</SelectItem>
-              <SelectItem value="3">3 Periods Ago</SelectItem>
+              {monthOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -158,7 +196,7 @@ const RevenueAnalytics = () => {
             <div className="text-2xl font-bold text-foreground">
               ${totalRevenue.toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground">{getPeriodLabel()}</p>
+            <p className="text-xs text-muted-foreground">{getSelectedMonthLabel()}</p>
           </CardContent>
         </Card>
 
@@ -173,7 +211,7 @@ const RevenueAnalytics = () => {
             <div className="text-2xl font-bold text-foreground">
               ${totalProfit.toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground">{getPeriodLabel()}</p>
+            <p className="text-xs text-muted-foreground">{getSelectedMonthLabel()}</p>
           </CardContent>
         </Card>
 
@@ -188,7 +226,7 @@ const RevenueAnalytics = () => {
             <div className="text-2xl font-bold text-foreground">
               {totalTransactions}
             </div>
-            <p className="text-xs text-muted-foreground">{getPeriodLabel()}</p>
+            <p className="text-xs text-muted-foreground">{getSelectedMonthLabel()}</p>
           </CardContent>
         </Card>
 
@@ -256,10 +294,12 @@ const RevenueAnalytics = () => {
         </Card>
       )}
 
-      {/* Revenue Chart Placeholder */}
+      {/* Revenue Chart */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg text-foreground">Revenue Trend - {timeFrame.charAt(0).toUpperCase() + timeFrame.slice(1)}</CardTitle>
+          <CardTitle className="text-lg text-foreground">
+            Revenue Trend - {timeFrame.charAt(0).toUpperCase() + timeFrame.slice(1)}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {revenueLoading ? (
@@ -267,18 +307,51 @@ const RevenueAnalytics = () => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           ) : (
-            <div className="space-y-4">
-              {revenueData?.map((item, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border border-border rounded">
-                  <span className="text-sm text-foreground">{item.period}</span>
-                  <div className="text-right">
-                    <div className="font-semibold text-foreground">${item.revenue.toLocaleString()}</div>
-                    <div className="text-xs text-muted-foreground">
-                      Profit: ${item.profit.toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="h-[400px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={revenueData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333333" />
+                  <XAxis 
+                    dataKey="period" 
+                    stroke="#888888"
+                    tick={{ fill: '#888888' }}
+                  />
+                  <YAxis 
+                    stroke="#888888"
+                    tick={{ fill: '#888888' }}
+                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                  />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: '#000000',
+                      border: '1px solid #333333',
+                      borderRadius: '6px',
+                      color: '#ffffff'
+                    }}
+                    formatter={(value, name) => [
+                      `$${Number(value).toLocaleString()}`,
+                      name === 'revenue' ? 'Revenue' : 'Profit'
+                    ]}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="revenue" 
+                    stroke="#ffffff" 
+                    strokeWidth={2}
+                    dot={{ fill: '#ffffff', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: '#ffffff', strokeWidth: 2 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="profit" 
+                    stroke="#888888" 
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                    dot={{ fill: '#888888', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: '#888888', strokeWidth: 2 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           )}
         </CardContent>
