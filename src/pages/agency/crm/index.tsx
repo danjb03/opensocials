@@ -4,59 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Building2, Users, TrendingUp, FileText, BarChart2 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useAgencyBrands } from '@/hooks/agency/useAgencyBrands';
+import { useAgencyCreators } from '@/hooks/agency/useAgencyCreators';
 
 const AgencyCRMDashboard = () => {
-  const { data: brandCount = 0 } = useQuery({
-    queryKey: ['agency-brand-count'],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from('brand_profiles')
-        .select('*', { count: 'exact', head: true });
-      
-      if (error) throw error;
-      return count || 0;
-    },
-  });
+  const { data: brands = [] } = useAgencyBrands();
+  const { data: creators = [] } = useAgencyCreators();
 
-  const { data: creatorCount = 0 } = useQuery({
-    queryKey: ['agency-creator-count'],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from('creator_profiles')
-        .select('*', { count: 'exact', head: true });
-      
-      if (error) throw error;
-      return count || 0;
-    },
-  });
-
-  const { data: activeDeals = 0 } = useQuery({
-    queryKey: ['agency-active-deals'],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from('creator_deals')
-        .select('*', { count: 'exact', head: true })
-        .in('status', ['active', 'accepted']);
-      
-      if (error) throw error;
-      return count || 0;
-    },
-  });
-
-  const { data: totalRevenue = 0 } = useQuery({
-    queryKey: ['agency-revenue'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('deal_earnings')
-        .select('amount')
-        .gte('earned_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString());
-      
-      if (error) throw error;
-      return data?.reduce((sum, earning) => sum + (earning.amount || 0), 0) || 0;
-    },
-  });
+  const activeBrands = brands.filter(b => b.status === 'active').length;
+  const activeCreators = creators.filter(c => c.status === 'active').length;
+  const totalReach = creators.reduce((sum, creator) => sum + (creator.follower_count || 0), 0);
 
   return (
     <div className="container mx-auto p-6">
@@ -74,8 +31,8 @@ const AgencyCRMDashboard = () => {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{brandCount}</div>
-            <p className="text-xs text-muted-foreground">Active brand accounts</p>
+            <div className="text-2xl font-bold">{brands.length}</div>
+            <p className="text-xs text-muted-foreground">Under your management</p>
           </CardContent>
         </Card>
 
@@ -85,30 +42,30 @@ const AgencyCRMDashboard = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{creatorCount}</div>
-            <p className="text-xs text-muted-foreground">Active creator accounts</p>
+            <div className="text-2xl font-bold">{creators.length}</div>
+            <p className="text-xs text-muted-foreground">Under your management</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Deals</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeDeals}</div>
-            <p className="text-xs text-muted-foreground">Deals in progress</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Active Accounts</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">This month</p>
+            <div className="text-2xl font-bold">{activeBrands + activeCreators}</div>
+            <p className="text-xs text-muted-foreground">Active brands & creators</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Reach</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalReach.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Combined followers</p>
           </CardContent>
         </Card>
       </div>
@@ -128,7 +85,7 @@ const AgencyCRMDashboard = () => {
             <div className="space-y-2">
               <Link to="/agency/crm/brands" className="block">
                 <Button variant="outline" className="w-full">
-                  View All Brands
+                  View All Brands ({brands.length})
                 </Button>
               </Link>
               <Link to="/agency/crm/brands/leaderboard" className="block">
@@ -154,7 +111,7 @@ const AgencyCRMDashboard = () => {
             <div className="space-y-2">
               <Link to="/agency/crm/creators" className="block">
                 <Button variant="outline" className="w-full">
-                  View All Creators
+                  View All Creators ({creators.length})
                 </Button>
               </Link>
               <Link to="/agency/crm/creators/leaderboard" className="block">
@@ -170,19 +127,26 @@ const AgencyCRMDashboard = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Deals Pipeline
+              Account Overview
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Track deals, manage negotiations, and monitor contract status.
+              Overview of all accounts under your management and their status.
             </p>
-            <div className="space-y-2">
-              <Link to="/agency/crm/deals" className="block">
-                <Button variant="outline" className="w-full">
-                  View Deals Pipeline
-                </Button>
-              </Link>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Active Brands:</span>
+                <span className="font-semibold">{activeBrands}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Active Creators:</span>
+                <span className="font-semibold">{activeCreators}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Total Reach:</span>
+                <span className="font-semibold">{totalReach.toLocaleString()}</span>
+              </div>
             </div>
           </CardContent>
         </Card>

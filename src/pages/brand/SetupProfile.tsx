@@ -45,6 +45,7 @@ const SetupProfile = () => {
     isLoading,
     existingProfile,
     handleLogoChange,
+    handleLogoFileSelect,
     clearLogo,
     handleSkipForNow,
     handleSubmit
@@ -86,6 +87,7 @@ const SetupProfile = () => {
                 logoPreview={logoPreview}
                 logoUrl={logoUrl}
                 onLogoChange={handleLogoChange}
+                onLogoFileSelect={handleLogoFileSelect}
                 onClearLogo={clearLogo}
                 isLoading={isLoading}
                 onSubmit={handleSubmit}

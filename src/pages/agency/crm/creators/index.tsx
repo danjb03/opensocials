@@ -2,71 +2,28 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { DataTable } from '@/components/ui/data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { useAgencyCreators } from '@/hooks/agency/useAgencyCreators';
 
 interface AgencyCreator {
   user_id: string;
   first_name: string;
   last_name: string;
   email: string;
-  primary_platform: string;
-  follower_count: number;
-  engagement_rate: number;
+  primary_platform: string | null;
+  follower_count: number | null;
+  engagement_rate: number | null;
   status: string;
-  active_deals: number;
+  avatar_url: string | null;
+  created_at: string;
 }
 
 const AgencyCreatorCRM = () => {
-  const { data: creators = [], isLoading, error } = useQuery({
-    queryKey: ['agency-creators'],
-    queryFn: async (): Promise<AgencyCreator[]> => {
-      const { data, error } = await supabase
-        .from('creator_profiles')
-        .select(`
-          user_id,
-          first_name,
-          last_name,
-          primary_platform,
-          follower_count,
-          engagement_rate,
-          profiles!inner(email, status)
-        `);
-
-      if (error) throw error;
-
-      // Get deal counts for each creator
-      const creatorsWithDeals = await Promise.all(
-        (data || []).map(async (creator) => {
-          const { data: deals } = await supabase
-            .from('creator_deals')
-            .select('status')
-            .eq('creator_id', creator.user_id);
-
-          const activeDeals = deals?.filter(deal => deal.status === 'active' || deal.status === 'accepted').length || 0;
-
-          return {
-            user_id: creator.user_id,
-            first_name: creator.first_name || '',
-            last_name: creator.last_name || '',
-            email: creator.profiles?.email || 'No email',
-            primary_platform: creator.primary_platform || 'Not specified',
-            follower_count: creator.follower_count || 0,
-            engagement_rate: creator.engagement_rate || 0,
-            status: creator.profiles?.status || 'active',
-            active_deals: activeDeals,
-          };
-        })
-      );
-
-      return creatorsWithDeals;
-    },
-  });
+  const { data: creators = [], isLoading, error } = useAgencyCreators();
 
   const columns: ColumnDef<AgencyCreator>[] = [
     {
@@ -91,6 +48,9 @@ const AgencyCreatorCRM = () => {
     {
       accessorKey: 'primary_platform',
       header: 'Platform',
+      cell: ({ row }) => {
+        return row.getValue('primary_platform') || 'Not specified';
+      },
     },
     {
       accessorKey: 'follower_count',
@@ -121,14 +81,6 @@ const AgencyCreatorCRM = () => {
       },
     },
     {
-      accessorKey: 'active_deals',
-      header: 'Active Deals',
-      cell: ({ row }) => {
-        const activeDeals = row.getValue('active_deals') as number;
-        return <span className="font-medium">{activeDeals}</span>;
-      },
-    },
-    {
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => {
@@ -154,7 +106,6 @@ const AgencyCreatorCRM = () => {
 
   const activeCreators = creators.filter(c => c.status === 'active').length;
   const totalReach = creators.reduce((total, creator) => total + (creator.follower_count || 0), 0);
-  const totalDeals = creators.reduce((sum, creator) => sum + creator.active_deals, 0);
 
   return (
     <div className="container mx-auto p-6">
@@ -173,7 +124,7 @@ const AgencyCreatorCRM = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{creators.length}</div>
-            <p className="text-xs text-muted-foreground">Under management</p>
+            <p className="text-xs text-muted-foreground">Under your management</p>
           </CardContent>
         </Card>
 
@@ -202,7 +153,7 @@ const AgencyCreatorCRM = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>All Creators</CardTitle>
+          <CardTitle>Managed Creators</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTable 
