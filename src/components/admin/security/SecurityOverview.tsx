@@ -40,57 +40,63 @@ export function SecurityOverview() {
       value: stats?.totalUsers || 0,
       icon: Users,
       description: "Registered platform users",
-      status: "info"
+      bgColor: "bg-blue-50",
+      iconColor: "text-blue-600",
+      textColor: "text-blue-900"
     },
     {
       title: "Pending Role Requests",
       value: stats?.pendingRoles || 0,
       icon: AlertTriangle,
       description: "Awaiting approval",
-      status: stats?.pendingRoles && stats.pendingRoles > 0 ? "warning" : "success"
+      bgColor: stats?.pendingRoles && stats.pendingRoles > 0 ? "bg-yellow-50" : "bg-green-50",
+      iconColor: stats?.pendingRoles && stats.pendingRoles > 0 ? "text-yellow-600" : "text-green-600",
+      textColor: stats?.pendingRoles && stats.pendingRoles > 0 ? "text-yellow-900" : "text-green-900"
     },
     {
       title: "Active Security Rules",
       value: stats?.activeRules || 0,
       icon: Shield,
       description: "R4 rules monitoring platform",
-      status: "info"
+      bgColor: "bg-blue-50",
+      iconColor: "text-blue-600",
+      textColor: "text-blue-900"
     },
     {
       title: "Recent Audit Events",
       value: stats?.recentAudits || 0,
       icon: Activity,
       description: "Last 24 hours",
-      status: "info"
+      bgColor: "bg-blue-50",
+      iconColor: "text-blue-600",
+      textColor: "text-blue-900"
     },
     {
       title: "Flagged Users",
       value: stats?.flaggedUsers || 0,
       icon: Flag,
       description: "Requiring attention",
-      status: stats?.flaggedUsers && stats.flaggedUsers > 0 ? "warning" : "success"
+      bgColor: stats?.flaggedUsers && stats.flaggedUsers > 0 ? "bg-red-50" : "bg-green-50",
+      iconColor: stats?.flaggedUsers && stats.flaggedUsers > 0 ? "text-red-600" : "text-green-600",
+      textColor: stats?.flaggedUsers && stats.flaggedUsers > 0 ? "text-red-900" : "text-green-900"
     }
   ];
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'success': return 'bg-green-100 text-green-800 border-green-200';
-      case 'warning': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'error': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-blue-100 text-blue-800 border-blue-200';
-    }
-  };
-
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-16 bg-gray-200 rounded"></div>
-              </CardContent>
-            </Card>
+            <div key={i} className="bg-gray-100 rounded-2xl p-6 animate-pulse">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
+                <div className="w-12 h-6 bg-gray-300 rounded-full"></div>
+              </div>
+              <div className="space-y-2">
+                <div className="w-24 h-5 bg-gray-300 rounded"></div>
+                <div className="w-32 h-4 bg-gray-300 rounded"></div>
+              </div>
+            </div>
           ))}
         </div>
       </div>
@@ -98,76 +104,83 @@ export function SecurityOverview() {
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database className="h-5 w-5" />
-            Security Overview
-          </CardTitle>
-          <CardDescription>
-            Real-time security metrics and platform health indicators
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {securityMetrics.map((metric) => (
-              <div
-                key={metric.title}
-                className={`p-4 rounded-lg border ${getStatusColor(metric.status)}`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <metric.icon className="h-6 w-6" />
-                  <Badge variant="outline" className="font-mono">
-                    {metric.value}
-                  </Badge>
-                </div>
-                <h3 className="font-medium">{metric.title}</h3>
-                <p className="text-sm opacity-80">{metric.description}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-8 border border-gray-700">
+        <div className="flex items-center gap-3 mb-2">
+          <Database className="h-6 w-6 text-white" />
+          <h2 className="text-2xl font-semibold text-white">Security Overview</h2>
+        </div>
+        <p className="text-gray-300">
+          Real-time security metrics and platform health indicators
+        </p>
+      </div>
 
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {securityMetrics.map((metric) => (
+          <div
+            key={metric.title}
+            className={`${metric.bgColor} rounded-2xl p-6 border transition-all duration-200 hover:shadow-lg hover:-translate-y-1`}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className={`p-3 rounded-full ${metric.bgColor} ${metric.iconColor}`}>
+                <metric.icon className="h-6 w-6" />
+              </div>
+              <div className="bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 border">
+                <span className="text-2xl font-bold text-gray-900">{metric.value}</span>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <h3 className={`font-semibold text-lg ${metric.textColor}`}>{metric.title}</h3>
+              <p className={`text-sm opacity-75 ${metric.textColor}`}>{metric.description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
+        <Card className="border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800">
           <CardHeader>
-            <CardTitle>Security Alerts</CardTitle>
+            <CardTitle className="text-white flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Security Alerts
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {stats?.pendingRoles && stats.pendingRoles > 0 ? (
-                <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                  <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                <div className="flex items-center gap-3 p-4 bg-yellow-500/10 rounded-xl border border-yellow-500/20">
+                  <AlertTriangle className="h-5 w-5 text-yellow-400" />
                   <div>
-                    <p className="font-medium text-yellow-900">
+                    <p className="font-medium text-yellow-300">
                       {stats.pendingRoles} pending role request{stats.pendingRoles > 1 ? 's' : ''}
                     </p>
-                    <p className="text-sm text-yellow-700">Review user role requests</p>
+                    <p className="text-sm text-yellow-400/80">Review user role requests</p>
                   </div>
                 </div>
               ) : null}
               
               {stats?.flaggedUsers && stats.flaggedUsers > 0 ? (
-                <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
-                  <Flag className="h-5 w-5 text-red-600" />
+                <div className="flex items-center gap-3 p-4 bg-red-500/10 rounded-xl border border-red-500/20">
+                  <Flag className="h-5 w-5 text-red-400" />
                   <div>
-                    <p className="font-medium text-red-900">
+                    <p className="font-medium text-red-300">
                       {stats.flaggedUsers} flagged user{stats.flaggedUsers > 1 ? 's' : ''}
                     </p>
-                    <p className="text-sm text-red-700">Requires immediate attention</p>
+                    <p className="text-sm text-red-400/80">Requires immediate attention</p>
                   </div>
                 </div>
               ) : null}
               
               {(!stats?.pendingRoles || stats.pendingRoles === 0) && 
                (!stats?.flaggedUsers || stats.flaggedUsers === 0) && (
-                <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
-                  <Shield className="h-5 w-5 text-green-600" />
+                <div className="flex items-center gap-3 p-4 bg-green-500/10 rounded-xl border border-green-500/20">
+                  <Shield className="h-5 w-5 text-green-400" />
                   <div>
-                    <p className="font-medium text-green-900">All systems secure</p>
-                    <p className="text-sm text-green-700">No security alerts detected</p>
+                    <p className="font-medium text-green-300">All systems secure</p>
+                    <p className="text-sm text-green-400/80">No security alerts detected</p>
                   </div>
                 </div>
               )}
@@ -175,23 +188,23 @@ export function SecurityOverview() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800">
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+            <CardTitle className="text-white">Quick Actions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <button className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors">
-                <div className="font-medium">Review Pending Roles</div>
-                <div className="text-sm text-muted-foreground">Approve or reject user role requests</div>
+            <div className="space-y-3">
+              <button className="w-full text-left p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 group">
+                <div className="font-medium text-white group-hover:text-blue-300 transition-colors">Review Pending Roles</div>
+                <div className="text-sm text-gray-400">Approve or reject user role requests</div>
               </button>
-              <button className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors">
-                <div className="font-medium">View Audit Logs</div>
-                <div className="text-sm text-muted-foreground">Check recent security events</div>
+              <button className="w-full text-left p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 group">
+                <div className="font-medium text-white group-hover:text-blue-300 transition-colors">View Audit Logs</div>
+                <div className="text-sm text-gray-400">Check recent security events</div>
               </button>
-              <button className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors">
-                <div className="font-medium">Manage R4 Rules</div>
-                <div className="text-sm text-muted-foreground">Configure automated security rules</div>
+              <button className="w-full text-left p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 group">
+                <div className="font-medium text-white group-hover:text-blue-300 transition-colors">Manage R4 Rules</div>
+                <div className="text-sm text-gray-400">Configure automated security rules</div>
               </button>
             </div>
           </CardContent>
