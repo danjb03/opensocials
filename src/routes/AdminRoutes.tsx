@@ -6,6 +6,7 @@ import AdminLayout from '@/components/layouts/AdminLayout';
 import AdminDashboard from '@/pages/admin/Dashboard';
 import ProjectManagement from '@/pages/admin/ProjectManagement';
 import OrderManagement from '@/pages/admin/OrderManagement';
+import AdminCRM from '@/pages/admin/crm';
 import BrandCRM from '@/pages/admin/crm/brands';
 import BrandDetail from '@/pages/admin/crm/brands/[brand_id]';
 import CreatorCRM from '@/pages/admin/crm/creators';
@@ -34,6 +35,7 @@ const AdminRoutes = () => {
               <Route path="campaign-review" element={<CampaignReview />} />
               <Route path="pricing-floors" element={<PricingFloors />} />
               <Route path="security" element={<SecurityPage />} />
+              <Route path="crm" element={<AdminCRM />} />
               <Route path="crm/brands/leaderboard" element={<BrandLeaderboard />} />
               <Route path="crm/brands/:brandId" element={<BrandDetail />} />
               <Route path="crm/brands" element={<BrandCRM />} />
