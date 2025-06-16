@@ -9,7 +9,7 @@ import EarningsChart from './EarningsChart';
 import { CreatorProfile } from '@/hooks/useCreatorProfile';
 
 interface DashboardContentProps {
-  profile: any;
+  profile: CreatorProfile | null;
   isLoading: boolean;
   isEditing: boolean;
   isPreviewMode: boolean;
@@ -74,14 +74,11 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     );
   }
 
-  // Check if user has any social connections or profile data
-  const hasSocialConnections = profile?.socialConnections && 
-    Object.values(profile.socialConnections).some(connected => connected === true);
+  // Check if profile is complete - this should now work correctly
+  const isProfileComplete = profile?.isProfileComplete || false;
   
-  const hasBasicProfile = profile && (profile.firstName || profile.lastName || profile.bio);
-  
-  // Show empty state only if no social connections AND no basic profile data AND not in preview mode
-  if (!hasSocialConnections && !hasBasicProfile && !isPreviewMode) {
+  // Show empty state only if profile is not complete AND not in preview mode
+  if (!isProfileComplete && !isPreviewMode) {
     return <EmptyProfileState onStartProfileSetup={onStartProfileSetup} />;
   }
 
@@ -103,7 +100,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
               linkedin: false
             }}
             platformAnalytics={platformAnalytics}
-            visibilitySettings={profile?.visibilitySettings || {
+            visibilitySettings={{
               showInstagram: true,
               showTiktok: true,
               showYoutube: true,
@@ -118,7 +115,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
           {profile?.audienceLocation && (
             <AudienceLocation 
               audienceLocation={profile.audienceLocation}
-              isVisible={profile.visibilitySettings?.showLocation || true}
+              isVisible={true}
             />
           )}
           
@@ -126,7 +123,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         </div>
         
         <div className="space-y-6">
-          {/* Visibility controls will be rendered by parent component */}
+          {/* Future: Visibility controls and other sidebar content */}
         </div>
       </div>
     </div>

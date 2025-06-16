@@ -40,10 +40,10 @@ export interface CreatorProfile {
 
 export const useCreatorProfile = () => {
   const { user, profile: rawProfile, isLoading: authLoading } = useCreatorAuth();
-  const { data: analyticsData, isLoading: analyticsLoading } = useInsightIQData(user?.id || '');
+  const { data: analyticsData, isLoading: analyticsLoading, error: analyticsError } = useInsightIQData(user?.id || '');
 
   const profile = useMemo((): CreatorProfile | null => {
-    if (!rawProfile && !analyticsData) return null;
+    if (!user) return null;
 
     // Type the raw profile properly to access database fields
     const dbProfile = rawProfile as any;
@@ -90,10 +90,11 @@ export const useCreatorProfile = () => {
       avatarUrl: dbProfile?.avatar_url,
       bannerUrl: dbProfile?.banner_url
     };
-  }, [rawProfile, analyticsData]);
+  }, [rawProfile, analyticsData, user]);
 
   return {
     profile,
-    isLoading: authLoading || analyticsLoading
+    isLoading: authLoading || analyticsLoading,
+    error: analyticsError
   };
 };

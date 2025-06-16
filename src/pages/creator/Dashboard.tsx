@@ -9,7 +9,7 @@ import { useCreatorIntro } from '@/hooks/creator/useCreatorIntro';
 
 const Dashboard = () => {
   const { user, isLoading: authLoading } = useCreatorAuth();
-  const { profile, isLoading: profileLoading } = useCreatorProfile();
+  const { profile, isLoading: profileLoading, error: profileError } = useCreatorProfile();
   const { showIntro, isLoading: introLoading, dismissIntro } = useCreatorIntro();
 
   const isLoading = authLoading || profileLoading || introLoading;
@@ -45,29 +45,47 @@ const Dashboard = () => {
     );
   }
 
+  // Show error state if there's a profile error
+  if (profileError) {
+    return (
+      <CreatorLayout>
+        <div className="container mx-auto p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="text-red-500">Error loading profile data</p>
+              <p className="text-sm text-muted-foreground mt-2">Please refresh the page</p>
+            </div>
+          </div>
+        </div>
+      </CreatorLayout>
+    );
+  }
+
   return (
     <>
       <CreatorLayout>
-        <DashboardContent 
-          profile={profile}
-          isLoading={isLoading}
-          isEditing={false}
-          isPreviewMode={false}
-          totalEarnings={0}
-          pipelineValue={0}
-          connectionStats={{
-            outreach: 0,
-            in_talks: 0,
-            working: 0
-          }}
-          earningsData={[]}
-          platformAnalytics={{}}
-          onProfileSubmit={async () => {}}
-          onCancelEdit={() => {}}
-          onStartProfileSetup={() => {}}
-          onAvatarChange={() => {}}
-          onConnectPlatform={() => {}}
-        />
+        <div className="container mx-auto p-6">
+          <DashboardContent 
+            profile={profile}
+            isLoading={isLoading}
+            isEditing={false}
+            isPreviewMode={false}
+            totalEarnings={0}
+            pipelineValue={0}
+            connectionStats={{
+              outreach: 0,
+              in_talks: 0,
+              working: 0
+            }}
+            earningsData={[]}
+            platformAnalytics={{}}
+            onProfileSubmit={async () => {}}
+            onCancelEdit={() => {}}
+            onStartProfileSetup={() => {}}
+            onAvatarChange={() => {}}
+            onConnectPlatform={() => {}}
+          />
+        </div>
       </CreatorLayout>
 
       {/* Creator Intro Modal */}
