@@ -2,11 +2,9 @@
 import React from 'react';
 import ProfileEditForm from '@/components/creator/ProfileEditForm';
 import EmptyProfileState from '@/components/creator/EmptyProfileState';
-import AudienceLocation from '@/components/creator/AudienceLocation';
 import DashboardStats from './DashboardStats';
-import SocialAnalytics from './SocialAnalytics';
 import EarningsChart from './EarningsChart';
-import { AnalyticsDebugger } from '@/components/creator/AnalyticsDebugger';
+import { CreatorAnalyticsProfile } from '@/components/creator/CreatorAnalyticsProfile';
 import { CreatorProfile } from '@/hooks/useCreatorProfile';
 
 interface DashboardContentProps {
@@ -46,12 +44,9 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   pipelineValue,
   connectionStats,
   earningsData,
-  platformAnalytics,
   onProfileSubmit,
   onCancelEdit,
   onStartProfileSetup,
-  onAvatarChange,
-  onConnectPlatform
 }) => {
   if (isLoading) {
     return (
@@ -91,45 +86,10 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         connectionStats={connectionStats}
       />
 
-      {/* Temporary Analytics Debugger */}
-      <AnalyticsDebugger />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <SocialAnalytics 
-            socialConnections={profile?.socialConnections || {
-              instagram: false,
-              tiktok: false,
-              youtube: false,
-              linkedin: false
-            }}
-            platformAnalytics={platformAnalytics}
-            visibilitySettings={{
-              showInstagram: true,
-              showTiktok: true,
-              showYoutube: true,
-              showLinkedin: true,
-              showLocation: true,
-              showAnalytics: true
-            }}
-            onConnect={onConnectPlatform}
-            isLoading={isLoading}
-          />
-          
-          {profile?.audienceLocation && (
-            <AudienceLocation 
-              audienceLocation={profile.audienceLocation}
-              isVisible={true}
-            />
-          )}
-          
-          <EarningsChart earningsData={earningsData} />
-        </div>
-        
-        <div className="space-y-6">
-          {/* Future: Visibility controls and other sidebar content */}
-        </div>
-      </div>
+      {/* Comprehensive Creator Analytics Profile */}
+      <CreatorAnalyticsProfile />
+      
+      <EarningsChart earningsData={earningsData} />
     </div>
   );
 };
