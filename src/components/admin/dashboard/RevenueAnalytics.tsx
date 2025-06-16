@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Calendar, TrendingUp, DollarSign, Pipeline } from 'lucide-react';
+import { Calendar, TrendingUp, DollarSign, GitBranch } from 'lucide-react';
 
 interface RevenueData {
   period: string;
@@ -198,7 +197,7 @@ const RevenueAnalytics = () => {
         >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
-              <Pipeline className="h-4 w-4" />
+              <GitBranch className="h-4 w-4" />
               Pipeline Value
             </CardTitle>
           </CardHeader>
