@@ -12,12 +12,7 @@ import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 const SuperAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const navigate = useNavigate();
-  const { user, role, isLoading, error } = useUnifiedAuth();
-  
-  // Only log in development or when there's an error
-  if (error) {
-    console.error('SuperAdminDashboard - Auth error:', error);
-  }
+  const { user, role, isLoading } = useUnifiedAuth();
 
   if (isLoading) {
     return (
@@ -30,12 +25,11 @@ const SuperAdminDashboard = () => {
     );
   }
 
-  if (error || !user) {
+  if (!user) {
     return (
       <div className="container mx-auto py-10 bg-background text-foreground">
         <div className="text-center text-red-500">
           <p>Error loading dashboard. Please try refreshing the page.</p>
-          {error && <p className="text-sm mt-2">{error}</p>}
         </div>
       </div>
     );

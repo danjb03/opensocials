@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { Eye } from 'lucide-react';
+import { Eye, Loader } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -60,6 +60,15 @@ const formatDate = (dateString: string | null) => {
 };
 
 export const BrandsTable = ({ brands, isLoading }: BrandsTableProps) => {
+  if (isLoading) {
+    return (
+      <div className="text-center py-8">
+        <Loader className="animate-spin h-6 w-6 mx-auto mb-4" />
+        <p className="text-muted-foreground">Loading brands...</p>
+      </div>
+    );
+  }
+
   if (brands.length === 0) {
     return (
       <div className="text-center py-8">
@@ -86,7 +95,7 @@ export const BrandsTable = ({ brands, isLoading }: BrandsTableProps) => {
         </TableHeader>
         <TableBody>
           {brands.map((brand) => (
-            <TableRow key={brand.brand_id} className={isLoading ? "opacity-50" : ""}>
+            <TableRow key={brand.brand_id}>
               <TableCell className="font-medium">
                 {brand.company_name || "Unnamed Brand"}
               </TableCell>
