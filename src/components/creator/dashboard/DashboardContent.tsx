@@ -85,6 +85,9 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
       {/* Welcome Message */}
       <WelcomeSection firstName={profile?.firstName} />
       
+      {/* Social Media Analytics - Moved to top */}
+      <CreatorAnalyticsProfile />
+      
       {/* Stats Overview */}
       <DashboardStats 
         totalEarnings={totalEarnings} 
@@ -101,9 +104,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
           <EarningsChart earningsData={earningsData} />
         </div>
       </div>
-      
-      {/* Comprehensive Creator Analytics Profile */}
-      <CreatorAnalyticsProfile />
     </div>
   );
 };
