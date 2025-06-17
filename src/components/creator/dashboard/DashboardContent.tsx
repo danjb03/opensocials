@@ -1,8 +1,11 @@
+
 import React from 'react';
 import ProfileEditForm from '@/components/creator/ProfileEditForm';
 import EmptyProfileState from '@/components/creator/EmptyProfileState';
 import DashboardStats from './DashboardStats';
 import EarningsChart from './EarningsChart';
+import WelcomeSection from './WelcomeSection';
+import UpdatesSection from './UpdatesSection';
 import { CreatorAnalyticsProfile } from '@/components/creator/analytics/CreatorAnalyticsProfile';
 import { CreatorProfile } from '@/hooks/useCreatorProfile';
 
@@ -79,16 +82,28 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Comprehensive Creator Analytics Profile - moved to top */}
-      <CreatorAnalyticsProfile />
+      {/* Welcome Message */}
+      <WelcomeSection firstName={profile?.firstName} />
       
+      {/* Stats Overview */}
       <DashboardStats 
         totalEarnings={totalEarnings} 
         pipelineValue={pipelineValue} 
         connectionStats={connectionStats}
       />
+
+      {/* Two-column layout for updates and charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1">
+          <UpdatesSection />
+        </div>
+        <div className="lg:col-span-2">
+          <EarningsChart earningsData={earningsData} />
+        </div>
+      </div>
       
-      <EarningsChart earningsData={earningsData} />
+      {/* Comprehensive Creator Analytics Profile */}
+      <CreatorAnalyticsProfile />
     </div>
   );
 };
