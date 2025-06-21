@@ -25,7 +25,7 @@ export const BudgetSection: React.FC<BudgetSectionProps> = ({
   const totalDeliverables = watchedPosts + watchedStories + watchedReels;
   
   // Calculate estimated per deliverable budget for display
-  const estimatedPerDeliverable = totalDeliverables > 0 ? watchedBudget / totalDeliverables : 0;
+  const estimatedPerDeliverable = totalDeliverables > 0 && watchedBudget ? watchedBudget / totalDeliverables : 0;
 
   return (
     <div className="space-y-4">
@@ -44,6 +44,7 @@ export const BudgetSection: React.FC<BudgetSectionProps> = ({
             id="total_budget"
             type="number"
             {...register('total_budget', { valueAsNumber: true })}
+            placeholder="Enter campaign budget"
             className="pl-10 text-lg bg-background border-border text-foreground placeholder:text-muted-foreground"
           />
         </div>
