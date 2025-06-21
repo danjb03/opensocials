@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -258,7 +259,17 @@ const CreatorSearch = () => {
         </div>
         
         <CreatorProfileModal 
-          creator={selectedCreator} 
+          creator={selectedCreator ? {
+            ...selectedCreator,
+            skills: selectedCreator.skills || [], // Ensure skills is always an array
+            metrics: selectedCreator.metrics || {
+              followerCount: selectedCreator.followers || '0',
+              engagementRate: selectedCreator.engagement || '0%',
+              avgViews: "N/A",
+              avgLikes: "N/A",
+              growthTrend: undefined
+            }
+          } : null} 
           isOpen={isProfileModalOpen} 
           onClose={handleCloseProfileModal} 
           onInvite={(creatorId: number) => {
