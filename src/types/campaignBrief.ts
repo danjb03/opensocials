@@ -30,6 +30,11 @@ export const TONE_VIBE_OPTIONS = [
 export const PLATFORM_OPTIONS = [
   'TikTok',
   'Instagram Reels',
+  'Instagram Feed',
+  'Instagram Stories',
   'YouTube Shorts',
+  'YouTube Long-form',
+  'Twitter/X',
+  'LinkedIn',
   'Other'
 ] as const;

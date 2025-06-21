@@ -11,11 +11,11 @@ export const useCampaignDraft = () => {
     setFormData, 
     updateFormData, 
     getBasicsData, 
-    getContentData, 
+    getBriefData, 
     getBudgetData, 
     getReviewData,
     updateBasicsData,
-    updateContentData,
+    updateBriefData,
     updateBudgetData 
   } = useDraftData();
 
@@ -45,13 +45,13 @@ export const useCampaignDraft = () => {
     
     // Section-specific getters
     getBasicsData,
-    getContentData,
+    getBriefData,
     getBudgetData,
     getReviewData,
     
     // Section-specific updaters
     updateBasicsData,
-    updateContentData,
+    updateBriefData,
     updateBudgetData
   };
 };

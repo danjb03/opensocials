@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, Target, Smartphone, DollarSign, Users, Rocket } from 'lucide-react';
+import { Check, Target, Clipboard, DollarSign, Users, Rocket } from 'lucide-react';
 import { CampaignStep } from '@/types/campaignWizard';
 
 interface StepIndicatorsProps {
@@ -12,7 +12,7 @@ export const StepIndicators: React.FC<StepIndicatorsProps> = ({ steps }) => {
   const getStepIcon = (iconName: string) => {
     const iconMap = {
       'target': Target,
-      'smartphone': Smartphone,
+      'clipboard': Clipboard,
       'dollar-sign': DollarSign,
       'users': Users,
       'rocket': Rocket

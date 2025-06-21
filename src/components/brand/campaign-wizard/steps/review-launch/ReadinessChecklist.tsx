@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { CheckCircle, AlertCircle, Target, DollarSign, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { CheckCircle, AlertCircle } from 'lucide-react';
 import { CampaignWizardData } from '@/types/campaignWizard';
 
 interface ReadinessChecklistProps {
@@ -9,46 +9,63 @@ interface ReadinessChecklistProps {
 }
 
 export const ReadinessChecklist: React.FC<ReadinessChecklistProps> = ({ data }) => {
-  const selectedCreators = data?.selected_creators || [];
-
-  const readinessChecks = [
+  const checklistItems = [
     {
-      label: 'Campaign details complete',
-      complete: !!(data.name && data.objective && data.description),
-      icon: <Target className="h-4 w-4" />
+      label: 'Campaign Name & Objective',
+      completed: !!(data?.name && data?.objective),
+      details: data?.name ? `"${data.name}"` : 'Missing campaign name'
     },
     {
-      label: 'Content requirements defined',
-      complete: !!(data.content_requirements?.platforms?.length && data.content_requirements?.content_types?.length),
-      icon: <Target className="h-4 w-4" />
+      label: 'Campaign Brief',
+      completed: !!(data?.brief_data && data?.brief_data?.product_description && data?.brief_data?.platform_destination?.length > 0),
+      details: data?.brief_data?.platform_destination?.length ? `${data.brief_data.platform_destination.length} platforms selected` : 'Missing brief details'
     },
     {
-      label: 'Budget and timeline set',
-      complete: !!(data.total_budget && data.timeline?.start_date && data.timeline?.end_date),
-      icon: <DollarSign className="h-4 w-4" />
+      label: 'Budget & Timeline',
+      completed: !!(data?.total_budget && data?.total_budget > 0),
+      details: data?.total_budget ? `$${data.total_budget.toLocaleString()}` : 'Budget not set'
     },
     {
-      label: 'Creators selected',
-      complete: selectedCreators.length > 0,
-      icon: <Users className="h-4 w-4" />
+      label: 'Deliverables',
+      completed: !!(data?.deliverables && (data.deliverables.posts_count > 0 || data.deliverables.stories_count > 0 || data.deliverables.reels_count > 0)),
+      details: data?.deliverables ? `${Object.values(data.deliverables).reduce((sum, count) => sum + (count || 0), 0)} total deliverables` : 'No deliverables set'
+    },
+    {
+      label: 'Creator Selection',
+      completed: !!(data?.selected_creators && data.selected_creators.length > 0),
+      details: data?.selected_creators?.length ? `${data.selected_creators.length} creators selected` : 'No creators selected'
     }
   ];
 
+  const completedCount = checklistItems.filter(item => item.completed).length;
+  const totalCount = checklistItems.length;
+  const isReady = completedCount === totalCount;
+
   return (
-    <div className="space-y-3">
-      <h3 className="font-semibold text-foreground">Launch Readiness</h3>
-      <div className="space-y-2">
-        {readinessChecks.map((check, index) => (
-          <div key={index} className="flex items-center gap-3">
-            {check.complete ? (
-              <CheckCircle className="h-5 w-5 text-green-400" />
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-foreground">Launch Readiness</h3>
+        <Badge variant={isReady ? "default" : "secondary"} className="text-xs">
+          {completedCount}/{totalCount} Complete
+        </Badge>
+      </div>
+      
+      <div className="space-y-3">
+        {checklistItems.map((item, index) => (
+          <div key={index} className="flex items-start gap-3">
+            {item.completed ? (
+              <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
             ) : (
-              <AlertCircle className="h-5 w-5 text-yellow-400" />
+              <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5 flex-shrink-0" />
             )}
-            <span className={check.complete ? 'text-foreground' : 'text-muted-foreground'}>
-              {check.label}
-            </span>
-            {check.complete && <Badge variant="secondary" className="ml-auto">Complete</Badge>}
+            <div className="flex-1">
+              <div className={`font-medium ${item.completed ? 'text-foreground' : 'text-muted-foreground'}`}>
+                {item.label}
+              </div>
+              <div className="text-sm text-muted-foreground mt-1">
+                {item.details}
+              </div>
+            </div>
           </div>
         ))}
       </div>

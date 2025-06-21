@@ -29,7 +29,7 @@ export const ContentRequirements: React.FC<ContentRequirementsProps> = ({ data }
         <div>
           <Label className="text-sm font-medium text-muted-foreground">Platforms</Label>
           <div className="flex flex-wrap gap-1 mt-1">
-            {data.content_requirements?.platforms?.map(platform => (
+            {data.brief_data?.platform_destination?.map(platform => (
               <Badge key={platform} variant="outline" className="text-xs">
                 {platform}
               </Badge>
@@ -39,7 +39,7 @@ export const ContentRequirements: React.FC<ContentRequirementsProps> = ({ data }
         <div>
           <Label className="text-sm font-medium text-muted-foreground">Content Types</Label>
           <div className="flex flex-wrap gap-1 mt-1">
-            {data.content_requirements?.content_types?.map(type => (
+            {data.brief_data?.content_format?.map(type => (
               <Badge key={type} variant="outline" className="text-xs">
                 {type}
               </Badge>
