@@ -12,6 +12,16 @@ const Label: React.FC<{ className?: string; children: React.ReactNode }> = ({ cl
 );
 
 export const ContentRequirements: React.FC<ContentRequirementsProps> = ({ data }) => {
+  const selectedCreatorsCount = data?.selected_creators?.length || 0;
+  const postsPerCreator = data?.deliverables?.posts_count || 0;
+  const storiesPerCreator = data?.deliverables?.stories_count || 0;
+  const reelsPerCreator = data?.deliverables?.reels_count || 0;
+
+  // Calculate totals
+  const totalPosts = postsPerCreator * selectedCreatorsCount;
+  const totalStories = storiesPerCreator * selectedCreatorsCount;
+  const totalReels = reelsPerCreator * selectedCreatorsCount;
+
   return (
     <div className="space-y-3">
       <h3 className="font-semibold text-foreground">Content Requirements</h3>
@@ -39,13 +49,35 @@ export const ContentRequirements: React.FC<ContentRequirementsProps> = ({ data }
       </div>
       <div>
         <Label className="text-sm font-medium text-muted-foreground">Deliverables</Label>
-        <div className="flex gap-4 mt-1 text-sm">
-          <span className="text-foreground">{data.deliverables?.posts_count || 0} posts</span>
-          {(data.deliverables?.stories_count || 0) > 0 && (
-            <span className="text-foreground">{data.deliverables.stories_count} stories</span>
-          )}
-          {(data.deliverables?.reels_count || 0) > 0 && (
-            <span className="text-foreground">{data.deliverables.reels_count} reels</span>
+        <div className="space-y-2 mt-1">
+          {/* Per creator breakdown */}
+          <div className="text-sm">
+            <span className="font-medium text-foreground">Per Creator:</span>
+            <div className="flex gap-4 mt-1">
+              <span className="text-foreground">{postsPerCreator} posts</span>
+              {storiesPerCreator > 0 && (
+                <span className="text-foreground">{storiesPerCreator} stories</span>
+              )}
+              {reelsPerCreator > 0 && (
+                <span className="text-foreground">{reelsPerCreator} reels</span>
+              )}
+            </div>
+          </div>
+          
+          {/* Campaign totals */}
+          {selectedCreatorsCount > 0 && (
+            <div className="text-sm bg-muted rounded p-2">
+              <span className="font-medium text-foreground">Campaign Totals ({selectedCreatorsCount} creators):</span>
+              <div className="flex gap-4 mt-1">
+                <span className="text-foreground">{totalPosts} total posts</span>
+                {totalStories > 0 && (
+                  <span className="text-foreground">{totalStories} total stories</span>
+                )}
+                {totalReels > 0 && (
+                  <span className="text-foreground">{totalReels} total reels</span>
+                )}
+              </div>
+            </div>
           )}
         </div>
       </div>

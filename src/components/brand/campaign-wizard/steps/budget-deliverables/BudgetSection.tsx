@@ -17,15 +17,15 @@ export const BudgetSection: React.FC<BudgetSectionProps> = ({
   errors
 }) => {
   const watchedBudget = watch('total_budget');
-  const watchedPosts = watch('posts_count');
+  const watchedPosts = watch('posts_count') || 1;
   const watchedStories = watch('stories_count') || 0;
   const watchedReels = watch('reels_count') || 0;
 
-  // Calculate total deliverables count
-  const totalDeliverables = watchedPosts + watchedStories + watchedReels;
+  // Calculate total deliverables count per creator
+  const deliverablesPerCreator = watchedPosts + watchedStories + watchedReels;
   
   // Calculate estimated per deliverable budget for display
-  const estimatedPerDeliverable = totalDeliverables > 0 && watchedBudget ? watchedBudget / totalDeliverables : 0;
+  const estimatedPerDeliverable = deliverablesPerCreator > 0 && watchedBudget ? watchedBudget / deliverablesPerCreator : 0;
 
   return (
     <div className="space-y-4">
@@ -36,7 +36,7 @@ export const BudgetSection: React.FC<BudgetSectionProps> = ({
       
       <div className="space-y-2">
         <Label htmlFor="total_budget" className="text-sm font-medium text-foreground">
-          Total Budget *
+          Total Campaign Budget *
         </Label>
         <div className="relative">
           <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -53,14 +53,14 @@ export const BudgetSection: React.FC<BudgetSectionProps> = ({
         )}
       </div>
 
-      {/* Estimated cost per deliverable */}
+      {/* Estimated cost per deliverable per creator */}
       {estimatedPerDeliverable > 0 && (
         <div className="bg-card border border-border rounded-lg p-3">
           <p className="text-sm text-foreground">
-            <strong>Estimated per deliverable:</strong> ${estimatedPerDeliverable.toFixed(2)}
+            <strong>Estimated per deliverable per creator:</strong> ${estimatedPerDeliverable.toFixed(2)}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Based on {totalDeliverables} total deliverable{totalDeliverables !== 1 ? 's' : ''} ({watchedPosts} post{watchedPosts !== 1 ? 's' : ''}{watchedStories > 0 ? `, ${watchedStories} stor${watchedStories !== 1 ? 'ies' : 'y'}` : ''}{watchedReels > 0 ? `, ${watchedReels} reel${watchedReels !== 1 ? 's' : ''}` : ''})
+            Based on {deliverablesPerCreator} deliverable{deliverablesPerCreator !== 1 ? 's' : ''} per creator ({watchedPosts} post{watchedPosts !== 1 ? 's' : ''}{watchedStories > 0 ? `, ${watchedStories} stor${watchedStories !== 1 ? 'ies' : 'y'}` : ''}{watchedReels > 0 ? `, ${watchedReels} reel${watchedReels !== 1 ? 's' : ''}` : ''})
           </p>
         </div>
       )}
