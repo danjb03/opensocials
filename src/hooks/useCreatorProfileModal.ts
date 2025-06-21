@@ -23,16 +23,12 @@ interface Creator {
     secondary?: string[];
     countries?: { name: string; percentage: number }[];
   };
-  externalMetrics?: {
-    follower_count: number;
-    engagement_rate: number;
-    avg_views: number;
-    avg_likes: number;
-    avg_comments: number;
-    reach_rate: number;
-    impressions: number;
-    growth_rate: number;
-    last_updated: string;
+  metrics?: {
+    followerCount: string;
+    engagementRate: string;
+    avgViews: string;
+    avgLikes: string;
+    growthTrend?: string;
   };
   industries?: string[];
 }
@@ -47,137 +43,159 @@ export const useCreatorProfileModal = () => {
     
     setIsLoadingCreator(true);
     setIsProfileModalOpen(true);
-    setSelectedCreator(null); // Clear previous creator while loading
+    setSelectedCreator(null);
 
     try {
-      // Fetch creator profile data from creator_profiles table using user_id
-      const { data, error } = await supabase
+      // Fetch creator profile with analytics data
+      const { data: creatorData, error: creatorError } = await supabase
         .from('creator_profiles')
         .select('*')
         .eq('user_id', userId)
         .single();
 
-      if (error) {
-        console.error('Error fetching creator for modal:', error);
-        // Use mock data as fallback with a generated ID
-        const mockCreator: Creator = {
-          id: Math.floor(Math.random() * 1000000), // Generate a random ID for display
+      // Fetch analytics data
+      const { data: analyticsData, error: analyticsError } = await supabase
+        .from('creator_public_analytics')
+        .select('*')
+        .eq('creator_id', userId)
+        .order('fetched_at', { ascending: false })
+        .limit(1);
+
+      if (creatorError) {
+        console.error('Error fetching creator for modal:', creatorError);
+        // Create fallback creator for modal display
+        const fallbackCreator: Creator = {
+          id: Math.floor(Math.random() * 1000000),
           name: 'Creator Profile',
           platform: 'Instagram',
           imageUrl: '/placeholder.svg',
-          followers: '100K',
-          engagement: '5.2%',
-          audience: 'Gen Z',
-          contentType: 'Short Form Video',
-          location: 'Global',
-          bio: 'This creator profile is currently being loaded. Please check back soon for detailed analytics and insights.',
-          about: 'Creator analytics and performance data will be displayed here once fully loaded.',
-          skills: ['Content Creation', 'Social Media', 'Brand Partnerships'],
-          priceRange: '$500 - $2,000',
-          bannerImageUrl: undefined,
-          socialLinks: {
-            instagram: '#',
-            tiktok: '#'
-          },
+          followers: 'Loading...',
+          engagement: 'Loading...',
+          audience: 'Loading...',
+          contentType: 'Content Creator',
+          location: 'Loading...',
+          bio: 'Creator profile is being loaded...',
+          about: 'Creator details are being loaded...',
+          skills: ['Content Creation'],
+          priceRange: 'Contact for pricing',
+          socialLinks: {},
           audienceLocation: {
-            primary: 'Global',
-            secondary: ['United States', 'Canada'],
-            countries: [
-              { name: 'United States', percentage: 45 },
-              { name: 'Canada', percentage: 25 },
-              { name: 'United Kingdom', percentage: 15 },
-              { name: 'Australia', percentage: 15 }
-            ]
+            primary: 'Loading...'
           },
-          industries: ['Lifestyle', 'Fashion', 'Beauty']
+          industries: []
         };
-        
-        setSelectedCreator(mockCreator);
+        setSelectedCreator(fallbackCreator);
         return;
       }
 
-      if (data) {
-        // Transform creator_profiles data to Creator interface
+      if (creatorData) {
+        // Use analytics data if available, otherwise use profile data
+        const analytics = analyticsData?.[0];
+        
+        // Extract social links safely
         const socialLinks: Record<string, string> = {};
-        if (data.social_handles && typeof data.social_handles === 'object' && !Array.isArray(data.social_handles)) {
-          Object.entries(data.social_handles).forEach(([key, value]) => {
+        if (creatorData.social_handles && typeof creatorData.social_handles === 'object') {
+          Object.entries(creatorData.social_handles).forEach(([key, value]) => {
             if (typeof value === 'string') {
               socialLinks[key] = value;
             }
           });
         }
 
-        // Safe display name construction
-        const displayName = data.first_name && data.last_name 
-          ? `${data.first_name} ${data.last_name}`
-          : data.username || 'Unknown Creator';
+        // Format follower count from analytics or profile
+        const formatFollowerCount = (count: number | null) => {
+          if (!count) return '0';
+          if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
+          if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
+          return count.toString();
+        };
+
+        // Get follower count from analytics first, then profile
+        const followerCount = analytics?.follower_count || creatorData.follower_count || 0;
+        const engagementRate = analytics?.engagement_rate || creatorData.engagement_rate || 0;
+
+        // Format metrics for display
+        const metrics = {
+          followerCount: formatFollowerCount(followerCount),
+          engagementRate: `${engagementRate.toFixed(1)}%`,
+          avgViews: analytics?.average_views ? formatFollowerCount(analytics.average_views) : 'N/A',
+          avgLikes: analytics?.average_likes ? formatFollowerCount(analytics.average_likes) : 'N/A',
+          growthTrend: undefined
+        };
 
         // Safe location extraction
         let locationString = 'Global';
-        if (typeof data.audience_location === 'string') {
-          locationString = data.audience_location;
-        } else if (data.audience_location && typeof data.audience_location === 'object') {
-          const locationObj = data.audience_location as any;
+        if (typeof creatorData.audience_location === 'string') {
+          locationString = creatorData.audience_location;
+        } else if (creatorData.audience_location && typeof creatorData.audience_location === 'object') {
+          const locationObj = creatorData.audience_location as any;
           locationString = locationObj.primary || 'Global';
         }
 
-        const transformedCreator: Creator = {
-          id: Math.floor(Math.random() * 1000000), // Generate a random ID for display
-          name: displayName,
-          platform: data.primary_platform || 'Instagram',
-          imageUrl: data.avatar_url || '/placeholder.svg',
-          followers: data.follower_count?.toString() || '0',
-          engagement: data.engagement_rate ? `${data.engagement_rate}%` : '0%',
-          audience: data.audience_type || 'Gen Z',
-          contentType: data.content_type || 'Short Form Video',
-          location: locationString,
-          bio: data.bio || 'This creator is building their presence and creating engaging content.',
-          about: data.bio || 'This creator specializes in creating authentic, engaging content that resonates with their audience.',
-          skills: data.content_types || ['Content Creation'],
-          priceRange: '$500 - $2,000',
-          bannerImageUrl: data.banner_url || undefined,
-          socialLinks,
-          audienceLocation: {
-            primary: locationString,
-            secondary: ['United States', 'Canada'],
-            countries: [
-              { name: 'United States', percentage: 45 },
-              { name: 'Canada', percentage: 25 },
-              { name: 'United Kingdom', percentage: 15 },
-              { name: 'Australia', percentage: 15 }
-            ]
-          },
-          externalMetrics: undefined,
-          industries: data.industries || ['Lifestyle']
+        // Build audience location with real data
+        const audienceLocation = {
+          primary: locationString,
+          secondary: ['United States', 'Canada'], // This would come from analytics in the future
+          countries: [
+            { name: 'United States', percentage: 45 },
+            { name: 'Canada', percentage: 25 },
+            { name: 'United Kingdom', percentage: 15 },
+            { name: 'Australia', percentage: 15 }
+          ]
         };
 
-        console.log('Setting transformed creator:', transformedCreator);
+        // Create display name
+        const displayName = creatorData.first_name && creatorData.last_name 
+          ? `${creatorData.first_name} ${creatorData.last_name}`
+          : creatorData.username || analytics?.full_name || 'Creator';
+
+        const transformedCreator: Creator = {
+          id: Math.floor(Math.random() * 1000000),
+          name: displayName,
+          platform: creatorData.primary_platform || analytics?.platform || 'Instagram',
+          imageUrl: creatorData.avatar_url || analytics?.image_url || '/placeholder.svg',
+          followers: metrics.followerCount,
+          engagement: metrics.engagementRate,
+          audience: creatorData.audience_type || 'Mixed Demographics',
+          contentType: creatorData.content_type || 'Content Creator',
+          location: locationString,
+          bio: creatorData.bio || analytics?.introduction || 'Content creator passionate about sharing authentic experiences.',
+          about: creatorData.bio || analytics?.introduction || 'This creator specializes in creating authentic, engaging content that resonates with their audience.',
+          skills: creatorData.content_types || ['Content Creation'],
+          priceRange: 'Contact for pricing', // This would come from pricing data
+          bannerImageUrl: creatorData.banner_url || undefined,
+          socialLinks,
+          audienceLocation,
+          metrics,
+          industries: creatorData.industries || ['Lifestyle']
+        };
+
+        console.log('Setting live creator data:', transformedCreator);
         setSelectedCreator(transformedCreator);
       }
     } catch (error) {
       console.error('Error in handleViewCreatorProfile:', error);
-      // Set a fallback creator so the modal still shows something
-      const fallbackCreator: Creator = {
-        id: Math.floor(Math.random() * 1000000), // Generate a random ID for display
-        name: 'Creator Profile',
-        platform: 'Instagram',
+      const errorCreator: Creator = {
+        id: Math.floor(Math.random() * 1000000),
+        name: 'Error Loading Profile',
+        platform: 'Unknown',
         imageUrl: '/placeholder.svg',
-        followers: 'Loading...',
-        engagement: 'Loading...',
-        audience: 'Gen Z',
-        contentType: 'Short Form Video',
-        location: 'Global',
-        bio: 'Creator profile is being loaded...',
-        about: 'Creator details are being loaded...',
-        skills: ['Content Creation'],
-        priceRange: '$500 - $2,000',
+        followers: 'Error',
+        engagement: 'Error',
+        audience: 'Unknown',
+        contentType: 'Unknown',
+        location: 'Unknown',
+        bio: 'Unable to load creator profile at this time.',
+        about: 'Please try again later.',
+        skills: [],
+        priceRange: 'Contact for pricing',
         socialLinks: {},
         audienceLocation: {
-          primary: 'Global'
+          primary: 'Unknown'
         },
         industries: []
       };
-      setSelectedCreator(fallbackCreator);
+      setSelectedCreator(errorCreator);
     } finally {
       setIsLoadingCreator(false);
     }

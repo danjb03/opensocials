@@ -10,7 +10,9 @@ interface CreatorMetricsProps {
 }
 
 export const CreatorMetrics = ({ creator }: CreatorMetricsProps) => {
-  const engagementValue = parseFloat(creator.metrics?.engagementRate?.replace('%', '') || creator.engagement.replace('%', ''));
+  // Parse engagement rate safely - use metrics first, then fallback
+  const engagementRateString = creator.metrics?.engagementRate || creator.engagement || '0%';
+  const engagementValue = parseFloat(engagementRateString.replace('%', ''));
   
   return (
     <div className="space-y-4">
@@ -20,7 +22,7 @@ export const CreatorMetrics = ({ creator }: CreatorMetricsProps) => {
       </h3>
       
       <div className="grid grid-cols-2 gap-3">
-        {/* Followers */}
+        {/* Followers - Use live data */}
         <div className="bg-muted/30 p-4 rounded-xl border border-border">
           <div className="flex items-center justify-between mb-2">
             <Users className="h-5 w-5 text-foreground" />
@@ -28,11 +30,13 @@ export const CreatorMetrics = ({ creator }: CreatorMetricsProps) => {
               Followers
             </span>
           </div>
-          <p className="text-2xl font-bold text-foreground">{creator.metrics?.followerCount || creator.followers}</p>
+          <p className="text-2xl font-bold text-foreground">
+            {creator.metrics?.followerCount || creator.followers}
+          </p>
           <p className="text-xs text-muted-foreground mt-1">Total audience reach</p>
         </div>
         
-        {/* Engagement Rate */}
+        {/* Engagement Rate - Use live data */}
         <div className="bg-muted/30 p-4 rounded-xl border border-border">
           <div className="flex items-center justify-between mb-2">
             <Heart className="h-5 w-5 text-foreground" />
@@ -52,7 +56,9 @@ export const CreatorMetrics = ({ creator }: CreatorMetricsProps) => {
             </HoverCard>
           </div>
           <div className="flex items-end gap-2">
-            <p className="text-2xl font-bold text-foreground">{creator.metrics?.engagementRate || creator.engagement}</p>
+            <p className="text-2xl font-bold text-foreground">
+              {creator.metrics?.engagementRate || creator.engagement}
+            </p>
             {creator.metrics?.growthTrend && (
               <div className="flex items-center text-xs text-foreground">
                 <TrendingUp className="h-3 w-3 mr-1" />
@@ -63,7 +69,7 @@ export const CreatorMetrics = ({ creator }: CreatorMetricsProps) => {
           <Progress value={engagementValue} className="h-2 mt-2" />
         </div>
         
-        {/* Average Views */}
+        {/* Average Views - Use live data */}
         <div className="bg-muted/30 p-4 rounded-xl border border-border">
           <div className="flex items-center justify-between mb-2">
             <Eye className="h-5 w-5 text-foreground" />
@@ -71,11 +77,13 @@ export const CreatorMetrics = ({ creator }: CreatorMetricsProps) => {
               Avg Views
             </span>
           </div>
-          <p className="text-xl font-bold text-foreground">{creator.metrics?.avgViews || "N/A"}</p>
+          <p className="text-xl font-bold text-foreground">
+            {creator.metrics?.avgViews || "N/A"}
+          </p>
           <p className="text-xs text-muted-foreground mt-1">Per post average</p>
         </div>
         
-        {/* Average Likes */}
+        {/* Average Likes - Use live data */}
         <div className="bg-muted/30 p-4 rounded-xl border border-border">
           <div className="flex items-center justify-between mb-2">
             <MessageCircle className="h-5 w-5 text-foreground" />
@@ -83,17 +91,19 @@ export const CreatorMetrics = ({ creator }: CreatorMetricsProps) => {
               Avg Likes
             </span>
           </div>
-          <p className="text-xl font-bold text-foreground">{creator.metrics?.avgLikes || "N/A"}</p>
+          <p className="text-xl font-bold text-foreground">
+            {creator.metrics?.avgLikes || "N/A"}
+          </p>
           <p className="text-xs text-muted-foreground mt-1">Per post average</p>
         </div>
       </div>
       
-      {/* Price Range */}
+      {/* Price Range - Show contact for pricing instead of hardcoded values */}
       <div className="bg-muted/30 border border-border rounded-xl p-4">
         <div className="flex justify-between items-center">
           <div>
             <h4 className="font-medium text-foreground mb-1">Collaboration Rate</h4>
-            <p className="text-xs text-muted-foreground">Per post pricing range</p>
+            <p className="text-xs text-muted-foreground">Contact creator for current rates</p>
           </div>
           <div className="text-right">
             <p className="text-xl font-bold text-foreground">{creator.priceRange}</p>
