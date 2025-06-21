@@ -32,34 +32,50 @@ export const CreatorProfileModal = ({
   inviteLoading,
   isLoading = false
 }: CreatorProfileModalProps) => {
+  console.log('CreatorProfileModal - isOpen:', isOpen, 'creator:', creator, 'isLoading:', isLoading);
+
   if (isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-background">
           <CreatorProfileLoading />
         </DialogContent>
       </Dialog>
     );
   }
 
-  if (!creator) return null;
+  if (!creator) {
+    console.log('CreatorProfileModal - No creator data available');
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-lg bg-background">
+          <DialogHeader>
+            <DialogTitle>Creator Profile</DialogTitle>
+          </DialogHeader>
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">Creator profile could not be loaded.</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-background">
         <DialogHeader>
-          <DialogTitle className="sr-only">Creator Profile</DialogTitle>
+          <DialogTitle className="sr-only">Creator Profile - {creator.name}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6">
           <CreatorHeader creator={creator} />
           
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="insights">Insights</TabsTrigger>
-              <TabsTrigger value="campaigns">Past Campaigns</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-4 bg-muted">
+              <TabsTrigger value="overview" className="text-foreground">Overview</TabsTrigger>
+              <TabsTrigger value="analytics" className="text-foreground">Analytics</TabsTrigger>
+              <TabsTrigger value="insights" className="text-foreground">Insights</TabsTrigger>
+              <TabsTrigger value="campaigns" className="text-foreground">Past Campaigns</TabsTrigger>
             </TabsList>
             
             <TabsContent value="overview" className="space-y-6 mt-6">
@@ -67,7 +83,7 @@ export const CreatorProfileModal = ({
                 <div className="space-y-6">
                   <CreatorMetrics creator={creator} />
                   <CreatorAbout creator={creator} />
-                  <CreatorSkills skills={creator.skills} />
+                  <CreatorSkills skills={creator.skills || []} />
                 </div>
                 
                 <div className="space-y-6">
