@@ -138,7 +138,8 @@ export const useCampaignActions = (
         });
       }
       
-      navigate('/brand/dashboard');
+      // Use window.location.href to ensure a clean navigation
+      window.location.href = '/brand';
     } catch (error) {
       console.error('Error saving campaign:', error);
       toast.error('Failed to save campaign. Please try again.');
