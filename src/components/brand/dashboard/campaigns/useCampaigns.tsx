@@ -33,8 +33,8 @@ export function useCampaigns(): UseCampaignsReturn {
 
       console.log('Fetching campaigns...');
 
-      // Try to fetch from projects_new first (new table structure)
-      let { data: projectsData, error: projectsError } = await supabase
+      // First, try to fetch from projects_new table (new campaign wizard campaigns)
+      const { data: newProjectsData, error: newProjectsError } = await supabase
         .from('projects_new')
         .select(`
           id,
@@ -44,104 +44,98 @@ export function useCampaigns(): UseCampaignsReturn {
           end_date,
           budget,
           created_at,
-          creator_deals (
-            id,
-            creator_id,
-            deal_value,
-            status,
-            creator_profiles (
-              first_name,
-              last_name,
-              avatar_url,
-              primary_platform
-            )
-          )
+          campaign_type,
+          platforms
         `)
         .order('created_at', { ascending: false });
 
-      // If projects_new doesn't exist or has no data, try the old projects table
-      if (projectsError || !projectsData || projectsData.length === 0) {
-        console.log('Trying fallback to projects table');
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('projects')
-          .select(`
-            id,
-            name,
-            status,
-            start_date,
-            end_date,
-            budget,
-            currency,
-            created_at
-          `)
-          .order('created_at', { ascending: false });
+      let allCampaigns: Campaign[] = [];
 
-        if (fallbackError) {
-          console.error('Error fetching from projects table:', fallbackError);
-          throw fallbackError;
-        }
-
-        // Transform fallback data
-        const transformedCampaigns: Campaign[] = (fallbackData || []).map(project => ({
+      // Process new projects data
+      if (!newProjectsError && newProjectsData) {
+        const transformedNewCampaigns: Campaign[] = newProjectsData.map(project => ({
           id: project.id,
           name: project.name || 'Untitled Campaign',
           status: (project.status as 'draft' | 'active' | 'completed' | 'paused') || 'draft',
           budget: project.budget || 0,
           startDate: project.start_date || '',
           endDate: project.end_date || '',
-          creators: 0, // No creator data in old table
-          reach: 0,
-          engagement: 0,
-          platform: 'Multiple'
+          creators: 0, // Will be populated from deals if available
+          reach: 25000, // Mock data for now
+          engagement: 3.8, // Mock data for now
+          platform: Array.isArray(project.platforms) && project.platforms.length > 0 
+            ? project.platforms[0] 
+            : 'Multiple'
         }));
-
-        setCampaigns(transformedCampaigns);
-        console.log('Loaded campaigns from fallback:', transformedCampaigns.length);
-        return;
+        allCampaigns = [...transformedNewCampaigns];
       }
 
-      // Apply filters to projects_new data
-      let filteredData = projectsData;
+      // Also try to fetch from legacy projects table for backwards compatibility
+      const { data: legacyProjectsData, error: legacyProjectsError } = await supabase
+        .from('projects')
+        .select(`
+          id,
+          name,
+          status,
+          start_date,
+          end_date,
+          budget,
+          currency,
+          created_at,
+          campaign_type,
+          platforms
+        `)
+        .order('created_at', { ascending: false });
+
+      // Process legacy projects data
+      if (!legacyProjectsError && legacyProjectsData) {
+        const transformedLegacyCampaigns: Campaign[] = legacyProjectsData.map(project => ({
+          id: project.id,
+          name: project.name || 'Untitled Campaign',
+          status: (project.status as 'draft' | 'active' | 'completed' | 'paused') || 'draft',
+          budget: project.budget || 0,
+          startDate: project.start_date || '',
+          endDate: project.end_date || '',
+          creators: 0, // Will be populated from deals if available
+          reach: 35000, // Mock data for now
+          engagement: 4.1, // Mock data for now
+          platform: Array.isArray(project.platforms) && project.platforms.length > 0 
+            ? project.platforms[0] 
+            : 'Multiple'
+        }));
+        
+        // Merge with new campaigns, avoiding duplicates
+        const existingIds = new Set(allCampaigns.map(c => c.id));
+        const uniqueLegacyCampaigns = transformedLegacyCampaigns.filter(c => !existingIds.has(c.id));
+        allCampaigns = [...allCampaigns, ...uniqueLegacyCampaigns];
+      }
+
+      // Apply filters
+      let filteredData = allCampaigns;
 
       if (filters.search) {
-        filteredData = filteredData.filter(project => 
-          project.name?.toLowerCase().includes(filters.search!.toLowerCase())
+        filteredData = filteredData.filter(campaign => 
+          campaign.name?.toLowerCase().includes(filters.search!.toLowerCase())
         );
       }
 
       if (filters.status) {
-        filteredData = filteredData.filter(project => project.status === filters.status);
+        filteredData = filteredData.filter(campaign => campaign.status === filters.status);
       }
 
       if (filters.dateRange) {
-        filteredData = filteredData.filter(project => {
-          const startDate = new Date(project.start_date || '');
+        filteredData = filteredData.filter(campaign => {
+          const startDate = new Date(campaign.startDate || '');
           return startDate >= filters.dateRange!.start && startDate <= filters.dateRange!.end;
         });
       }
 
-      // Transform data to match Campaign interface
-      const transformedCampaigns: Campaign[] = filteredData.map(project => {
-        const deals = Array.isArray(project.creator_deals) ? project.creator_deals : [];
-        const firstDeal = deals.length > 0 ? deals[0] : null;
-        const creatorProfile = firstDeal?.creator_profiles;
-
-        return {
-          id: project.id,
-          name: project.name || 'Untitled Campaign',
-          status: (project.status as 'draft' | 'active' | 'completed' | 'paused') || 'draft',
-          budget: project.budget || 0,
-          startDate: project.start_date || '',
-          endDate: project.end_date || '',
-          creators: deals.length,
-          reach: 50000, // Mock data for now
-          engagement: 4.2, // Mock data for now
-          platform: creatorProfile?.primary_platform || 'Multiple'
-        };
-      });
-
-      setCampaigns(transformedCampaigns);
-      console.log('Loaded campaigns:', transformedCampaigns.length);
+      setCampaigns(filteredData);
+      console.log('Loaded campaigns:', filteredData.length);
+      console.log('Campaign statuses:', filteredData.reduce((acc, c) => {
+        acc[c.status] = (acc[c.status] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>));
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch campaigns';
