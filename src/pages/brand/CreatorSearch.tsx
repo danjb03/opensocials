@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -138,28 +137,15 @@ const CreatorSearch = () => {
   };
 
   const handleViewProfile = (creatorId: number) => {
+    console.log('handleViewProfile called with creatorId:', creatorId);
     const creator = creators.find(c => parseInt(c.user_id) === creatorId);
+    console.log('Found creator:', creator);
+    
     if (creator) {
-      // Convert to the format expected by useCreatorProfileModal
-      const profileCreator = {
-        id: parseInt(creator.user_id),
-        name: creator.display_name || 'Unknown Creator',
-        platform: creator.primary_platform || 'Unknown',
-        audience: creator.audience_type || 'Unknown',
-        contentType: creator.content_type || 'Unknown',
-        followers: creator.follower_count?.toString() || '0',
-        engagement: creator.engagement_rate ? `${creator.engagement_rate}%` : '0%',
-        priceRange: '$500 - $2,000',
-        skills: creator.content_types || [],
-        imageUrl: creator.avatar_url || '/placeholder.svg',
-        bannerImageUrl: undefined,
-        about: creator.bio || '',
-        socialLinks: {},
-        externalMetrics: undefined,
-        industries: creator.industries || [],
-        audienceLocation: creator.audience_location
-      };
-      handleViewCreatorProfile(profileCreator.id);
+      // Call the hook function to handle profile viewing
+      handleViewCreatorProfile(creatorId);
+    } else {
+      console.error('Creator not found for ID:', creatorId);
     }
   };
 
@@ -272,17 +258,7 @@ const CreatorSearch = () => {
         </div>
         
         <CreatorProfileModal 
-          creator={selectedCreator ? {
-            ...selectedCreator,
-            skills: selectedCreator.skills || [],
-            metrics: {
-              followerCount: selectedCreator.followers,
-              engagementRate: selectedCreator.engagement,
-              avgViews: "N/A",
-              avgLikes: "N/A",
-              growthTrend: undefined
-            }
-          } : null} 
+          creator={selectedCreator} 
           isOpen={isProfileModalOpen} 
           onClose={handleCloseProfileModal} 
           onInvite={(creatorId: number) => {

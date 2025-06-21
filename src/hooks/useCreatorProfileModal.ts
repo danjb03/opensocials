@@ -23,17 +23,16 @@ interface Creator {
     secondary?: string[];
     countries?: { name: string; percentage: number }[];
   };
-  // External API metrics - to be populated by Modash or similar
   externalMetrics?: {
-    followerCount: number;
-    engagementRate: number;
-    avgViews: number;
-    avgLikes: number;
-    avgComments: number;
-    reachRate: number;
+    follower_count: number;
+    engagement_rate: number;
+    avg_views: number;
+    avg_likes: number;
+    avg_comments: number;
+    reach_rate: number;
     impressions: number;
-    growthRate: number;
-    lastUpdated: string;
+    growth_rate: number;
+    last_updated: string;
   };
   industries?: string[];
 }
