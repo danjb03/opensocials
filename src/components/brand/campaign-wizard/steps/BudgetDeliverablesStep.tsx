@@ -65,6 +65,9 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
 
   // Get the number of selected creators for calculations
   const selectedCreatorsCount = data?.selected_creators?.length || 0;
+  
+  // Get the campaign type, defaulting to 'Single' if not set
+  const campaignType = data?.campaign_type || 'Single';
 
   const onSubmit = (formData: BudgetDeliverablesForm) => {
     const deliverables = {
@@ -107,10 +110,10 @@ const BudgetDeliverablesStep: React.FC<BudgetDeliverablesStepProps> = ({
           />
 
           <TimelineSection 
-            register={register}
             setValue={setValue}
             watch={watch}
             errors={errors}
+            campaignType={campaignType}
           />
         </CardContent>
       </Card>
