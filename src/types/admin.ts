@@ -54,14 +54,12 @@ export type CampaignDetail = {
 export type UserRequest = {
   id: string;
   user_id: string;
-  request_type: string;
-  request_data: Json;
+  role: string;
   status: string;
-  admin_notes: string | null;
   created_at: string;
-  updated_at: string;
   profiles: {
-    full_name: string | null;
+    first_name: string | null;
+    last_name: string | null;
     email: string | null;
   } | null;
 };

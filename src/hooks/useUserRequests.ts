@@ -27,7 +27,7 @@ export const useUserRequests = (filter: string) => {
           try {
             const { data: profileData, error: profileError } = await supabase
               .from('profiles')
-              .select('first_name, last_name')
+              .select('first_name, last_name, email')
               .eq('id', item.user_id)
               .single();
 
@@ -42,7 +42,7 @@ export const useUserRequests = (filter: string) => {
               profiles: {
                 first_name: profileData?.first_name || null,
                 last_name: profileData?.last_name || null,
-                email: null
+                email: profileData?.email || null
               }
             };
           } catch (err) {

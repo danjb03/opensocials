@@ -31,30 +31,6 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
   // Draft clearing functionality
   const { clearDraft } = useDraftClear(userId, existingDraft, lastSavedDataRef);
 
-  // Auto-save functionality with debouncing
-  const { triggerAutoSave } = useDraftAutoSave(
-    formData,
-    currentStep,
-    userId,
-    isDraftLoading,
-    isLoadingDraftRef,
-    isSavingRef,
-    lastSavedDataRef,
-    (data, step) => {
-      // Clear any existing timeout
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-      
-      // Debounce the save operation
-      saveTimeoutRef.current = setTimeout(() => {
-        if (!isSavingRef.current) {
-          saveDraftMutation.mutate({ data, currentStep: step });
-        }
-      }, 1000); // 1 second debounce
-    }
-  );
-
   // Track when draft is loading
   useEffect(() => {
     isLoadingDraftRef.current = isDraftLoading;
@@ -90,6 +66,9 @@ export const useDraftPersistence = (formData: Partial<CampaignWizardData>, curre
     
     return saveDraftMutation.mutateAsync({ data: formData, currentStep });
   };
+
+  // Auto-save functionality with debouncing
+  useDraftAutoSave(formData, currentStep, saveDraft);
 
   return {
     existingDraft,
