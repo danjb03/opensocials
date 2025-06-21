@@ -11,7 +11,6 @@ import { CreatorActionButtons } from './creator-profile-modal/CreatorActionButto
 import { CreatorCampaignsTab } from './creator-profile-modal/CreatorCampaignsTab';
 import { CreatorProfileLoading } from './creator-profile-modal/CreatorProfileLoading';
 import { CreatorAnalytics } from './creator-profile-modal/CreatorAnalytics';
-import { CreatorInsights } from './creator-profile-modal/CreatorInsights';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Creator } from '@/types/creator';
 
@@ -88,10 +87,9 @@ export const CreatorProfileModal = ({
           <CreatorHeader creator={modalCreator} />
           
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 bg-muted">
+            <TabsList className="grid w-full grid-cols-3 bg-muted">
               <TabsTrigger value="overview" className="text-foreground">Overview</TabsTrigger>
               <TabsTrigger value="analytics" className="text-foreground">Analytics</TabsTrigger>
-              <TabsTrigger value="insights" className="text-foreground">Insights</TabsTrigger>
               <TabsTrigger value="campaigns" className="text-foreground">Past Campaigns</TabsTrigger>
             </TabsList>
             
@@ -112,10 +110,6 @@ export const CreatorProfileModal = ({
             
             <TabsContent value="analytics" className="mt-6">
               <CreatorAnalytics creator={modalCreator} />
-            </TabsContent>
-            
-            <TabsContent value="insights" className="mt-6">
-              <CreatorInsights creator={modalCreator} />
             </TabsContent>
             
             <TabsContent value="campaigns" className="mt-6">
