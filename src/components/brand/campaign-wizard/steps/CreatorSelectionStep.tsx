@@ -103,7 +103,7 @@ const CreatorSelectionStep: React.FC<CreatorSelectionStepProps> = ({
 
   const totalBudget = data?.total_budget || 0;
   const totalSelectedBudget = Object.values(creatorBudgets).reduce((sum, budget) => sum + budget, 0);
-  const remainingBudget = totalBudget * 0.75 - totalSelectedBudget; // 75% for creators
+  const remainingBudget = totalBudget - totalSelectedBudget; // Show full budget
 
   const handleCreatorToggle = (creatorId: string, checked: boolean) => {
     if (checked) {
@@ -176,7 +176,7 @@ const CreatorSelectionStep: React.FC<CreatorSelectionStepProps> = ({
           <div className="flex justify-between items-center mb-4">
             <span className="text-white font-medium text-lg">Creator Budget Allocation</span>
             <span className="text-blue-400 text-lg font-medium">
-              ${totalSelectedBudget.toFixed(2)} / ${(totalBudget * 0.75).toFixed(2)}
+              ${totalSelectedBudget.toFixed(2)} / ${totalBudget.toFixed(2)}
             </span>
           </div>
           
@@ -184,7 +184,7 @@ const CreatorSelectionStep: React.FC<CreatorSelectionStepProps> = ({
           <div className="w-full bg-gray-700 rounded-full h-3 mb-3">
             <div 
               className="bg-blue-500 h-3 rounded-full transition-all duration-300"
-              style={{ width: `${Math.min((totalSelectedBudget / (totalBudget * 0.75)) * 100, 100)}%` }}
+              style={{ width: `${Math.min((totalSelectedBudget / totalBudget) * 100, 100)}%` }}
             />
           </div>
           
