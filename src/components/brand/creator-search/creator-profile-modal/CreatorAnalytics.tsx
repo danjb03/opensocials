@@ -32,17 +32,17 @@ export const CreatorAnalytics = ({ creator }: CreatorAnalyticsProps) => {
     },
   });
 
-  // Parse creator metrics for fallback data
+  // Parse creator metrics for fallback data with proper type checking
   const creatorMetrics = creator.metrics || {};
   const followerCount = analyticsData?.follower_count || 
     (typeof creatorMetrics.followerCount === 'string' 
       ? parseInt(creatorMetrics.followerCount.replace(/[K,M]/g, '')) * (creatorMetrics.followerCount.includes('K') ? 1000 : creatorMetrics.followerCount.includes('M') ? 1000000 : 1)
-      : 0);
+      : creator.followers ? parseInt(creator.followers.replace(/[K,M]/g, '')) * (creator.followers.includes('K') ? 1000 : creator.followers.includes('M') ? 1000000 : 1) : 0);
 
   const engagementRate = analyticsData?.engagement_rate || 
     (typeof creatorMetrics.engagementRate === 'string'
       ? parseFloat(creatorMetrics.engagementRate.replace('%', ''))
-      : 0);
+      : creator.engagement ? parseFloat(creator.engagement.replace('%', '')) : 0);
 
   const avgViews = analyticsData?.average_views || 0;
   const avgLikes = analyticsData?.average_likes || 0;
@@ -77,7 +77,7 @@ export const CreatorAnalytics = ({ creator }: CreatorAnalyticsProps) => {
   }
 
   // Show message if no analytics data available
-  if (!analyticsData && !creatorMetrics.followerCount) {
+  if (!analyticsData && !creator.followers && !creatorMetrics.followerCount) {
     return (
       <div className="space-y-6">
         <Card>
