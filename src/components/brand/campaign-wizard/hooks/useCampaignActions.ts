@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { CampaignWizardData, CAMPAIGN_STEPS } from '@/types/campaignWizard';
+import { useDraftSave } from '@/hooks/campaign-draft/useDraftSave';
 
 export const useCampaignActions = (
   formData: Partial<CampaignWizardData>,
@@ -22,7 +23,14 @@ export const useCampaignActions = (
   // Use user.id if brandProfile.user_id is not available
   const userId = brandProfile?.user_id || user?.id;
 
-  const createCampaignFromDraft = async (draftData: Partial<CampaignWizardData>) => {
+  // Use the new draft save hook
+  const { handleSaveAndExit: saveAndExit, isSaving: isSavingDraft } = useDraftSave(
+    formData,
+    saveDraft,
+    clearDraft
+  );
+
+  const createCampaignFromDraft = async (draftData: Partial<CampaignWizardData>, status: string = 'active') => {
     if (!userId) {
       throw new Error('No user authenticated');
     }
@@ -41,8 +49,8 @@ export const useCampaignActions = (
       brief_data: draftData.brief_data || {},
       platforms: draftData.brief_data?.platform_destination || [],
       deliverables: draftData.deliverables || {},
-      status: 'draft',
-      review_status: 'pending_review',
+      status: status,
+      review_status: status === 'active' ? 'pending_review' : 'pending_review',
       current_step: currentStep
     };
 
@@ -87,80 +95,6 @@ export const useCampaignActions = (
     }
   };
 
-  const handleSaveAndExit = async () => {
-    if (isSubmitting) {
-      console.log('Save already in progress, ignoring');
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    try {
-      console.log('Save and exit triggered with data:', formData);
-      
-      if (!formData || Object.keys(formData).length === 0) {
-        toast.error('No data to save');
-        return;
-      }
-
-      if (!userId) {
-        toast.error('User not authenticated');
-        return;
-      }
-
-      // First save the draft with timeout
-      try {
-        await Promise.race([
-          saveDraft(),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Save timeout')), 10000)
-          )
-        ]);
-        setLastSaveTime(new Date());
-      } catch (saveError) {
-        console.error('Error saving draft:', saveError);
-        toast.error('Failed to save draft');
-        return;
-      }
-      
-      // If we have sufficient data for a campaign, create it
-      if (formData.name && formData.name.trim()) {
-        try {
-          const campaign = await createCampaignFromDraft(formData);
-          toast.success('Campaign created and saved successfully!', {
-            description: 'You can find it in your projects list.'
-          });
-          
-          // Clear the draft after successful campaign creation
-          if (draftId) {
-            try {
-              await clearDraft();
-            } catch (clearError) {
-              console.warn('Failed to clear draft after campaign creation:', clearError);
-            }
-          }
-        } catch (campaignError) {
-          console.error('Error creating campaign, but draft saved:', campaignError);
-          toast.success('Campaign draft saved!', {
-            description: 'You can continue editing it later. Note: Campaign creation failed but your progress is saved.'
-          });
-        }
-      } else {
-        toast.success('Campaign draft saved!', {
-          description: 'You can continue editing it later.'
-        });
-      }
-      
-      // Use window.location.href to ensure a clean navigation
-      window.location.href = '/brand';
-    } catch (error) {
-      console.error('Error saving campaign:', error);
-      toast.error('Failed to save campaign. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleFinalSubmit = async () => {
     if (!formData || Object.keys(formData).length === 0) {
       toast.error('No campaign data to submit');
@@ -177,8 +111,7 @@ export const useCampaignActions = (
       console.log('Final submit triggered with data:', formData);
       
       // Create the campaign with active status
-      const campaignData = { ...formData, status: 'active' };
-      const campaign = await createCampaignFromDraft(campaignData);
+      const campaign = await createCampaignFromDraft(formData, 'active');
       
       // Clear the draft after successful campaign creation
       if (draftId) {
@@ -205,10 +138,10 @@ export const useCampaignActions = (
   };
 
   return {
-    isSubmitting,
+    isSubmitting: isSubmitting || isSavingDraft,
     lastSaveTime,
     handleStepComplete,
-    handleSaveAndExit,
+    handleSaveAndExit: saveAndExit,
     handleFinalSubmit
   };
 };
