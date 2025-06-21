@@ -95,6 +95,22 @@ const CreatorSelectionStep: React.FC<CreatorSelectionStepProps> = ({
     }), {}) || {}
   );
 
+  // Add state for deliverables per creator
+  const [creatorDeliverables, setCreatorDeliverables] = useState<Record<string, {
+    posts_count: number;
+    stories_count: number;
+    reels_count: number;
+  }>>(
+    data?.selected_creators?.reduce((acc, creator) => ({
+      ...acc,
+      [creator.creator_id]: creator.custom_requirements || {
+        posts_count: data?.deliverables?.posts_count || 1,
+        stories_count: data?.deliverables?.stories_count || 0,
+        reels_count: data?.deliverables?.reels_count || 0
+      }
+    }), {}) || {}
+  );
+
   const filteredCreators = mockCreators.filter(creator =>
     creator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     creator.handle.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -103,7 +119,7 @@ const CreatorSelectionStep: React.FC<CreatorSelectionStepProps> = ({
 
   const totalBudget = data?.total_budget || 0;
   const totalSelectedBudget = Object.values(creatorBudgets).reduce((sum, budget) => sum + budget, 0);
-  const remainingBudget = totalBudget - totalSelectedBudget; // Show full budget
+  const remainingBudget = totalBudget - totalSelectedBudget;
 
   const handleCreatorToggle = (creatorId: string, checked: boolean) => {
     if (checked) {
@@ -114,10 +130,23 @@ const CreatorSelectionStep: React.FC<CreatorSelectionStepProps> = ({
           ...prev,
           [creatorId]: creator.rate_per_post
         }));
+        // Set default deliverables from campaign requirements
+        setCreatorDeliverables(prev => ({
+          ...prev,
+          [creatorId]: {
+            posts_count: data?.deliverables?.posts_count || 1,
+            stories_count: data?.deliverables?.stories_count || 0,
+            reels_count: data?.deliverables?.reels_count || 0
+          }
+        }));
       }
     } else {
       setSelectedCreators(selectedCreators.filter(id => id !== creatorId));
       setCreatorBudgets(prev => {
+        const { [creatorId]: removed, ...rest } = prev;
+        return rest;
+      });
+      setCreatorDeliverables(prev => {
         const { [creatorId]: removed, ...rest } = prev;
         return rest;
       });
@@ -131,11 +160,25 @@ const CreatorSelectionStep: React.FC<CreatorSelectionStepProps> = ({
     }));
   };
 
+  const handleDeliverableChange = (creatorId: string, field: 'posts_count' | 'stories_count' | 'reels_count', value: number) => {
+    setCreatorDeliverables(prev => ({
+      ...prev,
+      [creatorId]: {
+        ...prev[creatorId],
+        [field]: value
+      }
+    }));
+  };
+
   const handleContinue = () => {
     const selected_creators = selectedCreators.map(creatorId => ({
       creator_id: creatorId,
       individual_budget: creatorBudgets[creatorId] || 0,
-      custom_requirements: {}
+      custom_requirements: creatorDeliverables[creatorId] || {
+        posts_count: data?.deliverables?.posts_count || 1,
+        stories_count: data?.deliverables?.stories_count || 0,
+        reels_count: data?.deliverables?.reels_count || 0
+      }
     }));
 
     onComplete({ selected_creators });
@@ -204,9 +247,15 @@ const CreatorSelectionStep: React.FC<CreatorSelectionStepProps> = ({
             <div className="flex flex-wrap gap-2">
               {selectedCreators.map(creatorId => {
                 const creator = mockCreators.find(c => c.id === creatorId);
+                const deliverables = creatorDeliverables[creatorId];
                 return creator ? (
                   <Badge key={creatorId} variant="secondary" className="bg-green-800 text-green-100 text-sm py-1 px-3">
-                    {creator.name} - ${creatorBudgets[creatorId] || 0}
+                    {creator.name} - ${creatorBudgets[creatorId] || 0} 
+                    {deliverables && (
+                      <span className="ml-2 text-xs">
+                        ({deliverables.posts_count}p, {deliverables.stories_count}s, {deliverables.reels_count}r)
+                      </span>
+                    )}
                   </Badge>
                 ) : null;
               })}
@@ -219,6 +268,11 @@ const CreatorSelectionStep: React.FC<CreatorSelectionStepProps> = ({
       <div className="max-w-4xl mx-auto space-y-4">
         {filteredCreators.map((creator) => {
           const isSelected = selectedCreators.includes(creator.id);
+          const deliverables = creatorDeliverables[creator.id] || {
+            posts_count: data?.deliverables?.posts_count || 1,
+            stories_count: data?.deliverables?.stories_count || 0,
+            reels_count: data?.deliverables?.reels_count || 0
+          };
           
           return (
             <Card
@@ -296,7 +350,8 @@ const CreatorSelectionStep: React.FC<CreatorSelectionStepProps> = ({
                 </div>
                 
                 {isSelected && (
-                  <div className="mt-6 pt-6 border-t border-blue-700">
+                  <div className="mt-6 pt-6 border-t border-blue-700 space-y-4">
+                    {/* Budget Input */}
                     <div className="flex items-center gap-4">
                       <Label className="text-sm font-medium text-blue-300 whitespace-nowrap">
                         Your Budget:
@@ -312,6 +367,51 @@ const CreatorSelectionStep: React.FC<CreatorSelectionStepProps> = ({
                           min="0"
                           max={remainingBudget + (creatorBudgets[creator.id] || 0)}
                         />
+                      </div>
+                    </div>
+
+                    {/* Deliverables Inputs */}
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium text-blue-300">
+                        Content Deliverables for this Creator:
+                      </Label>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-xs text-gray-400">Posts</Label>
+                          <Input
+                            type="number"
+                            value={deliverables.posts_count}
+                            onChange={(e) => handleDeliverableChange(creator.id, 'posts_count', Number(e.target.value))}
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-full bg-gray-800 border-gray-600 text-white"
+                            min="0"
+                            max="50"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs text-gray-400">Stories</Label>
+                          <Input
+                            type="number"
+                            value={deliverables.stories_count}
+                            onChange={(e) => handleDeliverableChange(creator.id, 'stories_count', Number(e.target.value))}
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-full bg-gray-800 border-gray-600 text-white"
+                            min="0"
+                            max="50"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs text-gray-400">Reels</Label>
+                          <Input
+                            type="number"
+                            value={deliverables.reels_count}
+                            onChange={(e) => handleDeliverableChange(creator.id, 'reels_count', Number(e.target.value))}
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-full bg-gray-800 border-gray-600 text-white"
+                            min="0"
+                            max="20"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
