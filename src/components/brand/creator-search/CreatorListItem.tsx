@@ -6,7 +6,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Creator } from '@/types/creator';
-import { CreatorAnalyticsCard } from '@/components/creator/CreatorAnalyticsCard';
 
 interface CreatorListItemProps {
   creator: Creator;
@@ -80,11 +79,6 @@ export const CreatorListItem: React.FC<CreatorListItemProps> = ({
                 </p>
               )}
             </div>
-          </div>
-          
-          {/* Analytics Card in right sidebar */}
-          <div className="w-80 flex-shrink-0">
-            <CreatorAnalyticsCard creator_id={creator.id} />
           </div>
         </div>
       </CardContent>
