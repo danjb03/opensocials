@@ -6,7 +6,7 @@ import { Creator } from '@/types/creator';
 
 interface CreatorActionButtonsProps {
   creator: Creator;
-  onInvite: (creatorId: string) => void;
+  onInvite: () => void;
   isLoading?: boolean;
 }
 
@@ -18,7 +18,7 @@ export const CreatorActionButtons = ({
   return (
     <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 mt-6">
       <Button 
-        onClick={() => onInvite(creator.id)}
+        onClick={onInvite}
         disabled={isLoading}
         className="flex items-center gap-2 bg-primary hover:bg-primary/90"
       >

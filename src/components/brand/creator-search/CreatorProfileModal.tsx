@@ -77,10 +77,9 @@ export const CreatorProfileModal = ({
   };
 
   // Handle invite with proper creator ID conversion
-  const handleInvite = (creatorId: string) => {
-    // The creator.id might be a number from the mock data, but we need a string for the user_id
-    // We'll use the creator's actual user_id if available, or convert the id to string
-    const userIdToInvite = typeof creatorId === 'string' ? creatorId : creatorId.toString();
+  const handleInvite = () => {
+    // Convert creator ID to string for the invitation
+    const userIdToInvite = String(modalCreator.id);
     onInvite(userIdToInvite);
   };
 
