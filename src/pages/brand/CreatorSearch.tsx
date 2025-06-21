@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -262,7 +263,7 @@ const CreatorSearch = () => {
           creator={selectedCreator ? {
             ...selectedCreator,
             skills: selectedCreator.skills || [], // Ensure skills is always an array
-            metrics: selectedCreator.metrics || {
+            metrics: {
               followerCount: selectedCreator.followers || '0',
               engagementRate: selectedCreator.engagement || '0%',
               avgViews: "N/A",
@@ -293,3 +294,4 @@ const CreatorSearch = () => {
 };
 
 export default CreatorSearch;
+
