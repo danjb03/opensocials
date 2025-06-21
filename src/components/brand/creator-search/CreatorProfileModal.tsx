@@ -76,6 +76,14 @@ export const CreatorProfileModal = ({
     }
   };
 
+  // Handle invite with proper creator ID conversion
+  const handleInvite = (creatorId: string) => {
+    // The creator.id might be a number from the mock data, but we need a string for the user_id
+    // We'll use the creator's actual user_id if available, or convert the id to string
+    const userIdToInvite = typeof creatorId === 'string' ? creatorId : creatorId.toString();
+    onInvite(userIdToInvite);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-background">
@@ -115,7 +123,7 @@ export const CreatorProfileModal = ({
             <TabsContent value="campaigns" className="mt-6">
               <CreatorCampaignsTab 
                 creator={modalCreator} 
-                onInvite={onInvite}
+                onInvite={handleInvite}
                 isLoading={{ [`invite-${modalCreator.id}`]: inviteLoading }}
               />
             </TabsContent>
@@ -123,7 +131,7 @@ export const CreatorProfileModal = ({
           
           <CreatorActionButtons 
             creator={modalCreator} 
-            onInvite={onInvite}
+            onInvite={handleInvite}
             isLoading={inviteLoading}
           />
         </div>
