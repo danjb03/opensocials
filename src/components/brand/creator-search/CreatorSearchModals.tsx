@@ -7,7 +7,7 @@ interface CreatorSearchModalsProps {
   showFavoritesModal: boolean;
   onCloseFavoritesModal: () => void;
   onInviteFromModal: (creatorId: string, creatorName: string) => void;
-  onInviteFromProfile: (creatorId: number) => void;
+  onInviteFromProfile: (creatorId: string) => void;
 }
 
 export const CreatorSearchModals = ({

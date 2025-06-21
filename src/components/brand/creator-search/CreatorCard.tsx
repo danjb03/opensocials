@@ -68,7 +68,7 @@ export const CreatorCard: React.FC<CreatorCardProps> = ({
 
             {/* Analytics Card */}
             <div className="mt-4">
-              <CreatorAnalyticsCard creator_id={creator.id.toString()} />
+              <CreatorAnalyticsCard creator_id={creator.id} />
             </div>
           </div>
         </div>

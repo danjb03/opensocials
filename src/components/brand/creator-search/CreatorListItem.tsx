@@ -84,7 +84,7 @@ export const CreatorListItem: React.FC<CreatorListItemProps> = ({
           
           {/* Analytics Card in right sidebar */}
           <div className="w-80 flex-shrink-0">
-            <CreatorAnalyticsCard creator_id={creator.id.toString()} />
+            <CreatorAnalyticsCard creator_id={creator.id} />
           </div>
         </div>
       </CardContent>

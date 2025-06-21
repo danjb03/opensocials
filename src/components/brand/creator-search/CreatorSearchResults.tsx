@@ -11,12 +11,12 @@ interface CreatorSearchResultsProps {
   transformedCreators: Creator[];
   transformedSelectedCreators: Creator[];
   campaignsForBar: Array<{id: string, title: string}>;
-  selectedCreatorIds: number[];
+  selectedCreatorIds: string[];
   viewMode: 'grid' | 'list';
   handlers: {
-    handleCreatorToggle: (creatorId: number) => void;
-    handleViewProfile: (creatorId: number) => void;
-    handleFavoriteToggle: (creatorId: number) => void;
+    handleCreatorToggle: (creatorId: string) => void;
+    handleViewProfile: (creatorId: string) => void;
+    handleFavoriteToggle: (creatorId: string) => void;
   };
 }
 

@@ -19,7 +19,7 @@ interface CreatorProfileModalProps {
   creator: Creator | null;
   isOpen: boolean;
   onClose: () => void;
-  onInvite: (creatorId: number) => void;
+  onInvite: (creatorId: string) => void;
   inviteLoading: boolean;
   isLoading?: boolean;
 }

@@ -21,7 +21,7 @@ export const useCreatorSearchHandlers = ({
   // Transform creators to match the Creator type from @/types/creator
   const transformedCreators: Creator[] = useMemo(() => 
     creators.map((creator: any) => ({
-      id: parseInt(creator.user_id),
+      id: creator.user_id, // Keep as string UUID
       name: creator.display_name || 'Unknown Creator',
       platform: creator.primary_platform || 'Unknown',
       audience: creator.audience_type || 'Unknown',
@@ -48,7 +48,7 @@ export const useCreatorSearchHandlers = ({
   // Transform selectedCreators to match the Creator type
   const transformedSelectedCreators: Creator[] = useMemo(() =>
     selectedCreators.map((creator: any) => ({
-      id: parseInt(creator.user_id),
+      id: creator.user_id, // Keep as string UUID
       name: creator.display_name || 'Unknown Creator',
       platform: creator.primary_platform || 'Unknown',
       audience: creator.audience_type || 'Unknown',
@@ -79,22 +79,21 @@ export const useCreatorSearchHandlers = ({
       title: campaign.name
     })), [availableCampaigns]);
 
-  // Get selected creator IDs for components that expect number[]
+  // Get selected creator IDs as strings
   const selectedCreatorIds = useMemo(() =>
-    selectedCreators.map((c: any) => parseInt(c.user_id)), [selectedCreators]);
+    selectedCreators.map((c: any) => c.user_id), [selectedCreators]);
 
-  const handleCreatorToggle = (creatorId: number) => {
-    const creator = creators.find((c: any) => parseInt(c.user_id) === creatorId);
+  const handleCreatorToggle = (creatorId: string) => {
+    const creator = creators.find((c: any) => c.user_id === creatorId);
     if (creator) handleToggleCreator(creator);
   };
 
-  const handleViewProfile = (creatorId: number) => {
+  const handleViewProfile = (creatorId: string) => {
     console.log('handleViewProfile called with creatorId:', creatorId);
-    const creator = creators.find((c: any) => parseInt(c.user_id) === creatorId);
+    const creator = creators.find((c: any) => c.user_id === creatorId);
     console.log('Found creator:', creator);
     
     if (creator) {
-      // Pass the actual user_id (UUID string) to the profile modal
       console.log('Calling handleViewCreatorProfile with user_id:', creator.user_id);
       handleViewCreatorProfile(creator.user_id);
     } else {
@@ -102,8 +101,8 @@ export const useCreatorSearchHandlers = ({
     }
   };
 
-  const handleFavoriteToggle = (creatorId: number) => {
-    const creator = creators.find((c: any) => parseInt(c.user_id) === creatorId);
+  const handleFavoriteToggle = (creatorId: string) => {
+    const creator = creators.find((c: any) => c.user_id === creatorId);
     if (creator) {
       // toggleFavorite(creator.user_id); // This would need to be passed as prop if needed
     }
@@ -114,8 +113,8 @@ export const useCreatorSearchHandlers = ({
     setShowFavoritesModal(false);
   };
 
-  const handleInviteFromProfile = (creatorId: number) => {
-    const creator = creators.find((c: any) => parseInt(c.user_id) === creatorId);
+  const handleInviteFromProfile = (creatorId: string) => {
+    const creator = creators.find((c: any) => c.user_id === creatorId);
     if (creator) {
       handleInviteCreator(creator.user_id, creator.display_name || 'Creator');
     }

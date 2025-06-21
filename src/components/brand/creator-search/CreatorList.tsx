@@ -5,9 +5,9 @@ import { Creator } from '@/types/creator';
 
 type CreatorListProps = {
   creators: Creator[];
-  selectedCreators: number[];
-  onToggleCreator: (creatorId: number) => void;
-  onViewProfile: (creatorId: number) => void;
+  selectedCreators: string[];
+  onToggleCreator: (creatorId: string) => void;
+  onViewProfile: (creatorId: string) => void;
 };
 
 export const CreatorList = ({ creators, selectedCreators, onToggleCreator, onViewProfile }: CreatorListProps) => {
@@ -23,7 +23,6 @@ export const CreatorList = ({ creators, selectedCreators, onToggleCreator, onVie
     );
   }
 
-  // Changed from grid to flex column layout for true list view
   return (
     <div className="flex flex-col space-y-3">
       {creators.map(creator => (

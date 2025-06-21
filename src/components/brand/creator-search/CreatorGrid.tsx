@@ -5,9 +5,9 @@ import { Creator } from '@/types/creator';
 
 type CreatorGridProps = {
   creators: Creator[];
-  selectedCreators: number[];
-  onToggleCreator: (creatorId: number) => void;
-  onViewProfile: (creatorId: number) => void;
+  selectedCreators: string[];
+  onToggleCreator: (creatorId: string) => void;
+  onViewProfile: (creatorId: string) => void;
 };
 
 export const CreatorGrid = ({ creators, selectedCreators, onToggleCreator, onViewProfile }: CreatorGridProps) => {
