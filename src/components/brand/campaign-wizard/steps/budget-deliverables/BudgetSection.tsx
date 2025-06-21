@@ -44,7 +44,6 @@ export const BudgetSection: React.FC<BudgetSectionProps> = ({
             id="total_budget"
             type="number"
             {...register('total_budget', { valueAsNumber: true })}
-            placeholder="5000"
             className="pl-10 text-lg bg-background border-border text-foreground placeholder:text-muted-foreground"
           />
         </div>
