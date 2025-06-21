@@ -29,24 +29,29 @@ export const useCampaignActions = (
 
     console.log('Creating campaign from draft data:', draftData);
 
+    // Prepare the campaign data with proper field mapping
+    const campaignData = {
+      brand_id: userId,
+      name: draftData.name || 'Untitled Campaign',
+      description: draftData.description || '',
+      campaign_type: draftData.campaign_type || 'Single',
+      start_date: draftData.timeline?.start_date ? draftData.timeline.start_date.toISOString().split('T')[0] : null,
+      end_date: draftData.timeline?.end_date ? draftData.timeline.end_date.toISOString().split('T')[0] : null,
+      budget: draftData.total_budget || 0,
+      content_requirements: draftData.content_requirements || {},
+      messaging_guidelines: draftData.messaging_guidelines || '',
+      platforms: draftData.content_requirements?.platforms || [],
+      deliverables: draftData.deliverables || {},
+      status: 'draft',
+      review_status: 'pending_review',
+      current_step: currentStep
+    };
+
+    console.log('Inserting campaign data:', campaignData);
+
     const { data: campaign, error } = await supabase
       .from('projects_new')
-      .insert({
-        brand_id: userId,
-        name: draftData.name || 'Untitled Campaign',
-        description: draftData.description || '',
-        campaign_type: draftData.campaign_type || 'Single',
-        start_date: draftData.timeline?.start_date ? draftData.timeline.start_date.toISOString().split('T')[0] : null,
-        end_date: draftData.timeline?.end_date ? draftData.timeline.end_date.toISOString().split('T')[0] : null,
-        budget: draftData.total_budget || 0,
-        content_requirements: draftData.content_requirements || {},
-        messaging_guidelines: draftData.messaging_guidelines || '',
-        platforms: draftData.content_requirements?.platforms || [],
-        deliverables: draftData.deliverables || {},
-        status: 'pending_approval',
-        review_status: 'pending_review',
-        current_step: currentStep
-      })
+      .insert(campaignData)
       .select()
       .single();
 
@@ -122,10 +127,19 @@ export const useCampaignActions = (
       // If we have sufficient data for a campaign, create it
       if (formData.name && formData.name.trim()) {
         try {
-          await createCampaignFromDraft(formData);
-          toast.success('Campaign saved successfully!', {
-            description: 'You can continue editing it later from your dashboard.'
+          const campaign = await createCampaignFromDraft(formData);
+          toast.success('Campaign created and saved successfully!', {
+            description: 'You can find it in your projects list.'
           });
+          
+          // Clear the draft after successful campaign creation
+          if (draftId) {
+            try {
+              await clearDraft();
+            } catch (clearError) {
+              console.warn('Failed to clear draft after campaign creation:', clearError);
+            }
+          }
         } catch (campaignError) {
           console.error('Error creating campaign, but draft saved:', campaignError);
           toast.success('Campaign draft saved!', {
@@ -163,8 +177,9 @@ export const useCampaignActions = (
     try {
       console.log('Final submit triggered with data:', formData);
       
-      // Create the campaign with pending review status
-      const campaign = await createCampaignFromDraft(formData);
+      // Create the campaign with active status
+      const campaignData = { ...formData, status: 'active' };
+      const campaign = await createCampaignFromDraft(campaignData);
       
       // Clear the draft after successful campaign creation
       if (draftId) {
@@ -175,15 +190,15 @@ export const useCampaignActions = (
         }
       }
       
-      toast.success('Campaign submitted for review!', {
-        description: 'Your campaign is now being reviewed by our team. You will be notified once approved.'
+      toast.success('Campaign launched successfully!', {
+        description: 'Your campaign is now live and visible to creators.'
       });
       
-      // Navigate to campaign status page
-      navigate('/brand/campaign-status');
+      // Navigate to projects page to see the new campaign
+      navigate('/brand/projects');
       
     } catch (error) {
-      toast.error('Failed to submit campaign. Please try again.');
+      toast.error('Failed to launch campaign. Please try again.');
       console.error('Campaign creation error:', error);
     } finally {
       setIsSubmitting(false);
