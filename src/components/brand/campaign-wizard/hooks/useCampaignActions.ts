@@ -19,19 +19,32 @@ export const useCampaignActions = (
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
 
-  // Use user.id if brandProfile.user_id is not available
-  const userId = brandProfile?.user_id || user?.id;
+  // STANDARDIZE on user.id consistently (this is what useProjectQuery uses)
+  const userId = user?.id;
+
+  console.log('🔍 useCampaignActions - User ID Debug:', {
+    'user.id': user?.id,
+    'brandProfile?.user_id': brandProfile?.user_id,
+    'selectedUserId': userId,
+    'formData.name': formData?.name
+  });
 
   const createCampaignFromDraft = async (draftData: Partial<CampaignWizardData>, status: string = 'active') => {
     if (!userId) {
+      console.error('❌ No user authenticated - userId:', userId);
       throw new Error('No user authenticated');
     }
 
-    console.log('Creating campaign from draft data:', draftData);
+    console.log('🚀 Creating campaign from draft data:', {
+      draftData: draftData,
+      status: status,
+      userId: userId,
+      campaignName: draftData.name
+    });
 
     // Prepare the campaign data with proper field mapping
     const campaignData = {
-      brand_id: userId,
+      brand_id: userId, // Use standardized user ID
       name: draftData.name || 'Untitled Campaign',
       description: draftData.description || '',
       campaign_type: draftData.campaign_type || 'Single',
@@ -46,7 +59,7 @@ export const useCampaignActions = (
       current_step: currentStep
     };
 
-    console.log('Inserting campaign data:', campaignData);
+    console.log('📝 Campaign data being inserted:', campaignData);
 
     const { data: campaign, error } = await supabase
       .from('projects_new')
@@ -55,11 +68,13 @@ export const useCampaignActions = (
       .single();
 
     if (error) {
-      console.error('Error creating campaign:', error);
+      console.error('❌ Error creating campaign:', error);
+      console.error('❌ Campaign data that failed:', campaignData);
       throw error;
     }
 
-    console.log('Campaign created successfully:', campaign);
+    console.log('✅ Campaign created successfully:', campaign);
+    console.log('✅ Campaign brand_id:', campaign.brand_id, 'vs user.id:', userId);
     return campaign;
   };
 
@@ -96,7 +111,12 @@ export const useCampaignActions = (
     setIsSubmitting(true);
     
     try {
-      console.log('Save and exit triggered with data:', formData);
+      console.log('💾 Save and exit triggered with data:', formData);
+      console.log('💾 Save and exit - User ID check:', {
+        'user.id': user?.id,
+        'userId': userId,
+        'formData.name': formData?.name
+      });
       
       if (!formData || Object.keys(formData).length === 0) {
         toast.error('No data to save');
@@ -104,6 +124,7 @@ export const useCampaignActions = (
       }
 
       if (!userId) {
+        console.error('❌ User not authenticated in save and exit');
         toast.error('User not authenticated');
         return;
       }
@@ -116,6 +137,8 @@ export const useCampaignActions = (
       // Create the campaign directly with draft status
       try {
         const campaign = await createCampaignFromDraft(formData, 'draft');
+        
+        console.log('✅ Campaign saved with ID:', campaign.id, 'brand_id:', campaign.brand_id);
         
         // Clear the draft after successful campaign creation
         try {
@@ -131,7 +154,7 @@ export const useCampaignActions = (
         // Navigate to brand dashboard
         navigate('/brand');
       } catch (campaignError) {
-        console.error('Error creating campaign:', campaignError);
+        console.error('❌ Error creating campaign:', campaignError);
         
         // If campaign creation fails, try to save as draft
         try {
@@ -166,10 +189,16 @@ export const useCampaignActions = (
     
     setIsSubmitting(true);
     try {
-      console.log('Final submit triggered with data:', formData);
+      console.log('🚀 Final submit triggered with data:', formData);
+      console.log('🚀 Final submit - User ID check:', {
+        'user.id': user?.id,
+        'userId': userId
+      });
       
       // Create the campaign with active status
       const campaign = await createCampaignFromDraft(formData, 'active');
+      
+      console.log('✅ Campaign launched with ID:', campaign.id, 'brand_id:', campaign.brand_id);
       
       // Clear the draft after successful campaign creation
       if (draftId) {

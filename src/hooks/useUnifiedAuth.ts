@@ -49,6 +49,7 @@ export const useUnifiedAuth = () => {
     }
 
     if (!user) {
+      console.log('🔍 useUnifiedAuth - No user, clearing state');
       setRole(null);
       setBrandProfile(null);
       setCreatorProfile(null);
@@ -56,30 +57,32 @@ export const useUnifiedAuth = () => {
       return;
     }
 
+    console.log('🔍 useUnifiedAuth - User authenticated:', user.id);
+
     const fetchUserData = async () => {
       try {
         setIsLoading(true);
         
         // Fetch role using improved priority logic
-        console.log('🔍 Fetching user role with security definer function');
+        console.log('🔍 useUnifiedAuth - Fetching user role with security definer function');
         let userRole = await getUserRole(user.id);
         
         // Special handling for known super admin user
         if (!userRole && user.id === 'af6ad2ce-be6c-4620-a440-867c52d66918') {
-          console.log('🔧 Detected known super admin user, ensuring correct role');
+          console.log('🔧 useUnifiedAuth - Detected known super admin user, ensuring correct role');
           userRole = 'super_admin';
           // Update metadata to match
           await updateUserMetadata(user.id, 'super_admin');
         }
 
-        console.log('🎯 Retrieved user role:', userRole);
+        console.log('🎯 useUnifiedAuth - Retrieved user role:', userRole);
         setRole(userRole);
 
         // Only fetch profiles if role is determined and not super_admin accessing other dashboards
         if (userRole && userRole !== 'super_admin') {
           // If user is a brand, fetch their profile
           if (userRole === 'brand') {
-            console.log('👔 Fetching brand profile');
+            console.log('👔 useUnifiedAuth - Fetching brand profile');
             const { data: brandData, error: brandError } = await supabase
               .from('brand_profiles')
               .select('*')
@@ -87,16 +90,16 @@ export const useUnifiedAuth = () => {
               .maybeSingle();
 
             if (brandError) {
-              console.error('❌ Error fetching brand profile:', brandError);
+              console.error('❌ useUnifiedAuth - Error fetching brand profile:', brandError);
             } else if (brandData) {
-              console.log('✅ Brand profile fetched:', brandData);
+              console.log('✅ useUnifiedAuth - Brand profile fetched:', brandData);
               setBrandProfile(brandData);
             }
           }
 
           // If user is a creator, fetch their profile
           if (userRole === 'creator') {
-            console.log('🎨 Fetching creator profile');
+            console.log('🎨 useUnifiedAuth - Fetching creator profile');
             const { data: creatorData, error: creatorError } = await supabase
               .from('creator_profiles')
               .select('*')
@@ -104,15 +107,15 @@ export const useUnifiedAuth = () => {
               .maybeSingle();
 
             if (creatorError) {
-              console.error('❌ Error fetching creator profile:', creatorError);
+              console.error('❌ useUnifiedAuth - Error fetching creator profile:', creatorError);
             } else if (creatorData) {
-              console.log('✅ Creator profile fetched:', creatorData);
+              console.log('✅ useUnifiedAuth - Creator profile fetched:', creatorData);
               setCreatorProfile(creatorData);
             }
           }
         }
       } catch (error) {
-        console.error('❌ Error in fetchUserData:', error);
+        console.error('❌ useUnifiedAuth - Error in fetchUserData:', error);
       } finally {
         setIsLoading(false);
       }
