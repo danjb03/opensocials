@@ -32,7 +32,7 @@ export interface Campaign {
 }
 
 export interface Creator {
-  id: number;
+  id: string; // Changed from number to string to support UUIDs
   name: string;
   platform: string;
   audience: string;
