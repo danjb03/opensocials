@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bot, Check, X, AlertTriangle, Loader, Zap } from 'lucide-react';
@@ -22,7 +21,7 @@ interface CampaignDetail {
   campaign_type: string;
   budget: number;
   currency: string;
-  content_requirements: any;
+  brief_data: any;
   review_status: string;
   brand_profiles?: {
     company_name: string;
@@ -108,7 +107,7 @@ export function AIReviewPanel({ campaignId, onReviewComplete }: AIReviewPanelPro
             description: campaign?.description,
             campaign_type: campaign?.campaign_type,
             budget: campaign?.budget,
-            content_requirements: campaign?.content_requirements,
+            brief_data: campaign?.brief_data,
             brand: campaign?.brand_profiles,
           },
         },
