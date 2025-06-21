@@ -42,6 +42,7 @@ export const useCampaignDraft = () => {
     loadDraft,
     saveDraft,
     isSaving,
+    draftId: existingDraft?.id,
     
     // Section-specific getters
     getBasicsData,

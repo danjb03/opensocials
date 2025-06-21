@@ -24,7 +24,8 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
     isDraftLoading,
     saveDraft,
     clearDraft,
-    isSaving
+    isSaving,
+    draftId: existingDraftId
   } = useCampaignDraft();
 
   const [steps, setSteps] = useState<CampaignStep[]>(CAMPAIGN_STEPS);
@@ -40,7 +41,7 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
     currentStep,
     saveDraft,
     clearDraft,
-    draftId,
+    existingDraftId,
     onComplete
   );
 

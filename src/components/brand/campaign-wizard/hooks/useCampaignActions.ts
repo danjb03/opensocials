@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { CampaignWizardData, CAMPAIGN_STEPS } from '@/types/campaignWizard';
-import { useDraftSave } from '@/hooks/campaign-draft/useDraftSave';
 
 export const useCampaignActions = (
   formData: Partial<CampaignWizardData>,
@@ -22,13 +21,6 @@ export const useCampaignActions = (
 
   // Use user.id if brandProfile.user_id is not available
   const userId = brandProfile?.user_id || user?.id;
-
-  // Use the new draft save hook
-  const { handleSaveAndExit: saveAndExit, isSaving: isSavingDraft } = useDraftSave(
-    formData,
-    saveDraft,
-    clearDraft
-  );
 
   const createCampaignFromDraft = async (draftData: Partial<CampaignWizardData>, status: string = 'active') => {
     if (!userId) {
@@ -50,7 +42,7 @@ export const useCampaignActions = (
       platforms: draftData.brief_data?.platform_destination || [],
       deliverables: draftData.deliverables || {},
       status: status,
-      review_status: status === 'active' ? 'pending_review' : 'pending_review',
+      review_status: status === 'active' ? 'pending_review' : 'draft',
       current_step: currentStep
     };
 
@@ -92,6 +84,72 @@ export const useCampaignActions = (
       console.error('Error saving step:', error);
       // Don't block progression if save fails
       toast.error('Failed to save step progress, but continuing');
+    }
+  };
+
+  const handleSaveAndExit = async () => {
+    if (isSubmitting) {
+      console.log('Save already in progress, ignoring');
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      console.log('Save and exit triggered with data:', formData);
+      
+      if (!formData || Object.keys(formData).length === 0) {
+        toast.error('No data to save');
+        return;
+      }
+
+      if (!userId) {
+        toast.error('User not authenticated');
+        return;
+      }
+
+      if (!formData.name || !formData.name.trim()) {
+        toast.error('Campaign name is required to save');
+        return;
+      }
+
+      // Create the campaign directly with draft status
+      try {
+        const campaign = await createCampaignFromDraft(formData, 'draft');
+        
+        // Clear the draft after successful campaign creation
+        try {
+          await clearDraft();
+        } catch (clearError) {
+          console.warn('Failed to clear draft after campaign creation:', clearError);
+        }
+        
+        toast.success('Campaign saved successfully!', {
+          description: 'You can find it in your projects list.'
+        });
+        
+        // Navigate to brand dashboard
+        navigate('/brand');
+      } catch (campaignError) {
+        console.error('Error creating campaign:', campaignError);
+        
+        // If campaign creation fails, try to save as draft
+        try {
+          await saveDraft();
+          toast.success('Campaign progress saved!', {
+            description: 'You can continue editing it later.'
+          });
+          navigate('/brand');
+        } catch (draftError) {
+          console.error('Failed to save draft as fallback:', draftError);
+          throw new Error('Failed to save campaign or draft');
+        }
+      }
+    } catch (error) {
+      console.error('Error in save and exit:', error);
+      toast.error('Failed to save campaign. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -138,10 +196,10 @@ export const useCampaignActions = (
   };
 
   return {
-    isSubmitting: isSubmitting || isSavingDraft,
+    isSubmitting,
     lastSaveTime,
     handleStepComplete,
-    handleSaveAndExit: saveAndExit,
+    handleSaveAndExit,
     handleFinalSubmit
   };
 };
