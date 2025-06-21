@@ -1,8 +1,9 @@
+
 import { Creator } from '@/types/creator';
 
 export const mockCreators: Creator[] = [
   {
-    id: "1", // Changed from number to string
+    id: "1",
     name: "Sophie Evans",
     platform: "Instagram",
     audience: "Gen Z",
@@ -38,7 +39,7 @@ export const mockCreators: Creator[] = [
     industries: ["Lifestyle", "Fashion", "Beauty"]
   },
   {
-    id: "2", // Changed from number to string
+    id: "2",
     name: "Marcus Chen",
     platform: "TikTok",
     audience: "Gen Z",
@@ -266,8 +267,7 @@ export const mockCreators: Creator[] = [
     imageUrl: "/placeholder.svg",
     about: "Riley streams live gaming sessions and esports tournaments, engaging a Gen Z audience passionate about competitive gaming.",
     socialLinks: {
-      facebook: "https://facebook.com/rileydavis",
-      twitch: "https://twitch.tv/rileydavis"
+      facebook: "https://facebook.com/rileydavis"
     },
     metrics: {
       followerCount: "150K",
