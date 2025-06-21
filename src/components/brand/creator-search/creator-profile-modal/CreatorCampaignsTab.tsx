@@ -6,7 +6,7 @@ import { Creator } from '@/types/creator';
 
 interface CreatorCampaignsTabProps {
   creator: Creator;
-  onInvite: (creatorId: number) => void;
+  onInvite: (creatorId: string) => void; // Changed from number to string
   isLoading?: Record<string, boolean>;
 }
 

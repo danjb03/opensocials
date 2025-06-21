@@ -36,14 +36,14 @@ export const CreatorSocialLinks = ({ socialLinks }: CreatorSocialLinksProps) => 
       case 'facebook':
         return 'bg-blue-600 hover:bg-blue-700';
       default:
-        return 'bg-gray-500 hover:bg-gray-600';
+        return 'bg-muted hover:bg-muted/80 text-foreground';
     }
   };
   
   return (
     <div className="space-y-3">
-      <h4 className="font-medium text-gray-900 flex items-center gap-2">
-        <Globe className="h-4 w-4 text-primary" />
+      <h4 className="font-medium text-foreground flex items-center gap-2">
+        <Globe className="h-4 w-4 text-foreground" />
         Social Profiles
       </h4>
       <div className="flex gap-3">

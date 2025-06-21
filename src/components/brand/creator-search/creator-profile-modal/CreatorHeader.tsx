@@ -14,8 +14,8 @@ export const CreatorHeader = ({ creator }: CreatorHeaderProps) => {
   return (
     <>
       <div className="relative">
-        {/* Enhanced Banner */}
-        <div className="h-32 w-full overflow-hidden bg-gradient-to-br from-primary/30 via-primary/20 to-secondary/30 rounded-xl relative">
+        {/* Enhanced Banner with black background theme */}
+        <div className="h-32 w-full overflow-hidden bg-gradient-to-br from-muted/50 via-muted/30 to-secondary/30 rounded-xl relative">
           {creator.bannerImageUrl && (
             <img 
               src={creator.bannerImageUrl} 
@@ -23,13 +23,13 @@ export const CreatorHeader = ({ creator }: CreatorHeaderProps) => {
               className="w-full h-full object-cover" 
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
         </div>
         
         {/* Enhanced Avatar */}
         <Avatar className="absolute w-20 h-20 -bottom-10 left-6 border-4 border-background shadow-lg">
           <AvatarImage src={creator.imageUrl} alt={creator.name} />
-          <AvatarFallback className="text-xl font-bold bg-primary/10 text-primary">
+          <AvatarFallback className="text-xl font-bold bg-muted text-foreground">
             {creator.name.substring(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
@@ -40,10 +40,10 @@ export const CreatorHeader = ({ creator }: CreatorHeaderProps) => {
           <div className="flex-1 space-y-3">
             {/* Name and Platform */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">{creator.name}</h2>
-              <div className="flex items-center gap-2 text-gray-600">
+              <h2 className="text-2xl font-bold text-foreground mb-1">{creator.name}</h2>
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <span className="font-medium">{creator.platform} Creator</span>
-                <span className="text-gray-400">•</span>
+                <span className="text-muted-foreground/50">•</span>
                 <div className="flex items-center gap-1">
                   <Users className="h-4 w-4" />
                   <span>{creator.followers} followers</span>
@@ -53,13 +53,13 @@ export const CreatorHeader = ({ creator }: CreatorHeaderProps) => {
             
             {/* Bio */}
             {creator.about && (
-              <p className="text-gray-700 leading-relaxed max-w-2xl">
+              <p className="text-muted-foreground leading-relaxed max-w-2xl">
                 {creator.about}
               </p>
             )}
             
             {/* Location and Join Date */}
-            <div className="flex items-center gap-4 text-sm text-gray-500">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
               {creator.audienceLocation && (
                 <div className="flex items-center gap-1">
                   <MapPin className="h-4 w-4" />
@@ -79,14 +79,14 @@ export const CreatorHeader = ({ creator }: CreatorHeaderProps) => {
           {/* Tags and Badges */}
           <div className="flex flex-col items-end gap-3">
             <div className="flex flex-wrap gap-2 justify-end">
-              <Badge variant="secondary" className="text-sm px-3 py-1 bg-blue-50 text-blue-700 border-blue-200">
+              <Badge variant="secondary" className="text-sm px-3 py-1">
                 {creator.audience}
               </Badge>
-              <Badge variant="outline" className="text-sm px-3 py-1 border-gray-300">
+              <Badge variant="outline" className="text-sm px-3 py-1">
                 {creator.contentType}
               </Badge>
               {creator.audienceLocation && (
-                <Badge variant="secondary" className="text-sm px-3 py-1 bg-green-50 text-green-700 border-green-200 flex items-center gap-1">
+                <Badge variant="secondary" className="text-sm px-3 py-1 flex items-center gap-1">
                   <Globe className="h-3 w-3" />
                   {creator.audienceLocation.primary}
                 </Badge>
@@ -95,9 +95,9 @@ export const CreatorHeader = ({ creator }: CreatorHeaderProps) => {
             
             {/* Match Score if available */}
             {creator.matchScore && (
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-3 text-center">
-                <div className="text-2xl font-bold text-green-600">{creator.matchScore}%</div>
-                <div className="text-xs text-green-700 font-medium">Match Score</div>
+              <div className="bg-muted border border-border rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-foreground">{creator.matchScore}%</div>
+                <div className="text-xs text-muted-foreground font-medium">Match Score</div>
               </div>
             )}
           </div>
