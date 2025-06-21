@@ -2,91 +2,96 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Rocket } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Rocket, CheckCircle } from 'lucide-react';
 import { CampaignWizardData } from '@/types/campaignWizard';
-import { ReadinessChecklist } from './review-launch/ReadinessChecklist';
 import { CampaignSummary } from './review-launch/CampaignSummary';
-import { ContentRequirements } from './review-launch/ContentRequirements';
-import { CreatorsList } from './review-launch/CreatorsList';
+import { CampaignBriefSummary } from './review-launch/CampaignBriefSummary';
 import { InvestmentSummary } from './review-launch/InvestmentSummary';
+import { CreatorsList } from './review-launch/CreatorsList';
+import { ReadinessChecklist } from './review-launch/ReadinessChecklist';
 import { NextStepsCard } from './review-launch/NextStepsCard';
 
 interface ReviewLaunchStepProps {
   data?: Partial<CampaignWizardData>;
+  onComplete: (data: Partial<CampaignWizardData>) => void;
   onBack?: () => void;
   onLaunch: () => void;
+  isLoading?: boolean;
   isSubmitting?: boolean;
 }
 
 const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
   data,
+  onComplete,
   onBack,
   onLaunch,
+  isLoading,
   isSubmitting
 }) => {
-  if (!data) return null;
-  
-  const selectedCreators = data?.selected_creators || [];
-
-  const readinessChecks = [
-    {
-      label: 'Campaign details complete',
-      complete: !!(data.name && data.objective && data.description),
-    },
-    {
-      label: 'Content requirements defined',
-      complete: !!(data.content_requirements?.platforms?.length && data.content_requirements?.content_types?.length),
-    },
-    {
-      label: 'Budget and timeline set',
-      complete: !!(data.total_budget && data.timeline?.start_date && data.timeline?.end_date),
-    },
-    {
-      label: 'Creators selected',
-      complete: selectedCreators.length > 0,
-    }
-  ];
-
-  const allChecksComplete = readinessChecks.every(check => check.complete);
+  const isReadyToLaunch = React.useMemo(() => {
+    return !!(
+      data?.name &&
+      data?.brief_data &&
+      data?.total_budget &&
+      data?.deliverables &&
+      data?.selected_creators &&
+      data?.selected_creators.length > 0
+    );
+  }, [data]);
 
   return (
     <div className="space-y-6">
       {/* Campaign Overview */}
-      <Card className="bg-card border-border">
+      <Card className="bg-background border-border shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-foreground">
-            <Rocket className="h-5 w-5" />Review & Launch Campaign
+          <CardTitle className="flex items-center gap-3 text-xl text-foreground">
+            <div className="p-2 bg-foreground rounded-lg">
+              <Rocket className="h-5 w-5 text-background" />
+            </div>
+            Review & Launch Campaign
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Readiness Checklist */}
-          <ReadinessChecklist data={data} />
-
-          <Separator className="border-border" />
-
           {/* Campaign Summary */}
           <CampaignSummary data={data} />
-
-          <Separator className="border-border" />
-
-          {/* Content Requirements */}
-          <ContentRequirements data={data} />
-
-          <Separator className="border-border" />
-
+          
+          {/* Campaign Brief */}
+          <CampaignBriefSummary data={data} />
+          
+          {/* Investment Summary */}
+          <InvestmentSummary data={data} />
+          
           {/* Selected Creators */}
           <CreatorsList data={data} />
-
-          <Separator className="border-border" />
-
-          {/* Total Investment Summary */}
-          <InvestmentSummary data={data} />
+          
+          {/* Readiness Checklist */}
+          <ReadinessChecklist data={data} />
         </CardContent>
       </Card>
 
-      {/* What Happens Next */}
+      {/* Next Steps */}
       <NextStepsCard />
+
+      {/* Launch Status */}
+      <Card className={`border ${isReadyToLaunch ? 'border-green-500 bg-green-50' : 'border-yellow-500 bg-yellow-50'}`}>
+        <CardContent className="p-6">
+          <div className="flex items-center gap-3">
+            <CheckCircle className={`h-6 w-6 ${isReadyToLaunch ? 'text-green-600' : 'text-yellow-600'}`} />
+            <div>
+              <h4 className="font-semibold text-gray-900">
+                {isReadyToLaunch ? 'Ready to Launch!' : 'Review Required'}
+              </h4>
+              <p className="text-sm text-gray-600">
+                {isReadyToLaunch 
+                  ? 'Your campaign is complete and ready to go live.'
+                  : 'Please complete all required sections before launching.'
+                }
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Navigation */}
       <div className="flex justify-between">
@@ -97,25 +102,15 @@ const ReviewLaunchStep: React.FC<ReviewLaunchStepProps> = ({
           disabled={isSubmitting}
         >
           <ArrowLeft className="h-4 w-4" />
-          Back
+          Back to Creator Selection
         </Button>
         <Button 
           onClick={onLaunch}
-          disabled={!allChecksComplete || isSubmitting}
-          className="flex items-center gap-2"
-          size="lg"
+          disabled={!isReadyToLaunch || isSubmitting}
+          className="flex items-center gap-2 bg-foreground text-background hover:bg-foreground/90"
         >
-          {isSubmitting ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-              Launching Campaign...
-            </>
-          ) : (
-            <>
-              <Rocket className="h-4 w-4" />
-              Launch Campaign
-            </>
-          )}
+          {isSubmitting ? 'Launching...' : 'Launch Campaign'}
+          <Rocket className="h-4 w-4" />
         </Button>
       </div>
     </div>

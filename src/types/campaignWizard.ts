@@ -1,4 +1,6 @@
+
 import { Json } from '../integrations/supabase/types';
+import { CampaignBrief } from './campaignBrief';
 
 export type CampaignObjective = 
   | 'brand_awareness' 
@@ -42,16 +44,6 @@ export type Platform =
   | 'youtube' 
   | 'twitter' 
   | 'linkedin';
-
-export interface ContentRequirements {
-  content_types: ContentType[];
-  platforms: Platform[];
-  messaging_guidelines?: string;
-  hashtags?: string[];
-  mentions?: string[];
-  style_preferences?: string;
-  restrictions?: string[];
-}
 
 export interface Deliverables {
   posts_count: number;
@@ -111,11 +103,9 @@ export interface EnhancedProject {
   objective?: CampaignObjective;
   campaign_type: string;
   
-  // Step 2: Content Requirements
+  // Step 2: Campaign Brief
   description?: string;
-  content_requirements: ContentRequirements;
-  platforms: Platform[];
-  messaging_guidelines?: string;
+  brief_data: CampaignBrief;
   
   // Step 3: Budget & Deliverables
   total_budget?: number; // Gross budget (includes OS margin)
@@ -189,10 +179,9 @@ export interface CampaignWizardData {
   objective?: CampaignObjective;
   campaign_type: string;
   
-  // Step 2: Content Requirements
+  // Step 2: Campaign Brief
   description?: string;
-  content_requirements: ContentRequirements;
-  messaging_guidelines?: string;
+  brief_data: CampaignBrief;
   
   // Step 3: Budget & Deliverables  
   total_budget: number; // Gross budget
@@ -238,9 +227,9 @@ export const CAMPAIGN_STEPS: CampaignStep[] = [
   },
   {
     id: 2,
-    title: "Content Requirements", 
-    icon: "smartphone",
-    description: "Define what content you need",
+    title: "Campaign Brief", 
+    icon: "clipboard",
+    description: "Define your campaign requirements",
     complete: false,
     current: false
   },

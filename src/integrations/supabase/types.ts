@@ -1421,9 +1421,9 @@ export type Database = {
       projects_new: {
         Row: {
           brand_id: string | null
+          brief_data: Json | null
           budget: number | null
           campaign_type: string | null
-          content_requirements: Json | null
           created_at: string | null
           currency: string | null
           current_step: number | null
@@ -1431,7 +1431,6 @@ export type Database = {
           description: string | null
           end_date: string | null
           id: string
-          messaging_guidelines: string | null
           name: string
           objective: string | null
           platforms: string[] | null
@@ -1443,9 +1442,9 @@ export type Database = {
         }
         Insert: {
           brand_id?: string | null
+          brief_data?: Json | null
           budget?: number | null
           campaign_type?: string | null
-          content_requirements?: Json | null
           created_at?: string | null
           currency?: string | null
           current_step?: number | null
@@ -1453,7 +1452,6 @@ export type Database = {
           description?: string | null
           end_date?: string | null
           id?: string
-          messaging_guidelines?: string | null
           name: string
           objective?: string | null
           platforms?: string[] | null
@@ -1465,9 +1463,9 @@ export type Database = {
         }
         Update: {
           brand_id?: string | null
+          brief_data?: Json | null
           budget?: number | null
           campaign_type?: string | null
-          content_requirements?: Json | null
           created_at?: string | null
           currency?: string | null
           current_step?: number | null
@@ -1475,7 +1473,6 @@ export type Database = {
           description?: string | null
           end_date?: string | null
           id?: string
-          messaging_guidelines?: string | null
           name?: string
           objective?: string | null
           platforms?: string[] | null

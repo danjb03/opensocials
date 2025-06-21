@@ -2,7 +2,7 @@
 import React from 'react';
 import { CampaignWizardData } from '@/types/campaignWizard';
 import CampaignBasicsStep from '../steps/CampaignBasicsStep';
-import ContentRequirementsStep from '../steps/ContentRequirementsStep';
+import CampaignBriefStep from '../steps/CampaignBriefStep';
 import BudgetDeliverablesStep from '../steps/BudgetDeliverablesStep';
 import CreatorSelectionStep from '../steps/CreatorSelectionStep';
 import ReviewLaunchStep from '../steps/ReviewLaunchStep';
@@ -37,7 +37,7 @@ export const StepRenderer: React.FC<StepRendererProps> = ({
     case 1:
       return <CampaignBasicsStep {...stepProps} />;
     case 2:
-      return <ContentRequirementsStep {...stepProps} />;
+      return <CampaignBriefStep {...stepProps} />;
     case 3:
       return <BudgetDeliverablesStep {...stepProps} />;
     case 4:

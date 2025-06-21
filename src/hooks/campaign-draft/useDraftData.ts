@@ -18,17 +18,17 @@ export const useDraftData = () => {
     timeline: formData.timeline || { start_date: undefined, end_date: undefined }
   });
 
-  const getContentData = () => ({
-    content_requirements: formData.content_requirements || {
-      content_types: [],
-      platforms: [],
-      messaging_guidelines: '',
-      hashtags: [],
-      mentions: [],
-      style_preferences: '',
-      restrictions: []
-    },
-    messaging_guidelines: formData.messaging_guidelines || ''
+  const getBriefData = () => ({
+    brief_data: formData.brief_data || {
+      product_description: '',
+      hook: '',
+      content_format: [],
+      tone_vibe: [],
+      key_messaging: '',
+      platform_destination: [],
+      call_to_action: '',
+      references_restrictions: ''
+    }
   });
 
   const getBudgetData = () => ({
@@ -48,7 +48,7 @@ export const useDraftData = () => {
     updateFormData(data);
   };
 
-  const updateContentData = (data: any) => {
+  const updateBriefData = (data: any) => {
     updateFormData(data);
   };
 
@@ -62,11 +62,11 @@ export const useDraftData = () => {
     setFormData,
     updateFormData,
     getBasicsData,
-    getContentData,
+    getBriefData,
     getBudgetData,
     getReviewData,
     updateBasicsData,
-    updateContentData,
+    updateBriefData,
     updateBudgetData
   };
 };
