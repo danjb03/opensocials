@@ -94,7 +94,9 @@ export const useCreatorSearchHandlers = ({
     console.log('Found creator:', creator);
     
     if (creator) {
-      handleViewCreatorProfile(creatorId);
+      // Pass the actual user_id (UUID string) to the profile modal
+      console.log('Calling handleViewCreatorProfile with user_id:', creator.user_id);
+      handleViewCreatorProfile(creator.user_id);
     } else {
       console.error('Creator not found for ID:', creatorId);
     }

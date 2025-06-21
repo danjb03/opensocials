@@ -42,26 +42,26 @@ export const useCreatorProfileModal = () => {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isLoadingCreator, setIsLoadingCreator] = useState(false);
 
-  const handleViewCreatorProfile = async (creatorId: number) => {
-    console.log('handleViewCreatorProfile called with ID:', creatorId);
+  const handleViewCreatorProfile = async (userId: string) => {
+    console.log('handleViewCreatorProfile called with userId:', userId);
     
     setIsLoadingCreator(true);
     setIsProfileModalOpen(true);
     setSelectedCreator(null); // Clear previous creator while loading
 
     try {
-      // Fetch creator profile data from creator_profiles table
+      // Fetch creator profile data from creator_profiles table using user_id
       const { data, error } = await supabase
         .from('creator_profiles')
         .select('*')
-        .eq('user_id', creatorId.toString())
+        .eq('user_id', userId)
         .single();
 
       if (error) {
         console.error('Error fetching creator for modal:', error);
-        // Use mock data as fallback with the provided ID
+        // Use mock data as fallback with a generated ID
         const mockCreator: Creator = {
-          id: creatorId,
+          id: Math.floor(Math.random() * 1000000), // Generate a random ID for display
           name: 'Creator Profile',
           platform: 'Instagram',
           imageUrl: '/placeholder.svg',
@@ -122,7 +122,7 @@ export const useCreatorProfileModal = () => {
         }
 
         const transformedCreator: Creator = {
-          id: creatorId,
+          id: Math.floor(Math.random() * 1000000), // Generate a random ID for display
           name: displayName,
           platform: data.primary_platform || 'Instagram',
           imageUrl: data.avatar_url || '/placeholder.svg',
@@ -158,7 +158,7 @@ export const useCreatorProfileModal = () => {
       console.error('Error in handleViewCreatorProfile:', error);
       // Set a fallback creator so the modal still shows something
       const fallbackCreator: Creator = {
-        id: creatorId,
+        id: Math.floor(Math.random() * 1000000), // Generate a random ID for display
         name: 'Creator Profile',
         platform: 'Instagram',
         imageUrl: '/placeholder.svg',

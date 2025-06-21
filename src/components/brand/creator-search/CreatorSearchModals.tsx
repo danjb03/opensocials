@@ -19,20 +19,12 @@ export const CreatorSearchModals = ({
 }: CreatorSearchModalsProps) => {
   const { selectedCreator, isProfileModalOpen, isLoadingCreator, handleCloseProfileModal } = profileModalData;
 
+  console.log('CreatorSearchModals render - isProfileModalOpen:', isProfileModalOpen, 'selectedCreator:', selectedCreator);
+
   return (
     <>
       <CreatorProfileModal 
-        creator={selectedCreator ? {
-          ...selectedCreator,
-          skills: selectedCreator.skills || [],
-          metrics: {
-            followerCount: selectedCreator.followers || '0',
-            engagementRate: selectedCreator.engagement || '0%',
-            avgViews: "N/A",
-            avgLikes: "N/A",
-            growthTrend: undefined
-          }
-        } : null} 
+        creator={selectedCreator} 
         isOpen={isProfileModalOpen} 
         onClose={handleCloseProfileModal} 
         onInvite={onInviteFromProfile}
