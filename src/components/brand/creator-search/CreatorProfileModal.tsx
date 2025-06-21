@@ -10,6 +10,8 @@ import { CreatorAudienceLocation } from './creator-profile-modal/CreatorAudience
 import { CreatorActionButtons } from './creator-profile-modal/CreatorActionButtons';
 import { CreatorCampaignsTab } from './creator-profile-modal/CreatorCampaignsTab';
 import { CreatorProfileLoading } from './creator-profile-modal/CreatorProfileLoading';
+import { CreatorAnalytics } from './creator-profile-modal/CreatorAnalytics';
+import { CreatorInsights } from './creator-profile-modal/CreatorInsights';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Creator } from '@/types/creator';
 
@@ -33,7 +35,7 @@ export const CreatorProfileModal = ({
   if (isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <CreatorProfileLoading />
         </DialogContent>
       </Dialog>
@@ -44,7 +46,7 @@ export const CreatorProfileModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="sr-only">Creator Profile</DialogTitle>
         </DialogHeader>
@@ -53,8 +55,10 @@ export const CreatorProfileModal = ({
           <CreatorHeader creator={creator} />
           
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="insights">Insights</TabsTrigger>
               <TabsTrigger value="campaigns">Past Campaigns</TabsTrigger>
             </TabsList>
             
@@ -71,6 +75,14 @@ export const CreatorProfileModal = ({
                   <CreatorAudienceLocation audienceLocation={creator.audienceLocation} />
                 </div>
               </div>
+            </TabsContent>
+            
+            <TabsContent value="analytics" className="mt-6">
+              <CreatorAnalytics creator={creator} />
+            </TabsContent>
+            
+            <TabsContent value="insights" className="mt-6">
+              <CreatorInsights creator={creator} />
             </TabsContent>
             
             <TabsContent value="campaigns" className="mt-6">
