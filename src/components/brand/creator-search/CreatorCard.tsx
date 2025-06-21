@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Creator } from '@/types/creator';
-import { CreatorAnalyticsCard } from '@/components/creator/CreatorAnalyticsCard';
 
 interface CreatorCardProps {
   creator: Creator;
@@ -57,18 +56,13 @@ export const CreatorCard: React.FC<CreatorCardProps> = ({
               <Badge variant="outline">{creator.contentType}</Badge>
             </div>
             
-            <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground mb-4">
+            <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
               <div>
                 <span className="font-medium">Followers:</span> {creator.followers}
               </div>
               <div>
                 <span className="font-medium">Engagement:</span> {creator.engagement}
               </div>
-            </div>
-
-            {/* Analytics Card */}
-            <div className="mt-4">
-              <CreatorAnalyticsCard creator_id={creator.id} />
             </div>
           </div>
         </div>
