@@ -76,11 +76,10 @@ export const CreatorProfileModal = ({
     }
   };
 
-  // Handle invite with proper creator ID conversion
+  // Handle invite - no need to convert ID since we're using the campaign selection modal
   const handleInvite = () => {
-    // Convert creator ID to string for the invitation
-    const userIdToInvite = String(modalCreator.id);
-    onInvite(userIdToInvite);
+    // This will be handled by the CreatorActionButtons component
+    console.log('Invite button clicked for creator:', modalCreator.id);
   };
 
   return (
