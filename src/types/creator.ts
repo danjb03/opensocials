@@ -44,6 +44,8 @@ export interface Creator {
   imageUrl: string;
   bannerImageUrl?: string;
   about?: string;
+  bio?: string; // Added bio property
+  location?: string; // Added location property
   socialLinks?: {
     instagram?: string;
     tiktok?: string;
