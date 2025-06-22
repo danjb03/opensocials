@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Plus, Search } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 interface BrandSidebarQuickActionsProps {
   isSidebarOpen: boolean;
@@ -23,15 +23,6 @@ const BrandSidebarQuickActions = ({ isSidebarOpen }: BrandSidebarQuickActionsPro
         >
           <Plus className="h-4 w-4 mr-2" />
           Create Campaign
-        </Button>
-        <Button 
-          onClick={() => navigate('/brand/creators')}
-          variant="outline" 
-          className="w-full justify-start"
-          size="sm"
-        >
-          <Search className="h-4 w-4 mr-2" />
-          Find Creators
         </Button>
       </div>
     </div>
