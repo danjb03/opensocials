@@ -9,7 +9,7 @@ import UserTable from '@/components/admin/user-management/UserTable';
 import UserPagination from '@/components/admin/user-management/UserPagination';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, AlertCircle } from 'lucide-react';
 
 interface AuthUser {
   id: string;
@@ -33,7 +33,7 @@ const UserManagement = () => {
   const perPage = 50;
   const { data: authUsersData, isLoading, error, refetch } = useAuthUsers(currentPage, perPage);
 
-  console.log('👤 UserManagement render:', {
+  console.log('👤 UserManagement render state:', {
     currentUser: user?.id,
     currentRole: role,
     isLoading,
@@ -41,7 +41,9 @@ const UserManagement = () => {
     errorMessage: error?.message,
     hasData: !!authUsersData,
     dataUsersCount: authUsersData?.users?.length || 0,
-    totalUsers: authUsersData?.total || 0
+    totalUsers: authUsersData?.total || 0,
+    currentPage,
+    searchTerm
   });
 
   const users = authUsersData?.users || [];
@@ -98,6 +100,18 @@ const UserManagement = () => {
         onSearchChange={setSearchTerm}
       />
 
+      {/* Debug info for admin users */}
+      {role === 'super_admin' && (
+        <div className="mb-4 p-3 bg-muted rounded-lg text-sm">
+          <p><strong>Debug Info:</strong></p>
+          <p>User ID: {user?.id}</p>
+          <p>Role: {role}</p>
+          <p>Loading: {isLoading ? 'Yes' : 'No'}</p>
+          <p>Error: {error ? error.message : 'None'}</p>
+          <p>Users loaded: {users.length}</p>
+        </div>
+      )}
+
       {/* Refresh Button */}
       <div className="mb-4 flex justify-end">
         <Button 
@@ -116,21 +130,25 @@ const UserManagement = () => {
 
       {error && (
         <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 mb-6">
-          <h3 className="text-lg font-semibold text-destructive mb-2">Error Loading Users</h3>
+          <div className="flex items-center gap-2 mb-2">
+            <AlertCircle className="h-5 w-5 text-destructive" />
+            <h3 className="text-lg font-semibold text-destructive">Error Loading Users</h3>
+          </div>
           <p className="text-destructive mb-4">{error.message}</p>
-          <div className="text-sm text-muted-foreground space-y-1">
+          <div className="text-sm text-muted-foreground space-y-1 mb-4">
             <p><strong>Current User ID:</strong> {user?.id}</p>
             <p><strong>Current Role:</strong> {role}</p>
             <p><strong>Error Type:</strong> {error.constructor?.name}</p>
           </div>
-          <Button 
-            onClick={handleRefresh}
-            variant="outline"
-            size="sm"
-            className="mt-4"
-          >
-            Try Again
-          </Button>
+          <div className="space-x-2">
+            <Button 
+              onClick={handleRefresh}
+              variant="outline"
+              size="sm"
+            >
+              Try Again
+            </Button>
+          </div>
         </div>
       )}
 
