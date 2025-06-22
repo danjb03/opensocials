@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserRoleFixer from '@/components/admin/UserRoleFixer';
 import { CreatorLeaderboard } from '@/components/admin/CreatorLeaderboard';
-import { Users, LayoutDashboard, User, Settings, Briefcase, Award } from 'lucide-react';
+import { Users, User, Settings, Briefcase } from 'lucide-react';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 
 const SuperAdminDashboard = () => {
@@ -16,45 +16,41 @@ const SuperAdminDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-10 bg-background text-foreground">
-        <div className="text-center">
-          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p>Loading Super Admin Dashboard...</p>
-        </div>
+      <div className="text-center py-10">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+        <p className="text-muted-foreground">Loading Super Admin Dashboard...</p>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="container mx-auto py-10 bg-background text-foreground">
-        <div className="text-center text-red-500">
-          <p>Error loading dashboard. Please try refreshing the page.</p>
-        </div>
+      <div className="text-center py-10">
+        <p className="text-red-500">Error loading dashboard. Please try refreshing the page.</p>
       </div>
     );
   }
   
   return (
-    <div className="container mx-auto py-10 bg-background text-foreground">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2 text-foreground">Super Admin Dashboard</h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-light text-foreground mb-2">Super Admin Dashboard</h1>
         <div className="text-sm text-muted-foreground">
           Logged in as: {user?.email} | Role: {role || 'Unknown'}
         </div>
       </div>
       
-      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="bg-background">
-        <TabsList className="mb-4 bg-card border border-border">
-          <TabsTrigger value="overview" className="text-foreground data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Overview</TabsTrigger>
-          <TabsTrigger value="dashboards" className="text-foreground data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Dashboard Access</TabsTrigger>
-          <TabsTrigger value="leaderboard" className="text-foreground data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Creator Earnings</TabsTrigger>
-          <TabsTrigger value="tools" className="text-foreground data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">Admin Tools</TabsTrigger>
+      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="dashboards">Dashboard Access</TabsTrigger>
+          <TabsTrigger value="leaderboard">Creator Earnings</TabsTrigger>
+          <TabsTrigger value="tools">Admin Tools</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="bg-card border-border">
+            <Card>
               <CardHeader>
                 <CardTitle className="text-foreground">Agencies</CardTitle>
                 <CardDescription className="text-muted-foreground">Manage all agency accounts</CardDescription>
@@ -63,14 +59,14 @@ const SuperAdminDashboard = () => {
                 <Button 
                   variant="secondary" 
                   onClick={() => navigate('/super-admin/users/agencies')} 
-                  className="w-full bg-card text-foreground border border-border hover:bg-muted"
+                  className="w-full"
                 >
                   View All Agencies
                 </Button>
               </CardContent>
             </Card>
             
-            <Card className="bg-card border-border">
+            <Card>
               <CardHeader>
                 <CardTitle className="text-foreground">Brands</CardTitle>
                 <CardDescription className="text-muted-foreground">Manage brand accounts</CardDescription>
@@ -79,14 +75,14 @@ const SuperAdminDashboard = () => {
                 <Button 
                   variant="secondary" 
                   onClick={() => navigate('/super-admin/users/brands')} 
-                  className="w-full bg-card text-foreground border border-border hover:bg-muted"
+                  className="w-full"
                 >
                   View All Brands
                 </Button>
               </CardContent>
             </Card>
             
-            <Card className="bg-card border-border">
+            <Card>
               <CardHeader>
                 <CardTitle className="text-foreground">Creators</CardTitle>
                 <CardDescription className="text-muted-foreground">Manage creator accounts</CardDescription>
@@ -95,7 +91,7 @@ const SuperAdminDashboard = () => {
                 <Button 
                   variant="secondary" 
                   onClick={() => navigate('/super-admin/users/creators')} 
-                  className="w-full bg-card text-foreground border border-border hover:bg-muted"
+                  className="w-full"
                 >
                   View All Creators
                 </Button>
@@ -113,7 +109,7 @@ const SuperAdminDashboard = () => {
           </div>
           
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="bg-card border-border border-l-4 border-l-violet-500">
+            <Card className="border-l-4 border-l-violet-500">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-foreground">Brand Dashboard</CardTitle>
@@ -131,7 +127,7 @@ const SuperAdminDashboard = () => {
               </CardContent>
             </Card>
             
-            <Card className="bg-card border-border border-l-4 border-l-blue-500">
+            <Card className="border-l-4 border-l-blue-500">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-foreground">Creator Dashboard</CardTitle>
@@ -149,7 +145,7 @@ const SuperAdminDashboard = () => {
               </CardContent>
             </Card>
             
-            <Card className="bg-card border-border border-l-4 border-l-orange-500">
+            <Card className="border-l-4 border-l-orange-500">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-foreground">Agency Dashboard</CardTitle>
@@ -167,7 +163,7 @@ const SuperAdminDashboard = () => {
               </CardContent>
             </Card>
             
-            <Card className="bg-card border-border border-l-4 border-l-green-500">
+            <Card className="border-l-4 border-l-green-500">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-foreground">Admin Dashboard</CardTitle>
