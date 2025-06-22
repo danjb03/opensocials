@@ -30,7 +30,7 @@ export const ProjectsTable = React.memo<ProjectsTableProps>(({ projects = [], is
   }
 
   return (
-    <div className="rounded-md border overflow-hidden">
+    <div className="rounded-md border overflow-hidden bg-black">
       <Table>
         <ProjectsTableHeader />
         <ProjectsTableBody 

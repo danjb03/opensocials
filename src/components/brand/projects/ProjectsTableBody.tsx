@@ -31,8 +31,8 @@ export const ProjectsTableBody = React.memo<ProjectsTableBodyProps>(({
           <React.Fragment key={project.id}>
             {isPrioritySeparator && (
               <TableRow>
-                <TableCell colSpan={7} className="bg-gray-50">
-                  <div className="text-xs font-medium text-gray-500 py-1 px-2">
+                <TableCell colSpan={7} className="bg-gray-900 border-gray-800">
+                  <div className="text-xs font-medium text-gray-400 py-1 px-2">
                     Standard Projects
                   </div>
                 </TableCell>
