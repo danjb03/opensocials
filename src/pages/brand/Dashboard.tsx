@@ -49,28 +49,26 @@ const BrandDashboard = () => {
         isLoading={isLoading}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content - Recent Projects - Full Width */}
-        <div className="lg:col-span-2">
-          <RecentProjects 
-            projects={projects}
-            isLoading={isLoading}
-          />
-        </div>
+      {/* Quick Actions - Full Width Below Stats */}
+      <div className="w-full">
+        <QuickActions />
+      </div>
 
-        {/* Sidebar - Action Items */}
-        <div className="lg:col-span-1">
-          <TodoPanel 
-            todos={todoItems}
-            onMarkComplete={handleMarkTodoComplete}
-            onViewAll={handleViewAllTodos}
-          />
-        </div>
+      {/* Recent Campaigns - Full Width */}
+      <div className="w-full">
+        <RecentProjects 
+          projects={projects}
+          isLoading={isLoading}
+        />
       </div>
 
       {/* Action Items - Full Width Below Recent Campaigns */}
       <div className="w-full">
-        <QuickActions />
+        <TodoPanel 
+          todos={todoItems}
+          onMarkComplete={handleMarkTodoComplete}
+          onViewAll={handleViewAllTodos}
+        />
       </div>
     </div>
   );
