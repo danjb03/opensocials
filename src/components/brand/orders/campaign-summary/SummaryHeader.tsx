@@ -20,7 +20,7 @@ const SummaryHeader: React.FC<SummaryHeaderProps> = ({
 }) => {
   return (
     <div className="flex justify-between items-center">
-      <h3 className="font-medium text-xl text-gray-900">Campaign Details</h3>
+      <h3 className="font-medium text-xl text-white">Campaign Details</h3>
       
       {isEditing ? (
         <div className="flex gap-2">
