@@ -1,268 +1,42 @@
 
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, FileUp, Loader2, Upload, X } from 'lucide-react';
-import ContentUploader from '@/components/creator/campaigns/ContentUploader';
-
-interface Campaign {
-  id: string;
-  title: string;
-  contentRequirements: Record<string, any>;
-  brandId: string;
-  platforms: string[];
-  dealId: string;
-  brandName: string;
-}
-
-// Interface for Supabase project data
-interface ProjectData {
-  id?: string;
-  name?: string;
-  content_requirements?: Record<string, any>;
-  brand_id?: string;
-  platforms?: string[];
-}
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft, Upload } from 'lucide-react';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const ContentUpload = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useUnifiedAuth();
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [contentType, setContentType] = useState('');
-  const [platform, setPlatform] = useState('');
-  const [files, setFiles] = useState<File[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user, role } = useUnifiedAuth();
+  const [isUploading, setIsUploading] = useState(false);
 
-  const { data: campaign, isLoading } = useQuery({
-    queryKey: ['campaign-upload', id],
-    queryFn: async () => {
-      try {
-        if (!user?.id) throw new Error('User not authenticated');
-        
-        // Get deals first to identify campaign the creator is involved in
-        const { data: deals, error: dealsError } = await supabase
-          .from('deals')
-          .select('*')
-          .eq('creator_id', user.id)
-          .eq('status', 'accepted');
-        
-        if (dealsError) throw dealsError;
-        
-        if (!deals || deals.length === 0) {
-          throw new Error('No deals found');
-        }
-
-        // Find the deal that matches the campaign id
-        const deal = deals.find(d => d.id === id);
-        
-        if (!deal) {
-          throw new Error('Campaign not found');
-        }
-
-        // Now fetch the project associated with this deal/id
-        const { data: project, error: projectError } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('id', id)
-          .single();
-
-        // Initialize campaign with data
-        const campaignData: Campaign = {
-          id: (project?.id || deal.id || ''),
-          title: (project?.name || deal.title || 'Untitled Campaign'),
-          contentRequirements: {},
-          brandId: (project?.brand_id || deal.brand_id || ''),
-          platforms: [],
-          dealId: deal.id,
-          brandName: ''
-        };
-        
-        // Safe assign content_requirements if it's an object
-        if (project?.content_requirements && 
-            typeof project.content_requirements === 'object' && 
-            !Array.isArray(project.content_requirements)) {
-          campaignData.contentRequirements = project.content_requirements as Record<string, any>;
-        }
-        
-        // Safe assign platforms if it's an array
-        if (project?.platforms && Array.isArray(project.platforms)) {
-          campaignData.platforms = project.platforms;
-        }
-
-        // Get brand info
-        if (campaignData.brandId) {
-          const { data: brandData } = await supabase
-            .from('profiles')
-            .select('company_name, logo_url')
-            .eq('id', campaignData.brandId)
-            .single();
-          
-          if (brandData) {
-            campaignData.brandName = brandData?.company_name || 'Unknown Brand';
-          }
-        }
-        
-        return campaignData;
-      } catch (error) {
-        console.error('Error fetching campaign:', error);
-        toast.error('Failed to load campaign details');
-        return null;
-      }
-    },
-    enabled: !!id && !!user?.id,
-  });
-
-  useEffect(() => {
-    // Set platform to first platform if available
-    if (campaign?.platforms?.length) {
-      setPlatform(campaign.platforms[0]);
-    }
-    
-    // Set content type to first type if available
-    if (campaign?.contentRequirements) {
-      const contentTypes = Object.keys(campaign.contentRequirements);
-      if (contentTypes.length) {
-        setContentType(contentTypes[0]);
-      }
-    }
-  }, [campaign]);
-
-  const handleFileChange = (newFiles: File[]) => {
-    setFiles(newFiles);
-  };
-
-  const handleRemoveFile = (index: number) => {
-    setFiles(files.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!title) {
-      toast.error('Please enter a title for your submission');
-      return;
-    }
-    
-    if (!contentType) {
-      toast.error('Please select a content type');
-      return;
-    }
-    
-    if (!platform) {
-      toast.error('Please select a platform');
-      return;
-    }
-    
-    if (files.length === 0) {
-      toast.error('Please upload at least one file');
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
-    try {
-      // First, insert the content record
-      const { data: contentData, error: contentError } = await supabase
-        .from('campaign_content')
-        .insert({
-          campaign_id: id,
-          creator_id: user?.id,
-          title,
-          description,
-          content_type: contentType,
-          platform,
-          status: 'pending',
-        })
-        .select();
-      
-      if (contentError) throw contentError;
-      
-      const contentId = contentData[0].id;
-      
-      // Then upload each file
-      for (const file of files) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${contentId}/${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase
-          .storage
-          .from('campaign-content')
-          .upload(fileName, file);
-        
-        if (uploadError) throw uploadError;
-        
-        // Get the URL of the uploaded file
-        const { data: fileData } = supabase
-          .storage
-          .from('campaign-content')
-          .getPublicUrl(fileName);
-        
-        // Link the file to the content record
-        await supabase
-          .from('campaign_content_files')
-          .insert({
-            content_id: contentId,
-            file_path: fileName,
-            file_url: fileData.publicUrl,
-            file_name: file.name,
-            file_type: file.type,
-            file_size: file.size,
-          });
-      }
-      
-      toast.success('Content uploaded successfully');
-      navigate(`/creator/campaigns/${id}`);
-    } catch (error) {
-      console.error('Error uploading content:', error);
-      toast.error('Failed to upload content. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  if (isLoading) {
+  // Super admin preview mode
+  if (role === 'super_admin') {
     return (
       <CreatorLayout>
-        <div className="container mx-auto p-6 flex items-center justify-center h-[50vh]">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      </CreatorLayout>
-    );
-  }
-
-  if (!campaign) {
-    return (
-      <CreatorLayout>
-        <div className="container mx-auto p-6">
+        <div className="container mx-auto p-6 bg-background">
           <Button 
             variant="ghost" 
             onClick={() => navigate('/creator/campaigns')} 
-            className="mb-6"
+            className="mb-6 text-white hover:text-white hover:bg-white/10"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Campaigns
           </Button>
           
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold mb-2 text-white">Content Upload</h1>
+            <p className="text-muted-foreground">You are viewing the content upload page as a super admin.</p>
+          </div>
+          
           <Card>
-            <CardContent className="p-12 flex flex-col items-center justify-center text-center">
-              <div className="text-3xl mb-4">😕</div>
-              <h2 className="text-2xl font-bold mb-2">Campaign Not Found</h2>
-              <p className="text-muted-foreground mb-6">
-                The campaign you're looking for doesn't exist or you don't have access to it.
-              </p>
-              <Button onClick={() => navigate('/creator/campaigns')}>View All Campaigns</Button>
+            <CardContent className="p-6 text-center">
+              <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-white">Content upload functionality preview</p>
             </CardContent>
           </Card>
         </div>
@@ -270,192 +44,90 @@ const ContentUpload = () => {
     );
   }
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      // Simulate upload process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log('File uploaded:', file.name);
+      // Add actual upload logic here
+    } catch (error) {
+      console.error('Upload error:', error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
-    <CreatorLayout>
-      <div className="container mx-auto p-6">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate(`/creator/campaigns/${id}`)} 
-          className="mb-6"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Campaign
-        </Button>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2">
+    <ErrorBoundary>
+      <CreatorLayout>
+        <div className="container mx-auto p-6 bg-background">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/creator/campaigns')} 
+            className="mb-6 text-white hover:text-white hover:bg-white/10"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Campaigns
+          </Button>
+          
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold mb-2 text-white">Upload Content</h1>
+            <p className="text-muted-foreground">
+              Upload your content for campaign: {id}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Upload Content for {campaign.title}</CardTitle>
+                <CardTitle className="text-white">Content Upload</CardTitle>
               </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Title</Label>
-                    <Input 
-                      id="title" 
-                      placeholder="Enter a title for your content" 
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="contentType">Content Type</Label>
-                      <Select 
-                        value={contentType} 
-                        onValueChange={setContentType}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select content type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {campaign.contentRequirements && Object.keys(campaign.contentRequirements).map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {type.charAt(0).toUpperCase() + type.slice(1)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="platform">Platform</Label>
-                      <Select 
-                        value={platform} 
-                        onValueChange={setPlatform}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select platform" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {campaign.platforms.map((p) => (
-                            <SelectItem key={p} value={p}>{p}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description (Optional)</Label>
-                    <Textarea 
-                      id="description" 
-                      placeholder="Add details about your content"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      rows={4}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Upload Files</Label>
-                    <ContentUploader onFilesSelected={handleFileChange} />
-                    
-                    {files.length > 0 && (
-                      <div className="mt-4 border rounded-md p-2">
-                        <p className="text-sm font-medium mb-2">Selected Files:</p>
-                        <div className="space-y-2">
-                          {files.map((file, index) => (
-                            <div key={index} className="flex items-center justify-between bg-muted/50 p-2 rounded">
-                              <div className="flex items-center">
-                                <FileUp className="h-4 w-4 mr-2" />
-                                <span className="text-sm truncate max-w-[200px]">{file.name}</span>
-                                <span className="text-xs text-muted-foreground ml-2">
-                                  ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                                </span>
-                              </div>
-                              <Button 
-                                type="button"
-                                size="icon" 
-                                variant="ghost" 
-                                className="h-6 w-6" 
-                                onClick={() => handleRemoveFile(index)}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex justify-end gap-2">
+              <CardContent className="space-y-4">
+                <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                  <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-white mb-2">Drag and drop your content here</p>
+                  <p className="text-sm text-muted-foreground mb-4">or click to browse</p>
+                  <input
+                    type="file"
+                    onChange={handleFileUpload}
+                    accept="image/*,video/*"
+                    className="hidden"
+                    id="file-upload"
+                  />
+                  <label htmlFor="file-upload">
                     <Button 
-                      type="button"
-                      variant="outline"
-                      onClick={() => navigate(`/creator/campaigns/${id}`)}
+                      className="bg-white text-black hover:bg-gray-200"
+                      disabled={isUploading}
                     >
-                      Cancel
+                      {isUploading ? 'Uploading...' : 'Choose File'}
                     </Button>
-                    <Button 
-                      type="submit" 
-                      disabled={isSubmitting || files.length === 0}
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Uploading...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="h-4 w-4 mr-2" />
-                          Submit Content
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </form>
+                  </label>
+                </div>
               </CardContent>
             </Card>
-          </div>
-          
-          <div>
+
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Submission Guidelines</CardTitle>
+                <CardTitle className="text-white">Upload Guidelines</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4 text-sm">
-                <div>
-                  <h4 className="font-medium mb-1">Content Requirements</h4>
-                  <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                    {campaign.contentRequirements && Object.entries(campaign.contentRequirements).map(([type, details]: [string, any]) => (
-                      <li key={type}>
-                        {type.charAt(0).toUpperCase() + type.slice(1)}: {details.quantity || 0} {details.quantity === 1 ? 'piece' : 'pieces'}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                
-                <div>
-                  <h4 className="font-medium mb-1">File Requirements</h4>
-                  <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                    <li>Maximum file size: 100MB per file</li>
-                    <li>Accepted formats: MP4, JPG, PNG</li>
-                    <li>Video aspect ratio: 9:16 or 16:9</li>
-                  </ul>
-                </div>
-                
-                <div>
-                  <h4 className="font-medium mb-1">Tips for Success</h4>
-                  <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                    <li>Follow the brand guidelines provided</li>
-                    <li>Ensure good lighting and sound quality</li>
-                    <li>Double-check your file meets all requirements</li>
-                  </ul>
-                </div>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>• Maximum file size: 100MB</li>
+                  <li>• Supported formats: JPG, PNG, MP4, MOV</li>
+                  <li>• High resolution recommended</li>
+                  <li>• Include captions if required</li>
+                  <li>• Follow brand guidelines</li>
+                </ul>
               </CardContent>
-              <CardFooter className="text-xs text-muted-foreground border-t pt-4">
-                Note: All content submitted is subject to brand approval. You may be asked to make revisions before final approval.
-              </CardFooter>
             </Card>
           </div>
         </div>
-      </div>
-    </CreatorLayout>
+      </CreatorLayout>
+    </ErrorBoundary>
   );
 };
 

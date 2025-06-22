@@ -1,190 +1,163 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { InvitationsList } from '@/components/creator/invitations/InvitationsList';
 import PendingDeals from '@/components/deals/PendingDeals';
 import PastDeals from '@/components/deals/PastDeals';
-import { MailPlus, Handshake, History } from 'lucide-react';
-import { useCreatorDealsSecure, useCreatorDealStats } from '@/hooks/useCreatorDealsSecure';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
-interface PendingDeal {
-  id: string;
-  project_id: string;
-  deal_value: number;
-  status: string;
-  invited_at: string;
-  project?: {
-    name: string;
-    description?: string;
-    campaign_type: string;
-    start_date?: string;
-    end_date?: string;
-    brand_profile?: {
-      company_name: string;
-      logo_url?: string;
-    };
-  };
-}
-
-interface PastDeal {
-  id: string;
-  title: string;
-  description: string | null;
-  value: number;
-  status: string;
-  feedback: string | null;
-  creator_id: string;
-  brand_id: string;
-  created_at: string | null;
-  updated_at: string | null;
-  profiles: {
-    company_name: string;
-    logo_url?: string;
-  };
-}
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const CreatorDeals = () => {
-  const [activeTab, setActiveTab] = useState<'invitations' | 'pending' | 'past'>('invitations');
-  const { data: deals = [], isLoading, error } = useCreatorDealsSecure();
-  const stats = useCreatorDealStats();
+  const { user, role } = useUnifiedAuth();
 
-  console.log('CreatorDeals: deals data:', deals, 'stats:', stats);
+  // Fetch deals data
+  const { data: deals, isLoading, error } = useQuery({
+    queryKey: ['creator-deals', user?.id],
+    queryFn: async () => {
+      if (!user?.id) {
+        throw new Error('User not authenticated');
+      }
 
-  if (error) {
-    console.error('Error in CreatorDeals:', error);
+      const { data, error } = await supabase
+        .from('deals')
+        .select(`
+          *,
+          projects:project_id(name, description)
+        `)
+        .eq('creator_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id
+  });
+
+  if (isLoading) {
+    return (
+      <CreatorLayout>
+        <div className="container mx-auto p-6 bg-background">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="w-8 h-8 border-t-2 border-b-2 border-white rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-white">Loading your deals...</p>
+            </div>
+          </div>
+        </div>
+      </CreatorLayout>
+    );
   }
 
-  // Transform CreatorDealSecure to PendingDeal format for pending deals
-  const transformToPendingDeals = (creatorDeals: typeof deals): PendingDeal[] => {
-    return creatorDeals.map(deal => ({
-      id: deal.id,
-      project_id: deal.project_id,
-      deal_value: deal.deal_value,
-      status: deal.status,
-      invited_at: deal.invited_at,
-      project: deal.project ? {
-        name: deal.project.name,
-        description: deal.project.description,
-        campaign_type: deal.project.campaign_type,
-        start_date: deal.project.start_date,
-        end_date: deal.project.end_date,
-        brand_profile: deal.project.brand_profile
-      } : undefined
-    }));
-  };
+  if (error) {
+    return (
+      <CreatorLayout>
+        <div className="container mx-auto p-6 bg-background">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="text-red-400 mb-2">Error loading deals</p>
+              <p className="text-sm text-muted-foreground">Please refresh the page to try again</p>
+            </div>
+          </div>
+        </div>
+      </CreatorLayout>
+    );
+  }
 
-  // Transform CreatorDealSecure to PastDeal format for past deals
-  const transformToPastDeals = (creatorDeals: typeof deals): PastDeal[] => {
-    return creatorDeals.map(deal => ({
-      id: deal.id,
-      title: deal.project?.name || 'Untitled Campaign',
-      description: deal.project?.description || null,
-      value: deal.deal_value,
-      status: deal.status,
-      feedback: deal.creator_feedback || null,
-      creator_id: deal.creator_id,
-      brand_id: deal.project_id, // Using project_id as brand_id for compatibility
-      created_at: deal.created_at,
-      updated_at: deal.updated_at,
-      profiles: {
-        company_name: deal.project?.brand_profile?.company_name || 'Unknown Brand',
-        logo_url: deal.project?.brand_profile?.logo_url
-      }
-    }));
-  };
+  // Super admin preview mode
+  if (role === 'super_admin') {
+    return (
+      <CreatorLayout>
+        <div className="container mx-auto p-6 bg-background">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold mb-2 text-white">My Deals</h1>
+            <p className="text-muted-foreground">You are viewing the creator deals page as a super admin.</p>
+          </div>
+          
+          <Tabs defaultValue="pending" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6 bg-black border border-white/10">
+              <TabsTrigger value="pending" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
+                Pending Deals (0)
+              </TabsTrigger>
+              <TabsTrigger value="past" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
+                Past Deals (0)
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="pending">
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <p className="text-white">No pending deals available</p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="past">
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <p className="text-white">No past deals available</p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </CreatorLayout>
+    );
+  }
 
-  const transformedPendingDeals = transformToPendingDeals(stats.pendingDeals);
-  const transformedAcceptedDeals = transformToPendingDeals(stats.acceptedDeals);
-  const transformedCompletedDeals = transformToPastDeals(stats.completedDealsList);
+  const pendingDeals = deals?.filter(deal => ['pending', 'negotiating'].includes(deal.status || '')) || [];
+  const pastDeals = deals?.filter(deal => ['accepted', 'completed', 'rejected', 'cancelled'].includes(deal.status || '')) || [];
 
   return (
-    <CreatorLayout>
-      <div className="container mx-auto p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Paid Opportunities</h1>
-          <p className="text-muted-foreground">Quick responses lead to quicker payouts. Monitor paid brand deals from invite to final payout.</p>
+    <ErrorBoundary>
+      <CreatorLayout>
+        <div className="container mx-auto p-6 bg-background">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold mb-2 text-white">My Deals</h1>
+            <p className="text-muted-foreground">
+              Track your brand partnerships and collaborations.
+            </p>
+          </div>
+
+          <Tabs defaultValue="pending" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6 bg-black border border-white/10">
+              <TabsTrigger value="pending" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
+                Pending Deals ({pendingDeals.length})
+              </TabsTrigger>
+              <TabsTrigger value="past" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
+                Past Deals ({pastDeals.length})
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="pending">
+              <ErrorBoundary fallback={() => (
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <p className="text-white">Pending deals temporarily unavailable</p>
+                  </CardContent>
+                </Card>
+              )}>
+                <PendingDeals deals={pendingDeals} />
+              </ErrorBoundary>
+            </TabsContent>
+            
+            <TabsContent value="past">
+              <ErrorBoundary fallback={() => (
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <p className="text-white">Past deals temporarily unavailable</p>
+                  </CardContent>
+                </Card>
+              )}>
+                <PastDeals deals={pastDeals} />
+              </ErrorBoundary>
+            </TabsContent>
+          </Tabs>
         </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Pipeline Value</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${stats.pipelineValue.toLocaleString()}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Active Deals</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.activeDeals}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Completed</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.completedDeals}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${stats.totalEarnings.toLocaleString()}</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Tabs value={activeTab} onValueChange={value => setActiveTab(value as any)} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="invitations" className="flex items-center gap-2">
-              <MailPlus className="h-4 w-4" />
-              Invitations ({transformedPendingDeals.length})
-            </TabsTrigger>
-            <TabsTrigger value="pending" className="flex items-center gap-2">
-              <Handshake className="h-4 w-4" />
-              Active Deals ({transformedAcceptedDeals.length})
-            </TabsTrigger>
-            <TabsTrigger value="past" className="flex items-center gap-2">
-              <History className="h-4 w-4" />
-              Past Deals ({transformedCompletedDeals.length})
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="invitations">
-            {isLoading ? (
-              <div className="flex justify-center p-8">Loading invitations...</div>
-            ) : (
-              <PendingDeals deals={transformedPendingDeals} />
-            )}
-          </TabsContent>
-
-          <TabsContent value="pending">
-            {isLoading ? (
-              <div className="flex justify-center p-8">Loading active deals...</div>
-            ) : (
-              <PendingDeals deals={transformedAcceptedDeals} />
-            )}
-          </TabsContent>
-
-          <TabsContent value="past">
-            {isLoading ? (
-              <div className="flex justify-center p-8">Loading past deals...</div>
-            ) : (
-              <PastDeals deals={transformedCompletedDeals} />
-            )}
-          </TabsContent>
-        </Tabs>
-      </div>
-    </CreatorLayout>
+      </CreatorLayout>
+    </ErrorBoundary>
   );
 };
 
