@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { useCampaignFilters } from '@/hooks/creator/useCampaignFilters';
-import CreatorLayout from '@/components/layouts/CreatorLayout';
 import CampaignTabs from '@/components/creator/campaigns/CampaignTabs';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { toast } from 'sonner';
@@ -73,61 +72,55 @@ const CreatorCampaigns = () => {
 
   if (error) {
     return (
-      <CreatorLayout>
-        <div className="container mx-auto p-6 bg-background">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <p className="text-red-400 mb-2">Error loading campaigns</p>
-              <p className="text-sm text-muted-foreground">Please refresh the page to try again</p>
-            </div>
+      <div className="container mx-auto p-6 bg-background">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <p className="text-red-400 mb-2">Error loading campaigns</p>
+            <p className="text-sm text-muted-foreground">Please refresh the page to try again</p>
           </div>
         </div>
-      </CreatorLayout>
+      </div>
     );
   }
 
   // Super admin preview mode
   if (role === 'super_admin') {
     return (
-      <CreatorLayout>
-        <div className="container mx-auto p-6 bg-background">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2 text-white">My Campaigns</h1>
-            <p className="text-muted-foreground">You are viewing the creator campaigns page as a super admin.</p>
-          </div>
-          
-          <CampaignTabs
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            activeCampaigns={[]}
-            upcomingCampaigns={[]}
-            completedCampaigns={[]}
-            isLoading={false}
-          />
+      <div className="container mx-auto p-6 bg-background">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2 text-white">My Campaigns</h1>
+          <p className="text-muted-foreground">You are viewing the creator campaigns page as a super admin.</p>
         </div>
-      </CreatorLayout>
+        
+        <CampaignTabs
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          activeCampaigns={[]}
+          upcomingCampaigns={[]}
+          completedCampaigns={[]}
+          isLoading={false}
+        />
+      </div>
     );
   }
 
   return (
     <ErrorBoundary>
-      <CreatorLayout>
-        <div className="container mx-auto p-6 bg-background">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2 text-white">My Campaigns</h1>
-            <p className="text-muted-foreground">Manage your active campaigns and track your content delivery.</p>
-          </div>
-
-          <CampaignTabs
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            activeCampaigns={activeCampaigns}
-            upcomingCampaigns={upcomingCampaigns}
-            completedCampaigns={completedCampaigns}
-            isLoading={isLoading}
-          />
+      <div className="container mx-auto p-6 bg-background">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2 text-white">My Campaigns</h1>
+          <p className="text-muted-foreground">Manage your active campaigns and track your content delivery.</p>
         </div>
-      </CreatorLayout>
+
+        <CampaignTabs
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          activeCampaigns={activeCampaigns}
+          upcomingCampaigns={upcomingCampaigns}
+          completedCampaigns={completedCampaigns}
+          isLoading={isLoading}
+        />
+      </div>
     </ErrorBoundary>
   );
 };
