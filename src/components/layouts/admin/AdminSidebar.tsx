@@ -1,7 +1,6 @@
 
 import { memo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import SidebarLogo from "@/components/ui/sidebar-logo";
 import { Button } from "@/components/ui/button";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -104,11 +103,11 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount = 0 }:
   ];
 
   return (
-    <Sidebar collapsible="icon" className="bg-card border-r border-border">
+    <Sidebar collapsible="icon" className="bg-background border-r border-border">
       <SidebarHeader className="p-4 flex items-center justify-center min-h-[80px] border-b border-border">
         <div className="flex items-center space-x-3 group-data-[collapsible=icon]:justify-center">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">OS</span>
+          <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center">
+            <span className="text-background font-bold text-sm">OS</span>
           </div>
           <div className="group-data-[collapsible=icon]:hidden">
             <h2 className="font-semibold text-foreground text-sm">OS Platform</h2>
@@ -124,7 +123,7 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount = 0 }:
               <SidebarMenuButton 
                 asChild
                 isActive={item.isActive}
-                className="h-12 mr-2 hover:bg-accent hover:text-accent-foreground transition-colors"
+                className="h-12 mr-2 hover:bg-muted hover:text-foreground transition-colors"
                 tooltip={item.title}
               >
                 <Link to={item.url} className="flex items-center gap-3 w-full">
@@ -149,7 +148,7 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount = 0 }:
         <Button 
           variant="default" 
           onClick={handleSignOut}
-          className="w-full h-12 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:text-xs hover:bg-accent hover:text-accent-foreground transition-colors"
+          className="w-full h-12 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:text-xs hover:bg-muted hover:text-foreground transition-colors bg-foreground text-background"
         >
           <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
           <LogOut className="hidden group-data-[collapsible=icon]:block h-4 w-4" />

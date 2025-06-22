@@ -39,7 +39,7 @@ const BrandSettings = () => {
                 <Label htmlFor="website">Website</Label>
                 <Input 
                   id="website" 
-                  defaultValue={brandProfile?.website || ''} 
+                  defaultValue={brandProfile?.company_name || ''} 
                   placeholder="https://yourcompany.com" 
                 />
               </div>
@@ -48,7 +48,7 @@ const BrandSettings = () => {
               <Label htmlFor="description">Company Description</Label>
               <Input 
                 id="description" 
-                defaultValue={brandProfile?.description || ''} 
+                defaultValue={brandProfile?.company_name || ''} 
                 placeholder="Brief description of your company" 
               />
             </div>
