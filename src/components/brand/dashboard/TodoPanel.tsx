@@ -52,7 +52,7 @@ const TodoPanel: React.FC<TodoPanelProps> = React.memo(({
     <Card className="h-fit">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-foreground">Todo List</CardTitle>
+          <CardTitle className="text-foreground">Action Items</CardTitle>
           {todos.length > 5 && (
             <Button variant="ghost" size="sm" onClick={onViewAll} className="text-foreground">
               View All
@@ -66,7 +66,7 @@ const TodoPanel: React.FC<TodoPanelProps> = React.memo(({
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
             <h3 className="font-medium text-foreground mb-2">All caught up!</h3>
             <p className="text-foreground">
-              No pending tasks at the moment.
+              No pending action items at the moment.
             </p>
           </div>
         ) : (
