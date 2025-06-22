@@ -9,11 +9,11 @@ interface CampaignDetailViewProps {
 
 const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({ order }) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-black rounded-lg shadow-sm border border-gray-800 overflow-hidden">
       <div className="p-6 space-y-5">
         <div className="pb-4">
-          <h2 className="text-2xl font-semibold text-gray-900">{order.title}</h2>
-          <p className="text-gray-600 mt-2">
+          <h2 className="text-2xl font-semibold text-white">{order.title}</h2>
+          <p className="text-gray-400 mt-2">
             {order.description || 'No description provided'}
           </p>
         </div>
@@ -21,7 +21,7 @@ const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({ order }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <p className="text-sm text-gray-500 mb-1">Budget</p>
-            <p className="font-semibold text-lg">${order.budget.toLocaleString()}</p>
+            <p className="font-semibold text-lg text-white">${order.budget.toLocaleString()}</p>
           </div>
           
           <div>
@@ -31,7 +31,7 @@ const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({ order }) => {
                 order.platformsList.map((platform) => (
                   <Badge 
                     key={platform}
-                    className="capitalize text-sm px-3 py-1 font-medium bg-gray-100 text-gray-800 hover:bg-gray-200"
+                    className="capitalize text-sm px-3 py-1 font-medium bg-gray-800 text-white border-gray-700 hover:bg-gray-700"
                   >
                     {platform}
                   </Badge>
@@ -45,7 +45,7 @@ const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({ order }) => {
         
         <div>
           <p className="text-sm text-gray-500 mb-1">Status</p>
-          <Badge variant="outline" className="px-3 py-1 bg-blue-50 text-blue-700 border-blue-200 capitalize">
+          <Badge variant="outline" className="px-3 py-1 bg-blue-600 text-white border-blue-600 capitalize">
             {order.stage.replace('_', ' ')}
           </Badge>
         </div>
