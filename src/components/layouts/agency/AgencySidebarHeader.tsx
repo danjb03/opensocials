@@ -17,8 +17,8 @@ const AgencySidebarHeader = ({ isSidebarOpen, onToggle }: AgencySidebarHeaderPro
           <div className="flex items-center space-x-3">
             <SidebarLogo />
             <div>
-              <h2 className="font-semibold text-foreground text-lg">OS Platform</h2>
-              <p className="text-sm text-muted-foreground">Agency Dashboard</p>
+              <h2 className="font-semibold text-foreground text-sm">OS Platform</h2>
+              <p className="text-xs text-muted-foreground">Agency Dashboard</p>
             </div>
           </div>
         )}

@@ -50,7 +50,7 @@ const AgencySidebarNavigation = ({ isSidebarOpen }: AgencySidebarNavigationProps
 
   return (
     <nav className="flex-1 p-4">
-      <ul className="space-y-1">
+      <ul className="space-y-2">
         {navigationItems.map((item) => {
           const Icon = item.icon;
           const isActive = isActiveRoute(item.href);
@@ -60,17 +60,17 @@ const AgencySidebarNavigation = ({ isSidebarOpen }: AgencySidebarNavigationProps
               <Button
                 variant="ghost"
                 onClick={() => navigate(item.href)}
-                className={`w-full justify-start h-auto p-4 rounded-lg text-left ${
+                className={`w-full justify-start h-auto p-3 rounded-lg ${
                   isActive 
                     ? 'bg-white text-black hover:bg-white hover:text-black' 
                     : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                 }`}
               >
-                <Icon className={`h-6 w-6 ${isSidebarOpen ? 'mr-4' : ''} flex-shrink-0`} />
+                <Icon className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : ''}`} />
                 {isSidebarOpen && (
                   <div className="text-left">
-                    <div className="font-medium text-lg leading-tight">{item.name}</div>
-                    <div className="text-sm opacity-70 mt-1">{item.description}</div>
+                    <div className="font-medium text-sm">{item.name}</div>
+                    <div className="text-xs opacity-70">{item.description}</div>
                   </div>
                 )}
               </Button>
