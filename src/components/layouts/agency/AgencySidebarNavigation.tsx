@@ -31,16 +31,16 @@ const AgencySidebarNavigation = ({ isSidebarOpen }: AgencySidebarNavigationProps
       description: 'Campaign pipeline'
     },
     { 
-      name: 'User Management', 
-      href: '/agency/users', 
+      name: 'Creators', 
+      href: '/agency/crm/creators', 
       icon: Users,
-      description: 'Manage agency users'
+      description: 'Find and manage creators'
     },
     { 
-      name: 'CRM', 
-      href: '/agency/crm', 
+      name: 'Settings', 
+      href: '/agency/settings', 
       icon: Settings,
-      description: 'Client relationship management'
+      description: 'Account preferences'
     }
   ];
 
@@ -50,7 +50,7 @@ const AgencySidebarNavigation = ({ isSidebarOpen }: AgencySidebarNavigationProps
 
   return (
     <nav className="flex-1 p-4">
-      <ul className="space-y-2">
+      <ul className="space-y-1">
         {navigationItems.map((item) => {
           const Icon = item.icon;
           const isActive = isActiveRoute(item.href);
@@ -60,17 +60,17 @@ const AgencySidebarNavigation = ({ isSidebarOpen }: AgencySidebarNavigationProps
               <Button
                 variant="ghost"
                 onClick={() => navigate(item.href)}
-                className={`w-full justify-start h-auto p-3 rounded-lg ${
+                className={`w-full justify-start h-auto p-4 rounded-lg text-left ${
                   isActive 
                     ? 'bg-white text-black hover:bg-white hover:text-black' 
                     : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                 }`}
               >
-                <Icon className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : ''}`} />
+                <Icon className={`h-6 w-6 ${isSidebarOpen ? 'mr-4' : ''} flex-shrink-0`} />
                 {isSidebarOpen && (
                   <div className="text-left">
-                    <div className="font-medium text-sm">{item.name}</div>
-                    <div className="text-xs opacity-70">{item.description}</div>
+                    <div className="font-medium text-lg leading-tight">{item.name}</div>
+                    <div className="text-sm opacity-70 mt-1">{item.description}</div>
                   </div>
                 )}
               </Button>
