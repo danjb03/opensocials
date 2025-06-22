@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { useCreatorSearch } from '@/hooks/useCreatorSearch';
-import { Creator } from '@/types/creator';
 
 const BrandCreators = () => {
   const {
