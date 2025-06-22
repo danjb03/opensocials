@@ -81,9 +81,9 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount = 0 }:
                       isActive 
                         ? 'bg-accent text-accent-foreground' 
                         : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
-                    }`}
+                    } group-data-[collapsible=icon]:justify-center`}
                   >
-                    <Icon className={`h-5 w-5 ${!isActive ? 'mr-3' : 'mr-3'} group-data-[collapsible=icon]:mr-0`} />
+                    <Icon className={`h-5 w-5 group-data-[collapsible=icon]:mr-0 ${!isActive ? 'mr-3' : 'mr-3'}`} />
                     <div className="text-left group-data-[collapsible=icon]:hidden">
                       <div className="flex items-center justify-between w-full">
                         <div className="font-medium text-sm">{item.title}</div>
