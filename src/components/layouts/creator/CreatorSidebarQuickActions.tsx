@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Heart, Search } from 'lucide-react';
+import { Heart } from 'lucide-react';
 
 interface CreatorSidebarQuickActionsProps {
   isSidebarOpen: boolean;
@@ -23,15 +23,6 @@ const CreatorSidebarQuickActions = ({ isSidebarOpen }: CreatorSidebarQuickAction
         >
           <Heart className="h-4 w-4 mr-2" />
           View Invitations
-        </Button>
-        <Button 
-          onClick={() => navigate('/creator/analytics')}
-          variant="outline" 
-          className="w-full justify-start"
-          size="sm"
-        >
-          <Search className="h-4 w-4 mr-2" />
-          Analytics
         </Button>
       </div>
     </div>
