@@ -1,28 +1,10 @@
 
 import React from 'react';
 import SecurePendingDeals from './SecurePendingDeals';
-
-interface Deal {
-  id: string;
-  project_id: string;
-  deal_value: number;
-  status: string;
-  invited_at: string;
-  project?: {
-    name: string;
-    description?: string;
-    campaign_type: string;
-    start_date?: string;
-    end_date?: string;
-    brand_profile?: {
-      company_name: string;
-      logo_url?: string;
-    };
-  };
-}
+import { LegacyDeal } from '@/types/deals';
 
 interface PendingDealsProps {
-  deals: Deal[];
+  deals: LegacyDeal[];
 }
 
 const PendingDeals = ({ deals }: PendingDealsProps) => {

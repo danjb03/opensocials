@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,25 +8,7 @@ import PastDeals from '@/components/deals/PastDeals';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import ErrorBoundary from '@/components/ErrorBoundary';
-
-interface Deal {
-  id: string;
-  project_id: string;
-  deal_value: number;
-  status: string;
-  invited_at: string;
-  project?: {
-    name: string;
-    description?: string;
-    campaign_type: string;
-    start_date?: string;
-    end_date?: string;
-    brand_profile?: {
-      company_name: string;
-      logo_url?: string;
-    };
-  };
-}
+import { Deal, transformDealToLegacy } from '@/types/deals';
 
 const CreatorDeals = () => {
   const { user, role } = useUnifiedAuth();
@@ -164,6 +145,10 @@ const CreatorDeals = () => {
   const pendingDeals = deals?.filter(deal => ['pending', 'negotiating'].includes(deal.status || '')) || [];
   const pastDeals = deals?.filter(deal => ['accepted', 'completed', 'rejected', 'cancelled'].includes(deal.status || '')) || [];
 
+  // Transform deals to legacy format for components
+  const transformedPendingDeals = pendingDeals.map(transformDealToLegacy);
+  const transformedPastDeals = pastDeals.map(transformDealToLegacy);
+
   return (
     <ErrorBoundary>
       <CreatorLayout>
@@ -178,10 +163,10 @@ const CreatorDeals = () => {
           <Tabs defaultValue="pending" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6 bg-black border border-white/10">
               <TabsTrigger value="pending" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
-                Pending Deals ({pendingDeals.length})
+                Pending Deals ({transformedPendingDeals.length})
               </TabsTrigger>
               <TabsTrigger value="past" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
-                Past Deals ({pastDeals.length})
+                Past Deals ({transformedPastDeals.length})
               </TabsTrigger>
             </TabsList>
             
@@ -193,7 +178,7 @@ const CreatorDeals = () => {
                   </CardContent>
                 </Card>
               )}>
-                <PendingDeals deals={pendingDeals} />
+                <PendingDeals deals={transformedPendingDeals} />
               </ErrorBoundary>
             </TabsContent>
             
@@ -205,7 +190,7 @@ const CreatorDeals = () => {
                   </CardContent>
                 </Card>
               )}>
-                <PastDeals deals={pastDeals} />
+                <PastDeals deals={transformedPastDeals} />
               </ErrorBoundary>
             </TabsContent>
           </Tabs>
