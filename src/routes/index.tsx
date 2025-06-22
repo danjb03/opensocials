@@ -15,10 +15,10 @@ import CreatorSetup from '@/pages/setup/CreatorSetup';
 // Route Components
 import AdminRoutes from './AdminRoutes';
 import BrandRoutes from './BrandRoutes';
-import CreatorRoutes from './CreatorRoutes';
+import { CreatorRoutes } from './CreatorRoutes';
 
 const AppRoutes = () => {
-  const { user, userRole, brandProfile, creatorProfile, isLoading } = useUnifiedAuth();
+  const { user, role, brandProfile, creatorProfile, isLoading } = useUnifiedAuth();
 
   if (isLoading) {
     return (
@@ -39,8 +39,8 @@ const AppRoutes = () => {
   }
 
   // Setup routes for users who need to complete their profiles
-  const needsBrandSetup = userRole === 'brand' && !brandProfile?.company_name;
-  const needsCreatorSetup = userRole === 'creator' && !creatorProfile?.first_name;
+  const needsBrandSetup = role === 'brand' && !brandProfile?.company_name;
+  const needsCreatorSetup = role === 'creator' && !creatorProfile?.first_name;
 
   if (needsBrandSetup) {
     return (
@@ -64,7 +64,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* Redirect root to appropriate dashboard */}
-      <Route path="/" element={<Navigate to={`/${userRole}/dashboard`} replace />} />
+      <Route path="/" element={<Navigate to={`/${role}/dashboard`} replace />} />
       
       {/* Role-based routes */}
       <Route path="/admin/*" element={
@@ -86,7 +86,7 @@ const AppRoutes = () => {
       } />
 
       {/* Fallback */}
-      <Route path="*" element={<Navigate to={`/${userRole}/dashboard`} replace />} />
+      <Route path="*" element={<Navigate to={`/${role}/dashboard`} replace />} />
     </Routes>
   );
 };

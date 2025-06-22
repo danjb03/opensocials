@@ -1,6 +1,6 @@
 
 import { Routes, Route } from "react-router-dom";
-import { ProtectedRoute } from "./index";
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import CreatorDashboard from "@/pages/creator/Dashboard";
 import CreatorAnalytics from "@/pages/creator/Analytics";
 import CreatorDeals from "@/pages/creator/Deals";

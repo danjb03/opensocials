@@ -1,6 +1,6 @@
 
 import { Routes, Route } from "react-router-dom";
-import { ProtectedRoute } from "./index";
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
 import Agencies from "@/pages/admin/users/Agencies";
 import Brands from "@/pages/admin/users/Brands";

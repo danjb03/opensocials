@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { ProtectedRoute } from './index';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import AdminDashboard from '@/pages/admin/Dashboard';
 import ProjectManagement from '@/pages/admin/ProjectManagement';
