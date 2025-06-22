@@ -20,6 +20,7 @@ const AgencyRoutes = () => {
     <Routes>
       <Route path="/*" element={<AgencyLayout><Outlet /></AgencyLayout>}>
         <Route index element={<AgencyDashboard />} />
+        <Route path="dashboard" element={<AgencyDashboard />} />
         <Route path="users" element={<AgencyUserManagement />} />
         <Route path="invite" element={<AgencyInviteUsers />} />
         <Route path="orders" element={<AgencyOrderManagement />} />

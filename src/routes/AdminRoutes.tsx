@@ -30,6 +30,7 @@ const AdminRoutes = () => {
           <AdminLayout>
             <Routes>
               <Route index element={<AdminDashboard />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="users" element={<UserManagement />} />
               <Route path="invite" element={<InviteUsers />} />
               <Route path="projects" element={<ProjectManagement />} />

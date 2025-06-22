@@ -6,7 +6,7 @@ import {
   LayoutDashboard, 
   FolderOpen, 
   Heart, 
-  Search,
+  BarChart3,
   Settings 
 } from 'lucide-react';
 
@@ -21,7 +21,7 @@ const CreatorSidebarNavigation = ({ isSidebarOpen }: CreatorSidebarNavigationPro
   const navigationItems = [
     { 
       name: 'Dashboard', 
-      href: '/creator/dashboard', 
+      href: '/creator', 
       icon: LayoutDashboard,
       description: 'Overview and analytics'
     },
@@ -32,26 +32,29 @@ const CreatorSidebarNavigation = ({ isSidebarOpen }: CreatorSidebarNavigationPro
       description: 'Active projects'
     },
     { 
-      name: 'Invitations', 
-      href: '/creator/invitations', 
+      name: 'Deals', 
+      href: '/creator/deals', 
       icon: Heart,
-      description: 'Brand invitations'
+      description: 'Brand partnerships'
     },
     { 
       name: 'Analytics', 
       href: '/creator/analytics', 
-      icon: Search,
+      icon: BarChart3,
       description: 'Performance insights'
     },
     { 
-      name: 'Settings', 
-      href: '/creator/settings', 
+      name: 'Profile', 
+      href: '/creator/profile', 
       icon: Settings,
-      description: 'Account preferences'
+      description: 'Account settings'
     }
   ];
 
   const isActiveRoute = (href: string) => {
+    if (href === '/creator') {
+      return location.pathname === '/creator' || location.pathname === '/creator/dashboard';
+    }
     return location.pathname === href || location.pathname.startsWith(href + '/');
   };
 
