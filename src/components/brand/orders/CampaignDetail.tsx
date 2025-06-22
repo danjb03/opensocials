@@ -45,6 +45,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   // Handle stage navigation
   const handleMovePrevious = () => {
     if (previousStage) {
+      console.log('Moving to previous stage:', previousStage);
       onMoveStage(currentOrder.id, previousStage);
       // Update local state to reflect the change immediately
       setCurrentOrder({
@@ -56,6 +57,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   
   const handleMoveNext = () => {
     if (nextStage) {
+      console.log('Moving to next stage:', nextStage);
       onMoveStage(currentOrder.id, nextStage);
       // Update local state to reflect the change immediately
       setCurrentOrder({
@@ -119,6 +121,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         canMovePrevious={currentStageIndex > 0}
         canMoveNext={currentStageIndex < stages.length - 1}
         orderId={currentOrder.id}
+        orderTitle={currentOrder.title}
       />
       
       <div className="mt-5">

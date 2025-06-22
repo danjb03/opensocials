@@ -44,6 +44,11 @@ const CampaignStageNav: React.FC<CampaignStageNavProps> = ({
     return `Stage: ${currentStageIndex + 1} of ${stages.length}`;
   };
 
+  const handleNextClick = () => {
+    console.log('Next button clicked, current stage:', currentStage, 'next stage:', nextStage);
+    onMoveNext();
+  };
+
   return (
     <>
       <div className="space-y-6">
@@ -75,10 +80,10 @@ const CampaignStageNav: React.FC<CampaignStageNavProps> = ({
               </Button>
             )}
             
-            {canMoveNext && !isContractPaymentStage && (
+            {canMoveNext && (
               <Button 
                 size="sm" 
-                onClick={onMoveNext}
+                onClick={handleNextClick}
                 className="shadow-sm bg-black text-white hover:bg-gray-800"
               >
                 Complete Next Steps <ChevronRight className="h-4 w-4 ml-1" />
