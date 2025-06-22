@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { LogOut } from 'lucide-react';
 import { getAdminMenuItems } from './AdminMenuItems';
+import SidebarLogo from '@/components/ui/sidebar-logo';
 import {
   Sidebar,
   SidebarContent,
@@ -48,15 +49,13 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount = 0 }:
   const menuItems = getAdminMenuItems(isActiveRoute, pendingCount);
 
   return (
-    <Sidebar collapsible="icon" className="bg-background border-r border-border">
-      <SidebarHeader className="p-4 flex items-center justify-center min-h-[80px] border-b border-border">
+    <Sidebar collapsible="icon" className="bg-sidebar border-r border-sidebar-border">
+      <SidebarHeader className="p-4 flex items-center justify-center min-h-[80px] border-b border-sidebar-border">
         <div className="flex items-center space-x-3 group-data-[collapsible=icon]:justify-center">
-          <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center">
-            <span className="text-background font-bold text-sm">OS</span>
-          </div>
+          <SidebarLogo />
           <div className="group-data-[collapsible=icon]:hidden">
-            <h2 className="font-semibold text-foreground text-sm">OS Platform</h2>
-            <p className="text-xs text-muted-foreground">Admin Dashboard</p>
+            <h2 className="font-semibold text-sidebar-foreground text-sm">OS Platform</h2>
+            <p className="text-xs text-sidebar-foreground/70">Admin Dashboard</p>
           </div>
         </div>
       </SidebarHeader>
@@ -68,14 +67,14 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount = 0 }:
               <SidebarMenuButton 
                 asChild
                 isActive={item.isActive}
-                className="h-12 mr-2 hover:bg-muted hover:text-foreground transition-colors"
+                className="h-12 mr-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground"
                 tooltip={item.title}
               >
                 <Link to={item.url} className="flex items-center gap-3 w-full">
                   <item.icon className="h-5 w-5" />
                   <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                   {item.notificationCount && item.notificationCount > 0 && (
-                    <span className="ml-auto bg-destructive text-destructive-foreground text-xs rounded-full px-2 py-1 group-data-[collapsible=icon]:hidden">
+                    <span className="ml-auto bg-red-600 text-white text-xs rounded-full px-2 py-1 group-data-[collapsible=icon]:hidden font-medium">
                       {item.notificationCount}
                     </span>
                   )}
@@ -86,14 +85,14 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount = 0 }:
         </SidebarMenu>
       </SidebarContent>
       
-      <SidebarFooter className="p-4 border-t border-border">
-        <div className="text-sm text-muted-foreground mb-2 truncate group-data-[collapsible=icon]:hidden">
+      <SidebarFooter className="p-4 border-t border-sidebar-border">
+        <div className="text-sm text-sidebar-foreground/70 mb-2 truncate group-data-[collapsible=icon]:hidden">
           {userEmail}
         </div>
         <Button 
-          variant="default" 
+          variant="secondary" 
           onClick={handleSignOut}
-          className="w-full h-12 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:text-xs hover:bg-muted hover:text-foreground transition-colors bg-foreground text-background"
+          className="w-full h-12 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:text-xs hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors bg-sidebar-accent text-sidebar-accent-foreground"
         >
           <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
           <LogOut className="hidden group-data-[collapsible=icon]:block h-4 w-4" />
