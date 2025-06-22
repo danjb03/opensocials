@@ -11,6 +11,7 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -60,29 +61,31 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount = 0 }:
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="px-4">
-        <SidebarMenu>
-          {menuItems.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton 
-                asChild
-                isActive={item.isActive}
-                className="h-12 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground"
-                tooltip={item.title}
-              >
-                <Link to={item.url} className="flex items-center gap-3 w-full">
-                  <item.icon className="h-5 w-5" />
-                  <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
-                  {item.notificationCount && item.notificationCount > 0 && (
-                    <span className="ml-auto bg-red-600 text-white text-xs rounded-full px-2 py-1 group-data-[collapsible=icon]:hidden font-medium">
-                      {item.notificationCount}
-                    </span>
-                  )}
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarMenu>
+            {menuItems.map((item) => (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton 
+                  asChild
+                  isActive={item.isActive}
+                  className="h-12 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground"
+                  tooltip={item.title}
+                >
+                  <Link to={item.url} className="flex items-center gap-3 w-full">
+                    <item.icon className="h-5 w-5" />
+                    <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
+                    {item.notificationCount && item.notificationCount > 0 && (
+                      <span className="ml-auto bg-red-600 text-white text-xs rounded-full px-2 py-1 group-data-[collapsible=icon]:hidden font-medium">
+                        {item.notificationCount}
+                      </span>
+                    )}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
       
       <SidebarFooter className="px-4 py-4 border-t border-sidebar-border">
