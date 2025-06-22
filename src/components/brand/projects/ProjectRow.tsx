@@ -20,36 +20,36 @@ export const ProjectRow = ({
 }: ProjectRowProps) => {
   return (
     <TableRow 
-      className={`hover:bg-gray-50/50 ${project.is_priority ? "bg-amber-50/30" : ""}`}
+      className={`hover:bg-muted/30 transition-colors ${project.is_priority ? "bg-amber-500/10" : ""}`}
     >
       <TableCell className="font-medium">
         <div className="flex flex-col">
-          <span>{project.name}</span>
-          <span className="text-xs text-gray-500">{project.campaign_type}</span>
+          <span className="text-foreground font-semibold">{project.name}</span>
+          <span className="text-xs text-muted-foreground">{project.campaign_type}</span>
         </div>
       </TableCell>
       <TableCell>
         <div className="text-sm">
           {project.start_date && (
-            <div>
-              <span className="text-gray-700 font-medium">Start:</span>{" "}
+            <div className="text-muted-foreground">
+              <span className="font-medium">Start:</span>{" "}
               {new Date(project.start_date).toLocaleDateString()}
             </div>
           )}
           {project.end_date && (
-            <div>
-              <span className="text-gray-700 font-medium">End:</span>{" "}
+            <div className="text-muted-foreground">
+              <span className="font-medium">End:</span>{" "}
               {new Date(project.end_date).toLocaleDateString()}
             </div>
           )}
         </div>
       </TableCell>
       <TableCell>
-        <div className="font-medium">{formatCurrency(project.budget, project.currency)}</div>
+        <div className="font-semibold text-foreground">{formatCurrency(project.budget, project.currency)}</div>
       </TableCell>
       <TableCell>
         <div className="flex items-center">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+          <div className="bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
             Assignment Pending
           </div>
         </div>
@@ -58,11 +58,11 @@ export const ProjectRow = ({
         <ProjectStatusBadge status={project.status as ProjectStatus} />
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-1">
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 h-2 rounded-full" style={{ width: '35%' }}></div>
+        <div className="flex items-center gap-2">
+          <div className="w-full bg-muted rounded-full h-2.5">
+            <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: '35%' }}></div>
           </div>
-          <span className="text-xs text-gray-500">35%</span>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">35%</span>
         </div>
       </TableCell>
       <TableCell className="text-right">

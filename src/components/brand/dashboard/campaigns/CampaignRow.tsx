@@ -23,10 +23,10 @@ interface CampaignRowProps {
 }
 
 const statusConfig = {
-  draft: { color: 'bg-gray-100 text-gray-800', label: 'Draft' },
-  active: { color: 'bg-green-100 text-green-800', label: 'Active' },
-  completed: { color: 'bg-blue-100 text-blue-800', label: 'Completed' },
-  paused: { color: 'bg-yellow-100 text-yellow-800', label: 'Paused' }
+  draft: { color: 'bg-muted text-muted-foreground', label: 'Draft' },
+  active: { color: 'bg-green-600 text-white', label: 'Active' },
+  completed: { color: 'bg-blue-600 text-white', label: 'Completed' },
+  paused: { color: 'bg-yellow-600 text-white', label: 'Paused' }
 };
 
 export const CampaignRow: React.FC<CampaignRowProps> = React.memo(({ campaign }) => {
@@ -58,11 +58,11 @@ export const CampaignRow: React.FC<CampaignRowProps> = React.memo(({ campaign })
   const statusInfo = statusConfig[campaign.status];
 
   return (
-    <tr className="hover:bg-accent/50 transition-colors">
+    <tr className="hover:bg-muted/30 transition-colors">
       <td className="px-4 py-3">
         <div>
-          <div className="font-medium text-foreground">{campaign.name}</div>
-          <div className="text-foreground text-sm">{campaign.platform}</div>
+          <div className="font-semibold text-foreground">{campaign.name}</div>
+          <div className="text-muted-foreground text-sm">{campaign.platform}</div>
         </div>
       </td>
       <td className="px-4 py-3">
@@ -71,39 +71,39 @@ export const CampaignRow: React.FC<CampaignRowProps> = React.memo(({ campaign })
         </Badge>
       </td>
       <td className="px-4 py-3">
-        <div className="flex items-center gap-1 text-foreground">
+        <div className="flex items-center gap-1 text-foreground font-medium">
           <DollarSign className="h-4 w-4" />
           {formatCurrency(campaign.budget)}
         </div>
       </td>
       <td className="px-4 py-3">
-        <div className="flex items-center gap-1 text-foreground">
+        <div className="flex items-center gap-1 text-muted-foreground">
           <Calendar className="h-4 w-4" />
           {new Date(campaign.startDate).toLocaleDateString()}
         </div>
       </td>
       <td className="px-4 py-3">
-        <div className="flex items-center gap-1 text-foreground">
+        <div className="flex items-center gap-1 text-muted-foreground">
           <Users className="h-4 w-4" />
           {campaign.creators}
         </div>
       </td>
       <td className="px-4 py-3">
-        <div className="text-foreground">
+        <div className="text-foreground font-medium">
           {formatNumber(campaign.reach)}
         </div>
       </td>
       <td className="px-4 py-3">
-        <div className="text-foreground">
+        <div className="text-foreground font-medium">
           {campaign.engagement.toFixed(1)}%
         </div>
       </td>
       <td className="px-4 py-3">
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={handleViewCampaign}
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
         >
           <Eye className="h-4 w-4" />
           View
