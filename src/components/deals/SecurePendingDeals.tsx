@@ -5,28 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, DollarSign, Building2 } from 'lucide-react';
 import { useCreatorDealActions } from '@/hooks/useCreatorDealsSecure';
-
-interface Deal {
-  id: string;
-  project_id: string;
-  deal_value: number;
-  status: string;
-  invited_at: string;
-  project?: {
-    name: string;
-    description?: string;
-    campaign_type: string;
-    start_date?: string;
-    end_date?: string;
-    brand_profile?: {
-      company_name: string;
-      logo_url?: string;
-    };
-  };
-}
+import { LegacyDeal } from '@/types/deals';
 
 interface SecurePendingDealsProps {
-  deals: Deal[];
+  deals: LegacyDeal[];
 }
 
 const SecurePendingDeals = ({ deals }: SecurePendingDealsProps) => {
@@ -50,17 +32,17 @@ const SecurePendingDeals = ({ deals }: SecurePendingDealsProps) => {
           <CardHeader>
             <div className="flex justify-between items-start">
               <div className="flex-1">
-                <CardTitle className="text-lg">{deal.project?.name || 'Untitled Campaign'}</CardTitle>
+                <CardTitle className="text-lg">{deal.title}</CardTitle>
                 <CardDescription className="flex items-center gap-2 mt-1">
                   <Building2 className="h-4 w-4" />
-                  {deal.project?.brand_profile?.company_name || 'Unknown Brand'}
+                  {deal.profiles.company_name}
                 </CardDescription>
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-green-600">
-                  ${deal.deal_value.toLocaleString()}
+                  ${deal.value.toLocaleString()}
                 </div>
-                <Badge variant={deal.status === 'invited' ? 'secondary' : 'default'}>
+                <Badge variant={deal.status === 'pending' ? 'secondary' : 'default'}>
                   {deal.status}
                 </Badge>
               </div>
@@ -69,24 +51,24 @@ const SecurePendingDeals = ({ deals }: SecurePendingDealsProps) => {
           
           <CardContent>
             <div className="space-y-4">
-              {deal.project?.description && (
-                <p className="text-sm text-muted-foreground">{deal.project.description}</p>
+              {deal.description && (
+                <p className="text-sm text-muted-foreground">{deal.description}</p>
               )}
               
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />
-                  Campaign: {deal.project?.campaign_type || 'Single'}
+                  Deal Type: Campaign
                 </div>
-                {deal.project?.start_date && (
+                {deal.created_at && (
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    Start: {new Date(deal.project.start_date).toLocaleDateString()}
+                    Created: {new Date(deal.created_at).toLocaleDateString()}
                   </div>
                 )}
               </div>
 
-              {deal.status === 'invited' || deal.status === 'pending' ? (
+              {deal.status === 'pending' ? (
                 <div className="flex gap-2 pt-2">
                   <Button 
                     onClick={() => acceptDeal(deal.id)}
