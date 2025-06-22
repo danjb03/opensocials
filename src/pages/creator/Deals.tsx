@@ -1,8 +1,8 @@
+
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
-import CreatorLayout from '@/components/layouts/CreatorLayout';
 import PendingDeals from '@/components/deals/PendingDeals';
 import PastDeals from '@/components/deals/PastDeals';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -73,72 +73,66 @@ const CreatorDeals = () => {
 
   if (isLoading) {
     return (
-      <CreatorLayout>
-        <div className="container mx-auto p-6 bg-background">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="w-8 h-8 border-t-2 border-b-2 border-white rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-white">Loading your deals...</p>
-            </div>
+      <div className="container mx-auto p-6 bg-background">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="w-8 h-8 border-t-2 border-b-2 border-white rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-white">Loading your deals...</p>
           </div>
         </div>
-      </CreatorLayout>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <CreatorLayout>
-        <div className="container mx-auto p-6 bg-background">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <p className="text-red-400 mb-2">Error loading deals</p>
-              <p className="text-sm text-muted-foreground">Please refresh the page to try again</p>
-            </div>
+      <div className="container mx-auto p-6 bg-background">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <p className="text-red-400 mb-2">Error loading deals</p>
+            <p className="text-sm text-muted-foreground">Please refresh the page to try again</p>
           </div>
         </div>
-      </CreatorLayout>
+      </div>
     );
   }
 
   // Super admin preview mode
   if (role === 'super_admin') {
     return (
-      <CreatorLayout>
-        <div className="container mx-auto p-6 bg-background">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2 text-white">My Deals</h1>
-            <p className="text-muted-foreground">You are viewing the creator deals page as a super admin.</p>
-          </div>
-          
-          <Tabs defaultValue="pending" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6 bg-black border border-white/10">
-              <TabsTrigger value="pending" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
-                Pending Deals (0)
-              </TabsTrigger>
-              <TabsTrigger value="past" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
-                Past Deals (0)
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="pending">
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <p className="text-white">No pending deals available</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="past">
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <p className="text-white">No past deals available</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+      <div className="container mx-auto p-6 bg-background">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2 text-white">My Deals</h1>
+          <p className="text-muted-foreground">You are viewing the creator deals page as a super admin.</p>
         </div>
-      </CreatorLayout>
+        
+        <Tabs defaultValue="pending" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6 bg-black border border-white/10">
+            <TabsTrigger value="pending" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
+              Pending Deals (0)
+            </TabsTrigger>
+            <TabsTrigger value="past" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
+              Past Deals (0)
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="pending">
+            <Card>
+              <CardContent className="p-6 text-center">
+                <p className="text-white">No pending deals available</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="past">
+            <Card>
+              <CardContent className="p-6 text-center">
+                <p className="text-white">No past deals available</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     );
   }
 
@@ -151,51 +145,49 @@ const CreatorDeals = () => {
 
   return (
     <ErrorBoundary>
-      <CreatorLayout>
-        <div className="container mx-auto p-6 bg-background">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2 text-white">My Deals</h1>
-            <p className="text-muted-foreground">
-              Track your brand partnerships and collaborations.
-            </p>
-          </div>
-
-          <Tabs defaultValue="pending" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6 bg-black border border-white/10">
-              <TabsTrigger value="pending" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
-                Pending Deals ({transformedPendingDeals.length})
-              </TabsTrigger>
-              <TabsTrigger value="past" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
-                Past Deals ({transformedPastDeals.length})
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="pending">
-              <ErrorBoundary fallback={() => (
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <p className="text-white">Pending deals temporarily unavailable</p>
-                  </CardContent>
-                </Card>
-              )}>
-                <PendingDeals deals={transformedPendingDeals} />
-              </ErrorBoundary>
-            </TabsContent>
-            
-            <TabsContent value="past">
-              <ErrorBoundary fallback={() => (
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <p className="text-white">Past deals temporarily unavailable</p>
-                  </CardContent>
-                </Card>
-              )}>
-                <PastDeals deals={transformedPastDeals} />
-              </ErrorBoundary>
-            </TabsContent>
-          </Tabs>
+      <div className="container mx-auto p-6 bg-background">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2 text-white">My Deals</h1>
+          <p className="text-muted-foreground">
+            Track your brand partnerships and collaborations.
+          </p>
         </div>
-      </CreatorLayout>
+
+        <Tabs defaultValue="pending" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6 bg-black border border-white/10">
+            <TabsTrigger value="pending" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
+              Pending Deals ({transformedPendingDeals.length})
+            </TabsTrigger>
+            <TabsTrigger value="past" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
+              Past Deals ({transformedPastDeals.length})
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="pending">
+            <ErrorBoundary fallback={() => (
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <p className="text-white">Pending deals temporarily unavailable</p>
+                </CardContent>
+              </Card>
+            )}>
+              <PendingDeals deals={transformedPendingDeals} />
+            </ErrorBoundary>
+          </TabsContent>
+          
+          <TabsContent value="past">
+            <ErrorBoundary fallback={() => (
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <p className="text-white">Past deals temporarily unavailable</p>
+                </CardContent>
+              </Card>
+            )}>
+              <PastDeals deals={transformedPastDeals} />
+            </ErrorBoundary>
+          </TabsContent>
+        </Tabs>
+      </div>
     </ErrorBoundary>
   );
 };
