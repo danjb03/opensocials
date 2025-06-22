@@ -10,10 +10,29 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
+interface Deal {
+  id: string;
+  project_id: string;
+  deal_value: number;
+  status: string;
+  invited_at: string;
+  project?: {
+    name: string;
+    description?: string;
+    campaign_type: string;
+    start_date?: string;
+    end_date?: string;
+    brand_profile?: {
+      company_name: string;
+      logo_url?: string;
+    };
+  };
+}
+
 const CreatorDeals = () => {
   const { user, role } = useUnifiedAuth();
 
-  // Fetch deals data
+  // Fetch deals data using creator_deals table
   const { data: deals, isLoading, error } = useQuery({
     queryKey: ['creator-deals', user?.id],
     queryFn: async () => {
@@ -22,16 +41,51 @@ const CreatorDeals = () => {
       }
 
       const { data, error } = await supabase
-        .from('deals')
+        .from('creator_deals')
         .select(`
-          *,
-          projects:project_id(name, description)
+          id,
+          project_id,
+          deal_value,
+          status,
+          invited_at,
+          projects:project_id(
+            name,
+            description,
+            campaign_type,
+            start_date,
+            end_date,
+            brand_profiles:brand_id(
+              company_name,
+              logo_url
+            )
+          )
         `)
         .eq('creator_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+
+      // Transform the data to match the Deal interface
+      const transformedDeals: Deal[] = (data || []).map(deal => ({
+        id: deal.id,
+        project_id: deal.project_id,
+        deal_value: deal.deal_value,
+        status: deal.status,
+        invited_at: deal.invited_at,
+        project: deal.projects ? {
+          name: (deal.projects as any).name || 'Untitled Project',
+          description: (deal.projects as any).description,
+          campaign_type: (deal.projects as any).campaign_type || 'campaign',
+          start_date: (deal.projects as any).start_date,
+          end_date: (deal.projects as any).end_date,
+          brand_profile: (deal.projects as any).brand_profiles ? {
+            company_name: (deal.projects as any).brand_profiles.company_name || 'Unknown Brand',
+            logo_url: (deal.projects as any).brand_profiles.logo_url
+          } : undefined
+        } : undefined
+      }));
+
+      return transformedDeals;
     },
     enabled: !!user?.id
   });

@@ -63,7 +63,6 @@ const CreatorCampaigns = () => {
       } catch (error) {
         console.error('Error fetching campaigns:', error);
         toast({
-          title: 'Error',
           description: 'Failed to load campaigns',
           variant: 'destructive'
         });

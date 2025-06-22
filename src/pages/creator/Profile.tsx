@@ -4,7 +4,6 @@ import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { useCreatorProfile } from '@/hooks/useCreatorProfile';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
 import ProfileEditForm from '@/components/creator/ProfileEditForm';
-import CreatorProfileHeader from '@/components/creator/CreatorProfileHeader';
 import { Button } from '@/components/ui/button';
 import { Edit2 } from 'lucide-react';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -98,7 +97,41 @@ const CreatorProfile = () => {
               <p className="text-white text-center">Profile display temporarily unavailable</p>
             </div>
           )}>
-            <CreatorProfileHeader profile={profile} />
+            {profile && (
+              <div className="bg-card rounded-lg p-6 border border-border">
+                <div className="flex items-center space-x-4 mb-4">
+                  {profile.avatar_url && (
+                    <img 
+                      src={profile.avatar_url} 
+                      alt={`${profile.first_name} ${profile.last_name}`}
+                      className="w-16 h-16 rounded-full object-cover"
+                    />
+                  )}
+                  <div>
+                    <h2 className="text-xl font-semibold text-white">
+                      {profile.first_name} {profile.last_name}
+                    </h2>
+                    {profile.bio && (
+                      <p className="text-muted-foreground">{profile.bio}</p>
+                    )}
+                  </div>
+                </div>
+                
+                {profile.primary_platform && (
+                  <div className="mb-2">
+                    <span className="text-sm font-medium text-white">Primary Platform: </span>
+                    <span className="text-muted-foreground">{profile.primary_platform}</span>
+                  </div>
+                )}
+                
+                {profile.industries && profile.industries.length > 0 && (
+                  <div className="mb-2">
+                    <span className="text-sm font-medium text-white">Industries: </span>
+                    <span className="text-muted-foreground">{profile.industries.join(', ')}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </ErrorBoundary>
         </div>
       </CreatorLayout>
