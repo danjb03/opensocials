@@ -9,7 +9,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger 
 } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, Send, CheckCircle } from 'lucide-react';
+import { Check, Send, CheckCircle, Package } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 
 type OrderStatus = 'pending' | 'accepted' | 'declined' | 'completed';
@@ -69,8 +69,14 @@ const OrderManagement = () => {
   );
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <h1 className="text-2xl font-bold mb-6">Order Management</h1>
+    <div className="container mx-auto p-6 bg-background">
+      <div className="flex items-center gap-3 mb-6">
+        <Package className="h-8 w-8 text-foreground" />
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Order Management</h1>
+          <p className="text-muted-foreground">Track and manage campaign orders across the platform</p>
+        </div>
+      </div>
       
       <div className="mb-4">
         <Input
