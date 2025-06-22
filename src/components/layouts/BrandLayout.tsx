@@ -9,7 +9,8 @@ import {
   Menu, 
   X,
   Search,
-  Plus
+  Plus,
+  ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
@@ -22,7 +23,7 @@ const BrandLayout = ({ children }: { children?: React.ReactNode }) => {
   
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, brandProfile } = useUnifiedAuth();
+  const { user, brandProfile, role } = useUnifiedAuth();
 
   useEffect(() => {
     localStorage.setItem('brand-sidebar-open', JSON.stringify(isSidebarOpen));
@@ -91,6 +92,21 @@ const BrandLayout = ({ children }: { children?: React.ReactNode }) => {
             </Button>
           </div>
         </div>
+
+        {/* Super Admin Back Button */}
+        {role === 'super_admin' && isSidebarOpen && (
+          <div className="p-4 border-b border-border">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => navigate('/super_admin')}
+              className="w-full flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Super Admin
+            </Button>
+          </div>
+        )}
 
         {/* Quick Actions */}
         {isSidebarOpen && (
