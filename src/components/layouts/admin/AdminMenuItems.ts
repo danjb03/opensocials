@@ -1,49 +1,49 @@
 
-import { Home, Users, Settings, Shield, FileText, BarChart2, DollarSign, Bot, Network } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, Shield, FileText, BarChart2, DollarSign, Bot, Network, FolderOpen, UserCheck, MapPin } from 'lucide-react';
 
 export const getAdminMenuItems = (isActiveRoute: (path: string, exact?: boolean) => boolean, pendingCount: number) => [
   {
     title: "Dashboard",
     url: "/admin",
-    icon: Home,
+    icon: LayoutDashboard,
     isActive: isActiveRoute('/admin', true)
-  },
-  {
-    title: "User Management",
-    url: "/admin/users",
-    icon: Users,
-    isActive: isActiveRoute('/admin/users')
-  },
-  {
-    title: "CRM",
-    url: "/admin/crm",
-    icon: BarChart2,
-    isActive: isActiveRoute('/admin/crm')
-  },
-  {
-    title: "Projects",
-    url: "/admin/projects", 
-    icon: FileText,
-    isActive: isActiveRoute('/admin/projects')
   },
   {
     title: "Campaign Review",
     url: "/admin/campaign-review",
-    icon: Bot,
+    icon: FileText,
     isActive: isActiveRoute('/admin/campaign-review'),
-    notificationCount: pendingCount
+    notificationCount: pendingCount > 0 ? pendingCount : undefined
+  },
+  {
+    title: "User Management",
+    url: "/admin/user-management",
+    icon: Users,
+    isActive: isActiveRoute('/admin/user-management')
+  },
+  {
+    title: "Project Management",
+    url: "/admin/project-management",
+    icon: FolderOpen,
+    isActive: isActiveRoute('/admin/project-management')
+  },
+  {
+    title: "Order Management",
+    url: "/admin/order-management",
+    icon: UserCheck,
+    isActive: isActiveRoute('/admin/order-management')
+  },
+  {
+    title: "Platform Map",
+    url: "/admin/platform-map",
+    icon: MapPin,
+    isActive: isActiveRoute('/admin/platform-map')
   },
   {
     title: "Pricing Floors",
     url: "/admin/pricing-floors",
     icon: DollarSign,
     isActive: isActiveRoute('/admin/pricing-floors')
-  },
-  {
-    title: "Platform Map",
-    url: "/admin/platform-map",
-    icon: Network,
-    isActive: isActiveRoute('/admin/platform-map')
   },
   {
     title: "Security",
