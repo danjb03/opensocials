@@ -17,6 +17,7 @@ import AdminRoutes from './AdminRoutes';
 import BrandRoutes from './BrandRoutes';
 import { CreatorRoutes } from './CreatorRoutes';
 import { SuperAdminRoutes } from './SuperAdminRoutes';
+import AgencyRoutes from './AgencyRoutes';
 
 const AppRoutes = () => {
   const { user, role, brandProfile, creatorProfile, isLoading } = useUnifiedAuth();
@@ -83,6 +84,12 @@ const AppRoutes = () => {
       <Route path="/creator/*" element={
         <ProtectedRoute>
           <CreatorRoutes />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/agency/*" element={
+        <ProtectedRoute>
+          <AgencyRoutes />
         </ProtectedRoute>
       } />
 
