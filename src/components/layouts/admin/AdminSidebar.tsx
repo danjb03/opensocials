@@ -50,66 +50,69 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount = 0 }:
   const menuItems = getAdminMenuItems(isActiveRoute, pendingCount);
 
   return (
-    <Sidebar collapsible="icon" className="bg-black border-r border-gray-800">
-      <SidebarHeader className="px-6 py-6 flex items-center justify-start min-h-[80px] border-b border-gray-800">
-        <div className="flex items-center space-x-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:space-x-0">
-          <SidebarLogo />
-          <div className="group-data-[collapsible=icon]:hidden">
-            <h2 className="font-semibold text-white text-lg">OS Platform</h2>
-            <p className="text-sm text-gray-400">Admin Dashboard</p>
+    <Sidebar collapsible="icon" className="bg-card border-r border-border">
+      <SidebarHeader className="p-4 border-b border-border">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:space-x-0">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">OS</span>
+            </div>
+            <div className="group-data-[collapsible=icon]:hidden">
+              <h2 className="font-semibold text-foreground text-sm">OS Platform</h2>
+              <p className="text-xs text-muted-foreground">Admin Dashboard</p>
+            </div>
           </div>
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="px-4 py-4">
-        <SidebarGroup className="px-0">
-          <SidebarMenu className="space-y-2">
-            {menuItems.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton 
-                  asChild
-                  isActive={item.isActive}
-                  className={`h-auto min-h-[64px] py-4 px-4 rounded-xl transition-all duration-200 ${
-                    item.isActive 
-                      ? 'bg-gray-800 text-white' 
-                      : 'bg-transparent hover:bg-gray-800/50 text-gray-300 hover:text-white'
-                  }`}
-                  tooltip={item.title}
-                >
-                  <Link to={item.url} className="flex items-center gap-4 w-full">
-                    <item.icon className="h-6 w-6 flex-shrink-0" />
-                    <div className="flex flex-col items-start flex-1 group-data-[collapsible=icon]:hidden">
+      <SidebarContent>
+        <nav className="flex-1 p-4">
+          <ul className="space-y-2">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = item.isActive;
+              
+              return (
+                <li key={item.title}>
+                  <Button
+                    variant="ghost"
+                    onClick={() => navigate(item.url)}
+                    className={`w-full justify-start h-auto p-3 ${
+                      isActive 
+                        ? 'bg-accent text-accent-foreground' 
+                        : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                    }`}
+                  >
+                    <Icon className={`h-5 w-5 ${!isActive ? 'mr-3' : 'mr-3'} group-data-[collapsible=icon]:mr-0`} />
+                    <div className="text-left group-data-[collapsible=icon]:hidden">
                       <div className="flex items-center justify-between w-full">
-                        <span className="font-medium text-base">{item.title}</span>
+                        <div className="font-medium text-sm">{item.title}</div>
                         {item.notificationCount && item.notificationCount > 0 && (
-                          <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-medium min-w-[20px] text-center">
+                          <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-medium min-w-[20px] text-center ml-2">
                             {item.notificationCount}
                           </span>
                         )}
                       </div>
-                      <span className="text-sm text-gray-400 text-left mt-1">{item.description}</span>
+                      <div className="text-xs opacity-70">{item.description}</div>
                     </div>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarGroup>
+                  </Button>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
       </SidebarContent>
       
-      <SidebarFooter className="px-6 py-6 border-t border-gray-800">
-        <div className="text-sm text-gray-400 mb-4 truncate group-data-[collapsible=icon]:hidden">
-          <div className="font-medium text-white mb-1">Admin Account</div>
-          <div className="text-xs text-gray-400">{userEmail}</div>
+      <SidebarFooter className="p-4 border-t border-border group-data-[collapsible=icon]:hidden">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+            <span className="text-sm font-medium text-muted-foreground">A</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground truncate">Admin Account</p>
+            <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
+          </div>
         </div>
-        <Button 
-          variant="secondary" 
-          onClick={handleSignOut}
-          className="w-full h-12 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:p-0 rounded-xl bg-gray-800 hover:bg-gray-700 text-white border-0 font-medium"
-        >
-          <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
-          <LogOut className="hidden group-data-[collapsible=icon]:block h-4 w-4" />
-        </Button>
       </SidebarFooter>
     </Sidebar>
   );
