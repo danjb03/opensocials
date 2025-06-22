@@ -7,7 +7,7 @@ import { useCampaignFilters } from '@/hooks/creator/useCampaignFilters';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
 import CampaignTabs from '@/components/creator/campaigns/CampaignTabs';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 interface Campaign {
   id: string;
@@ -62,10 +62,7 @@ const CreatorCampaigns = () => {
         return formattedCampaigns;
       } catch (error) {
         console.error('Error fetching campaigns:', error);
-        toast({
-          description: 'Failed to load campaigns',
-          variant: 'destructive'
-        });
+        toast.error('Failed to load campaigns');
         return [];
       }
     },
