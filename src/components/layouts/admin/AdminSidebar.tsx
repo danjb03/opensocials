@@ -50,7 +50,7 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount = 0 }:
 
   return (
     <Sidebar collapsible="icon" className="bg-sidebar border-r border-sidebar-border">
-      <SidebarHeader className="p-4 flex items-center justify-start min-h-[80px] border-b border-sidebar-border">
+      <SidebarHeader className="px-4 py-4 flex items-center justify-start min-h-[80px] border-b border-sidebar-border">
         <div className="flex items-center space-x-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:space-x-0">
           <SidebarLogo />
           <div className="group-data-[collapsible=icon]:hidden">
@@ -60,7 +60,7 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount = 0 }:
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="px-2">
+      <SidebarContent className="px-4">
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.title}>
@@ -85,7 +85,7 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount = 0 }:
         </SidebarMenu>
       </SidebarContent>
       
-      <SidebarFooter className="p-4 border-t border-sidebar-border">
+      <SidebarFooter className="px-4 py-4 border-t border-sidebar-border">
         <div className="text-sm text-sidebar-foreground/70 mb-2 truncate group-data-[collapsible=icon]:hidden">
           {userEmail}
         </div>
