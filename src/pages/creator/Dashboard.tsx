@@ -6,6 +6,7 @@ import { CreatorIntroModal } from '@/components/creator/CreatorIntroModal';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { useCreatorProfile } from '@/hooks/useCreatorProfile';
 import { useCreatorIntro } from '@/hooks/creator/useCreatorIntro';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const Dashboard = () => {
   const { user, role, isLoading: authLoading } = useUnifiedAuth();
@@ -72,7 +73,7 @@ const Dashboard = () => {
     );
   }
 
-  // Show a message for super admins or users without creator profiles
+  // For super admins without creator profiles
   if (role === 'super_admin' && !profile) {
     return (
       <CreatorLayout>
@@ -90,7 +91,7 @@ const Dashboard = () => {
   }
 
   return (
-    <>
+    <ErrorBoundary>
       <CreatorLayout>
         <div className="container mx-auto p-6">
           <DashboardContent 
@@ -123,7 +124,7 @@ const Dashboard = () => {
           onClose={dismissIntro} 
         />
       )}
-    </>
+    </ErrorBoundary>
   );
 };
 
