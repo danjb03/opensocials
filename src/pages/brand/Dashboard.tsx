@@ -4,6 +4,7 @@ import DashboardHeader from '@/components/brand/dashboard/DashboardHeader';
 import StatsCards from '@/components/brand/dashboard/StatsCards';
 import TodoPanel from '@/components/brand/dashboard/TodoPanel';
 import RecentProjects from '@/components/brand/dashboard/RecentProjects';
+import QuickActions from '@/components/brand/dashboard/QuickActions';
 import { useBrandDashboard } from '@/hooks/useBrandDashboard';
 
 const BrandDashboard = () => {
@@ -49,7 +50,7 @@ const BrandDashboard = () => {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content - Recent Projects */}
+        {/* Main Content - Recent Projects - Full Width */}
         <div className="lg:col-span-2">
           <RecentProjects 
             projects={projects}
@@ -65,6 +66,11 @@ const BrandDashboard = () => {
             onViewAll={handleViewAllTodos}
           />
         </div>
+      </div>
+
+      {/* Action Items - Full Width Below Recent Campaigns */}
+      <div className="w-full">
+        <QuickActions />
       </div>
     </div>
   );
