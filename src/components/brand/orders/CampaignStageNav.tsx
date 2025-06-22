@@ -87,8 +87,8 @@ const CampaignStageNav: React.FC<CampaignStageNavProps> = ({
           </div>
         </div>
         
-        <div className="border-t bg-gray-50 flex justify-between p-4 mt-4">
-          <div className="text-sm text-gray-500">
+        <div className="border-t bg-black border-gray-800 flex justify-between p-4 mt-4">
+          <div className="text-sm text-gray-400">
             {getStageMessage()}
           </div>
         </div>
