@@ -1,57 +1,42 @@
 
+import React from 'react';
 import BrandLayout from '@/components/layouts/BrandLayout';
-import BrandDashboardStats from '@/components/brand/dashboard/BrandDashboardStats';
+import DashboardHeader from '@/components/brand/dashboard/DashboardHeader';
+import StatsCards from '@/components/brand/dashboard/StatsCards';
 import TodoPanel from '@/components/brand/dashboard/TodoPanel';
-import QuickActions from '@/components/brand/dashboard/QuickActions';
-import BrandCampaignTable from '@/components/brand/dashboard/BrandCampaignTable';
-import { BrandIntroModal } from '@/components/brand/BrandIntroModal';
+import RecentProjects from '@/components/brand/dashboard/RecentProjects';
 import { useBrandDashboard } from '@/hooks/useBrandDashboard';
-import { useUserDataSync } from '@/hooks/useUserDataSync';
-import { useBrandIntro } from '@/hooks/brand/useBrandIntro';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 
-const Dashboard = () => {
-  const { user, role, brandProfile: profile } = useUnifiedAuth();
+const BrandDashboard = () => {
   const navigate = useNavigate();
-  
-  console.log('Dashboard rendering for user:', user?.id, 'role:', role);
-  
-  // Initialize user data synchronization
-  const { refreshUserData } = useUserDataSync();
-  
-  // Brand intro modal logic
-  const { showIntro, isLoading: introLoading, dismissIntro } = useBrandIntro();
-  
-  const { 
+  const {
     isLoading,
-    projectStats,
-    todoItems
+    projects,
+    todoItems,
+    projectStats
   } = useBrandDashboard();
 
-  const handleBackToSuperAdmin = () => {
-    navigate('/super-admin');
+  const handleMarkTodoComplete = (todoId: string) => {
+    console.log('Marking todo as complete:', todoId);
+    // Todo: Implement todo completion logic
   };
 
-  console.log('Dashboard state:', { 
-    introLoading, 
-    isLoading, 
-    showIntro, 
-    projectStats,
-    todoItemsCount: todoItems?.length 
-  });
+  const handleViewAllTodos = () => {
+    console.log('Viewing all todos');
+    // Todo: Navigate to todos page or expand panel
+  };
 
-  // Show intro modal loading
-  if (introLoading) {
-    console.log('Showing intro loading state');
+  if (isLoading) {
     return (
       <BrandLayout>
-        <div className="min-h-screen bg-background">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="container mx-auto p-6 space-y-6">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-32 bg-gray-200 rounded"></div>
+              ))}
             </div>
           </div>
         </div>
@@ -60,85 +45,36 @@ const Dashboard = () => {
   }
 
   return (
-    <>
-      <BrandLayout>
-        <div className="min-h-screen bg-background">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {/* Header Section */}
-            <div className="flex items-start justify-between mb-8">
-              <div className="flex-1">
-                <div className="mb-6">
-                  <h1 className="text-3xl font-bold text-foreground mb-2">
-                    Welcome Back!
-                  </h1>
-                  <p className="text-lg text-foreground mb-4">
-                    Welcome back to your Brand Dashboard
-                  </p>
-                  
-                  <div className="max-w-3xl">
-                    <p className="text-base text-foreground leading-relaxed">
-                      Connect with top creators, manage campaigns seamlessly, and grow your brand's reach. 
-                      Your dashboard gives you complete control over your influencer marketing campaigns, 
-                      from discovery to delivery.
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Quick Actions */}
-                <QuickActions />
-              </div>
-              
-              {/* Show the back button if user is super admin */}
-              {role === 'super_admin' && (
-                <div className="ml-6">
-                  <Button 
-                    variant="outline" 
-                    onClick={handleBackToSuperAdmin} 
-                    className="flex items-center gap-2 bg-card shadow-sm hover:shadow-md transition-shadow border-border text-foreground"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to Super Admin
-                  </Button>
-                </div>
-              )}
-            </div>
+    <BrandLayout>
+      <div className="container mx-auto p-6 space-y-6 bg-background">
+        <DashboardHeader />
+        
+        <StatsCards 
+          stats={projectStats}
+          isLoading={isLoading}
+        />
 
-            {isLoading ? (
-              <div className="flex items-center justify-center h-64">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                  <p className="text-foreground">Loading dashboard...</p>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-8">
-                {/* Stats Section */}
-                <BrandDashboardStats 
-                  totalProjects={projectStats.totalProjects}
-                  activeProjects={projectStats.activeProjects}
-                  completedProjects={projectStats.completedProjects}
-                />
-                
-                {/* Main Content Sections */}
-                <div className="space-y-8">
-                  <BrandCampaignTable />
-                  
-                  {/* Todo Panel */}
-                  <TodoPanel todos={todoItems} />
-                </div>
-              </div>
-            )}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content - Recent Projects */}
+          <div className="lg:col-span-2">
+            <RecentProjects 
+              projects={projects}
+              isLoading={isLoading}
+            />
+          </div>
+
+          {/* Sidebar - Action Items */}
+          <div className="lg:col-span-1">
+            <TodoPanel 
+              todos={todoItems}
+              onMarkComplete={handleMarkTodoComplete}
+              onViewAll={handleViewAllTodos}
+            />
           </div>
         </div>
-      </BrandLayout>
-
-      {/* Brand Intro Modal */}
-      <BrandIntroModal 
-        isOpen={showIntro} 
-        onClose={dismissIntro} 
-      />
-    </>
+      </div>
+    </BrandLayout>
   );
 };
 
-export default Dashboard;
+export default BrandDashboard;

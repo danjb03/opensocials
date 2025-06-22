@@ -1,161 +1,184 @@
 
-import { memo, useMemo } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import SidebarLogo from "@/components/ui/sidebar-logo";
-import { Button } from "@/components/ui/button";
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { useBrandAuth } from '@/hooks/useUnifiedAuth';
-import { Home, Search, Package, Calendar, Settings, BarChart2, LogOut } from 'lucide-react';
-import Footer from './Footer';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-  SidebarInset,
-} from "@/components/ui/sidebar";
+import React, { useState, useEffect } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { 
+  LayoutDashboard, 
+  FolderOpen, 
+  Users, 
+  Settings, 
+  Menu, 
+  X,
+  Search,
+  Plus
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 
-interface BrandLayoutProps {
-  children: React.ReactNode;
-}
-
-const BrandLayout = memo(({ children }: BrandLayoutProps) => {
-  const { user, profile } = useBrandAuth();
+const BrandLayout = ({ children }: { children?: React.ReactNode }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('brand-sidebar-open');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  
   const navigate = useNavigate();
-  const { toast } = useToast();
   const location = useLocation();
+  const { user, brandProfile } = useUnifiedAuth();
 
-  const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      navigate('/');
-      toast({
-        title: "Signed out",
-        description: "You have been signed out successfully.",
-      });
-    } catch (error) {
-      console.error('Error signing out:', error);
-      toast({
-        title: "Error",
-        description: "There was an error signing out. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+  useEffect(() => {
+    localStorage.setItem('brand-sidebar-open', JSON.stringify(isSidebarOpen));
+  }, [isSidebarOpen]);
 
-  const isActiveRoute = useMemo(() => {
-    return (path: string, exact = false) => {
-      if (exact) {
-        return location.pathname === path;
-      }
-      return location.pathname.startsWith(path);
-    };
-  }, [location.pathname]);
-
-  const menuItems = [
-    {
-      title: "Dashboard",
-      url: "/brand",
-      icon: Home,
-      isActive: isActiveRoute('/brand', true)
+  const navigationItems = [
+    { 
+      name: 'Dashboard', 
+      href: '/brand/dashboard', 
+      icon: LayoutDashboard,
+      description: 'Overview and metrics'
     },
-    {
-      title: "Projects",
-      url: "/brand/projects",
-      icon: Calendar,
-      isActive: isActiveRoute('/brand/projects')
+    { 
+      name: 'Orders', 
+      href: '/brand/orders', 
+      icon: FolderOpen,
+      description: 'Campaign pipeline'
     },
-    {
-      title: "Find Creators",
-      url: "/brand/creators",
-      icon: Search,
-      isActive: isActiveRoute('/brand/creators')
+    { 
+      name: 'Creators', 
+      href: '/brand/creators', 
+      icon: Users,
+      description: 'Find and manage creators'
     },
-    {
-      title: "Campaigns",
-      url: "/brand/orders",
-      icon: Package,
-      isActive: isActiveRoute('/brand/orders')
-    },
-    {
-      title: "Analytics",
-      url: "/brand/analytics",
-      icon: BarChart2,
-      isActive: isActiveRoute('/brand/analytics')
-    },
-    {
-      title: "Profile Setup",
-      url: "/brand/setup-profile",
+    { 
+      name: 'Settings', 
+      href: '/brand/settings', 
       icon: Settings,
-      isActive: isActiveRoute('/brand/setup-profile')
+      description: 'Account preferences'
     }
   ];
 
-  return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <Sidebar collapsible="icon" className="bg-sidebar border-r border-sidebar-border">
-          <SidebarHeader className="p-4 flex items-center justify-center min-h-[80px]">
-            <SidebarLogo className="group-data-[collapsible=icon]:scale-75" />
-          </SidebarHeader>
-          
-          <SidebarContent className="px-4">
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={item.isActive}
-                    className="h-12 mr-2 hover:bg-accent hover:text-accent-foreground transition-colors"
-                    tooltip={item.title}
-                  >
-                    <Link to={item.url} className="flex items-center gap-3">
-                      <item.icon className="h-5 w-5" />
-                      <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarContent>
-          
-          <SidebarFooter className="p-4 border-t border-sidebar-border">
-            <div className="text-sm text-sidebar-foreground/70 mb-2 truncate group-data-[collapsible=icon]:hidden">
-              {profile?.company_name || user?.email}
-            </div>
-            <Button 
-              variant="default" 
-              onClick={handleSignOut}
-              className="w-full h-12 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:text-xs hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
-              <LogOut className="hidden group-data-[collapsible=icon]:block h-4 w-4" />
-            </Button>
-          </SidebarFooter>
-        </Sidebar>
-        
-        <SidebarInset className="flex flex-col">
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background px-4">
-            <SidebarTrigger className="text-foreground hover:bg-accent hover:text-accent-foreground transition-colors" />
-          </header>
-          
-          <main className="flex-1 overflow-auto">
-            {children}
-          </main>
-          
-          <Footer />
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
-  );
-});
+  const isActiveRoute = (href: string) => {
+    return location.pathname === href || location.pathname.startsWith(href + '/');
+  };
 
-BrandLayout.displayName = 'BrandLayout';
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  return (
+    <div className="min-h-screen bg-background flex w-full">
+      {/* Sidebar */}
+      <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} transition-all duration-300 bg-card border-r border-border flex flex-col`}>
+        {/* Header */}
+        <div className="p-4 border-b border-border">
+          <div className="flex items-center justify-between">
+            {isSidebarOpen && (
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-sm">OS</span>
+                </div>
+                <div>
+                  <h2 className="font-semibold text-foreground text-sm">OS Platform</h2>
+                  <p className="text-xs text-muted-foreground">Brand Dashboard</p>
+                </div>
+              </div>
+            )}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={toggleSidebar}
+              className="p-2 h-8 w-8"
+            >
+              {isSidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        {isSidebarOpen && (
+          <div className="p-4 border-b border-border">
+            <div className="space-y-2">
+              <Button 
+                onClick={() => navigate('/brand/create-campaign')}
+                className="w-full justify-start bg-primary text-primary-foreground hover:bg-primary/90"
+                size="sm"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create Campaign
+              </Button>
+              <Button 
+                onClick={() => navigate('/brand/creators')}
+                variant="outline" 
+                className="w-full justify-start"
+                size="sm"
+              >
+                <Search className="h-4 w-4 mr-2" />
+                Find Creators
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <nav className="flex-1 p-4">
+          <ul className="space-y-2">
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = isActiveRoute(item.href);
+              
+              return (
+                <li key={item.name}>
+                  <Button
+                    variant="ghost"
+                    onClick={() => navigate(item.href)}
+                    className={`w-full justify-start h-auto p-3 ${
+                      isActive 
+                        ? 'bg-accent text-accent-foreground' 
+                        : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                    }`}
+                  >
+                    <Icon className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : ''}`} />
+                    {isSidebarOpen && (
+                      <div className="text-left">
+                        <div className="font-medium text-sm">{item.name}</div>
+                        <div className="text-xs opacity-70">{item.description}</div>
+                      </div>
+                    )}
+                  </Button>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* User Profile */}
+        {isSidebarOpen && (
+          <div className="p-4 border-t border-border">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+                <span className="text-sm font-medium text-muted-foreground">
+                  {brandProfile?.company_name?.charAt(0) || user?.email?.charAt(0) || 'B'}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">
+                  {brandProfile?.company_name || 'Brand Account'}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user?.email}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <main className="flex-1 overflow-auto">
+          {children || <Outlet />}
+        </main>
+      </div>
+    </div>
+  );
+};
 
 export default BrandLayout;

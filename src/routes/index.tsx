@@ -1,78 +1,94 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
-import Index from "@/pages/Index";
-import AuthPage from "@/pages/auth";
-import ForgotPassword from "@/pages/auth/ForgotPassword";
-import DataDeletion from "@/pages/DataDeletion";
-import PrivacyPolicy from "@/pages/PrivacyPolicy";
-import TermsOfService from "@/pages/TermsOfService";
-import NotFound from "@/pages/NotFound";
-import AdminRoutes from "./AdminRoutes";
-import { BrandRoutes } from "./BrandRoutes";
-import { CreatorRoutes } from "./CreatorRoutes";
-import { SuperAdminRoutes } from "./SuperAdminRoutes";
-import AgencyRoutes from "./AgencyRoutes";
 
-// Protected route wrapper
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-  requiredRole?: string;
-}
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 
-export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
-  const { user, role, isLoading } = useUnifiedAuth();
+// Auth Components
+import AuthPage from '@/pages/auth/AuthPage';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
-  console.log('ProtectedRoute - User:', user?.id);
-  console.log('ProtectedRoute - Role:', role);
-  console.log('ProtectedRoute - Required Role:', requiredRole);
-  console.log('ProtectedRoute - Loading:', isLoading);
+// Setup Components
+import BrandSetup from '@/pages/setup/BrandSetup';
+import CreatorSetup from '@/pages/setup/CreatorSetup';
+
+// Route Components
+import AdminRoutes from './AdminRoutes';
+import BrandRoutes from './BrandRoutes';
+import CreatorRoutes from './CreatorRoutes';
+
+const AppRoutes = () => {
+  const { user, userRole, brandProfile, creatorProfile, isLoading } = useUnifiedAuth();
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
+  // Auth routes for non-authenticated users
   if (!user) {
-    console.log('ProtectedRoute - No user, redirecting to auth');
-    return <Navigate to="/auth" replace />;
+    return (
+      <Routes>
+        <Route path="/auth/*" element={<AuthPage />} />
+        <Route path="*" element={<Navigate to="/auth" replace />} />
+      </Routes>
+    );
   }
 
-  // Super admins can access any protected route regardless of the required role
-  if (role === 'super_admin') {
-    console.log('ProtectedRoute - Super admin access granted');
-    return <>{children}</>;
+  // Setup routes for users who need to complete their profiles
+  const needsBrandSetup = userRole === 'brand' && !brandProfile?.company_name;
+  const needsCreatorSetup = userRole === 'creator' && !creatorProfile?.first_name;
+
+  if (needsBrandSetup) {
+    return (
+      <Routes>
+        <Route path="/setup/brand" element={<BrandSetup />} />
+        <Route path="*" element={<Navigate to="/setup/brand" replace />} />
+      </Routes>
+    );
   }
 
-  // For non-super-admin users, check if they have the required role
-  if (requiredRole && role !== requiredRole) {
-    console.log('ProtectedRoute - Role mismatch, redirecting to home');
-    return <Navigate to="/" replace />;
+  if (needsCreatorSetup) {
+    return (
+      <Routes>
+        <Route path="/setup/creator" element={<CreatorSetup />} />
+        <Route path="*" element={<Navigate to="/setup/creator" replace />} />
+      </Routes>
+    );
   }
 
-  return <>{children}</>;
-};
-
-export const AppRoutes = () => {
+  // Main application routes
   return (
     <Routes>
-      {/* Public routes */}
-      <Route path="/" element={<Index />} />
-      <Route path="/auth" element={<AuthPage />} />
-      <Route path="/auth/reset-password" element={<ForgotPassword />} />
-      <Route path="/data-deletion" element={<DataDeletion />} />
-      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-      <Route path="/tos" element={<TermsOfService />} />
+      {/* Redirect root to appropriate dashboard */}
+      <Route path="/" element={<Navigate to={`/${userRole}/dashboard`} replace />} />
       
-      {/* Super Admin routes - Must come BEFORE other role-based routes */}
-      <Route path="/super-admin/*" element={<SuperAdminRoutes />} />
+      {/* Role-based routes */}
+      <Route path="/admin/*" element={
+        <ProtectedRoute>
+          <AdminRoutes />
+        </ProtectedRoute>
+      } />
       
-      {/* Other role-based routes */}
-      <Route path="/admin/*" element={<AdminRoutes />} />
-      <Route path="/agency/*" element={<AgencyRoutes />} />
-      <Route path="/brand/*" element={<BrandRoutes />} />
-      <Route path="/creator/*" element={<CreatorRoutes />} />
+      <Route path="/brand/*" element={
+        <ProtectedRoute>
+          <BrandRoutes />
+        </ProtectedRoute>
+      } />
       
-      {/* Catch all */}
-      <Route path="*" element={<NotFound />} />
+      <Route path="/creator/*" element={
+        <ProtectedRoute>
+          <CreatorRoutes />
+        </ProtectedRoute>
+      } />
+
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to={`/${userRole}/dashboard`} replace />} />
     </Routes>
   );
 };
+
+export default AppRoutes;

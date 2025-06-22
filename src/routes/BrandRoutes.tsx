@@ -1,100 +1,29 @@
 
-import { Routes, Route } from "react-router-dom";
-import { ProtectedRoute } from "./index";
-import BrandGuard from "@/components/BrandGuard";
-import SetupProfile from "@/pages/brand/SetupProfile";
-import BrandDashboard from "@/pages/brand/Dashboard";
-import Projects from "@/pages/brand/Projects";
-import CreatorSearch from "@/pages/brand/CreatorSearch";
-import BrandOrders from "@/pages/brand/Orders";
-import ProjectView from '@/pages/brand/ProjectView';
-import EditCampaign from '@/pages/brand/EditCampaign';
-import ManageBudget from '@/pages/brand/ManageBudget';
-import CampaignAnalytics from '@/pages/brand/CampaignAnalytics';
-import CampaignAnalyticsList from '@/pages/brand/CampaignAnalyticsList';
-import CampaignWizard from '@/components/brand/campaign-wizard/CampaignWizard';
-import CampaignStatus from '@/pages/brand/CampaignStatus';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import BrandGuard from '@/components/auth/BrandGuard';
+import BrandLayout from '@/components/layouts/BrandLayout';
+import BrandDashboard from '@/pages/brand/Dashboard';
+import BrandOrders from '@/pages/brand/Orders';
+import BrandCreators from '@/pages/brand/Creators';
+import BrandSettings from '@/pages/brand/Settings';
+import CreateCampaign from '@/pages/brand/CreateCampaign';
 
-export const BrandRoutes = () => {
+const BrandRoutes = () => {
   return (
-    <Routes>
-      {/* Brand Setup Route */}
-      <Route 
-        path="setup-profile" 
-        element={
-          <ProtectedRoute requiredRole="brand">
-            <SetupProfile />
-          </ProtectedRoute>
-        } 
-      />
-      
-      {/* Brand Dashboard Routes */}
-      <Route path="" element={<BrandGuard><BrandDashboard /></BrandGuard>} />
-      <Route path="projects" element={<BrandGuard><Projects /></BrandGuard>} />
-      <Route path="creators" element={<BrandGuard><CreatorSearch /></BrandGuard>} />
-      <Route path="orders" element={<BrandGuard><BrandOrders /></BrandGuard>} />
-      
-      {/* New Campaign Status Route */}
-      <Route 
-        path="campaign-status" 
-        element={
-          <BrandGuard>
-            <CampaignStatus />
-          </BrandGuard>
-        } 
-      />
-      
-      {/* New Campaign Wizard */}
-      <Route 
-        path="create-campaign" 
-        element={
-          <BrandGuard>
-            <CampaignWizard />
-          </BrandGuard>
-        } 
-      />
-      
-      {/* Brand Project Routes with Regular Brand Guard */}
-      <Route 
-        path="projects/:id" 
-        element={
-          <BrandGuard>
-            <ProjectView />
-          </BrandGuard>
-        } 
-      />
-      <Route 
-        path="projects/edit/:id" 
-        element={
-          <BrandGuard>
-            <EditCampaign />
-          </BrandGuard>
-        } 
-      />
-      <Route 
-        path="projects/budget/:id" 
-        element={
-          <BrandGuard>
-            <ManageBudget />
-          </BrandGuard>
-        } 
-      />
-      <Route 
-        path="projects/analytics/:id" 
-        element={
-          <BrandGuard>
-            <CampaignAnalytics />
-          </BrandGuard>
-        } 
-      />
-      <Route 
-        path="analytics" 
-        element={
-          <BrandGuard>
-            <CampaignAnalyticsList />
-          </BrandGuard>
-        } 
-      />
-    </Routes>
+    <BrandGuard>
+      <Routes>
+        <Route path="/" element={<BrandLayout />}>
+          <Route index element={<BrandDashboard />} />
+          <Route path="dashboard" element={<BrandDashboard />} />
+          <Route path="orders" element={<BrandOrders />} />
+          <Route path="creators" element={<BrandCreators />} />
+          <Route path="settings" element={<BrandSettings />} />
+          <Route path="create-campaign" element={<CreateCampaign />} />
+        </Route>
+      </Routes>
+    </BrandGuard>
   );
 };
+
+export default BrandRoutes;
