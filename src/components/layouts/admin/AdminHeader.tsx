@@ -1,31 +1,18 @@
 
 import { memo } from 'react';
-import { Link } from 'react-router-dom';
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 
 interface AdminHeaderProps {
-  role: string;
+  role?: string;
 }
 
 const AdminHeader = memo(({ role }: AdminHeaderProps) => {
-  const { role: userRole } = useUnifiedAuth();
-  const isSuperAdmin = userRole === 'super_admin';
-
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border bg-background px-4">
-      <SidebarTrigger className="text-foreground hover:bg-accent hover:text-accent-foreground transition-colors" />
-      
-      {isSuperAdmin && (
-        <Link to="/super-admin">
-          <Button variant="outline" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Super Admin
-          </Button>
-        </Link>
-      )}
+    <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background px-4">
+      <SidebarTrigger className="-ml-1" />
+      <div className="flex items-center gap-2">
+        <h1 className="text-lg font-semibold text-foreground">Admin Dashboard</h1>
+      </div>
     </header>
   );
 });

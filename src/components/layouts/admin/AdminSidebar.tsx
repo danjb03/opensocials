@@ -3,10 +3,9 @@ import { memo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import SidebarLogo from "@/components/ui/sidebar-logo";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { LogOut } from 'lucide-react';
+import { LogOut, LayoutDashboard, Users, FileText, FolderOpen, UserCheck, Settings, Shield, MapPin, DollarSign } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -16,16 +15,15 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { getAdminMenuItems } from './AdminMenuItems';
 
 interface AdminSidebarProps {
   userEmail?: string;
   role: string;
   isActiveRoute: (path: string, exact?: boolean) => boolean;
-  pendingCount: number;
+  pendingCount?: number;
 }
 
-const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount }: AdminSidebarProps) => {
+const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount = 0 }: AdminSidebarProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -47,12 +45,76 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount }: Adm
     }
   };
 
-  const menuItems = getAdminMenuItems(isActiveRoute, pendingCount);
+  const menuItems = [
+    {
+      title: 'Dashboard',
+      url: '/admin',
+      icon: LayoutDashboard,
+      isActive: isActiveRoute('/admin', true)
+    },
+    {
+      title: 'Campaign Review',
+      url: '/admin/campaign-review',
+      icon: FileText,
+      isActive: isActiveRoute('/admin/campaign-review'),
+      badge: pendingCount > 0 ? pendingCount : undefined
+    },
+    {
+      title: 'User Management',
+      url: '/admin/user-management',
+      icon: Users,
+      isActive: isActiveRoute('/admin/user-management')
+    },
+    {
+      title: 'Project Management',
+      url: '/admin/project-management',
+      icon: FolderOpen,
+      isActive: isActiveRoute('/admin/project-management')
+    },
+    {
+      title: 'Order Management',
+      url: '/admin/order-management',
+      icon: UserCheck,
+      isActive: isActiveRoute('/admin/order-management')
+    },
+    {
+      title: 'Platform Map',
+      url: '/admin/platform-map',
+      icon: MapPin,
+      isActive: isActiveRoute('/admin/platform-map')
+    },
+    {
+      title: 'Pricing Floors',
+      url: '/admin/pricing-floors',
+      icon: DollarSign,
+      isActive: isActiveRoute('/admin/pricing-floors')
+    },
+    {
+      title: 'Security',
+      url: '/admin/security',
+      icon: Shield,
+      isActive: isActiveRoute('/admin/security')
+    },
+    {
+      title: 'Settings',
+      url: '/admin/settings',
+      icon: Settings,
+      isActive: isActiveRoute('/admin/settings')
+    }
+  ];
 
   return (
-    <Sidebar collapsible="icon" className="bg-sidebar border-r border-sidebar-border">
-      <SidebarHeader className="p-4 flex items-center justify-center min-h-[80px]">
-        <SidebarLogo className="group-data-[collapsible=icon]:scale-75" />
+    <Sidebar collapsible="icon" className="bg-card border-r border-border">
+      <SidebarHeader className="p-4 flex items-center justify-center min-h-[80px] border-b border-border">
+        <div className="flex items-center space-x-3 group-data-[collapsible=icon]:justify-center">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <span className="text-primary-foreground font-bold text-sm">OS</span>
+          </div>
+          <div className="group-data-[collapsible=icon]:hidden">
+            <h2 className="font-semibold text-foreground text-sm">OS Platform</h2>
+            <p className="text-xs text-muted-foreground">Admin Dashboard</p>
+          </div>
+        </div>
       </SidebarHeader>
       
       <SidebarContent className="px-4">
@@ -65,16 +127,13 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount }: Adm
                 className="h-12 mr-2 hover:bg-accent hover:text-accent-foreground transition-colors"
                 tooltip={item.title}
               >
-                <Link to={item.url} className="flex items-center gap-3 w-full relative">
+                <Link to={item.url} className="flex items-center gap-3 w-full">
                   <item.icon className="h-5 w-5" />
                   <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
-                  {item.notificationCount && item.notificationCount > 0 && (
-                    <Badge 
-                      variant="destructive" 
-                      className="ml-auto h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:top-0 group-data-[collapsible=icon]:right-0 group-data-[collapsible=icon]:-translate-y-1 group-data-[collapsible=icon]:translate-x-1"
-                    >
-                      {item.notificationCount}
-                    </Badge>
+                  {item.badge && (
+                    <span className="ml-auto bg-destructive text-destructive-foreground text-xs rounded-full px-2 py-1 group-data-[collapsible=icon]:hidden">
+                      {item.badge}
+                    </span>
                   )}
                 </Link>
               </SidebarMenuButton>
@@ -83,8 +142,8 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount }: Adm
         </SidebarMenu>
       </SidebarContent>
       
-      <SidebarFooter className="p-4 border-t border-sidebar-border">
-        <div className="text-sm text-sidebar-foreground/70 mb-2 truncate group-data-[collapsible=icon]:hidden">
+      <SidebarFooter className="p-4 border-t border-border">
+        <div className="text-sm text-muted-foreground mb-2 truncate group-data-[collapsible=icon]:hidden">
           {userEmail}
         </div>
         <Button 
