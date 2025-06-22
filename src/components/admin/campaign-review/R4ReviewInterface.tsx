@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { Bot, Send, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CampaignForReview {
   id: string;
@@ -75,12 +76,10 @@ Provide your recommendation: APPROVE, REJECT, or NEEDS_REVISION with detailed re
     setIsLoading(true);
 
     try {
-      const response = await fetch('/supabase/functions/v1/r4-campaign-review', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      console.log('🤖 Starting R4 review for campaign:', campaign.id);
+      
+      const { data, error } = await supabase.functions.invoke('r4-campaign-review', {
+        body: {
           messages: [
             {
               role: 'system',
@@ -88,14 +87,20 @@ Provide your recommendation: APPROVE, REJECT, or NEEDS_REVISION with detailed re
             },
             newMessage
           ]
-        })
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to get R4 response');
+      if (error) {
+        console.error('❌ Supabase function error:', error);
+        throw new Error(`Function error: ${error.message}`);
       }
 
-      const data = await response.json();
+      if (!data?.success) {
+        console.error('❌ Function returned error:', data);
+        throw new Error(data?.error || 'Unknown function error');
+      }
+
+      console.log('✅ R4 response received:', data);
       
       const assistantMessage: ChatMessage = {
         role: 'assistant',
@@ -105,10 +110,10 @@ Provide your recommendation: APPROVE, REJECT, or NEEDS_REVISION with detailed re
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Error getting R4 review:', error);
+      console.error('❌ Error getting R4 review:', error);
       const errorMessage: ChatMessage = {
         role: 'assistant',
-        content: 'Sorry, I encountered an error while reviewing this campaign. Please try again.',
+        content: `Sorry, I encountered an error while reviewing this campaign: ${error instanceof Error ? error.message : 'Unknown error'}. Please check the console for more details and try again.`,
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -131,12 +136,10 @@ Provide your recommendation: APPROVE, REJECT, or NEEDS_REVISION with detailed re
     setIsLoading(true);
 
     try {
-      const response = await fetch('/supabase/functions/v1/r4-campaign-review', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      console.log('💬 Sending follow-up message to R4');
+      
+      const { data, error } = await supabase.functions.invoke('r4-campaign-review', {
+        body: {
           messages: [
             {
               role: 'system',
@@ -145,14 +148,20 @@ Provide your recommendation: APPROVE, REJECT, or NEEDS_REVISION with detailed re
             ...messages.map(msg => ({ role: msg.role, content: msg.content })),
             userMessage
           ]
-        })
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to get R4 response');
+      if (error) {
+        console.error('❌ Supabase function error:', error);
+        throw new Error(`Function error: ${error.message}`);
       }
 
-      const data = await response.json();
+      if (!data?.success) {
+        console.error('❌ Function returned error:', data);
+        throw new Error(data?.error || 'Unknown function error');
+      }
+
+      console.log('✅ R4 follow-up response received');
       
       const assistantMessage: ChatMessage = {
         role: 'assistant',
@@ -162,10 +171,10 @@ Provide your recommendation: APPROVE, REJECT, or NEEDS_REVISION with detailed re
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Error sending message to R4:', error);
+      console.error('❌ Error sending message to R4:', error);
       const errorMessage: ChatMessage = {
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: `Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`,
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -193,9 +202,18 @@ Provide your recommendation: APPROVE, REJECT, or NEEDS_REVISION with detailed re
               <p className="text-muted-foreground mb-4">
                 Start an R4 review session for this campaign
               </p>
-              <Button onClick={startR4Review} className="gap-2">
-                <Bot className="h-4 w-4" />
-                Start R4 Review
+              <Button onClick={startR4Review} className="gap-2" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Starting R4 Review...
+                  </>
+                ) : (
+                  <>
+                    <Bot className="h-4 w-4" />
+                    Start R4 Review
+                  </>
+                )}
               </Button>
             </div>
           ) : (
