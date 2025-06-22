@@ -13,6 +13,7 @@ export const SuperAdminRoutes = () => {
       <SuperAdminLayout>
         <Routes>
           <Route index element={<SuperAdminDashboard />} />
+          <Route path="dashboard" element={<SuperAdminDashboard />} />
           <Route path="users/agencies" element={<Agencies />} />
           <Route path="users/brands" element={<Brands />} />
           <Route path="users/creators" element={<Creators />} />

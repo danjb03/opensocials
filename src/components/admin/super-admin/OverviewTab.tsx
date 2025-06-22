@@ -16,7 +16,7 @@ const OverviewTab = () => {
         <CardContent>
           <Button 
             variant="secondary" 
-            onClick={() => navigate('/super-admin/users/agencies')} 
+            onClick={() => navigate('/super_admin/users/agencies')} 
             className="w-full"
           >
             View All Agencies
@@ -32,7 +32,7 @@ const OverviewTab = () => {
         <CardContent>
           <Button 
             variant="secondary" 
-            onClick={() => navigate('/super-admin/users/brands')} 
+            onClick={() => navigate('/super_admin/users/brands')} 
             className="w-full"
           >
             View All Brands
@@ -48,7 +48,7 @@ const OverviewTab = () => {
         <CardContent>
           <Button 
             variant="secondary" 
-            onClick={() => navigate('/super-admin/users/creators')} 
+            onClick={() => navigate('/super_admin/users/creators')} 
             className="w-full"
           >
             View All Creators

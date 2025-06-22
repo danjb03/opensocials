@@ -5,7 +5,7 @@ import SidebarLogo from "@/components/ui/sidebar-logo";
 import { Button } from "@/components/ui/button";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, LayoutDashboard, Users, Settings, Award } from 'lucide-react';
+import { LogOut, LayoutDashboard, Users } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -47,27 +47,27 @@ const SuperAdminSidebar = memo(({ userEmail, role, isActiveRoute }: SuperAdminSi
   const menuItems = [
     {
       title: 'Overview',
-      url: '/super-admin',
+      url: '/super_admin',
       icon: LayoutDashboard,
-      isActive: isActiveRoute('/super-admin', true)
+      isActive: isActiveRoute('/super_admin', true)
     },
     {
       title: 'Agencies',
-      url: '/super-admin/users/agencies',
+      url: '/super_admin/users/agencies',
       icon: Users,
-      isActive: isActiveRoute('/super-admin/users/agencies')
+      isActive: isActiveRoute('/super_admin/users/agencies')
     },
     {
       title: 'Brands',
-      url: '/super-admin/users/brands',
+      url: '/super_admin/users/brands',
       icon: Users,
-      isActive: isActiveRoute('/super-admin/users/brands')
+      isActive: isActiveRoute('/super_admin/users/brands')
     },
     {
       title: 'Creators',
-      url: '/super-admin/users/creators',
+      url: '/super_admin/users/creators',
       icon: Users,
-      isActive: isActiveRoute('/super-admin/users/creators')
+      isActive: isActiveRoute('/super_admin/users/creators')
     }
   ];
 

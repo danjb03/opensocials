@@ -34,11 +34,13 @@ const SuperAdminLayout = memo(({ children }: SuperAdminLayoutProps) => {
           isActiveRoute={isActiveRoute}
         />
         
-        <SidebarInset className="flex flex-col">
+        <SidebarInset className="flex flex-col flex-1">
           <SuperAdminHeader role={role} />
           
           <main className="flex-1 overflow-auto p-6 bg-background">
-            {children}
+            <div className="max-w-7xl mx-auto">
+              {children}
+            </div>
           </main>
           
           <Footer />
