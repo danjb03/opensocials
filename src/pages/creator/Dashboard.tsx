@@ -14,14 +14,25 @@ const Dashboard = () => {
 
   const isLoading = authLoading || profileLoading || introLoading;
 
+  console.log('Creator Dashboard Debug:', {
+    user: !!user,
+    role,
+    profile: !!profile,
+    isLoading,
+    authLoading,
+    profileLoading,
+    introLoading,
+    profileError
+  });
+
   if (isLoading) {
     return (
       <CreatorLayout>
         <div className="container mx-auto p-6">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <div className="w-8 h-8 border-t-2 border-b-2 border-primary rounded-full animate-spin mx-auto mb-4"></div>
-              <p>Loading your dashboard...</p>
+              <div className="w-8 h-8 border-t-2 border-b-2 border-white rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-white">Loading your dashboard...</p>
             </div>
           </div>
         </div>
@@ -36,8 +47,8 @@ const Dashboard = () => {
         <div className="container mx-auto p-6">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <div className="w-8 h-8 border-t-2 border-b-2 border-primary rounded-full animate-spin mx-auto mb-4"></div>
-              <p>Authenticating...</p>
+              <div className="w-8 h-8 border-t-2 border-b-2 border-white rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-white">Authenticating...</p>
             </div>
           </div>
         </div>
@@ -68,7 +79,7 @@ const Dashboard = () => {
         <div className="container mx-auto p-6">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <h2 className="text-xl font-semibold mb-2">Creator Dashboard Preview</h2>
+              <h2 className="text-xl font-semibold mb-2 text-white">Creator Dashboard Preview</h2>
               <p className="text-muted-foreground">You are viewing the creator dashboard as a super admin.</p>
               <p className="text-sm text-muted-foreground mt-2">Create a creator profile to see the full dashboard experience.</p>
             </div>
@@ -84,9 +95,9 @@ const Dashboard = () => {
         <div className="container mx-auto p-6">
           <DashboardContent 
             profile={profile}
-            isLoading={isLoading}
+            isLoading={false}
             isEditing={false}
-            isPreviewMode={true}
+            isPreviewMode={role === 'super_admin'}
             totalEarnings={0}
             pipelineValue={0}
             connectionStats={{

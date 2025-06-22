@@ -50,12 +50,20 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   onCancelEdit,
   onStartProfileSetup,
 }) => {
+  console.log('DashboardContent Debug:', {
+    profile: !!profile,
+    isLoading,
+    isEditing,
+    isPreviewMode,
+    profileComplete: profile?.isProfileComplete
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="w-8 h-8 border-t-2 border-b-2 border-primary rounded-full animate-spin mx-auto mb-4"></div>
-          <p>Loading your profile...</p>
+          <div className="w-8 h-8 border-t-2 border-b-2 border-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white">Loading your profile...</p>
         </div>
       </div>
     );
