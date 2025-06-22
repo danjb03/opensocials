@@ -65,8 +65,16 @@ export const useBrandDashboard = () => {
 
         // Add todos for incomplete project drafts (from wizard)
         projectDrafts?.forEach(draft => {
-          const draftData = draft.draft_data || {};
-          const campaignName = draftData.name || 'Untitled Campaign';
+          const draftData = draft.draft_data;
+          let campaignName = 'Untitled Campaign';
+          
+          // Safely access the name property from the JSON data
+          if (draftData && typeof draftData === 'object' && !Array.isArray(draftData) && 'name' in draftData) {
+            const name = (draftData as { name?: string }).name;
+            if (typeof name === 'string' && name.trim()) {
+              campaignName = name;
+            }
+          }
           
           allTodos.push({
             id: `todo-draft-wizard-${draft.id}`,
