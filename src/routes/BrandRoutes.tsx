@@ -12,16 +12,16 @@ import CreateCampaign from '@/pages/brand/CreateCampaign';
 const BrandRoutes = () => {
   return (
     <BrandGuard>
-      <Routes>
-        <Route path="/" element={<BrandLayout />}>
+      <BrandLayout>
+        <Routes>
           <Route index element={<BrandDashboard />} />
           <Route path="dashboard" element={<BrandDashboard />} />
           <Route path="orders" element={<BrandOrders />} />
           <Route path="creators" element={<BrandCreators />} />
           <Route path="settings" element={<BrandSettings />} />
           <Route path="create-campaign" element={<CreateCampaign />} />
-        </Route>
-      </Routes>
+        </Routes>
+      </BrandLayout>
     </BrandGuard>
   );
 };
