@@ -1,43 +1,73 @@
 
-import React from 'react';
-import BrandLayout from '@/components/layouts/BrandLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Search, Users } from 'lucide-react';
+import React, { useState } from 'react';
+import CreatorSearchHeader from '@/components/brand/creator-search/CreatorSearchHeader';
+import CreatorSearchFilters from '@/components/brand/creator-search/CreatorSearchFilters';
+import CreatorSearchResults from '@/components/brand/creator-search/CreatorSearchResults';
+import CreatorSearchModals from '@/components/brand/creator-search/CreatorSearchModals';
+import { useCreatorSearch } from '@/hooks/useCreatorSearch';
+import { Creator } from '@/types/creator';
 
 const BrandCreators = () => {
-  return (
-    <BrandLayout>
-      <div className="container mx-auto p-6 bg-background">
-        <div className="mb-6">
-          <h1 className="text-3xl font-light text-foreground mb-2">Creators</h1>
-          <p className="text-muted-foreground">Find and manage creator partnerships</p>
-        </div>
+  const {
+    creators,
+    isLoading,
+    searchTerm,
+    filters,
+    selectedCreators,
+    favoriteCreators,
+    showProfileModal,
+    showFavoritesModal,
+    selectedCreatorId,
+    viewMode,
+    handleSearchChange,
+    handleFilterChange,
+    handleCreatorSelect,
+    handleCreatorToggle,
+    handleProfileModalClose,
+    handleFavoritesModalToggle,
+    handleViewModeChange,
+    handleFavoriteToggle,
+    handleClearFavorites
+  } = useCreatorSearch();
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-foreground">
-              <Users className="h-5 w-5" />
-              Creator Directory
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-12">
-              <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">
-                Creator Search Coming Soon
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                We're building an amazing creator discovery experience for you.
-              </p>
-              <Button variant="outline">
-                Get Notified When Ready
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </BrandLayout>
+  return (
+    <div className="container mx-auto p-6 bg-background">
+      <CreatorSearchHeader 
+        selectedCount={selectedCreators.length}
+        favoriteCount={favoriteCreators.length}
+        onShowFavorites={handleFavoritesModalToggle}
+      />
+      
+      <CreatorSearchFilters 
+        searchTerm={searchTerm}
+        filters={filters}
+        onSearchChange={handleSearchChange}
+        onFilterChange={handleFilterChange}
+      />
+      
+      <CreatorSearchResults 
+        creators={creators}
+        isLoading={isLoading}
+        selectedCreators={selectedCreators}
+        favoriteCreators={favoriteCreators}
+        viewMode={viewMode}
+        onCreatorSelect={handleCreatorSelect}
+        onCreatorToggle={handleCreatorToggle}
+        onViewModeChange={handleViewModeChange}
+        onFavoriteToggle={handleFavoriteToggle}
+      />
+      
+      <CreatorSearchModals 
+        showProfileModal={showProfileModal}
+        showFavoritesModal={showFavoritesModal}
+        selectedCreatorId={selectedCreatorId}
+        favoriteCreators={favoriteCreators}
+        onProfileModalClose={handleProfileModalClose}
+        onFavoritesModalClose={handleFavoritesModalToggle}
+        onClearFavorites={handleClearFavorites}
+        onFavoriteToggle={handleFavoriteToggle}
+      />
+    </div>
   );
 };
 

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
-import BrandLayout from '@/components/layouts/BrandLayout';
 import OrdersPipeline from '@/components/brand/orders/OrdersPipeline';
 import CampaignDetail from '@/components/brand/orders/CampaignDetail';
 import OrdersHeader from '@/components/brand/orders/OrdersHeader';
@@ -79,31 +78,29 @@ const BrandOrders = () => {
   }
 
   return (
-    <BrandLayout>
-      <div className="container mx-auto p-6 bg-background text-foreground">
-        <OrdersHeader />
-        
-        <OrdersSearch 
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
+    <div className="container mx-auto p-6 bg-background text-foreground">
+      <OrdersHeader />
+      
+      <OrdersSearch 
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+      />
+      
+      {selectedOrder ? (
+        <CampaignDetail 
+          order={selectedOrder} 
+          onClose={handleCloseProjectDetail}
+          onMoveStage={handleMoveStageWrapper}
         />
-        
-        {selectedOrder ? (
-          <CampaignDetail 
-            order={selectedOrder} 
-            onClose={handleCloseProjectDetail}
-            onMoveStage={handleMoveStageWrapper}
-          />
-        ) : (
-          <OrdersPipeline 
-            orders={filteredOrders}
-            activeStage={activeStage}
-            onStageChange={handleStageChange}
-            onOrderSelect={handleProjectSelect}
-          />
-        )}
-      </div>
-    </BrandLayout>
+      ) : (
+        <OrdersPipeline 
+          orders={filteredOrders}
+          activeStage={activeStage}
+          onStageChange={handleStageChange}
+          onOrderSelect={handleProjectSelect}
+        />
+      )}
+    </div>
   );
 };
 
