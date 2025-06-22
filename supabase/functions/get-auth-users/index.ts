@@ -13,7 +13,7 @@ const corsHeaders = {
 
 async function validateSuperAdmin(supabase: any, token: string) {
   try {
-    console.log('Validating admin access...');
+    console.log('🔍 Validating admin access...');
     
     const {
       data: { user },
@@ -21,11 +21,11 @@ async function validateSuperAdmin(supabase: any, token: string) {
     } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
-      console.error('Auth validation failed:', authError?.message);
+      console.error('❌ Auth validation failed:', authError?.message);
       return { isValid: false, status: 401, message: "Authentication failed" };
     }
 
-    console.log('User authenticated, checking role for user:', user.id);
+    console.log('✅ User authenticated, checking role for user:', user.id);
 
     // First try user_roles table (primary source)
     const { data: userRoles, error: userRoleError } = await supabase
@@ -35,12 +35,12 @@ async function validateSuperAdmin(supabase: any, token: string) {
       .eq("status", "approved");
 
     if (!userRoleError && userRoles && userRoles.length > 0) {
-      console.log('Found user roles in user_roles table:', userRoles);
+      console.log('✅ Found user roles in user_roles table:', userRoles);
       const adminRole = userRoles.find(role => 
         role.role === "super_admin" || role.role === "admin"
       );
       if (adminRole) {
-        console.log('Admin validation successful via user_roles for user:', user.id);
+        console.log('✅ Admin validation successful via user_roles for user:', user.id, 'role:', adminRole.role);
         return { isValid: true, userId: user.id };
       }
     }
@@ -52,49 +52,53 @@ async function validateSuperAdmin(supabase: any, token: string) {
       .eq("id", user.id);
 
     if (profileError) {
-      console.error('Profile fetch error:', profileError.message);
-      console.log('Trying auth metadata fallback...');
+      console.error('❌ Profile fetch error:', profileError.message);
     } else {
-      console.log('Profiles found:', profiles);
+      console.log('📋 Profiles found:', profiles);
       const adminProfile = profiles?.find(p => p.role === "super_admin" || p.role === "admin");
       
       if (adminProfile) {
-        console.log('Admin validation successful via profiles for user:', user.id, 'role:', adminProfile.role);
+        console.log('✅ Admin validation successful via profiles for user:', user.id, 'role:', adminProfile.role);
         return { isValid: true, userId: user.id };
       }
     }
 
     // Final fallback: check auth metadata for known super admin
     if (user.user_metadata?.role === "super_admin" || user.user_metadata?.role === "admin") {
-      console.log('Admin validation successful via auth metadata for user:', user.id);
+      console.log('✅ Admin validation successful via auth metadata for user:', user.id);
       return { isValid: true, userId: user.id };
     }
 
     // Special case for known super admin user ID
     if (user.id === 'af6ad2ce-be6c-4620-a440-867c52d66918') {
-      console.log('Admin validation successful for known super admin user:', user.id);
+      console.log('✅ Admin validation successful for known super admin user:', user.id);
       return { isValid: true, userId: user.id };
     }
 
-    console.log('User does not have admin role. User ID:', user.id);
+    console.log('❌ User does not have admin role. User ID:', user.id);
     return { isValid: false, status: 403, message: "Unauthorized: Admin access required" };
     
   } catch (err) {
-    console.error('Admin validation error:', err);
+    console.error('❌ Admin validation error:', err);
     return { isValid: false, status: 500, message: `Authentication error: ${err.message}` };
   }
 }
 
 Deno.serve(async (req) => {
+  console.log('🚀 Edge function get-auth-users called');
+  console.log('📨 Request method:', req.method);
+  console.log('🌐 Request URL:', req.url);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('✅ Handling CORS preflight request');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      console.error('No authorization header provided');
+      console.error('❌ No authorization header provided');
       return new Response(
         JSON.stringify({ error: 'Authorization header required' }),
         { status: 401, headers: corsHeaders }
@@ -102,6 +106,7 @@ Deno.serve(async (req) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
+    console.log('🔑 Token extracted, length:', token.length);
     
     // Create admin client with service role key
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
@@ -115,7 +120,7 @@ Deno.serve(async (req) => {
     const supabaseUser = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!);
     const validation = await validateSuperAdmin(supabaseUser, token);
     if (!validation.isValid) {
-      console.error('Admin validation failed:', validation.message);
+      console.error('❌ Admin validation failed:', validation.message);
       return new Response(
         JSON.stringify({ error: validation.message }),
         { status: validation.status, headers: corsHeaders }
@@ -123,6 +128,7 @@ Deno.serve(async (req) => {
     }
 
     if (req.method !== 'POST') {
+      console.error('❌ Invalid method:', req.method);
       return new Response(
         JSON.stringify({ error: 'Method not allowed' }),
         { status: 405, headers: corsHeaders }
@@ -131,7 +137,7 @@ Deno.serve(async (req) => {
 
     const { page = 1, per_page = 50 } = await req.json();
 
-    console.log(`Admin ${validation.userId} fetching auth users - page: ${page}, per_page: ${per_page}`);
+    console.log(`🔍 Admin ${validation.userId} fetching auth users - page: ${page}, per_page: ${per_page}`);
 
     // Get users from auth.users table using admin client
     const { data, error } = await supabaseAdmin.auth.admin.listUsers({
@@ -140,14 +146,14 @@ Deno.serve(async (req) => {
     });
 
     if (error) {
-      console.error('Error fetching auth users:', error);
+      console.error('❌ Error fetching auth users:', error);
       return new Response(
         JSON.stringify({ error: `Failed to fetch users: ${error.message}` }),
         { status: 500, headers: corsHeaders }
       );
     }
 
-    console.log(`Successfully fetched ${data.users?.length || 0} users (total: ${data.total || 0})`);
+    console.log(`✅ Successfully fetched ${data.users?.length || 0} users (total: ${data.total || 0})`);
 
     const response = {
       users: data.users || [],
@@ -160,7 +166,7 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in get-auth-users function:', error);
+    console.error('❌ Error in get-auth-users function:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error', details: error.message }),
       { status: 500, headers: corsHeaders }
