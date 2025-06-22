@@ -83,10 +83,10 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   return (
     <div className="space-y-6">
       {/* Welcome Message */}
-      <WelcomeSection firstName={profile?.firstName} />
+      <WelcomeSection firstName={profile?.firstName || profile?.first_name} />
       
-      {/* Social Media Analytics - Moved to top */}
-      <CreatorAnalyticsProfile />
+      {/* Social Media Analytics - Only show if profile exists */}
+      {profile && <CreatorAnalyticsProfile />}
       
       {/* Stats Overview */}
       <DashboardStats 

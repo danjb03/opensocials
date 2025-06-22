@@ -3,12 +3,12 @@ import React from 'react';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
 import DashboardContent from '@/components/creator/dashboard/DashboardContent';
 import { CreatorIntroModal } from '@/components/creator/CreatorIntroModal';
-import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { useCreatorProfile } from '@/hooks/useCreatorProfile';
 import { useCreatorIntro } from '@/hooks/creator/useCreatorIntro';
 
 const Dashboard = () => {
-  const { user, isLoading: authLoading } = useCreatorAuth();
+  const { user, role, isLoading: authLoading } = useUnifiedAuth();
   const { profile, isLoading: profileLoading, error: profileError } = useCreatorProfile();
   const { showIntro, isLoading: introLoading, dismissIntro } = useCreatorIntro();
 
@@ -61,6 +61,23 @@ const Dashboard = () => {
     );
   }
 
+  // Show a message for super admins or users without creator profiles
+  if (role === 'super_admin' && !profile) {
+    return (
+      <CreatorLayout>
+        <div className="container mx-auto p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold mb-2">Creator Dashboard Preview</h2>
+              <p className="text-muted-foreground">You are viewing the creator dashboard as a super admin.</p>
+              <p className="text-sm text-muted-foreground mt-2">Create a creator profile to see the full dashboard experience.</p>
+            </div>
+          </div>
+        </div>
+      </CreatorLayout>
+    );
+  }
+
   return (
     <>
       <CreatorLayout>
@@ -69,7 +86,7 @@ const Dashboard = () => {
             profile={profile}
             isLoading={isLoading}
             isEditing={false}
-            isPreviewMode={false}
+            isPreviewMode={true}
             totalEarnings={0}
             pipelineValue={0}
             connectionStats={{
@@ -88,11 +105,13 @@ const Dashboard = () => {
         </div>
       </CreatorLayout>
 
-      {/* Creator Intro Modal */}
-      <CreatorIntroModal 
-        isOpen={showIntro} 
-        onClose={dismissIntro} 
-      />
+      {/* Creator Intro Modal - only show for actual creators */}
+      {profile && (
+        <CreatorIntroModal 
+          isOpen={showIntro} 
+          onClose={dismissIntro} 
+        />
+      )}
     </>
   );
 };
