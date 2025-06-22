@@ -87,9 +87,9 @@ const AgencyLayout = memo(({ children }: AgencyLayoutProps) => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <Sidebar collapsible="icon" className="bg-sidebar border-r border-sidebar-border">
-          <SidebarHeader className="p-4 flex items-center justify-center min-h-[80px]">
+      <div className="min-h-screen flex w-full bg-background">
+        <Sidebar collapsible="icon" className="border-r border-border bg-background">
+          <SidebarHeader className="p-4 flex items-center justify-center min-h-[80px] border-b border-border">
             <SidebarLogo className="group-data-[collapsible=icon]:scale-75" />
           </SidebarHeader>
           
@@ -100,7 +100,7 @@ const AgencyLayout = memo(({ children }: AgencyLayoutProps) => {
                   <SidebarMenuButton 
                     asChild 
                     isActive={item.isActive}
-                    className="h-12 mr-2 hover:bg-accent hover:text-accent-foreground transition-colors"
+                    className="h-12 mr-2 hover:bg-accent hover:text-accent-foreground transition-colors data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
                     tooltip={item.title}
                   >
                     <Link to={item.url}>
@@ -113,12 +113,12 @@ const AgencyLayout = memo(({ children }: AgencyLayoutProps) => {
             </SidebarMenu>
           </SidebarContent>
           
-          <SidebarFooter className="p-4 border-t border-sidebar-border">
-            <div className="text-sm text-sidebar-foreground/70 mb-2 truncate group-data-[collapsible=icon]:hidden">
+          <SidebarFooter className="p-4 border-t border-border">
+            <div className="text-sm text-muted-foreground mb-2 truncate group-data-[collapsible=icon]:hidden">
               {user?.email}
             </div>
             <Button 
-              variant="default" 
+              variant="secondary" 
               onClick={handleSignOut}
               className="w-full h-12 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:text-xs hover:bg-accent hover:text-accent-foreground transition-colors"
             >
@@ -128,7 +128,7 @@ const AgencyLayout = memo(({ children }: AgencyLayoutProps) => {
           </SidebarFooter>
         </Sidebar>
         
-        <SidebarInset className="flex flex-col">
+        <SidebarInset className="flex flex-col flex-1">
           <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background px-4">
             <SidebarTrigger className="text-foreground hover:bg-accent hover:text-accent-foreground transition-colors" />
             {role === 'super_admin' && (
