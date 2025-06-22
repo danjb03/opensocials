@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Order } from '@/types/orders';
@@ -20,7 +21,7 @@ const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({ order }) => {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <p className="text-sm text-gray-500 mb-1">Budget</p>
+            <p className="text-sm text-white mb-1">Budget</p>
             <p className="font-semibold text-lg text-white">${order.budget.toLocaleString()}</p>
           </div>
           
@@ -55,3 +56,4 @@ const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({ order }) => {
 };
 
 export default CampaignDetailView;
+
