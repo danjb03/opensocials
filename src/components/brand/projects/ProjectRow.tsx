@@ -1,5 +1,6 @@
 
 import { TableRow, TableCell } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { Project, ProjectStatus } from '@/types/projects';
 import { formatCurrency } from '@/utils/project';
 import { ProjectStatusBadge } from './ProjectStatusBadge';
@@ -49,9 +50,9 @@ export const ProjectRow = ({
       </TableCell>
       <TableCell>
         <div className="flex items-center">
-          <div className="bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+          <Badge className="!bg-blue-600 !text-white border-blue-600 font-semibold px-3 py-1.5">
             Assignment Pending
-          </div>
+          </Badge>
         </div>
       </TableCell>
       <TableCell>
