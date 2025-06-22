@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Order } from '@/types/orders';
@@ -14,7 +12,7 @@ const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({ order }) => {
       <div className="p-6 space-y-5">
         <div className="pb-4">
           <h2 className="text-2xl font-semibold text-white">{order.title}</h2>
-          <p className="text-gray-400 mt-2">
+          <p className="text-white mt-2">
             {order.description || 'No description provided'}
           </p>
         </div>
@@ -56,4 +54,3 @@ const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({ order }) => {
 };
 
 export default CampaignDetailView;
-
