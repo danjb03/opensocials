@@ -60,9 +60,9 @@ const BrandSidebarNavigation = ({ isSidebarOpen }: BrandSidebarNavigationProps) 
               <Button
                 variant="ghost"
                 onClick={() => navigate(item.href)}
-                className={`w-full justify-start h-auto p-3 ${
+                className={`w-full justify-start h-auto p-3 rounded-lg ${
                   isActive 
-                    ? 'bg-accent text-accent-foreground' 
+                    ? 'bg-white text-black hover:bg-white hover:text-black' 
                     : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                 }`}
               >
