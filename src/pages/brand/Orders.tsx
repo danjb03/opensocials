@@ -36,8 +36,8 @@ const BrandOrders = () => {
   const handleProjectSelect = (projectId: string) => {
     const project = orders.find(order => order.id === projectId);
     
-    // If project is in draft status, redirect to campaign wizard
-    if (project && project.stage === 'campaign_setup' && project.status === 'draft') {
+    // If project is in campaign_setup stage (draft), redirect to campaign wizard
+    if (project && project.stage === 'campaign_setup') {
       console.log('Draft campaign detected, redirecting to wizard:', projectId);
       navigate(`/brand/create-campaign?draftId=${projectId}`);
       return;
