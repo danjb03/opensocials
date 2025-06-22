@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Order } from '@/types/orders';
@@ -44,7 +43,7 @@ const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({ order }) => {
         </div>
         
         <div>
-          <p className="text-sm text-gray-500 mb-1">Status</p>
+          <p className="text-sm text-white mb-1">Status</p>
           <Badge variant="outline" className="px-3 py-1 bg-blue-600 text-white border-blue-600 capitalize">
             {order.stage.replace('_', ' ')}
           </Badge>
