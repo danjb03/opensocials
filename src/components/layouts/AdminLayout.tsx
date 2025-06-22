@@ -1,18 +1,13 @@
 
 import { memo, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Outlet } from 'react-router-dom';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { usePendingCampaignReviews } from '@/hooks/admin/usePendingCampaignReviews';
 import Footer from './Footer';
 import AdminSidebar from './admin/AdminSidebar';
-import AdminHeader from './admin/AdminHeader';
-import {
-  SidebarProvider,
-  SidebarInset,
-} from "@/components/ui/sidebar";
 
 interface AdminLayoutProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 const AdminLayout = memo(({ children }: AdminLayoutProps) => {
@@ -30,26 +25,22 @@ const AdminLayout = memo(({ children }: AdminLayoutProps) => {
   }, [location.pathname]);
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AdminSidebar 
-          userEmail={user?.email}
-          role={role}
-          isActiveRoute={isActiveRoute}
-          pendingCount={pendingCount}
-        />
+    <div className="min-h-screen bg-background flex w-full">
+      <AdminSidebar 
+        userEmail={user?.email}
+        role={role}
+        isActiveRoute={isActiveRoute}
+        pendingCount={pendingCount}
+      />
+      
+      <div className="flex-1 flex flex-col min-w-0">
+        <main className="flex-1 overflow-auto">
+          {children || <Outlet />}
+        </main>
         
-        <SidebarInset className="flex flex-col">
-          <AdminHeader role={role} />
-          
-          <main className="flex-1 overflow-auto">
-            {children}
-          </main>
-          
-          <Footer />
-        </SidebarInset>
+        <Footer />
       </div>
-    </SidebarProvider>
+    </div>
   );
 });
 
