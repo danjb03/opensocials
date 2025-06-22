@@ -11,35 +11,27 @@ const BrandCreators = () => {
     setSearchTerm,
     filterPlatform,
     setFilterPlatform,
-    filterIndustry,
-    setFilterIndustry,
-    filterRelevance,
-    setFilterRelevance,
     selectedCreators,
-    setSelectedCreators,
-    viewMode,
-    setViewMode,
-    favoriteCreators,
-    setFavoriteCreators,
-    showProfileModal,
-    setShowProfileModal,
-    showFavoritesModal,
-    setShowFavoritesModal,
-    selectedCreatorId,
-    setSelectedCreatorId
+    handleToggleCreator
   } = useCreatorSearch();
+
+  // Local state for features not provided by the hook
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [favoriteCreators, setFavoriteCreators] = useState<string[]>([]);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showFavoritesModal, setShowFavoritesModal] = useState(false);
+  const [selectedCreatorId, setSelectedCreatorId] = useState<string | null>(null);
 
   const handleCreatorSelect = (creatorId: string) => {
     setSelectedCreatorId(creatorId);
     setShowProfileModal(true);
   };
 
-  const handleCreatorToggle = (creatorId: string) => {
-    setSelectedCreators(prev => 
-      prev.includes(creatorId) 
-        ? prev.filter(id => id !== creatorId)
-        : [...prev, creatorId]
-    );
+  const handleCreatorToggleLocal = (creatorId: string) => {
+    const creator = creators.find(c => c.id.toString() === creatorId);
+    if (creator) {
+      handleToggleCreator(creator);
+    }
   };
 
   const handleFavoriteToggle = (creatorId: string) => {
@@ -112,7 +104,7 @@ const BrandCreators = () => {
               <div
                 key={creator.id}
                 className="p-4 bg-card rounded-lg border hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => handleCreatorSelect(creator.id)}
+                onClick={() => handleCreatorSelect(creator.id.toString())}
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
@@ -122,35 +114,35 @@ const BrandCreators = () => {
                   </div>
                   <div>
                     <h3 className="font-medium text-foreground">{creator.name || 'Creator'}</h3>
-                    <p className="text-sm text-muted-foreground">{creator.email}</p>
+                    <p className="text-sm text-muted-foreground">{creator.platform}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleCreatorToggle(creator.id);
+                      handleCreatorToggleLocal(creator.id.toString());
                     }}
                     className={`px-3 py-1 text-xs rounded ${
-                      selectedCreators.includes(creator.id)
+                      selectedCreators.some(c => c.id === creator.id)
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted text-muted-foreground'
                     }`}
                   >
-                    {selectedCreators.includes(creator.id) ? 'Selected' : 'Select'}
+                    {selectedCreators.some(c => c.id === creator.id) ? 'Selected' : 'Select'}
                   </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleFavoriteToggle(creator.id);
+                      handleFavoriteToggle(creator.id.toString());
                     }}
                     className={`px-3 py-1 text-xs rounded ${
-                      favoriteCreators.includes(creator.id)
+                      favoriteCreators.includes(creator.id.toString())
                         ? 'bg-red-500 text-white'
                         : 'bg-muted text-muted-foreground'
                     }`}
                   >
-                    {favoriteCreators.includes(creator.id) ? 'Favorited' : 'Favorite'}
+                    {favoriteCreators.includes(creator.id.toString()) ? 'Favorited' : 'Favorite'}
                   </button>
                 </div>
               </div>
@@ -200,11 +192,11 @@ const BrandCreators = () => {
                 ) : (
                   <div className="space-y-2">
                     {favoriteCreators.map(creatorId => {
-                      const creator = creators.find(c => c.id === creatorId);
+                      const creator = creators.find(c => c.id.toString() === creatorId);
                       return creator ? (
                         <div key={creatorId} className="p-3 bg-muted rounded-lg">
                           <p className="font-medium">{creator.name || 'Creator'}</p>
-                          <p className="text-sm text-muted-foreground">{creator.email}</p>
+                          <p className="text-sm text-muted-foreground">{creator.platform}</p>
                         </div>
                       ) : null;
                     })}
