@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -55,7 +54,7 @@ export const useCampaignActions = (
       platforms: draftData.brief_data?.platform_destination || [],
       deliverables: draftData.deliverables || {},
       status: status,
-      review_status: status === 'active' ? 'pending_review' : 'draft',
+      review_status: 'pending_review', // Always use pending_review for new campaigns
       current_step: currentStep
     };
 
