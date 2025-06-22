@@ -50,8 +50,8 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount = 0 }:
 
   return (
     <Sidebar collapsible="icon" className="bg-sidebar border-r border-sidebar-border">
-      <SidebarHeader className="p-4 flex items-center justify-center min-h-[80px] border-b border-sidebar-border">
-        <div className="flex items-center space-x-3 group-data-[collapsible=icon]:justify-center">
+      <SidebarHeader className="p-4 flex items-center justify-start min-h-[80px] border-b border-sidebar-border">
+        <div className="flex items-center space-x-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:space-x-0">
           <SidebarLogo />
           <div className="group-data-[collapsible=icon]:hidden">
             <h2 className="font-semibold text-sidebar-foreground text-sm">OS Platform</h2>
@@ -60,14 +60,14 @@ const AdminSidebar = memo(({ userEmail, role, isActiveRoute, pendingCount = 0 }:
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="px-4">
+      <SidebarContent className="px-2">
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton 
                 asChild
                 isActive={item.isActive}
-                className="h-12 mr-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground"
+                className="h-12 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground"
                 tooltip={item.title}
               >
                 <Link to={item.url} className="flex items-center gap-3 w-full">
