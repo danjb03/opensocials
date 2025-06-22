@@ -6,7 +6,7 @@ import {
   LayoutDashboard, 
   FolderOpen, 
   Users, 
-  Settings 
+  BarChart3 
 } from 'lucide-react';
 
 interface AgencySidebarNavigationProps {
@@ -31,16 +31,16 @@ const AgencySidebarNavigation = ({ isSidebarOpen }: AgencySidebarNavigationProps
       description: 'Campaign pipeline'
     },
     { 
-      name: 'Creators', 
-      href: '/agency/crm/creators', 
+      name: 'User Management', 
+      href: '/agency/users', 
       icon: Users,
-      description: 'Find and manage creators'
+      description: 'Manage agency users'
     },
     { 
-      name: 'Settings', 
-      href: '/agency/settings', 
-      icon: Settings,
-      description: 'Account preferences'
+      name: 'CRM', 
+      href: '/agency/crm', 
+      icon: BarChart3,
+      description: 'Customer relations'
     }
   ];
 
