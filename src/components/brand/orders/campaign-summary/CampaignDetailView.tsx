@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Order } from '@/types/orders';
@@ -24,7 +25,7 @@ const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({ order }) => {
           </div>
           
           <div>
-            <p className="text-sm text-gray-500 mb-1">Platforms</p>
+            <p className="text-sm text-white mb-1">Platforms</p>
             <div className="flex flex-wrap gap-2 mt-1">
               {order.platformsList && order.platformsList.length > 0 ? (
                 order.platformsList.map((platform) => (
