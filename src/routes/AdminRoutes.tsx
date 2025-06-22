@@ -31,9 +31,12 @@ const AdminRoutes = () => {
             <Routes>
               <Route index element={<AdminDashboard />} />
               <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="user-management" element={<UserManagement />} />
               <Route path="users" element={<UserManagement />} />
               <Route path="invite" element={<InviteUsers />} />
+              <Route path="project-management" element={<ProjectManagement />} />
               <Route path="projects" element={<ProjectManagement />} />
+              <Route path="order-management" element={<OrderManagement />} />
               <Route path="orders" element={<OrderManagement />} />
               <Route path="campaign-review" element={<CampaignReview />} />
               <Route path="pricing-floors" element={<PricingFloors />} />
