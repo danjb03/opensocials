@@ -11,7 +11,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-async function validateSuperAdmin(supabase: any, token: string) {
+async function validateAdminAccess(supabase: any, token: string) {
   try {
     console.log('🔍 Validating admin access...');
     
@@ -27,7 +27,7 @@ async function validateSuperAdmin(supabase: any, token: string) {
 
     console.log('✅ User authenticated, checking role for user:', user.id);
 
-    // First try user_roles table (primary source)
+    // Check user_roles table first (primary source)
     const { data: userRoles, error: userRoleError } = await supabase
       .from("user_roles")
       .select("role, status")
@@ -35,13 +35,13 @@ async function validateSuperAdmin(supabase: any, token: string) {
       .eq("status", "approved");
 
     if (!userRoleError && userRoles && userRoles.length > 0) {
-      console.log('✅ Found user roles in user_roles table:', userRoles);
+      console.log('✅ Found user roles:', userRoles);
       const adminRole = userRoles.find(role => 
         role.role === "super_admin" || role.role === "admin"
       );
       if (adminRole) {
-        console.log('✅ Admin validation successful via user_roles for user:', user.id, 'role:', adminRole.role);
-        return { isValid: true, userId: user.id };
+        console.log('✅ Admin validation successful via user_roles:', adminRole.role);
+        return { isValid: true, userId: user.id, role: adminRole.role };
       }
     }
 
@@ -51,28 +51,19 @@ async function validateSuperAdmin(supabase: any, token: string) {
       .select("role")
       .eq("id", user.id);
 
-    if (profileError) {
-      console.error('❌ Profile fetch error:', profileError.message);
-    } else {
-      console.log('📋 Profiles found:', profiles);
-      const adminProfile = profiles?.find(p => p.role === "super_admin" || p.role === "admin");
-      
-      if (adminProfile) {
-        console.log('✅ Admin validation successful via profiles for user:', user.id, 'role:', adminProfile.role);
-        return { isValid: true, userId: user.id };
+    if (!profileError && profiles && profiles.length > 0) {
+      console.log('📋 Profile found:', profiles[0]);
+      const profile = profiles[0];
+      if (profile.role === "super_admin" || profile.role === "admin") {
+        console.log('✅ Admin validation successful via profiles:', profile.role);
+        return { isValid: true, userId: user.id, role: profile.role };
       }
-    }
-
-    // Final fallback: check auth metadata for known super admin
-    if (user.user_metadata?.role === "super_admin" || user.user_metadata?.role === "admin") {
-      console.log('✅ Admin validation successful via auth metadata for user:', user.id);
-      return { isValid: true, userId: user.id };
     }
 
     // Special case for known super admin user ID
     if (user.id === 'af6ad2ce-be6c-4620-a440-867c52d66918') {
       console.log('✅ Admin validation successful for known super admin user:', user.id);
-      return { isValid: true, userId: user.id };
+      return { isValid: true, userId: user.id, role: 'super_admin' };
     }
 
     console.log('❌ User does not have admin role. User ID:', user.id);
@@ -116,9 +107,11 @@ Deno.serve(async (req) => {
       }
     });
 
-    // Validate admin access using the user's token
+    // Create user client for validation
     const supabaseUser = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!);
-    const validation = await validateSuperAdmin(supabaseUser, token);
+    
+    // Validate admin access
+    const validation = await validateAdminAccess(supabaseUser, token);
     if (!validation.isValid) {
       console.error('❌ Admin validation failed:', validation.message);
       return new Response(
@@ -137,7 +130,7 @@ Deno.serve(async (req) => {
 
     const { page = 1, per_page = 50 } = await req.json();
 
-    console.log(`🔍 Admin ${validation.userId} fetching auth users - page: ${page}, per_page: ${per_page}`);
+    console.log(`🔍 Admin ${validation.userId} (${validation.role}) fetching auth users - page: ${page}, per_page: ${per_page}`);
 
     // Get users from auth.users table using admin client
     const { data, error } = await supabaseAdmin.auth.admin.listUsers({

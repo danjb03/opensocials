@@ -5,10 +5,11 @@ import DeleteUserModal from '@/components/admin/DeleteUserModal';
 import UserManagementHeader from '@/components/admin/user-management/UserManagementHeader';
 import UserSearchCard from '@/components/admin/user-management/UserSearchCard';
 import UserLoadingState from '@/components/admin/user-management/UserLoadingState';
-import UserErrorState from '@/components/admin/user-management/UserErrorState';
 import UserTable from '@/components/admin/user-management/UserTable';
 import UserPagination from '@/components/admin/user-management/UserPagination';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { Button } from '@/components/ui/button';
+import { RefreshCw } from 'lucide-react';
 
 interface AuthUser {
   id: string;
@@ -30,7 +31,7 @@ const UserManagement = () => {
 
   const { user, role } = useUnifiedAuth();
   const perPage = 50;
-  const { data: authUsersData, isLoading, error } = useAuthUsers(currentPage, perPage);
+  const { data: authUsersData, isLoading, error, refetch } = useAuthUsers(currentPage, perPage);
 
   console.log('👤 UserManagement render:', {
     currentUser: user?.id,
@@ -38,7 +39,9 @@ const UserManagement = () => {
     isLoading,
     hasError: !!error,
     errorMessage: error?.message,
-    hasData: !!authUsersData
+    hasData: !!authUsersData,
+    dataUsersCount: authUsersData?.users?.length || 0,
+    totalUsers: authUsersData?.total || 0
   });
 
   const users = authUsersData?.users || [];
@@ -68,6 +71,11 @@ const UserManagement = () => {
     setSelectedUserEmail(undefined);
   };
 
+  const handleRefresh = () => {
+    console.log('🔄 Manually refreshing user data...');
+    refetch();
+  };
+
   // Show access denied for non-admin users
   if (role !== 'admin' && role !== 'super_admin') {
     return (
@@ -90,6 +98,20 @@ const UserManagement = () => {
         onSearchChange={setSearchTerm}
       />
 
+      {/* Refresh Button */}
+      <div className="mb-4 flex justify-end">
+        <Button 
+          onClick={handleRefresh}
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-2"
+          disabled={isLoading}
+        >
+          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
+      </div>
+
       {isLoading && <UserLoadingState />}
 
       {error && (
@@ -101,6 +123,14 @@ const UserManagement = () => {
             <p><strong>Current Role:</strong> {role}</p>
             <p><strong>Error Type:</strong> {error.constructor?.name}</p>
           </div>
+          <Button 
+            onClick={handleRefresh}
+            variant="outline"
+            size="sm"
+            className="mt-4"
+          >
+            Try Again
+          </Button>
         </div>
       )}
 
