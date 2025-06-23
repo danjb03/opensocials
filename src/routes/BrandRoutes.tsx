@@ -7,7 +7,7 @@ import BrandDashboard from '@/pages/brand/Dashboard';
 import BrandOrders from '@/pages/brand/Orders';
 import BrandCreators from '@/pages/brand/Creators';
 import BrandSettings from '@/pages/brand/Settings';
-import CreateCampaign from '@/pages/brand/CreateCampaign';
+import CampaignWizard from '@/components/brand/campaign-wizard/CampaignWizard';
 
 const BrandRoutes = () => {
   return (
@@ -19,7 +19,7 @@ const BrandRoutes = () => {
           <Route path="orders" element={<BrandOrders />} />
           <Route path="creators" element={<BrandCreators />} />
           <Route path="settings" element={<BrandSettings />} />
-          <Route path="create-campaign" element={<CreateCampaign />} />
+          <Route path="create-campaign" element={<CampaignWizard />} />
         </Routes>
       </BrandLayout>
     </BrandGuard>

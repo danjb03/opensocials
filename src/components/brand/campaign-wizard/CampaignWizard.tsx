@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { CampaignWizardData, CampaignStep, CAMPAIGN_STEPS } from '@/types/campaignWizard';
 import { useCampaignDraft } from '@/hooks/useCampaignDraft';
@@ -14,7 +15,10 @@ interface CampaignWizardProps {
   onComplete?: (projectId: string) => void;
 }
 
-const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) => {
+const CampaignWizard: React.FC<CampaignWizardProps> = ({ onComplete }) => {
+  const [searchParams] = useSearchParams();
+  const draftId = searchParams.get('draftId') || undefined;
+  
   const { 
     formData, 
     updateFormData, 
@@ -80,42 +84,40 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ draftId, onComplete }) 
   };
 
   return (
-    <BrandLayout>
-      <div className="min-h-screen bg-background py-8">
-        <div className="max-w-4xl mx-auto px-4">
-          <CampaignWizardHeader
-            currentStep={currentStep}
-            totalSteps={CAMPAIGN_STEPS.length}
-            isSaving={isSaving}
-            lastSaveTime={lastSaveTime}
-            onSaveAndExit={handleSaveAndExit}
-          />
+    <div className="min-h-screen bg-background py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        <CampaignWizardHeader
+          currentStep={currentStep}
+          totalSteps={CAMPAIGN_STEPS.length}
+          isSaving={isSaving}
+          lastSaveTime={lastSaveTime}
+          onSaveAndExit={handleSaveAndExit}
+        />
 
-          <StepIndicators steps={steps} />
+        <StepIndicators steps={steps} />
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentStep}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="mt-8"
-            >
-              <StepRenderer
-                currentStep={currentStep}
-                formData={formData}
-                isDraftLoading={isDraftLoading}
-                onComplete={handleStepCompleteWithNavigation}
-                onBack={handlePreviousStep}
-                onLaunch={handleFinalSubmit}
-                isSubmitting={isSubmitting}
-              />
-            </motion.div>
-          </AnimatePresence>
-        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="mt-8"
+          >
+            <StepRenderer
+              currentStep={currentStep}
+              formData={formData}
+              isDraftLoading={isDraftLoading}
+              onComplete={handleStepCompleteWithNavigation}
+              onBack={handlePreviousStep}
+              onLaunch={handleFinalSubmit}
+              isSubmitting={isSubmitting}
+            />
+          </motion.div>
+        </AnimatePresence>
       </div>
-    </BrandLayout>
+    </div>
   );
 };
 
