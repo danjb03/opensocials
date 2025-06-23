@@ -109,7 +109,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   };
   
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="w-full">
       <CampaignStageNav 
         currentStageIndex={currentStageIndex}
         stages={stages}
