@@ -8,6 +8,9 @@ import LoadingSpinner from '@/components/ui/loading-spinner';
 import AuthPage from '@/pages/auth/index';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
+// Public Components
+import Index from '@/pages/Index';
+
 // Setup Components
 import BrandSetup from '@/pages/setup/BrandSetup';
 import CreatorSetup from '@/pages/setup/CreatorSetup';
@@ -27,16 +30,6 @@ const AppRoutes = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <LoadingSpinner />
       </div>
-    );
-  }
-
-  // Auth routes for non-authenticated users
-  if (!user) {
-    return (
-      <Routes>
-        <Route path="/auth/*" element={<AuthPage />} />
-        <Route path="*" element={<Navigate to="/auth" replace />} />
-      </Routes>
     );
   }
 
@@ -62,13 +55,16 @@ const AppRoutes = () => {
     );
   }
 
-  // Main application routes
+  // Main application routes - available to both authenticated and non-authenticated users
   return (
     <Routes>
-      {/* Redirect root to appropriate dashboard */}
-      <Route path="/" element={<Navigate to={`/${role}/dashboard`} replace />} />
+      {/* Public marketing website */}
+      <Route path="/" element={<Index />} />
       
-      {/* Role-based routes */}
+      {/* Auth pages */}
+      <Route path="/auth/*" element={<AuthPage />} />
+      
+      {/* Protected role-based routes */}
       <Route path="/admin/*" element={
         <ProtectedRoute>
           <AdminRoutes />
@@ -99,8 +95,8 @@ const AppRoutes = () => {
         </ProtectedRoute>
       } />
 
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to={`/${role}/dashboard`} replace />} />
+      {/* Fallback to homepage for unknown routes */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
