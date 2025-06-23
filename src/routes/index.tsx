@@ -5,7 +5,7 @@ import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 
 // Auth Components
-import AuthPage from '@/pages/auth/AuthPage';
+import AuthPage from '@/pages/auth/index';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 // Setup Components
