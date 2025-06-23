@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import StripePaymentSetup from '@/components/brand/StripePaymentSetup';
 
 const BrandSettings = () => {
   const { user, brandProfile } = useUnifiedAuth();
@@ -100,22 +101,8 @@ const BrandSettings = () => {
             <CardTitle>Billing & Usage</CardTitle>
             <CardDescription>Manage your subscription and billing details</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-sm font-medium">Current Plan</h4>
-                <p className="text-sm text-muted-foreground">Professional Plan</p>
-              </div>
-              <Button variant="outline">Upgrade Plan</Button>
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-sm font-medium">Payment Method</h4>
-                <p className="text-sm text-muted-foreground">•••• •••• •••• 4242</p>
-              </div>
-              <Button variant="outline">Update</Button>
-            </div>
+          <CardContent>
+            <StripePaymentSetup />
           </CardContent>
         </Card>
 
