@@ -16,7 +16,7 @@ interface Creator {
 export const useCreatorFilters = (creators: Creator[]) => {
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterPlatform, setFilterPlatform] = useState('');
+  const [filterPlatform, setFilterPlatform] = useState('all');
   const [filterAudience, setFilterAudience] = useState('');
   const [filterContentType, setFilterContentType] = useState('');
   const [filterLocation, setFilterLocation] = useState('');
@@ -31,7 +31,7 @@ export const useCreatorFilters = (creators: Creator[]) => {
         creator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         creator.bio?.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesPlatform = !filterPlatform || creator.platform === filterPlatform;
+      const matchesPlatform = filterPlatform === 'all' || creator.platform === filterPlatform;
       const matchesAudience = !filterAudience || creator.audience === filterAudience;
       const matchesContentType = !filterContentType || creator.contentType === filterContentType;
       const matchesLocation = !filterLocation || creator.location === filterLocation;
@@ -50,7 +50,7 @@ export const useCreatorFilters = (creators: Creator[]) => {
 
   const resetFilters = () => {
     setSearchTerm('');
-    setFilterPlatform('');
+    setFilterPlatform('all');
     setFilterAudience('');
     setFilterContentType('');
     setFilterLocation('');
@@ -61,7 +61,7 @@ export const useCreatorFilters = (creators: Creator[]) => {
   const getActiveFilterCount = () => {
     let count = 0;
     if (searchTerm) count++;
-    if (filterPlatform) count++;
+    if (filterPlatform && filterPlatform !== 'all') count++;
     if (filterAudience) count++;
     if (filterContentType) count++;
     if (filterLocation) count++;

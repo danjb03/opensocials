@@ -39,7 +39,7 @@ export const CreatorsSearchFilters = ({
           <SelectValue placeholder="Platform" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">All Platforms</SelectItem>
+          <SelectItem value="all">All Platforms</SelectItem>
           <SelectItem value="instagram">Instagram</SelectItem>
           <SelectItem value="tiktok">TikTok</SelectItem>
           <SelectItem value="youtube">YouTube</SelectItem>
