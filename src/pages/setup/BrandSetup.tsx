@@ -64,9 +64,9 @@ const BrandSetup = () => {
       console.log('✅ Brand profile created successfully');
       toast.success('Profile setup complete!');
       
-      // Navigate to brand dashboard
+      // Force page refresh to ensure auth context updates with new profile
       setTimeout(() => {
-        navigate('/brand/dashboard');
+        window.location.href = '/brand';
       }, 500);
 
     } catch (error: any) {
