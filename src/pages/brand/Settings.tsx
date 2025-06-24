@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,12 +7,12 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import StripePaymentSetup from '@/components/brand/StripePaymentSetup';
-
 const BrandSettings = () => {
-  const { user, brandProfile } = useUnifiedAuth();
-
-  return (
-    <div className="container mx-auto p-6 bg-background">
+  const {
+    user,
+    brandProfile
+  } = useUnifiedAuth();
+  return <div className="container mx-auto p-6 bg-background">
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Settings</h1>
@@ -30,28 +29,16 @@ const BrandSettings = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="company-name">Company Name</Label>
-                <Input 
-                  id="company-name" 
-                  defaultValue={brandProfile?.company_name || ''} 
-                  placeholder="Enter company name" 
-                />
+                <Input id="company-name" defaultValue={brandProfile?.company_name || ''} placeholder="Enter company name" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="website">Website</Label>
-                <Input 
-                  id="website" 
-                  defaultValue="" 
-                  placeholder="https://yourcompany.com" 
-                />
+                <Input id="website" defaultValue="" placeholder="https://yourcompany.com" />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">Company Description</Label>
-              <Input 
-                id="description" 
-                defaultValue="" 
-                placeholder="Brief description of your company" 
-              />
+              <Input id="description" defaultValue="" placeholder="Brief description of your company" />
             </div>
             <Button>Save Changes</Button>
           </CardContent>
@@ -66,12 +53,7 @@ const BrandSettings = () => {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                defaultValue={user?.email || ''} 
-                disabled 
-              />
+              <Input id="email" type="email" defaultValue={user?.email || ''} disabled />
               <p className="text-sm text-muted-foreground">Contact support to change your email address</p>
             </div>
             <Separator />
@@ -109,7 +91,7 @@ const BrandSettings = () => {
         {/* Danger Zone */}
         <Card className="border-destructive">
           <CardHeader>
-            <CardTitle className="text-destructive">Danger Zone</CardTitle>
+            <CardTitle className="text-slate-50">Danger Zone</CardTitle>
             <CardDescription>Irreversible and destructive actions</CardDescription>
           </CardHeader>
           <CardContent>
@@ -125,8 +107,6 @@ const BrandSettings = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default BrandSettings;
