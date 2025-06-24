@@ -59,76 +59,85 @@ const OrdersPipeline: React.FC<OrdersPipelineProps> = ({
   };
 
   return (
-    <Tabs value={activeStage} onValueChange={(value) => onStageChange(value as OrderStage)}>
-      <TabsList className="grid grid-cols-5 mb-6">
-        {stages.map((stage) => (
-          <TabsTrigger 
-            key={stage} 
-            value={stage}
-            className="flex items-center py-2 text-foreground"
-          >
-            {stageIcons[stage]}
-            <span className="hidden md:inline text-foreground">{orderStageLabels[stage]}</span>
-            <span className="ml-2 bg-muted text-foreground rounded-full px-2 py-0.5 text-xs">
-              {getOrdersByStage(stage).length}
-            </span>
-          </TabsTrigger>
-        ))}
-      </TabsList>
-
-      {stages.map((stage) => (
-        <TabsContent key={stage} value={stage} className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {getOrdersByStage(stage).length > 0 ? (
-              getOrdersByStage(stage).map((order) => (
-                <div key={order.id} className="relative">
-                  <CampaignCard
-                    order={order}
-                    onClick={onOrderSelect}
-                  />
-                  {/* Continue Draft Button for Setup Stage */}
-                  {stage === 'campaign_setup' && (
-                    <div className="absolute top-2 right-2">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleContinueDraft(order.id);
-                        }}
-                        className="text-xs h-7 px-2"
-                      >
-                        Continue Draft
-                      </Button>
-                    </div>
-                  )}
+    <div className="space-y-6">
+      <Tabs value={activeStage} onValueChange={(value) => onStageChange(value as OrderStage)}>
+        <TabsList className="grid grid-cols-5 h-auto p-1 bg-muted rounded-lg">
+          {stages.map((stage) => {
+            const count = getOrdersByStage(stage).length;
+            return (
+              <TabsTrigger 
+                key={stage} 
+                value={stage}
+                className="flex flex-col items-center py-3 px-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+              >
+                <div className="flex items-center mb-1">
+                  {stageIcons[stage]}
+                  <span className="hidden sm:inline text-sm font-medium">{orderStageLabels[stage]}</span>
                 </div>
-              ))
-            ) : (
-              <div className="col-span-full">
-                <EmptyState
-                  icon={stageIconsForEmpty[stage]}
-                  title={`No campaigns in ${orderStageLabels[stage]}`}
-                  description={
-                    stage === 'campaign_setup' 
-                      ? "Get started by creating your first campaign."
-                      : "Campaigns will move here as they progress through the workflow."
-                  }
-                  className="animate-fade-in"
-                  action={
-                    stage === 'campaign_setup' ? {
-                      label: "Create Campaign",
-                      onClick: () => navigate('/brand/create-campaign'),
-                      variant: "default" as const
-                    } : undefined
-                  }
-                />
-              </div>
-            )}
-          </div>
-        </TabsContent>
-      ))}
-    </Tabs>
+                <div className="flex items-center justify-center">
+                  <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-medium min-w-[1.5rem] h-6 flex items-center justify-center">
+                    {count}
+                  </span>
+                </div>
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+
+        {stages.map((stage) => (
+          <TabsContent key={stage} value={stage} className="mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {getOrdersByStage(stage).length > 0 ? (
+                getOrdersByStage(stage).map((order) => (
+                  <div key={order.id} className="relative group">
+                    <CampaignCard
+                      order={order}
+                      onClick={onOrderSelect}
+                    />
+                    {/* Continue Draft Button for Setup Stage */}
+                    {stage === 'campaign_setup' && (
+                      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleContinueDraft(order.id);
+                          }}
+                          className="text-xs h-8 px-3 bg-background/90 backdrop-blur-sm border shadow-sm hover:bg-background"
+                        >
+                          Continue Draft
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full">
+                  <EmptyState
+                    icon={stageIconsForEmpty[stage]}
+                    title={`No campaigns in ${orderStageLabels[stage]}`}
+                    description={
+                      stage === 'campaign_setup' 
+                        ? "Get started by creating your first campaign."
+                        : "Campaigns will move here as they progress through the workflow."
+                    }
+                    className="animate-fade-in py-12"
+                    action={
+                      stage === 'campaign_setup' ? {
+                        label: "Create Campaign",
+                        onClick: () => navigate('/brand/create-campaign'),
+                        variant: "default" as const
+                      } : undefined
+                    }
+                  />
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        ))}
+      </Tabs>
+    </div>
   );
 };
 
