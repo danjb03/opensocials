@@ -1,84 +1,77 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { CampaignWizardData } from '@/types/campaignWizard';
-import { handleStepCompletion } from './utils/stepCompletion';
+import { handleStepComplete } from './utils/stepCompletion';
 import { handleSaveAndExit } from './utils/saveAndExit';
 import { handleFinalSubmit } from './utils/finalSubmit';
 
 export const useCampaignActions = (
   formData: Partial<CampaignWizardData>,
   currentStep: number,
-  saveDraft: () => Promise<void>,
+  saveDraft: (data: Partial<CampaignWizardData>, step: number) => Promise<void>,
   clearDraft: () => Promise<void>,
-  draftId?: string,
+  draftId: string | undefined,
   onComplete?: (projectId: string) => void
 ) => {
   const navigate = useNavigate();
-  const { user, brandProfile } = useUnifiedAuth();
+  const { user } = useUnifiedAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
+  const [showFireworks, setShowFireworks] = useState(false);
 
-  // STANDARDIZE on user.id consistently (this is what useProjectQuery uses)
-  const userId = user?.id;
-
-  console.log('🔍 useCampaignActions - User ID Debug:', {
-    'user.id': user?.id,
-    'brandProfile?.user_id': brandProfile?.user_id,
-    'selectedUserId': userId,
-    'formData.name': formData?.name
-  });
-
-  const handleStepComplete = async (stepData: Partial<CampaignWizardData>) => {
-    if (!userId) {
-      console.error('❌ No user authenticated');
-      return;
-    }
+  const handleStepCompleteAction = useCallback(async (stepData: Partial<CampaignWizardData>) => {
+    if (!user?.id) return;
     
-    await handleStepCompletion(stepData, currentStep, saveDraft, setLastSaveTime);
-  };
+    await handleStepComplete(
+      stepData,
+      user.id,
+      currentStep,
+      saveDraft,
+      setLastSaveTime
+    );
+  }, [user?.id, currentStep, saveDraft]);
 
-  const handleSaveAndExitAction = async () => {
-    if (!userId) {
-      console.error('❌ No user authenticated');
-      return;
-    }
+  const handleSaveAndExitAction = useCallback(async () => {
+    if (!user?.id) return;
     
     await handleSaveAndExit(
       formData,
-      userId,
+      user.id,
       currentStep,
       saveDraft,
-      clearDraft,
-      isSubmitting,
-      setIsSubmitting,
-      navigate
+      navigate,
+      setIsSubmitting
     );
-  };
+  }, [user?.id, formData, currentStep, saveDraft, navigate]);
 
-  const handleFinalSubmitAction = async () => {
-    if (!userId) {
-      console.error('❌ No user authenticated');
-      return;
-    }
+  const handleFinalSubmitAction = useCallback(async () => {
+    if (!user?.id) return;
     
     await handleFinalSubmit(
       formData,
-      userId,
+      user.id,
       currentStep,
       clearDraft,
       draftId,
       setIsSubmitting,
-      navigate
+      navigate,
+      () => setShowFireworks(true) // Trigger fireworks for first campaign
     );
-  };
+  }, [user?.id, formData, currentStep, clearDraft, draftId, navigate]);
+
+  const handleFireworksComplete = useCallback(() => {
+    setShowFireworks(false);
+  }, []);
 
   return {
     isSubmitting,
     lastSaveTime,
-    handleStepComplete,
+    showFireworks,
+    handleStepComplete: handleStepCompleteAction,
     handleSaveAndExit: handleSaveAndExitAction,
-    handleFinalSubmit: handleFinalSubmitAction
+    handleFinalSubmit: handleFinalSubmitAction,
+    handleFireworksComplete
   };
 };

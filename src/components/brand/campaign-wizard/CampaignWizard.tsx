@@ -9,6 +9,7 @@ import { useCampaignActions } from './hooks/useCampaignActions';
 import { CampaignWizardHeader } from './components/CampaignWizardHeader';
 import { StepIndicators } from './components/StepIndicators';
 import { StepRenderer } from './components/StepRenderer';
+import { FireworksAnimation } from '@/components/ui/fireworks-animation';
 
 interface CampaignWizardProps {
   draftId?: string;
@@ -37,9 +38,11 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ onComplete }) => {
   const {
     isSubmitting,
     lastSaveTime,
+    showFireworks,
     handleStepComplete,
     handleSaveAndExit,
-    handleFinalSubmit
+    handleFinalSubmit,
+    handleFireworksComplete
   } = useCampaignActions(
     formData,
     currentStep,
@@ -84,40 +87,48 @@ const CampaignWizard: React.FC<CampaignWizardProps> = ({ onComplete }) => {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <CampaignWizardHeader
-          currentStep={currentStep}
-          totalSteps={CAMPAIGN_STEPS.length}
-          isSaving={isSaving}
-          lastSaveTime={lastSaveTime}
-          onSaveAndExit={handleSaveAndExit}
-        />
+    <>
+      <div className="min-h-screen bg-background py-8">
+        <div className="max-w-4xl mx-auto px-4">
+          <CampaignWizardHeader
+            currentStep={currentStep}
+            totalSteps={CAMPAIGN_STEPS.length}
+            isSaving={isSaving}
+            lastSaveTime={lastSaveTime}
+            onSaveAndExit={handleSaveAndExit}
+          />
 
-        <StepIndicators steps={steps} />
+          <StepIndicators steps={steps} />
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="mt-8"
-          >
-            <StepRenderer
-              currentStep={currentStep}
-              formData={formData}
-              isDraftLoading={isDraftLoading}
-              onComplete={handleStepCompleteWithNavigation}
-              onBack={handlePreviousStep}
-              onLaunch={handleFinalSubmit}
-              isSubmitting={isSubmitting}
-            />
-          </motion.div>
-        </AnimatePresence>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="mt-8"
+            >
+              <StepRenderer
+                currentStep={currentStep}
+                formData={formData}
+                isDraftLoading={isDraftLoading}
+                onComplete={handleStepCompleteWithNavigation}
+                onBack={handlePreviousStep}
+                onLaunch={handleFinalSubmit}
+                isSubmitting={isSubmitting}
+              />
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
-    </div>
+
+      <FireworksAnimation
+        show={showFireworks}
+        onComplete={handleFireworksComplete}
+        duration={2000}
+      />
+    </>
   );
 };
 
