@@ -1,210 +1,155 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Plus, Package, Eye, MessageSquare } from 'lucide-react';
+import { useCampaignPipeline } from '@/hooks/brand/useCampaignPipeline';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Package, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import CampaignDetail from '@/components/brand/orders/CampaignDetail';
 
 const BrandOrders = () => {
   const navigate = useNavigate();
+  const {
+    orders,
+    isLoading,
+    error,
+    selectedOrder,
+    selectedOrderId,
+    handleOrderSelect,
+    handleCloseDetail,
+    handleMoveStage,
+    refetch
+  } = useCampaignPipeline();
 
-  // Mock order data - this would come from your actual orders API
-  const orders = [
-    {
-      id: '1',
-      orderNumber: 'ORD-001',
-      campaign: 'Summer Collection 2024',
-      creator: 'Sarah Johnson',
-      status: 'in_progress',
-      amount: 2500,
-      deliverables: 3,
-      completed: 1,
-      dueDate: '2024-07-15'
-    },
-    {
-      id: '2',
-      orderNumber: 'ORD-002',
-      campaign: 'Brand Awareness Push',
-      creator: 'Mike Chen',
-      status: 'completed',
-      amount: 1800,
-      deliverables: 2,
-      completed: 2,
-      dueDate: '2024-06-30'
-    },
-    {
-      id: '3',
-      orderNumber: 'ORD-003',
-      campaign: 'Product Launch',
-      creator: 'Emma Davis',
-      status: 'pending',
-      amount: 3200,
-      deliverables: 4,
-      completed: 0,
-      dueDate: '2024-08-01'
-    }
-  ];
+  // Filter orders that are beyond campaign setup (actual orders)
+  const actualOrders = orders.filter(order => 
+    order.stage !== 'campaign_setup' && order.stage !== 'creator_selection'
+  );
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'in_progress':
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-muted rounded w-1/3"></div>
+          <div className="h-64 bg-muted rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center py-12">
+          <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Orders</h2>
+          <p className="text-muted-foreground mb-4">We encountered an issue loading your orders.</p>
+          <Button onClick={() => refetch()}>
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const getStatusColor = (stage: string) => {
+    switch (stage) {
+      case 'contract_payment':
         return 'bg-blue-100 text-blue-800';
-      case 'pending':
+      case 'planning_creation':
         return 'bg-yellow-100 text-yellow-800';
-      case 'overdue':
-        return 'bg-red-100 text-red-800';
+      case 'content_performance':
+        return 'bg-green-100 text-green-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle className="h-4 w-4" />;
-      case 'in_progress':
-        return <Clock className="h-4 w-4" />;
-      case 'pending':
-        return <Package className="h-4 w-4" />;
-      case 'overdue':
-        return <AlertCircle className="h-4 w-4" />;
-      default:
-        return <Package className="h-4 w-4" />;
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'Completed';
-      case 'in_progress':
+  const getStatusLabel = (stage: string) => {
+    switch (stage) {
+      case 'contract_payment':
+        return 'Contract & Payment';
+      case 'planning_creation':
         return 'In Progress';
-      case 'pending':
-        return 'Pending';
-      case 'overdue':
-        return 'Overdue';
+      case 'content_performance':
+        return 'Live & Tracking';
       default:
-        return status;
+        return stage;
     }
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Orders</h1>
-          <p className="text-muted-foreground">Track and manage your creator orders and deliverables</p>
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold text-foreground">Orders Management</h1>
+          <p className="text-muted-foreground">Manage active campaigns and track content performance</p>
         </div>
-        <Button onClick={() => navigate('/brand/campaigns')}>
-          <Plus className="h-4 w-4 mr-2" />
-          View Campaigns
+        <Button onClick={() => navigate('/brand/campaigns')} variant="outline">
+          <Package className="h-4 w-4 mr-2" />
+          View All Campaigns
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Orders</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{orders.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {orders.filter(o => o.status === 'in_progress').length}
+      {/* Order Detail Modal */}
+      {selectedOrder && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-card rounded-lg max-w-6xl w-full max-h-[90vh] overflow-auto border shadow-lg">
+            <div className="p-6">
+              <CampaignDetail
+                order={selectedOrder}
+                onClose={handleCloseDetail}
+                onMoveStage={handleMoveStage}
+              />
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {orders.filter(o => o.status === 'completed').length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Value</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ${orders.reduce((sum, order) => sum + order.amount, 0).toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
+      )}
 
-      {/* Orders List */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Recent Orders</h2>
-        <div className="grid gap-4">
-          {orders.map((order) => (
-            <Card key={order.id} className="hover:shadow-md transition-shadow">
+      {/* Orders Grid */}
+      {actualOrders.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {actualOrders.map((order) => (
+            <Card key={order.id} className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg">{order.orderNumber}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{order.campaign}</p>
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <CardTitle className="text-lg">{order.title}</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      {order.creators.length} creator{order.creators.length !== 1 ? 's' : ''}
+                    </p>
                   </div>
-                  <Badge className={getStatusColor(order.status)}>
-                    {getStatusIcon(order.status)}
-                    <span className="ml-1">{getStatusText(order.status)}</span>
+                  <Badge className={getStatusColor(order.stage)}>
+                    {getStatusLabel(order.stage)}
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Creator</p>
-                    <p className="font-medium">{order.creator}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Amount</p>
-                    <p className="font-medium">${order.amount.toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Progress</p>
-                    <p className="font-medium">{order.completed}/{order.deliverables} deliverables</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Due Date</p>
-                    <p className="font-medium">{new Date(order.dueDate).toLocaleDateString()}</p>
-                  </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Budget</span>
+                  <span className="font-medium">${order.budget.toLocaleString()}</span>
                 </div>
-
-                {/* Progress Bar */}
-                <div className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span>Progress</span>
-                    <span>{Math.round((order.completed / order.deliverables) * 100)}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full transition-all"
-                      style={{ width: `${(order.completed / order.deliverables) * 100}%` }}
-                    ></div>
-                  </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Progress</span>
+                  <span className="font-medium">{order.progress}%</span>
                 </div>
-
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1">
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    size="sm"
+                    onClick={() => handleOrderSelect(order.id)}
+                    className="flex-1"
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
                     View Details
                   </Button>
-                  {order.status === 'in_progress' && (
-                    <Button size="sm" className="flex-1">
+                  {order.stage === 'content_performance' && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate(`/brand/campaign-review/${order.id}`)}
+                    >
+                      <MessageSquare className="h-4 w-4 mr-1" />
                       Review Content
                     </Button>
                   )}
@@ -213,17 +158,17 @@ const BrandOrders = () => {
             </Card>
           ))}
         </div>
-      </div>
-
-      {/* Empty State */}
-      {orders.length === 0 && (
+      ) : (
         <Card>
-          <CardContent className="pt-6 text-center">
-            <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2 text-slate-50">No Orders Yet</h3>
-            <p className="text-gray-500 mb-4">Your creator orders and deliverables will appear here</p>
+          <CardContent className="pt-6 text-center py-12">
+            <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-foreground mb-2">No Active Orders</h3>
+            <p className="text-muted-foreground mb-4">
+              You don't have any active orders yet. Create campaigns to start working with creators.
+            </p>
             <Button onClick={() => navigate('/brand/campaigns')}>
-              View Campaigns
+              <Plus className="h-4 w-4 mr-2" />
+              Create Campaign
             </Button>
           </CardContent>
         </Card>
