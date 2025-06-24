@@ -27,7 +27,7 @@ export const useCampaignActions = (
     await handleStepCompletion(
       stepData,
       currentStep,
-      saveDraft,
+      () => saveDraft(stepData, currentStep),
       setLastSaveTime
     );
   }, [user?.id, currentStep, saveDraft]);
@@ -37,13 +37,15 @@ export const useCampaignActions = (
     
     await handleSaveAndExit(
       formData,
-      user.id,
+      userId,
       currentStep,
-      saveDraft,
-      navigate,
-      setIsSubmitting
+      () => saveDraft(formData, currentStep),
+      clearDraft,
+      isSubmitting,
+      setIsSubmitting,
+      navigate
     );
-  }, [user?.id, formData, currentStep, saveDraft, navigate]);
+  }, [user?.id, formData, currentStep, saveDraft, clearDraft, isSubmitting, navigate]);
 
   const handleFinalSubmitAction = useCallback(async () => {
     if (!user?.id) return;
