@@ -116,12 +116,11 @@ const OrdersPipeline: React.FC<OrdersPipelineProps> = ({
                   }
                   className="animate-fade-in"
                   action={
-                    stage === 'campaign_setup' ? (
-                      <Button onClick={() => navigate('/brand/create-campaign')}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create Campaign
-                      </Button>
-                    ) : undefined
+                    stage === 'campaign_setup' ? {
+                      label: "Create Campaign",
+                      onClick: () => navigate('/brand/create-campaign'),
+                      variant: "default" as const
+                    } : undefined
                   }
                 />
               </div>
