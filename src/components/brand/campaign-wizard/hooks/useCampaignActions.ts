@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { CampaignWizardData } from '@/types/campaignWizard';
-import { handleStepComplete } from './utils/stepCompletion';
+import { handleStepCompletion } from './utils/stepCompletion';
 import { handleSaveAndExit } from './utils/saveAndExit';
 import { handleFinalSubmit } from './utils/finalSubmit';
 
@@ -24,9 +24,8 @@ export const useCampaignActions = (
   const handleStepCompleteAction = useCallback(async (stepData: Partial<CampaignWizardData>) => {
     if (!user?.id) return;
     
-    await handleStepComplete(
+    await handleStepCompletion(
       stepData,
-      user.id,
       currentStep,
       saveDraft,
       setLastSaveTime
