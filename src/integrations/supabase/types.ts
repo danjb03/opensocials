@@ -280,6 +280,57 @@ export type Database = {
           },
         ]
       }
+      campaign_notifications: {
+        Row: {
+          campaign_id: string | null
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          notification_type: string
+          submission_id: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          notification_type: string
+          submission_id?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          notification_type?: string
+          submission_id?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_notifications_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "projects_new"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_notifications_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_reviews: {
         Row: {
           ai_analysis: Json | null
@@ -404,6 +455,56 @@ export type Database = {
             columns: ["rule_id"]
             isOneToOne: false
             referencedRelation: "r4_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_submissions: {
+        Row: {
+          campaign_id: string
+          content_data: Json
+          created_at: string | null
+          creator_id: string
+          id: string
+          reviewed_at: string | null
+          status: string
+          submission_notes: string | null
+          submission_type: string
+          submitted_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          campaign_id: string
+          content_data?: Json
+          created_at?: string | null
+          creator_id: string
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+          submission_notes?: string | null
+          submission_type?: string
+          submitted_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          content_data?: Json
+          created_at?: string | null
+          creator_id?: string
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+          submission_notes?: string | null
+          submission_type?: string
+          submitted_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_submissions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "projects_new"
             referencedColumns: ["id"]
           },
         ]
@@ -1438,6 +1539,7 @@ export type Database = {
           objective: string | null
           platforms: string[] | null
           review_priority: string | null
+          review_stage: string | null
           review_status: string | null
           start_date: string | null
           status: string | null
@@ -1459,6 +1561,7 @@ export type Database = {
           objective?: string | null
           platforms?: string[] | null
           review_priority?: string | null
+          review_stage?: string | null
           review_status?: string | null
           start_date?: string | null
           status?: string | null
@@ -1480,6 +1583,7 @@ export type Database = {
           objective?: string | null
           platforms?: string[] | null
           review_priority?: string | null
+          review_stage?: string | null
           review_status?: string | null
           start_date?: string | null
           status?: string | null
@@ -1753,6 +1857,44 @@ export type Database = {
           username?: string
         }
         Relationships: []
+      }
+      submission_reviews: {
+        Row: {
+          action: string
+          created_at: string | null
+          feedback_text: string | null
+          id: string
+          review_data: Json | null
+          reviewer_id: string
+          submission_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          feedback_text?: string | null
+          id?: string
+          review_data?: Json | null
+          reviewer_id: string
+          submission_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          feedback_text?: string | null
+          id?: string
+          review_data?: Json | null
+          reviewer_id?: string
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submission_reviews_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

@@ -8,6 +8,7 @@ import BrandOrders from '@/pages/brand/Orders';
 import BrandCreators from '@/pages/brand/Creators';
 import BrandSettings from '@/pages/brand/Settings';
 import CampaignWizard from '@/components/brand/campaign-wizard/CampaignWizard';
+import CampaignReview from '@/pages/brand/CampaignReview';
 
 const BrandRoutes = () => {
   return (
@@ -20,6 +21,7 @@ const BrandRoutes = () => {
           <Route path="creators" element={<BrandCreators />} />
           <Route path="settings" element={<BrandSettings />} />
           <Route path="create-campaign" element={<CampaignWizard />} />
+          <Route path="campaign-review/:id" element={<CampaignReview />} />
         </Routes>
       </BrandLayout>
     </BrandGuard>
