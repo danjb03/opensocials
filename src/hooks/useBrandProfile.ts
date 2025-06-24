@@ -14,6 +14,13 @@ interface BrandProfile {
   brand_bio: string | null;
   brand_goal: string | null;
   campaign_focus: string[] | null;
+  social_urls: {
+    instagram?: string | null;
+    tiktok?: string | null;
+    youtube?: string | null;
+    linkedin?: string | null;
+    twitter?: string | null;
+  } | null;
   created_at: string;
   updated_at: string;
 }

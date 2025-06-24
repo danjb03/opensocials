@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,13 +7,64 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useBrandProfile } from '@/hooks/useBrandProfile';
 import StripePaymentSetup from '@/components/brand/StripePaymentSetup';
+import { toast } from 'sonner';
+
 const BrandSettings = () => {
-  const {
-    user,
-    brandProfile
-  } = useUnifiedAuth();
-  return <div className="container mx-auto p-6 bg-background">
+  const { user, brandProfile } = useUnifiedAuth();
+  const { updateProfile } = useBrandProfile();
+  const [isUpdating, setIsUpdating] = useState(false);
+  
+  // Form state for company information
+  const [companyData, setCompanyData] = useState({
+    companyName: brandProfile?.company_name || '',
+    website: brandProfile?.website_url || '',
+    description: brandProfile?.brand_bio || '',
+    instagramUrl: brandProfile?.social_urls?.instagram || '',
+    tiktokUrl: brandProfile?.social_urls?.tiktok || '',
+    youtubeUrl: brandProfile?.social_urls?.youtube || '',
+    linkedinUrl: brandProfile?.social_urls?.linkedin || '',
+    twitterUrl: brandProfile?.social_urls?.twitter || '',
+  });
+
+  const handleCompanyDataChange = (field: string, value: string) => {
+    setCompanyData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSaveCompanyInfo = async () => {
+    setIsUpdating(true);
+    try {
+      const socialUrls = {
+        instagram: companyData.instagramUrl || null,
+        tiktok: companyData.tiktokUrl || null,
+        youtube: companyData.youtubeUrl || null,
+        linkedin: companyData.linkedinUrl || null,
+        twitter: companyData.twitterUrl || null,
+      };
+
+      const result = await updateProfile({
+        company_name: companyData.companyName,
+        website_url: companyData.website || null,
+        brand_bio: companyData.description || null,
+        social_urls: socialUrls,
+      });
+
+      if (result.success) {
+        toast.success('Company information updated successfully');
+      }
+    } catch (error) {
+      toast.error('Failed to update company information');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  return (
+    <div className="container mx-auto p-6 bg-background">
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Settings</h1>
@@ -23,24 +75,103 @@ const BrandSettings = () => {
         <Card>
           <CardHeader>
             <CardTitle>Company Information</CardTitle>
-            <CardDescription>Update your company details and branding</CardDescription>
+            <CardDescription>Update your company details and social media links</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="company-name">Company Name</Label>
-                <Input id="company-name" defaultValue={brandProfile?.company_name || ''} placeholder="Enter company name" />
+                <Input 
+                  id="company-name" 
+                  value={companyData.companyName}
+                  onChange={(e) => handleCompanyDataChange('companyName', e.target.value)}
+                  placeholder="Enter company name" 
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="website">Website</Label>
-                <Input id="website" defaultValue="" placeholder="https://yourcompany.com" />
+                <Input 
+                  id="website" 
+                  value={companyData.website}
+                  onChange={(e) => handleCompanyDataChange('website', e.target.value)}
+                  placeholder="https://yourcompany.com" 
+                />
               </div>
             </div>
+            
             <div className="space-y-2">
               <Label htmlFor="description">Company Description</Label>
-              <Input id="description" defaultValue="" placeholder="Brief description of your company" />
+              <Input 
+                id="description" 
+                value={companyData.description}
+                onChange={(e) => handleCompanyDataChange('description', e.target.value)}
+                placeholder="Brief description of your company" 
+              />
             </div>
-            <Button>Save Changes</Button>
+
+            <Separator />
+            
+            <div className="space-y-4">
+              <h4 className="text-sm font-medium">Social Media Links</h4>
+              <p className="text-sm text-muted-foreground">
+                Add your social media profiles so creators can learn more about your brand
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="instagram-url">Instagram URL</Label>
+                  <Input 
+                    id="instagram-url" 
+                    value={companyData.instagramUrl}
+                    onChange={(e) => handleCompanyDataChange('instagramUrl', e.target.value)}
+                    placeholder="https://instagram.com/yourcompany" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tiktok-url">TikTok URL</Label>
+                  <Input 
+                    id="tiktok-url" 
+                    value={companyData.tiktokUrl}
+                    onChange={(e) => handleCompanyDataChange('tiktokUrl', e.target.value)}
+                    placeholder="https://tiktok.com/@yourcompany" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="youtube-url">YouTube URL</Label>
+                  <Input 
+                    id="youtube-url" 
+                    value={companyData.youtubeUrl}
+                    onChange={(e) => handleCompanyDataChange('youtubeUrl', e.target.value)}
+                    placeholder="https://youtube.com/@yourcompany" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="linkedin-url">LinkedIn URL</Label>
+                  <Input 
+                    id="linkedin-url" 
+                    value={companyData.linkedinUrl}
+                    onChange={(e) => handleCompanyDataChange('linkedinUrl', e.target.value)}
+                    placeholder="https://linkedin.com/company/yourcompany" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="twitter-url">Twitter URL</Label>
+                  <Input 
+                    id="twitter-url" 
+                    value={companyData.twitterUrl}
+                    onChange={(e) => handleCompanyDataChange('twitterUrl', e.target.value)}
+                    placeholder="https://twitter.com/yourcompany" 
+                  />
+                </div>
+              </div>
+            </div>
+
+            <Button 
+              onClick={handleSaveCompanyInfo}
+              disabled={isUpdating}
+            >
+              {isUpdating ? 'Saving...' : 'Save Changes'}
+            </Button>
           </CardContent>
         </Card>
 
@@ -107,6 +238,8 @@ const BrandSettings = () => {
           </CardContent>
         </Card>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default BrandSettings;
