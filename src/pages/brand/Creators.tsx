@@ -69,15 +69,17 @@ const BrandCreators = () => {
           onViewModeChange={setViewMode}
         />
 
-        <CreatorsGrid
-          creators={creators}
-          isLoading={isLoading}
-          selectedCreators={selectedCreators}
-          favoriteCreators={favoriteCreators}
-          onCreatorSelect={handleCreatorSelect}
-          onCreatorToggle={handleCreatorToggleLocal}
-          onFavoriteToggle={handleFavoriteToggle}
-        />
+        <div className="min-h-[400px]">
+          <CreatorsGrid
+            creators={creators}
+            isLoading={isLoading}
+            selectedCreators={selectedCreators}
+            favoriteCreators={favoriteCreators}
+            onCreatorSelect={handleCreatorSelect}
+            onCreatorToggle={handleCreatorToggleLocal}
+            onFavoriteToggle={handleFavoriteToggle}
+          />
+        </div>
 
         <CreatorProfileModal
           isOpen={showProfileModal}

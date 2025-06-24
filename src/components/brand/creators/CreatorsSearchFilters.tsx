@@ -1,5 +1,9 @@
 
 import React from 'react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Search, Grid, List, Filter } from 'lucide-react';
 
 interface CreatorsSearchFiltersProps {
   searchTerm: string;
@@ -19,34 +23,54 @@ export const CreatorsSearchFilters = ({
   onViewModeChange
 }: CreatorsSearchFiltersProps) => {
   return (
-    <div className="flex flex-col gap-4 p-4 bg-card rounded-lg border">
-      <div className="flex flex-wrap gap-4">
-        <input
-          type="text"
-          placeholder="Search creators..."
+    <div className="flex items-center gap-4 p-4 bg-card rounded-lg border">
+      <div className="flex-1 relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search creators by name, bio, or skills..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="flex-1 min-w-64 px-3 py-2 border border-border rounded-md bg-background text-foreground"
+          className="pl-10"
         />
-        <select
-          value={filterPlatform}
-          onChange={(e) => onPlatformChange(e.target.value)}
-          className="px-3 py-2 border border-border rounded-md bg-background text-foreground"
-        >
-          <option value="">All Platforms</option>
-          <option value="instagram">Instagram</option>
-          <option value="tiktok">TikTok</option>
-          <option value="youtube">YouTube</option>
-        </select>
-        <select
-          value={viewMode}
-          onChange={(e) => onViewModeChange(e.target.value as 'grid' | 'list')}
-          className="px-3 py-2 border border-border rounded-md bg-background text-foreground"
-        >
-          <option value="grid">Grid View</option>
-          <option value="list">List View</option>
-        </select>
       </div>
+      
+      <Select value={filterPlatform} onValueChange={onPlatformChange}>
+        <SelectTrigger className="w-40">
+          <SelectValue placeholder="Platform" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="">All Platforms</SelectItem>
+          <SelectItem value="instagram">Instagram</SelectItem>
+          <SelectItem value="tiktok">TikTok</SelectItem>
+          <SelectItem value="youtube">YouTube</SelectItem>
+          <SelectItem value="linkedin">LinkedIn</SelectItem>
+          <SelectItem value="twitter">Twitter</SelectItem>
+        </SelectContent>
+      </Select>
+      
+      <div className="flex items-center border rounded-md">
+        <Button
+          variant={viewMode === 'grid' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => onViewModeChange('grid')}
+          className="rounded-r-none"
+        >
+          <Grid className="h-4 w-4" />
+        </Button>
+        <Button
+          variant={viewMode === 'list' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => onViewModeChange('list')}
+          className="rounded-l-none"
+        >
+          <List className="h-4 w-4" />
+        </Button>
+      </div>
+      
+      <Button variant="outline" size="sm">
+        <Filter className="h-4 w-4 mr-2" />
+        More Filters
+      </Button>
     </div>
   );
 };
