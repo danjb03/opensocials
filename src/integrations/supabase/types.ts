@@ -147,6 +147,7 @@ export type Database = {
           industry: string | null
           logo_url: string | null
           r4_spend_grade: string | null
+          social_urls: Json | null
           updated_at: string | null
           user_id: string
           version: number | null
@@ -163,6 +164,7 @@ export type Database = {
           industry?: string | null
           logo_url?: string | null
           r4_spend_grade?: string | null
+          social_urls?: Json | null
           updated_at?: string | null
           user_id: string
           version?: number | null
@@ -179,6 +181,7 @@ export type Database = {
           industry?: string | null
           logo_url?: string | null
           r4_spend_grade?: string | null
+          social_urls?: Json | null
           updated_at?: string | null
           user_id?: string
           version?: number | null
