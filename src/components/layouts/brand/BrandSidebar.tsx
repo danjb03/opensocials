@@ -27,7 +27,7 @@ const BrandSidebar = () => {
   };
 
   return (
-    <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} transition-all duration-300 bg-card border-r border-border flex flex-col`}>
+    <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} transition-all duration-300 bg-card border-r border-border flex flex-col min-h-screen`}>
       <BrandSidebarHeader 
         isSidebarOpen={isSidebarOpen} 
         onToggle={toggleSidebar} 
@@ -50,7 +50,9 @@ const BrandSidebar = () => {
 
       <BrandSidebarQuickActions isSidebarOpen={isSidebarOpen} />
 
-      <BrandSidebarNavigation isSidebarOpen={isSidebarOpen} />
+      <div className="flex-1 py-4">
+        <BrandSidebarNavigation isSidebarOpen={isSidebarOpen} />
+      </div>
 
       <BrandSidebarUserProfile isSidebarOpen={isSidebarOpen} />
     </div>

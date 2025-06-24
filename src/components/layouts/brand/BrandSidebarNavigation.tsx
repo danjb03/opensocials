@@ -1,8 +1,13 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { BarChart3, Megaphone, Package, Users, Settings } from 'lucide-react';
 
-const BrandSidebarNavigation = () => {
+interface BrandSidebarNavigationProps {
+  isSidebarOpen: boolean;
+}
+
+const BrandSidebarNavigation = ({ isSidebarOpen }: BrandSidebarNavigationProps) => {
   const location = useLocation();
   
   const isActive = (path: string) => {
@@ -22,7 +27,7 @@ const BrandSidebarNavigation = () => {
         }`}
       >
         <BarChart3 className="mr-3 h-4 w-4" />
-        Dashboard
+        {isSidebarOpen && 'Dashboard'}
       </Link>
 
       <Link
@@ -34,7 +39,7 @@ const BrandSidebarNavigation = () => {
         }`}
       >
         <Megaphone className="mr-3 h-4 w-4" />
-        Campaigns
+        {isSidebarOpen && 'Campaigns'}
       </Link>
 
       <Link
@@ -46,7 +51,7 @@ const BrandSidebarNavigation = () => {
         }`}
       >
         <Package className="mr-3 h-4 w-4" />
-        Orders
+        {isSidebarOpen && 'Orders'}
       </Link>
 
       <Link
@@ -58,7 +63,7 @@ const BrandSidebarNavigation = () => {
         }`}
       >
         <Users className="mr-3 h-4 w-4" />
-        Creators
+        {isSidebarOpen && 'Creators'}
       </Link>
 
       <Link
@@ -70,7 +75,7 @@ const BrandSidebarNavigation = () => {
         }`}
       >
         <Settings className="mr-3 h-4 w-4" />
-        Settings
+        {isSidebarOpen && 'Settings'}
       </Link>
     </nav>
   );
