@@ -58,7 +58,18 @@ export const useBrandProfile = () => {
         
         if (data) {
           console.log('✅ Brand profile found:', data);
-          setProfile(data);
+          // Ensure social_urls has the correct structure
+          const profileData: BrandProfile = {
+            ...data,
+            social_urls: data.social_urls || {
+              instagram: null,
+              tiktok: null,
+              youtube: null,
+              linkedin: null,
+              twitter: null
+            }
+          };
+          setProfile(profileData);
         } else {
           console.log('⚠️ No brand profile found for user');
           setProfile(null);
@@ -99,7 +110,18 @@ export const useBrandProfile = () => {
       }
       
       console.log('✅ Profile updated successfully:', data);
-      setProfile(data);
+      // Ensure social_urls has the correct structure
+      const profileData: BrandProfile = {
+        ...data,
+        social_urls: data.social_urls || {
+          instagram: null,
+          tiktok: null,
+          youtube: null,
+          linkedin: null,
+          twitter: null
+        }
+      };
+      setProfile(profileData);
       
       toast.success('Profile updated successfully');
       return { success: true };
@@ -138,7 +160,18 @@ export const useBrandProfile = () => {
       }
       
       console.log('✅ Profile created successfully:', data);
-      setProfile(data);
+      // Ensure social_urls has the correct structure
+      const profileData: BrandProfile = {
+        ...data,
+        social_urls: data.social_urls || {
+          instagram: null,
+          tiktok: null,
+          youtube: null,
+          linkedin: null,
+          twitter: null
+        }
+      };
+      setProfile(profileData);
       toast.success('Profile created successfully');
       return { success: true };
     } catch (err: any) {
