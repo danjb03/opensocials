@@ -35,7 +35,7 @@ export const useCampaignSubmissions = (campaignId: string) => {
               name: `${creator.first_name || ''} ${creator.last_name || ''}`.trim() || 'Creator',
               avatar_url: creator.avatar_url
             } : undefined
-          };
+          } as CampaignSubmission;
         })
       );
 

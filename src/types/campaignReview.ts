@@ -3,7 +3,7 @@ export interface CampaignSubmission {
   id: string;
   campaign_id: string;
   creator_id: string;
-  submission_type: 'content' | 'revision';
+  submission_type: string; // Changed from union type to string to match database
   content_data: {
     files?: Array<{
       url: string;
@@ -16,16 +16,16 @@ export interface CampaignSubmission {
     platform?: string;
     scheduled_date?: string;
   };
-  status: 'draft' | 'submitted' | 'approved' | 'revision_requested' | 'rejected';
-  submission_notes?: string;
-  created_at: string;
-  updated_at: string;
-  submitted_at?: string;
-  reviewed_at?: string;
+  status: string; // Changed from union type to string to match database
+  submission_notes?: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  submitted_at?: string | null;
+  reviewed_at?: string | null;
   creator_info?: {
     id: string;
     name: string;
-    avatar_url?: string;
+    avatar_url?: string | null;
   };
 }
 
@@ -34,7 +34,7 @@ export interface SubmissionReview {
   submission_id: string;
   reviewer_id: string;
   action: 'approve' | 'request_revision' | 'reject';
-  feedback_text?: string;
+  feedback_text?: string | null;
   review_data: Record<string, any>;
   created_at: string;
 }
@@ -42,13 +42,13 @@ export interface SubmissionReview {
 export interface CampaignNotification {
   id: string;
   user_id: string;
-  campaign_id?: string;
-  submission_id?: string;
-  notification_type: 'submission_received' | 'review_completed' | 'revision_requested' | 'campaign_launched';
+  campaign_id?: string | null;
+  submission_id?: string | null;
+  notification_type: string;
   title: string;
   message: string;
-  is_read: boolean;
-  created_at: string;
+  is_read: boolean | null;
+  created_at: string | null;
 }
 
 export type ReviewStage = 'campaign_setup' | 'awaiting_submissions' | 'reviewing_content' | 'ready_to_launch' | 'live' | 'completed';
