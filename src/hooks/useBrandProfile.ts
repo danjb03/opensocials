@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { toast } from 'sonner';
+import type { Json } from '@/integrations/supabase/types';
 
 interface SocialUrls {
   instagram?: string | null;
@@ -27,7 +28,7 @@ interface BrandProfile {
   updated_at: string;
 }
 
-const parseSocialUrls = (socialUrls: any): SocialUrls => {
+const parseSocialUrls = (socialUrls: Json): SocialUrls => {
   if (!socialUrls || typeof socialUrls !== 'object') {
     return {
       instagram: null,
@@ -38,12 +39,23 @@ const parseSocialUrls = (socialUrls: any): SocialUrls => {
     };
   }
   
+  const urls = socialUrls as Record<string, any>;
   return {
-    instagram: socialUrls.instagram || null,
-    tiktok: socialUrls.tiktok || null,
-    youtube: socialUrls.youtube || null,
-    linkedin: socialUrls.linkedin || null,
-    twitter: socialUrls.twitter || null
+    instagram: urls.instagram || null,
+    tiktok: urls.tiktok || null,
+    youtube: urls.youtube || null,
+    linkedin: urls.linkedin || null,
+    twitter: urls.twitter || null
+  };
+};
+
+const socialUrlsToJson = (socialUrls: SocialUrls): Json => {
+  return {
+    instagram: socialUrls.instagram,
+    tiktok: socialUrls.tiktok,
+    youtube: socialUrls.youtube,
+    linkedin: socialUrls.linkedin,
+    twitter: socialUrls.twitter
   };
 };
 
@@ -109,12 +121,16 @@ export const useBrandProfile = () => {
     try {
       console.log('🔄 Updating brand profile:', updates);
       
+      // Convert social_urls to Json type for database
+      const dbUpdates = {
+        ...updates,
+        social_urls: updates.social_urls ? socialUrlsToJson(updates.social_urls) : undefined,
+        updated_at: new Date().toISOString()
+      };
+
       const { data, error } = await supabase
         .from('brand_profiles')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
+        .update(dbUpdates)
         .eq('user_id', user.id)
         .select()
         .single();
@@ -152,6 +168,7 @@ export const useBrandProfile = () => {
       const newProfile = {
         user_id: user.id,
         ...profileData,
+        social_urls: profileData.social_urls ? socialUrlsToJson(profileData.social_urls) : null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
