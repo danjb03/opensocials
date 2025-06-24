@@ -5,7 +5,7 @@ import BrandSidebar from './brand/BrandSidebar';
 
 const BrandLayout = ({ children }: { children?: React.ReactNode }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/20 flex w-full">
+    <div className="min-h-screen bg-background flex w-full">
       <BrandSidebar />
 
       {/* Main Content */}

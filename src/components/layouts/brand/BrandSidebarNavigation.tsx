@@ -60,17 +60,17 @@ const BrandSidebarNavigation = ({ isSidebarOpen }: BrandSidebarNavigationProps) 
               <Button
                 variant="ghost"
                 onClick={() => navigate(item.href)}
-                className={`w-full justify-start h-auto p-3 rounded-lg transition-all duration-200 ${
+                className={`w-full justify-start h-auto p-3 rounded-lg ${
                   isActive 
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 shadow-sm' 
-                    : 'text-muted-foreground hover:text-foreground hover:bg-blue-50/50 hover:border-blue-100/50'
+                    ? 'bg-white text-black hover:bg-white hover:text-black' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                 }`}
               >
-                <Icon className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : ''} ${isActive ? 'text-white' : ''}`} />
+                <Icon className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : ''}`} />
                 {isSidebarOpen && (
                   <div className="text-left">
-                    <div className={`font-medium text-sm ${isActive ? 'text-white' : ''}`}>{item.name}</div>
-                    <div className={`text-xs ${isActive ? 'text-blue-100' : 'opacity-70'}`}>{item.description}</div>
+                    <div className="font-medium text-sm">{item.name}</div>
+                    <div className="text-xs opacity-70">{item.description}</div>
                   </div>
                 )}
               </Button>

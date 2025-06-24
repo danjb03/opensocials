@@ -41,7 +41,7 @@ const BrandDashboard = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6 bg-gradient-to-br from-slate-50 to-blue-50/30">
+    <div className="container mx-auto p-6 space-y-6 bg-background">
       <DashboardHeader />
       
       <StatsCards 
@@ -49,32 +49,26 @@ const BrandDashboard = () => {
         isLoading={isLoading}
       />
 
-      {/* Quick Actions - Full Width Below Stats with subtle blue accent */}
+      {/* Quick Actions - Full Width Below Stats */}
       <div className="w-full">
-        <div className="bg-gradient-to-r from-blue-50/50 to-slate-50 rounded-lg p-4 border border-blue-100/50">
-          <QuickActions />
-        </div>
+        <QuickActions />
       </div>
 
-      {/* Recent Campaigns - Full Width with subtle blue border */}
+      {/* Recent Campaigns - Full Width */}
       <div className="w-full">
-        <div className="bg-white rounded-lg border border-blue-100/30 shadow-sm">
-          <RecentProjects 
-            projects={projects}
-            isLoading={isLoading}
-          />
-        </div>
+        <RecentProjects 
+          projects={projects}
+          isLoading={isLoading}
+        />
       </div>
 
-      {/* Action Items - Full Width Below Recent Campaigns with blue accent */}
+      {/* Action Items - Full Width Below Recent Campaigns */}
       <div className="w-full">
-        <div className="bg-gradient-to-r from-slate-50 to-blue-50/40 rounded-lg border border-blue-100/40">
-          <TodoPanel 
-            todos={todoItems}
-            onMarkComplete={handleMarkTodoComplete}
-            onViewAll={handleViewAllTodos}
-          />
-        </div>
+        <TodoPanel 
+          todos={todoItems}
+          onMarkComplete={handleMarkTodoComplete}
+          onViewAll={handleViewAllTodos}
+        />
       </div>
     </div>
   );
