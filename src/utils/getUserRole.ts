@@ -2,6 +2,16 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { UserRole } from '@/lib/auth';
 
+// Valid role values that match the database enum
+const VALID_ROLES: UserRole[] = ['creator', 'brand', 'admin', 'agency', 'super_admin'];
+
+/**
+ * Validate if a string is a valid UserRole
+ */
+const isValidRole = (role: string): role is UserRole => {
+  return VALID_ROLES.includes(role as UserRole);
+};
+
 /**
  * Fetch a user's role from the database.
  * Uses the new security definer function to avoid RLS recursion.
@@ -14,7 +24,7 @@ export const getUserRole = async (userId: string): Promise<UserRole | null> => {
     try {
       const { data, error } = await supabase.rpc('get_current_user_role');
       
-      if (!error && data) {
+      if (!error && data && isValidRole(data)) {
         console.log('✅ Found role using security definer function:', data);
         return data as UserRole;
       }
@@ -35,7 +45,7 @@ export const getUserRole = async (userId: string): Promise<UserRole | null> => {
         .eq('status', 'approved')
         .maybeSingle();
 
-      if (!roleError && roleData?.role) {
+      if (!roleError && roleData?.role && isValidRole(roleData.role)) {
         console.log('✅ Found role in user_roles (fallback):', roleData.role);
         return roleData.role as UserRole;
       }
@@ -55,19 +65,26 @@ export const getUserRole = async (userId: string): Promise<UserRole | null> => {
         .eq('id', userId)
         .maybeSingle();
 
-      if (!profileError && profileData?.role) {
+      if (!profileError && profileData?.role && isValidRole(profileData.role)) {
         console.log('✅ Found role in profiles (backward compatibility):', profileData.role);
         
         // Auto-create the missing user_roles entry for future consistency
         try {
-          await supabase
+          const { error: upsertError } = await supabase
             .from('user_roles')
             .upsert({
               user_id: userId,
-              role: profileData.role,
+              role: profileData.role as UserRole,
               status: 'approved'
+            }, {
+              onConflict: 'user_id,role'
             });
-          console.log('🔧 Auto-created missing user_roles entry');
+            
+          if (upsertError) {
+            console.warn('Could not auto-create user_roles entry:', upsertError.message);
+          } else {
+            console.log('🔧 Auto-created missing user_roles entry');
+          }
         } catch (createErr) {
           console.warn('Could not auto-create user_roles entry:', createErr);
         }
