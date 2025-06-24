@@ -161,7 +161,7 @@ export const useBrandProfile = () => {
       
       console.log('✅ Profile created successfully:', data);
       // Ensure social_urls has the correct structure
-      const profileData: BrandProfile = {
+      const createdProfileData: BrandProfile = {
         ...data,
         social_urls: data.social_urls || {
           instagram: null,
@@ -171,7 +171,7 @@ export const useBrandProfile = () => {
           twitter: null
         }
       };
-      setProfile(profileData);
+      setProfile(createdProfileData);
       toast.success('Profile created successfully');
       return { success: true };
     } catch (err: any) {
