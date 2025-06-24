@@ -18,6 +18,7 @@ const BrandRoutes = () => {
         <Routes>
           <Route index element={<BrandDashboard />} />
           <Route path="dashboard" element={<BrandDashboard />} />
+          <Route path="campaigns" element={<BrandCampaigns />} />
           <Route path="orders" element={<BrandOrders />} />
           <Route path="creators" element={<BrandCreators />} />
           <Route path="settings" element={<BrandSettings />} />

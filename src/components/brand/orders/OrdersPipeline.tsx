@@ -1,10 +1,12 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { OrderStage, orderStageLabels, Order } from '@/types/orders';
 import CampaignCard from './CampaignCard';
-import { FileText, Users, ClipboardCheck, Calendar, BarChart2 } from 'lucide-react';
+import { FileText, Users, ClipboardCheck, Calendar, BarChart2, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface OrdersPipelineProps {
   orders: Order[];
@@ -37,6 +39,8 @@ const OrdersPipeline: React.FC<OrdersPipelineProps> = ({
   onStageChange, 
   onOrderSelect 
 }) => {
+  const navigate = useNavigate();
+  
   const stages: OrderStage[] = [
     'campaign_setup', 
     'creator_selection', 
@@ -48,6 +52,10 @@ const OrdersPipeline: React.FC<OrdersPipelineProps> = ({
   // Filter orders by stage
   const getOrdersByStage = (stage: OrderStage) => {
     return orders.filter(order => order.stage === stage);
+  };
+
+  const handleContinueDraft = (orderId: string) => {
+    navigate(`/brand/create-campaign?draft=${orderId}`);
   };
 
   return (
@@ -73,19 +81,48 @@ const OrdersPipeline: React.FC<OrdersPipelineProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {getOrdersByStage(stage).length > 0 ? (
               getOrdersByStage(stage).map((order) => (
-                <CampaignCard
-                  key={order.id}
-                  order={order}
-                  onClick={onOrderSelect}
-                />
+                <div key={order.id} className="relative">
+                  <CampaignCard
+                    order={order}
+                    onClick={onOrderSelect}
+                  />
+                  {/* Continue Draft Button for Setup Stage */}
+                  {stage === 'campaign_setup' && (
+                    <div className="absolute top-2 right-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleContinueDraft(order.id);
+                        }}
+                        className="text-xs h-7 px-2"
+                      >
+                        Continue Draft
+                      </Button>
+                    </div>
+                  )}
+                </div>
               ))
             ) : (
               <div className="col-span-full">
                 <EmptyState
                   icon={stageIconsForEmpty[stage]}
                   title={`No campaigns in ${orderStageLabels[stage]}`}
-                  description="Get started by moving a campaign to this stage or create a new campaign."
+                  description={
+                    stage === 'campaign_setup' 
+                      ? "Get started by creating your first campaign."
+                      : "Campaigns will move here as they progress through the workflow."
+                  }
                   className="animate-fade-in"
+                  action={
+                    stage === 'campaign_setup' ? (
+                      <Button onClick={() => navigate('/brand/create-campaign')}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Campaign
+                      </Button>
+                    ) : undefined
+                  }
                 />
               </div>
             )}
