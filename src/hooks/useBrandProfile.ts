@@ -4,6 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { toast } from 'sonner';
 
+interface SocialUrls {
+  instagram?: string | null;
+  tiktok?: string | null;
+  youtube?: string | null;
+  linkedin?: string | null;
+  twitter?: string | null;
+}
+
 interface BrandProfile {
   user_id: string;
   company_name: string;
@@ -14,16 +22,30 @@ interface BrandProfile {
   brand_bio: string | null;
   brand_goal: string | null;
   campaign_focus: string[] | null;
-  social_urls: {
-    instagram?: string | null;
-    tiktok?: string | null;
-    youtube?: string | null;
-    linkedin?: string | null;
-    twitter?: string | null;
-  } | null;
+  social_urls: SocialUrls | null;
   created_at: string;
   updated_at: string;
 }
+
+const parseSocialUrls = (socialUrls: any): SocialUrls => {
+  if (!socialUrls || typeof socialUrls !== 'object') {
+    return {
+      instagram: null,
+      tiktok: null,
+      youtube: null,
+      linkedin: null,
+      twitter: null
+    };
+  }
+  
+  return {
+    instagram: socialUrls.instagram || null,
+    tiktok: socialUrls.tiktok || null,
+    youtube: socialUrls.youtube || null,
+    linkedin: socialUrls.linkedin || null,
+    twitter: socialUrls.twitter || null
+  };
+};
 
 export const useBrandProfile = () => {
   const { user } = useAuth();
@@ -58,16 +80,9 @@ export const useBrandProfile = () => {
         
         if (data) {
           console.log('✅ Brand profile found:', data);
-          // Ensure social_urls has the correct structure
           const profileData: BrandProfile = {
             ...data,
-            social_urls: data.social_urls || {
-              instagram: null,
-              tiktok: null,
-              youtube: null,
-              linkedin: null,
-              twitter: null
-            }
+            social_urls: parseSocialUrls(data.social_urls)
           };
           setProfile(profileData);
         } else {
@@ -110,16 +125,9 @@ export const useBrandProfile = () => {
       }
       
       console.log('✅ Profile updated successfully:', data);
-      // Ensure social_urls has the correct structure
       const profileData: BrandProfile = {
         ...data,
-        social_urls: data.social_urls || {
-          instagram: null,
-          tiktok: null,
-          youtube: null,
-          linkedin: null,
-          twitter: null
-        }
+        social_urls: parseSocialUrls(data.social_urls)
       };
       setProfile(profileData);
       
@@ -160,16 +168,9 @@ export const useBrandProfile = () => {
       }
       
       console.log('✅ Profile created successfully:', data);
-      // Ensure social_urls has the correct structure
       const createdProfileData: BrandProfile = {
         ...data,
-        social_urls: data.social_urls || {
-          instagram: null,
-          tiktok: null,
-          youtube: null,
-          linkedin: null,
-          twitter: null
-        }
+        social_urls: parseSocialUrls(data.social_urls)
       };
       setProfile(createdProfileData);
       toast.success('Profile created successfully');
