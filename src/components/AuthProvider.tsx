@@ -86,8 +86,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('✅ Role resolved successfully:', resolvedRole);
         setRole(resolvedRole);
       } else {
-        console.warn('⚠️ No role found for user, defaulting to null');
+        console.warn('⚠️ No role found for user, this might indicate a setup issue');
         setRole(null);
+        
+        // Show a helpful message to the user
+        toast.error('Account setup incomplete. Please contact support if this persists.');
       }
     } catch (error) {
       console.error('❌ Failed to fetch user role:', error);

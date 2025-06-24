@@ -47,7 +47,42 @@ export const getUserRole = async (userId: string): Promise<UserRole | null> => {
       console.warn('Could not fetch from user_roles:', roleErr);
     }
 
-    // PRIORITY 3: Use auth metadata as last resort only for known super admin
+    // PRIORITY 3: Fallback to profiles table for backward compatibility
+    try {
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (!profileError && profileData?.role) {
+        console.log('✅ Found role in profiles (backward compatibility):', profileData.role);
+        
+        // Auto-create the missing user_roles entry for future consistency
+        try {
+          await supabase
+            .from('user_roles')
+            .upsert({
+              user_id: userId,
+              role: profileData.role,
+              status: 'approved'
+            });
+          console.log('🔧 Auto-created missing user_roles entry');
+        } catch (createErr) {
+          console.warn('Could not auto-create user_roles entry:', createErr);
+        }
+        
+        return profileData.role as UserRole;
+      }
+      
+      if (profileError) {
+        console.warn('profiles query error:', profileError.message);
+      }
+    } catch (profileErr) {
+      console.warn('Could not fetch from profiles:', profileErr);
+    }
+
+    // PRIORITY 4: Use auth metadata as last resort only for known super admin
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.user_metadata?.role && user.id === 'af6ad2ce-be6c-4620-a440-867c52d66918') {

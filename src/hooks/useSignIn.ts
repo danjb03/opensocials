@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { validateEmail } from '@/utils/security';
+import { clearAuthState } from '@/utils/getUserRole';
 
 interface SignInParams {
   email: string;
@@ -28,6 +29,9 @@ export function useSignIn() {
       }
 
       console.log('🔐 Attempting sign in for:', email);
+
+      // Clear any stale auth state before signing in
+      clearAuthState();
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -87,60 +91,13 @@ export function useSignIn() {
       }
 
       console.log('✅ Sign in successful for user:', data.user.id);
+      toast.success('Welcome back!');
 
-      // Try to get role and check account status
-      try {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('role, is_complete, status')
-          .eq('id', data.user.id)
-          .maybeSingle();
+      // Force a page refresh to ensure clean auth state
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
 
-        if (profileError) {
-          // If it's a recursion error, still allow login but route based on metadata
-          if (profileError.message?.includes('infinite recursion')) {
-            console.warn('⚠️ Profile RLS recursion, using fallback routing');
-            
-            // Try to get role from user metadata
-            const metadataRole = data.user.user_metadata?.role;
-            if (metadataRole) {
-              routeBasedOnRole(metadataRole);
-            } else {
-              // Default routing for super admin
-              window.location.href = '/super-admin';
-            }
-            setIsLoading(false);
-            return;
-          } else {
-            console.error('Error fetching user profile:', profileError);
-            toast.error('Failed to fetch user profile.');
-            setIsLoading(false);
-            return;
-          }
-        }
-
-        // Check if account is suspended
-        if (profileData?.status === 'suspended') {
-          toast.error('Your account is currently under review. Please contact support for assistance.');
-          
-          // Sign out the user immediately
-          await supabase.auth.signOut();
-          setIsLoading(false);
-          return;
-        }
-
-        // Normal routing based on profile data
-        if (profileData?.role) {
-          routeBasedOnRole(profileData.role, profileData.is_complete);
-        } else {
-          console.warn('⚠️ No role found, redirecting to super admin dashboard');
-          window.location.href = '/super-admin';
-        }
-      } catch (err) {
-        console.error('Profile fetch failed:', err);
-        // Fallback: redirect to super admin dashboard
-        window.location.href = '/super-admin';
-      }
     } catch (err: any) {
       console.error('❌ Login error:', err.message);
       
@@ -152,37 +109,6 @@ export function useSignIn() {
       }
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const routeBasedOnRole = (role: string, isComplete?: boolean) => {
-    console.log('🎯 Routing user with role:', role);
-    
-    // Route based on role - Super admin goes to super admin dashboard
-    switch (role) {
-      case 'super_admin':
-        window.location.href = '/super-admin';
-        break;
-      case 'admin':
-        window.location.href = '/admin';
-        break;
-      case 'brand':
-        // For brand users, check if their profile is complete
-        if (isComplete === false) {
-          window.location.href = '/brand/setup-profile';
-        } else {
-          window.location.href = '/brand';
-        }
-        break;
-      case 'creator':
-        window.location.href = '/creator';
-        break;
-      case 'agency':
-        window.location.href = '/agency';
-        break;
-      default:
-        console.warn('❌ Unknown role:', role);
-        window.location.href = '/super-admin'; // Default to super admin for unknown roles
     }
   };
 
