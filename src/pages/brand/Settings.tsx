@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,21 +12,37 @@ import StripePaymentSetup from '@/components/brand/StripePaymentSetup';
 import { toast } from 'sonner';
 
 const BrandSettings = () => {
-  const { user, brandProfile } = useUnifiedAuth();
-  const { updateProfile } = useBrandProfile();
+  const { user } = useUnifiedAuth();
+  const { profile, updateProfile } = useBrandProfile();
   const [isUpdating, setIsUpdating] = useState(false);
   
   // Form state for company information
   const [companyData, setCompanyData] = useState({
-    companyName: brandProfile?.company_name || '',
-    website: brandProfile?.website_url || '',
-    description: brandProfile?.brand_bio || '',
-    instagramUrl: brandProfile?.social_urls?.instagram || '',
-    tiktokUrl: brandProfile?.social_urls?.tiktok || '',
-    youtubeUrl: brandProfile?.social_urls?.youtube || '',
-    linkedinUrl: brandProfile?.social_urls?.linkedin || '',
-    twitterUrl: brandProfile?.social_urls?.twitter || '',
+    companyName: '',
+    website: '',
+    description: '',
+    instagramUrl: '',
+    tiktokUrl: '',
+    youtubeUrl: '',
+    linkedinUrl: '',
+    twitterUrl: '',
   });
+
+  // Update form state when profile loads
+  useEffect(() => {
+    if (profile) {
+      setCompanyData({
+        companyName: profile.company_name || '',
+        website: profile.website_url || '',
+        description: profile.brand_bio || '',
+        instagramUrl: profile.social_urls?.instagram || '',
+        tiktokUrl: profile.social_urls?.tiktok || '',
+        youtubeUrl: profile.social_urls?.youtube || '',
+        linkedinUrl: profile.social_urls?.linkedin || '',
+        twitterUrl: profile.social_urls?.twitter || '',
+      });
+    }
+  }, [profile]);
 
   const handleCompanyDataChange = (field: string, value: string) => {
     setCompanyData(prev => ({
