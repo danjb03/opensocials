@@ -1,83 +1,77 @@
-
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { 
-  LayoutDashboard, 
-  FolderOpen, 
-  Users, 
-  Settings 
-} from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { BarChart3, Megaphone, Package, Users, Settings } from 'lucide-react';
 
-interface BrandSidebarNavigationProps {
-  isSidebarOpen: boolean;
-}
-
-const BrandSidebarNavigation = ({ isSidebarOpen }: BrandSidebarNavigationProps) => {
-  const navigate = useNavigate();
+const BrandSidebarNavigation = () => {
   const location = useLocation();
-
-  const navigationItems = [
-    { 
-      name: 'Dashboard', 
-      href: '/brand/dashboard', 
-      icon: LayoutDashboard,
-      description: 'Overview and metrics'
-    },
-    { 
-      name: 'Orders', 
-      href: '/brand/orders', 
-      icon: FolderOpen,
-      description: 'Campaign pipeline'
-    },
-    { 
-      name: 'Creators', 
-      href: '/brand/creators', 
-      icon: Users,
-      description: 'Find and manage creators'
-    },
-    { 
-      name: 'Settings', 
-      href: '/brand/settings', 
-      icon: Settings,
-      description: 'Account preferences'
-    }
-  ];
-
-  const isActiveRoute = (href: string) => {
-    return location.pathname === href || location.pathname.startsWith(href + '/');
+  
+  const isActive = (path: string) => {
+    if (path === '/brand' && location.pathname === '/brand') return true;
+    if (path !== '/brand' && location.pathname.startsWith(path)) return true;
+    return false;
   };
 
   return (
-    <nav className="flex-1 p-4">
-      <ul className="space-y-2">
-        {navigationItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = isActiveRoute(item.href);
-          
-          return (
-            <li key={item.name}>
-              <Button
-                variant="ghost"
-                onClick={() => navigate(item.href)}
-                className={`w-full justify-start h-auto p-3 rounded-lg ${
-                  isActive 
-                    ? 'bg-white text-black hover:bg-white hover:text-black' 
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
-                }`}
-              >
-                <Icon className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : ''}`} />
-                {isSidebarOpen && (
-                  <div className="text-left">
-                    <div className="font-medium text-sm">{item.name}</div>
-                    <div className="text-xs opacity-70">{item.description}</div>
-                  </div>
-                )}
-              </Button>
-            </li>
-          );
-        })}
-      </ul>
+    <nav className="space-y-1 px-3">
+      <Link
+        to="/brand"
+        className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+          isActive('/brand') && location.pathname === '/brand'
+            ? 'bg-primary/10 text-primary'
+            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+        }`}
+      >
+        <BarChart3 className="mr-3 h-4 w-4" />
+        Dashboard
+      </Link>
+
+      <Link
+        to="/brand/campaigns"
+        className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+          isActive('/brand/campaigns')
+            ? 'bg-primary/10 text-primary'
+            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+        }`}
+      >
+        <Megaphone className="mr-3 h-4 w-4" />
+        Campaigns
+      </Link>
+
+      <Link
+        to="/brand/orders"
+        className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+          isActive('/brand/orders')
+            ? 'bg-primary/10 text-primary'
+            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+        }`}
+      >
+        <Package className="mr-3 h-4 w-4" />
+        Orders
+      </Link>
+
+      <Link
+        to="/brand/creators"
+        className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+          isActive('/brand/creators')
+            ? 'bg-primary/10 text-primary'
+            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+        }`}
+      >
+        <Users className="mr-3 h-4 w-4" />
+        Creators
+      </Link>
+
+      <Link
+        to="/brand/settings"
+        className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+          isActive('/brand/settings')
+            ? 'bg-primary/10 text-primary'
+            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+        }`}
+      >
+        <Settings className="mr-3 h-4 w-4" />
+        Settings
+      </Link>
     </nav>
   );
 };

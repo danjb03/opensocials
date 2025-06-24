@@ -1,278 +1,235 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Eye, Calendar, Users, DollarSign } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
-type CampaignWithStats = {
-  id: string;
-  name: string;
-  status: string;
-  review_stage: string;
-  budget: number;
-  start_date: string;
-  end_date: string;
-  created_at: string;
-  creator_count: number;
-  submission_count: number;
-  pending_reviews: number;
-  approved_content: number;
-};
+import { Plus, Package, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+
 const BrandOrders = () => {
   const navigate = useNavigate();
-  const {
-    user
-  } = useUnifiedAuth();
 
-  // Fetch campaigns with stats
-  const {
-    data: campaigns,
-    isLoading
-  } = useQuery({
-    queryKey: ['brand-campaigns', user?.id],
-    queryFn: async (): Promise<CampaignWithStats[]> => {
-      if (!user?.id) return [];
-      const {
-        data: projects,
-        error
-      } = await supabase.from('projects_new').select(`
-          id,
-          name,
-          status,
-          review_stage,
-          budget,
-          start_date,
-          end_date,
-          created_at
-        `).eq('brand_id', user.id).order('created_at', {
-        ascending: false
-      });
-      if (error) throw error;
-
-      // Get stats for each campaign
-      const campaignsWithStats = await Promise.all((projects || []).map(async project => {
-        // Get creator count
-        const {
-          count: creatorCount
-        } = await supabase.from('creator_deals').select('*', {
-          count: 'exact',
-          head: true
-        }).eq('project_id', project.id);
-
-        // Get submission stats
-        const {
-          data: submissions
-        } = await supabase.from('campaign_submissions').select('status').eq('campaign_id', project.id);
-        const submissionCount = submissions?.length || 0;
-        const pendingReviews = submissions?.filter(s => s.status === 'submitted').length || 0;
-        const approvedContent = submissions?.filter(s => s.status === 'approved').length || 0;
-        return {
-          ...project,
-          creator_count: creatorCount || 0,
-          submission_count: submissionCount,
-          pending_reviews: pendingReviews,
-          approved_content: approvedContent
-        };
-      }));
-      return campaignsWithStats;
+  // Mock order data - this would come from your actual orders API
+  const orders = [
+    {
+      id: '1',
+      orderNumber: 'ORD-001',
+      campaign: 'Summer Collection 2024',
+      creator: 'Sarah Johnson',
+      status: 'in_progress',
+      amount: 2500,
+      deliverables: 3,
+      completed: 1,
+      dueDate: '2024-07-15'
     },
-    enabled: !!user?.id
-  });
-  const getStageColor = (stage: string) => {
-    switch (stage) {
-      case 'campaign_setup':
-        return 'bg-gray-100 text-gray-800';
-      case 'awaiting_submissions':
-        return 'bg-blue-100 text-blue-800';
-      case 'reviewing_content':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'ready_to_launch':
-        return 'bg-green-100 text-green-800';
-      case 'live':
-        return 'bg-purple-100 text-purple-800';
+    {
+      id: '2',
+      orderNumber: 'ORD-002',
+      campaign: 'Brand Awareness Push',
+      creator: 'Mike Chen',
+      status: 'completed',
+      amount: 1800,
+      deliverables: 2,
+      completed: 2,
+      dueDate: '2024-06-30'
+    },
+    {
+      id: '3',
+      orderNumber: 'ORD-003',
+      campaign: 'Product Launch',
+      creator: 'Emma Davis',
+      status: 'pending',
+      amount: 3200,
+      deliverables: 4,
+      completed: 0,
+      dueDate: '2024-08-01'
+    }
+  ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
       case 'completed':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-green-100 text-green-800';
+      case 'in_progress':
+        return 'bg-blue-100 text-blue-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'overdue':
+        return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
-  const getStageText = (stage: string) => {
-    switch (stage) {
-      case 'campaign_setup':
-        return 'Setup';
-      case 'awaiting_submissions':
-        return 'Awaiting Content';
-      case 'reviewing_content':
-        return 'Under Review';
-      case 'ready_to_launch':
-        return 'Ready to Launch';
-      case 'live':
-        return 'Live';
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <CheckCircle className="h-4 w-4" />;
+      case 'in_progress':
+        return <Clock className="h-4 w-4" />;
+      case 'pending':
+        return <Package className="h-4 w-4" />;
+      case 'overdue':
+        return <AlertCircle className="h-4 w-4" />;
+      default:
+        return <Package className="h-4 w-4" />;
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
       case 'completed':
         return 'Completed';
+      case 'in_progress':
+        return 'In Progress';
+      case 'pending':
+        return 'Pending';
+      case 'overdue':
+        return 'Overdue';
       default:
-        return stage;
+        return status;
     }
   };
-  const campaignsByStage = {
-    review: campaigns?.filter(c => ['awaiting_submissions', 'reviewing_content', 'ready_to_launch'].includes(c.review_stage)) || [],
-    live: campaigns?.filter(c => c.review_stage === 'live') || [],
-    completed: campaigns?.filter(c => c.review_stage === 'completed') || []
-  };
-  const CampaignCard = ({
-    campaign
-  }: {
-    campaign: CampaignWithStats;
-  }) => <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">{campaign.name}</CardTitle>
-          <Badge className={getStageColor(campaign.review_stage)}>
-            {getStageText(campaign.review_stage)}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center space-x-2">
-            <Users className="h-4 w-4 text-gray-500" />
-            <span>{campaign.creator_count} creators</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <DollarSign className="h-4 w-4 text-gray-500" />
-            <span>${campaign.budget?.toLocaleString() || '0'}</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Calendar className="h-4 w-4 text-gray-500" />
-            <span>{campaign.start_date ? new Date(campaign.start_date).toLocaleDateString() : 'No date'}</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Eye className="h-4 w-4 text-gray-500" />
-            <span>{campaign.submission_count} submissions</span>
-          </div>
-        </div>
 
-        {/* Review indicators */}
-        {campaign.pending_reviews > 0 && <div className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
-            <span className="text-sm text-blue-700">
-              {campaign.pending_reviews} submission{campaign.pending_reviews !== 1 ? 's' : ''} need review
-            </span>
-            <Badge className="bg-blue-100 text-blue-800 text-xs">
-              Action Required
-            </Badge>
-          </div>}
-
-        {campaign.approved_content > 0 && campaign.pending_reviews === 0 && campaign.review_stage === 'ready_to_launch' && <div className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
-            <span className="text-sm text-green-700">Ready to launch!</span>
-            <Badge className="bg-green-100 text-green-800 text-xs">
-              Launch Ready
-            </Badge>
-          </div>}
-
-        <Button variant="outline" className="w-full" onClick={() => navigate(`/brand/campaign-review/${campaign.id}`)}>
-          <Eye className="h-4 w-4 mr-2" />
-          {campaign.pending_reviews > 0 ? 'Review Content' : 'View Campaign'}
-        </Button>
-      </CardContent>
-    </Card>;
-  if (isLoading) {
-    return <div className="container mx-auto p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-          <div className="grid gap-4">
-            {[...Array(3)].map((_, i) => <div key={i} className="h-48 bg-gray-100 rounded"></div>)}
-          </div>
-        </div>
-      </div>;
-  }
-  return <div className="container mx-auto p-6 space-y-6">
+  return (
+    <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Campaign Orders</h1>
-          <p className="text-muted-foreground">Manage your campaigns from creation to completion</p>
+          <h1 className="text-3xl font-bold text-foreground">Orders</h1>
+          <p className="text-muted-foreground">Track and manage your creator orders and deliverables</p>
         </div>
-        <Button onClick={() => navigate('/brand/create-campaign')}>
+        <Button onClick={() => navigate('/brand/campaigns')}>
           <Plus className="h-4 w-4 mr-2" />
-          Create Campaign
+          View Campaigns
         </Button>
       </div>
 
-      {/* Tabs for different stages */}
-      <Tabs defaultValue="review" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="review" className="relative">
-            Campaign Review
-            {campaignsByStage.review.length > 0 && <Badge className="ml-2 h-5 w-5 rounded-full p-0 text-xs bg-blue-500">
-                {campaignsByStage.review.length}
-              </Badge>}
-          </TabsTrigger>
-          <TabsTrigger value="live">
-            Live Campaigns
-            {campaignsByStage.live.length > 0 && <Badge className="ml-2 h-5 w-5 rounded-full p-0 text-xs bg-green-500">
-                {campaignsByStage.live.length}
-              </Badge>}
-          </TabsTrigger>
-          <TabsTrigger value="completed">
-            Completed Campaigns
-            {campaignsByStage.completed.length > 0 && <Badge className="ml-2 h-5 w-5 rounded-full p-0 text-xs bg-gray-500">
-                {campaignsByStage.completed.length}
-              </Badge>}
-          </TabsTrigger>
-        </TabsList>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Orders</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{orders.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">
+              {orders.filter(o => o.status === 'in_progress').length}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {orders.filter(o => o.status === 'completed').length}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Value</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ${orders.reduce((sum, order) => sum + order.amount, 0).toLocaleString()}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-        <TabsContent value="review" className="space-y-4">
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Campaigns Under Review</h2>
-            {campaignsByStage.review.length > 0 ? <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {campaignsByStage.review.map(campaign => <CampaignCard key={campaign.id} campaign={campaign} />)}
-              </div> : <Card>
-                <CardContent className="pt-6 text-center">
-                  <Eye className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2 text-slate-50">No Campaigns Under Review</h3>
-                  <p className="text-gray-500 mb-4">Create your first campaign to get started</p>
-                  <Button onClick={() => navigate('/brand/create-campaign')}>
-                    Create Campaign
+      {/* Orders List */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Recent Orders</h2>
+        <div className="grid gap-4">
+          {orders.map((order) => (
+            <Card key={order.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">{order.orderNumber}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{order.campaign}</p>
+                  </div>
+                  <Badge className={getStatusColor(order.status)}>
+                    {getStatusIcon(order.status)}
+                    <span className="ml-1">{getStatusText(order.status)}</span>
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Creator</p>
+                    <p className="font-medium">{order.creator}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Amount</p>
+                    <p className="font-medium">${order.amount.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Progress</p>
+                    <p className="font-medium">{order.completed}/{order.deliverables} deliverables</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Due Date</p>
+                    <p className="font-medium">{new Date(order.dueDate).toLocaleDateString()}</p>
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span>Progress</span>
+                    <span>{Math.round((order.completed / order.deliverables) * 100)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all"
+                      style={{ width: `${(order.completed / order.deliverables) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="flex-1">
+                    View Details
                   </Button>
-                </CardContent>
-              </Card>}
-          </div>
-        </TabsContent>
+                  {order.status === 'in_progress' && (
+                    <Button size="sm" className="flex-1">
+                      Review Content
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
 
-        <TabsContent value="live" className="space-y-4">
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Live Campaigns</h2>
-            {campaignsByStage.live.length > 0 ? <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {campaignsByStage.live.map(campaign => <CampaignCard key={campaign.id} campaign={campaign} />)}
-              </div> : <Card>
-                <CardContent className="pt-6 text-center">
-                  <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2 text-slate-50">No Live Campaigns</h3>
-                  <p className="text-gray-500">Launch campaigns after reviewing and approving creator content</p>
-                </CardContent>
-              </Card>}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="completed" className="space-y-4">
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Completed Campaigns</h2>
-            {campaignsByStage.completed.length > 0 ? <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {campaignsByStage.completed.map(campaign => <CampaignCard key={campaign.id} campaign={campaign} />)}
-              </div> : <Card>
-                <CardContent className="pt-6 text-center">
-                  <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2 text-slate-50">No Completed Campaigns</h3>
-                  <p className="text-gray-500">Completed campaigns will appear here</p>
-                </CardContent>
-              </Card>}
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>;
+      {/* Empty State */}
+      {orders.length === 0 && (
+        <Card>
+          <CardContent className="pt-6 text-center">
+            <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2 text-slate-50">No Orders Yet</h3>
+            <p className="text-gray-500 mb-4">Your creator orders and deliverables will appear here</p>
+            <Button onClick={() => navigate('/brand/campaigns')}>
+              View Campaigns
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
 };
+
 export default BrandOrders;

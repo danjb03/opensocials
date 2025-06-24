@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import BrandGuard from '@/components/auth/BrandGuard';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import BrandDashboard from '@/pages/brand/Dashboard';
+import BrandCampaigns from '@/pages/brand/Campaigns';
 import BrandOrders from '@/pages/brand/Orders';
 import BrandCreators from '@/pages/brand/Creators';
 import BrandSettings from '@/pages/brand/Settings';
