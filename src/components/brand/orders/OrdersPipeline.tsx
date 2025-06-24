@@ -58,10 +58,19 @@ const OrdersPipeline: React.FC<OrdersPipelineProps> = ({
     navigate(`/brand/create-campaign?draft=${orderId}`);
   };
 
+  const handleOrderClick = (orderId: string, stage: OrderStage) => {
+    // For campaign_setup stage, redirect to wizard instead of opening detail
+    if (stage === 'campaign_setup') {
+      handleContinueDraft(orderId);
+    } else {
+      onOrderSelect(orderId);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Tabs value={activeStage} onValueChange={(value) => onStageChange(value as OrderStage)}>
-        <TabsList className="grid grid-cols-5 h-auto p-1 bg-muted rounded-lg">
+        <TabsList className="grid grid-cols-5 h-auto p-1 bg-muted/50 rounded-lg">
           {stages.map((stage) => {
             const count = getOrdersByStage(stage).length;
             return (
@@ -92,9 +101,9 @@ const OrdersPipeline: React.FC<OrdersPipelineProps> = ({
                   <div key={order.id} className="relative group">
                     <CampaignCard
                       order={order}
-                      onClick={onOrderSelect}
+                      onClick={(id) => handleOrderClick(id, stage)}
                     />
-                    {/* Continue Draft Button for Setup Stage */}
+                    {/* Continue Draft Button for Setup Stage - now just visual, main click handles navigation */}
                     {stage === 'campaign_setup' && (
                       <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button
