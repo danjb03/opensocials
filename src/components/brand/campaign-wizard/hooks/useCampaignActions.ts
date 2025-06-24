@@ -37,7 +37,7 @@ export const useCampaignActions = (
     
     await handleSaveAndExit(
       formData,
-      userId,
+      user.id,
       currentStep,
       () => saveDraft(formData, currentStep),
       clearDraft,
