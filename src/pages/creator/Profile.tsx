@@ -51,7 +51,7 @@ const CreatorProfile = () => {
     platforms: creatorProfile?.platforms || [],
     industries: creatorProfile?.industries || [],
     audienceLocation: creatorProfile?.audience_location,
-    // Use the actual database values from creatorProfile (snake_case)
+    // Use the correct property names from the unified auth data
     followerCount: creatorProfile?.follower_count || 0,
     engagementRate: creatorProfile?.engagement_rate || 0,
     creatorType: creatorProfile?.creator_type || '',
@@ -61,9 +61,9 @@ const CreatorProfile = () => {
   const safeProfileData = profileData ? {
     ...profileData,
     platforms: profileData.platforms || [],
-    // Use the actual database values from creatorProfile (snake_case) but convert for display
-    followerCount: creatorProfile?.follower_count?.toString() || '0',
-    engagementRate: creatorProfile?.engagement_rate?.toString() || '0%',
+    // Convert numeric values to strings for display in forms
+    followerCount: (creatorProfile?.follower_count || 0).toString(),
+    engagementRate: (creatorProfile?.engagement_rate || 0).toString() + '%',
     creatorType: creatorProfile?.creator_type || '',
     visibilitySettings: profileData.visibilitySettings || {
       showInstagram: true,
