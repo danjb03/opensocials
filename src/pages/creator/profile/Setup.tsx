@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import CreatorLayout from '@/components/layouts/CreatorLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -185,58 +184,56 @@ const ProfileSetup = () => {
   };
 
   return (
-    <CreatorLayout>
-      <div className="container mx-auto p-6 max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Complete Your Creator Profile</h1>
-          <p className="text-muted-foreground mb-6">
-            Set up your profile to start getting discovered by brands
-          </p>
-          
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Step {currentStep} of {totalSteps}: {getStepTitle()}</span>
-              <span className="text-sm text-muted-foreground">{Math.round(progress)}% complete</span>
-            </div>
-            <Progress value={progress} className="h-2" />
+    <div className="container mx-auto p-6 max-w-4xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Complete Your Creator Profile</h1>
+        <p className="text-muted-foreground mb-6">
+          Set up your profile to start getting discovered by brands
+        </p>
+        
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium">Step {currentStep} of {totalSteps}: {getStepTitle()}</span>
+            <span className="text-sm text-muted-foreground">{Math.round(progress)}% complete</span>
           </div>
-        </div>
-
-        <div className="space-y-6">
-          {renderStep()}
-
-          <div className="flex justify-between">
-            <Button
-              variant="outline"
-              onClick={handlePrevious}
-              disabled={currentStep === 1}
-            >
-              Previous
-            </Button>
-
-            {currentStep === totalSteps ? (
-              <Button
-                onClick={handleSubmit}
-                disabled={isLoading}
-              >
-                {isLoading ? 'Saving...' : 'Complete Profile Setup'}
-              </Button>
-            ) : (
-              <Button
-                onClick={handleNext}
-                disabled={
-                  (currentStep === 1 && (!firstName.trim() || !lastName.trim())) ||
-                  (currentStep === 2 && !creatorType) ||
-                  (currentStep === 3 && (selectedIndustries.length === 0 || primaryPlatforms.length === 0 || contentTypes.length === 0))
-                }
-              >
-                Next
-              </Button>
-            )}
-          </div>
+          <Progress value={progress} className="h-2" />
         </div>
       </div>
-    </CreatorLayout>
+
+      <div className="space-y-6">
+        {renderStep()}
+
+        <div className="flex justify-between">
+          <Button
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentStep === 1}
+          >
+            Previous
+          </Button>
+
+          {currentStep === totalSteps ? (
+            <Button
+              onClick={handleSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Saving...' : 'Complete Profile Setup'}
+            </Button>
+          ) : (
+            <Button
+              onClick={handleNext}
+              disabled={
+                (currentStep === 1 && (!firstName.trim() || !lastName.trim())) ||
+                (currentStep === 2 && !creatorType) ||
+                (currentStep === 3 && (selectedIndustries.length === 0 || primaryPlatforms.length === 0 || contentTypes.length === 0))
+              }
+            >
+              Next
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
