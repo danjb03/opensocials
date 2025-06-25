@@ -4,10 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { CampaignSubmission } from '@/types/campaignReview';
 
+// Augment submission type locally with revision_count helper
+type SubmissionWithMeta = CampaignSubmission & { revision_count: number };
+
 export const useCampaignSubmissions = (campaignId: string) => {
   return useQuery({
     queryKey: ['campaign-submissions', campaignId],
-    queryFn: async (): Promise<CampaignSubmission[]> => {
+    queryFn: async (): Promise<SubmissionWithMeta[]> => {
       const { data: submissions, error } = await supabase
         .from('campaign_submissions')
         .select('*')
@@ -22,6 +25,13 @@ export const useCampaignSubmissions = (campaignId: string) => {
       // Fetch creator info for each submission
       const submissionsWithCreators = await Promise.all(
         (submissions || []).map(async (submission) => {
+          // Count number of revision requests for this submission
+          const { count: revisionCount } = await supabase
+            .from('submission_reviews')
+            .select('id', { head: true, count: 'exact' })
+            .eq('submission_id', submission.id)
+            .eq('action', 'request_revision');
+
           const { data: creator } = await supabase
             .from('creator_profiles')
             .select('id, user_id, first_name, last_name, avatar_url')
@@ -30,12 +40,13 @@ export const useCampaignSubmissions = (campaignId: string) => {
 
           return {
             ...submission,
+            revision_count: revisionCount ?? 0,
             creator_info: creator ? {
               id: creator.id,
               name: `${creator.first_name || ''} ${creator.last_name || ''}`.trim() || 'Creator',
               avatar_url: creator.avatar_url
             } : undefined
-          } as CampaignSubmission;
+          } as SubmissionWithMeta;
         })
       );
 
@@ -99,11 +110,29 @@ export const useReviewSubmission = () => {
       feedbackText
     }: {
       submissionId: string;
-      action: 'approve' | 'request_revision' | 'reject';
+      action: 'approve' | 'request_revision';
       feedbackText?: string;
     }) => {
       const user = await supabase.auth.getUser();
       if (!user.data.user) throw new Error('Not authenticated');
+
+      // Prevent more than 2 revision requests
+      if (action === 'request_revision') {
+        const { count: existingRevisions, error: countError } = await supabase
+          .from('submission_reviews')
+          .select('id', { head: true, count: 'exact' })
+          .eq('submission_id', submissionId)
+          .eq('action', 'request_revision');
+
+        if (countError) {
+          console.error('Error counting revisions:', countError);
+          throw countError;
+        }
+
+        if ((existingRevisions ?? 0) >= 2) {
+          throw new Error('This submission has reached the maximum number of revision requests.');
+        }
+      }
 
       // Create review record
       const { error: reviewError } = await supabase
@@ -147,7 +176,9 @@ export const useReviewSubmission = () => {
     },
     onError: (error) => {
       console.error('Failed to review submission:', error);
-      toast.error('Failed to review submission');
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to review submission'
+      );
     },
   });
 };
