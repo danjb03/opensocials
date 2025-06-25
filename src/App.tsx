@@ -7,6 +7,7 @@ import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./components/AuthProvider";
 import AppRoutes from "./routes";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { ProgressiveLoader } from "./components/ProgressiveLoader";
 
 function App() {
   const [emergencyRender, setEmergencyRender] = useState(false);
@@ -37,17 +38,19 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <ErrorBoundary>
-              <AppRoutes />
-            </ErrorBoundary>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
+      <ProgressiveLoader timeout={2000}>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <ErrorBoundary>
+                <AppRoutes />
+              </ErrorBoundary>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
+      </ProgressiveLoader>
     </ErrorBoundary>
   );
 }

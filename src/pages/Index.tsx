@@ -3,44 +3,71 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { IndexNavigation } from "@/components/index/IndexNavigation";
-import { HeroSection } from "@/components/index/HeroSection";
-import { TrustedBySection } from "@/components/index/TrustedBySection";
-import { FeaturesSection } from "@/components/index/FeaturesSection";
-import { WorkflowSection } from "@/components/index/WorkflowSection";
-import { CreatorSelectionSection } from "@/components/index/CreatorSelectionSection";
-import { BenefitsSection } from "@/components/index/BenefitsSection";
-import { HowItWorksSection } from "@/components/index/HowItWorksSection";
-import { StatsSection } from "@/components/index/StatsSection";
-import { FAQSection } from "@/components/index/FAQSection";
-import { CTASection } from "@/components/index/CTASection";
-import { IndexFooter } from "@/components/index/IndexFooter";
+import SafeIndex from "./SafeIndex";
 
 const Index = () => {
-  const { user, role, isLoading } = useUnifiedAuth();
+  const [canRenderFull, setCanRenderFull] = useState(false);
+  const [authData, setAuthData] = useState({ user: null, role: null, isLoading: true });
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
 
-  console.log('🏠 Index page state:', {
-    userId: user?.id,
-    role,
-    isLoading
-  });
-
-  // PROGRESSIVE ENHANCEMENT: Redirect authenticated users after UI is loaded
+  // Try to load auth data, but don't block rendering
   useEffect(() => {
-    // Only redirect if we have confirmed auth data AND user wants to be redirected
-    if (!isLoading && user && role) {
-      console.log('🏠 User authenticated, considering redirect for role:', role);
+    let mounted = true;
+    
+    // Start with safe rendering immediately
+    setCanRenderFull(false);
+    
+    // Try to get auth data with timeout
+    const loadAuth = async () => {
+      try {
+        const { user, role, isLoading } = useUnifiedAuth();
+        
+        if (mounted) {
+          setAuthData({ user, role, isLoading });
+          
+          // Only enable full rendering if auth loads successfully
+          if (!isLoading) {
+            setTimeout(() => {
+              if (mounted) setCanRenderFull(true);
+            }, 100);
+          }
+        }
+      } catch (error) {
+        console.warn('Auth loading failed, using safe mode:', error);
+        if (mounted) {
+          setAuthData({ user: null, role: null, isLoading: false });
+        }
+      }
+    };
+
+    // Emergency timeout - always show something after 1 second
+    const emergencyTimer = setTimeout(() => {
+      if (mounted) {
+        console.log('🏠 Emergency: Forcing safe render mode');
+        setAuthData({ user: null, role: null, isLoading: false });
+      }
+    }, 1000);
+
+    loadAuth();
+
+    return () => {
+      mounted = false;
+      clearTimeout(emergencyTimer);
+    };
+  }, []);
+
+  // Handle redirects only after everything is loaded
+  useEffect(() => {
+    if (!authData.isLoading && authData.user && authData.role && canRenderFull) {
+      console.log('🏠 User authenticated, considering redirect for role:', authData.role);
       
-      // Super admins stay on index to choose dashboard
-      if (role === 'super_admin') {
-        return;
+      if (authData.role === 'super_admin') {
+        return; // Super admins stay on index
       }
       
-      // Redirect other roles after a delay to ensure page is usable first
+      // Redirect other roles after a delay
       const redirectTimer = setTimeout(() => {
-        switch (role) {
+        switch (authData.role) {
           case 'admin':
             navigate('/admin');
             break;
@@ -54,31 +81,54 @@ const Index = () => {
             navigate('/agency');
             break;
         }
-      }, 2000); // Give users time to see the page
+      }, 2000);
 
       return () => clearTimeout(redirectTimer);
     }
-  }, [user, role, isLoading, navigate]);
+  }, [authData, canRenderFull, navigate]);
 
-  // ALWAYS render the page immediately - never block on auth state
-  console.log('🏠 Index rendering landing page');
+  // Try to render full version if possible, otherwise use safe version
+  if (canRenderFull) {
+    try {
+      // Lazy load full components
+      const { IndexNavigation } = require("@/components/index/IndexNavigation");
+      const { HeroSection } = require("@/components/index/HeroSection");
+      const { TrustedBySection } = require("@/components/index/TrustedBySection");
+      const { FeaturesSection } = require("@/components/index/FeaturesSection");
+      const { WorkflowSection } = require("@/components/index/WorkflowSection");
+      const { CreatorSelectionSection } = require("@/components/index/CreatorSelectionSection");
+      const { BenefitsSection } = require("@/components/index/BenefitsSection");
+      const { HowItWorksSection } = require("@/components/index/HowItWorksSection");
+      const { StatsSection } = require("@/components/index/StatsSection");
+      const { CTASection } = require("@/components/index/CTASection");
+      const { FAQSection } = require("@/components/index/FAQSection");
+      const { IndexFooter } = require("@/components/index/IndexFooter");
+      const isMobile = useIsMobile();
 
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      <IndexNavigation user={user} />
-      <HeroSection user={user} />
-      <TrustedBySection />
-      {!isMobile && <FeaturesSection />}
-      <WorkflowSection />
-      <CreatorSelectionSection />
-      <BenefitsSection />
-      {!isMobile && <HowItWorksSection />}
-      <StatsSection />
-      <CTASection user={user} />
-      {!isMobile && <FAQSection />}
-      <IndexFooter />
-    </div>
-  );
+      return (
+        <div className="min-h-screen bg-background text-foreground">
+          <IndexNavigation user={authData.user} />
+          <HeroSection user={authData.user} />
+          <TrustedBySection />
+          {!isMobile && <FeaturesSection />}
+          <WorkflowSection />
+          <CreatorSelectionSection />
+          <BenefitsSection />
+          {!isMobile && <HowItWorksSection />}
+          <StatsSection />
+          <CTASection user={authData.user} />
+          {!isMobile && <FAQSection />}
+          <IndexFooter />
+        </div>
+      );
+    } catch (error) {
+      console.warn('Full Index rendering failed, using safe mode:', error);
+      return <SafeIndex user={authData.user} />;
+    }
+  }
+
+  // Always return safe version as fallback
+  return <SafeIndex user={authData.user} />;
 };
 
 export default Index;
