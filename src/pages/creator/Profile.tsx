@@ -15,6 +15,13 @@ const CreatorProfile = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isEditing, setIsEditing] = useState(false);
 
+  console.log('🔍 Creator Profile Debug:', {
+    user: !!user,
+    creatorProfile: !!creatorProfile,
+    profileData: !!profileData,
+    isLoading: profileDataLoading
+  });
+
   if (profileDataLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">

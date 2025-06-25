@@ -43,9 +43,7 @@ export interface CreatorProfile {
   username?: string;
   avatar_url?: string;
   primary_platform?: string;
-  bio?: string;
   audience_location?: any;
-  industries?: string[];
 }
 
 export interface CreatorProfileRecord {
