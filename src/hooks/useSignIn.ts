@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 import { validateEmail } from '@/utils/security';
 import { clearAuthState } from '@/utils/getUserRole';
 
@@ -33,8 +33,16 @@ export function useSignIn() {
       // Clear any stale auth state before signing in
       clearAuthState();
 
+      // Attempt global sign out first to ensure clean state
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (signOutError) {
+        // Continue even if this fails
+        console.warn('Global sign out failed, continuing:', signOutError);
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim().toLowerCase(),
         password,
       });
 
@@ -48,7 +56,7 @@ export function useSignIn() {
           // Offer resend confirmation option
           const { error: resendError } = await supabase.auth.resend({
             type: 'signup',
-            email: email,
+            email: email.trim().toLowerCase(),
           });
           
           if (!resendError) {
@@ -79,7 +87,7 @@ export function useSignIn() {
         // Resend confirmation email
         const { error: resendError } = await supabase.auth.resend({
           type: 'signup',
-          email: email,
+          email: email.trim().toLowerCase(),
         });
         
         if (!resendError) {

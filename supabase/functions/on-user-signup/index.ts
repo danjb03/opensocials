@@ -53,6 +53,8 @@ serve(async (req) => {
       );
     }
     
+    console.log(`Creating user_role entry for role: ${role}`);
+    
     // Create user_role entry for role-based access control
     const { error: roleError } = await supabase
       .from("user_roles")
@@ -68,6 +70,31 @@ serve(async (req) => {
         JSON.stringify({ error: `Failed to create user role: ${roleError.message}` }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
       );
+    }
+    
+    console.log(`Successfully created user_role entry for ${user.id} with role ${role}`);
+    
+    // Also create a basic profile entry if it doesn't exist
+    const firstName = user.raw_user_meta_data?.first_name || '';
+    const lastName = user.raw_user_meta_data?.last_name || '';
+    
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .upsert({
+        id: user.id,
+        email: user.email,
+        role: role,
+        first_name: firstName,
+        last_name: lastName,
+        status: 'accepted',
+        is_complete: false
+      }, { onConflict: 'id' });
+    
+    if (profileError) {
+      console.warn("Error creating profile (non-critical):", profileError);
+      // Don't fail the signup for profile creation issues
+    } else {
+      console.log(`Successfully created profile for ${user.id}`);
     }
     
     console.log(`Successfully processed user signup for ${user.id} with role ${role}`);

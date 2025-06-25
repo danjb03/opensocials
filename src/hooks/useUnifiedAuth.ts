@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
-import { getUserRole, updateUserMetadata, clearAuthState } from '@/utils/getUserRole';
+import { getUserRole, updateUserMetadata } from '@/utils/getUserRole';
 import type { UserRole } from '@/lib/auth';
 
 interface BrandProfile {
@@ -64,7 +64,7 @@ export const useUnifiedAuth = () => {
         setIsLoading(true);
         
         // Fetch role using improved priority logic
-        console.log('🔍 useUnifiedAuth - Fetching user role with security definer function');
+        console.log('🔍 useUnifiedAuth - Fetching user role');
         let userRole = await getUserRole(user.id);
         
         // Special handling for known super admin user

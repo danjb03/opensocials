@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { AuthContext, type UserRole } from '@/lib/auth';
 import { getUserRole } from '@/utils/getUserRole';
 import { toast } from 'sonner';
-import { useUserDataSync } from '@/hooks/useUserDataSync';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -12,9 +11,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState<UserRole | null>(null);
   const [emailConfirmed, setEmailConfirmed] = useState<boolean | null>(null);
-
-  // Initialize user data synchronization
-  useUserDataSync();
 
   useEffect(() => {
     console.log('🔐 Setting up auth state listener...');
@@ -31,8 +27,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (session?.user) {
           setEmailConfirmed(!!session.user.email_confirmed_at);
           
-          // Only fetch role if email is confirmed or if email confirmation is disabled
-          if (session.user.email_confirmed_at || event === 'SIGNED_IN') {
+          // Only fetch role if email is confirmed
+          if (session.user.email_confirmed_at) {
             console.log('👤 User authenticated, fetching role...');
             // Defer role fetching to prevent potential auth deadlocks
             setTimeout(() => {
