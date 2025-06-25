@@ -16,7 +16,7 @@ export interface Campaign {
 export const useCampaigns = () => {
   const { user } = useUnifiedAuth();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['brand-campaigns', user?.id],
     queryFn: async (): Promise<Campaign[]> => {
       if (!user?.id) return [];
@@ -60,4 +60,13 @@ export const useCampaigns = () => {
     },
     enabled: !!user?.id
   });
+
+  return {
+    campaigns: query.data || [],
+    isLoading: query.isLoading,
+    error: query.error?.message || null,
+    refetch: async () => {
+      await query.refetch();
+    }
+  };
 };

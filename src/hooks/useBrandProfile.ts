@@ -34,7 +34,19 @@ export const useBrandProfile = () => {
         throw error;
       }
 
-      return data;
+      if (!data) return null;
+
+      return {
+        company_name: data.company_name || '',
+        logo_url: data.logo_url,
+        website_url: data.website_url,
+        industry: data.industry,
+        budget_range: data.budget_range,
+        brand_bio: data.brand_bio,
+        brand_goal: data.brand_goal,
+        campaign_focus: data.campaign_focus,
+        is_complete: true // Default to true since we have profile data
+      };
     },
     enabled: !!user?.id
   });

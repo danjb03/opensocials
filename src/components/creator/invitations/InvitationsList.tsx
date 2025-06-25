@@ -30,7 +30,7 @@ export const InvitationsList: React.FC = () => {
   const acceptedProjectInvitations = projectInvitations.filter(inv => inv.status === 'accepted');
   const declinedProjectInvitations = projectInvitations.filter(inv => inv.status === 'declined');
 
-  const pendingGeneralInvitations = invitations.filter(inv => inv.status === 'invited');
+  const pendingGeneralInvitations = invitations.filter(inv => inv.status === 'invited' || inv.status === 'pending');
   const acceptedGeneralInvitations = invitations.filter(inv => inv.status === 'accepted');
   const declinedGeneralInvitations = invitations.filter(inv => inv.status === 'declined');
 

@@ -4,12 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { toast } from 'sonner';
 
-interface CreatorInvitation {
+export interface CreatorInvitation {
   id: string;
   project_id: string;
   project_name: string;
-  brand_name: string;
-  status: 'pending' | 'accepted' | 'declined';
+  brand_name?: string;
+  company_name?: string;
+  status: 'pending' | 'accepted' | 'declined' | 'invited';
   created_at: string;
   agreed_amount?: number;
   currency?: string;
@@ -18,6 +19,7 @@ interface CreatorInvitation {
 export const useCreatorInvitations = () => {
   const [invitations, setInvitations] = useState<CreatorInvitation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
   const { user } = useUnifiedAuth();
 
   const fetchInvitations = async () => {
@@ -54,6 +56,7 @@ export const useCreatorInvitations = () => {
         project_id: inv.project_id,
         project_name: inv.projects.name,
         brand_name: inv.projects.brand_profiles.company_name,
+        company_name: inv.projects.brand_profiles.company_name,
         status: inv.status,
         created_at: inv.created_at,
         agreed_amount: inv.agreed_amount,
@@ -70,6 +73,8 @@ export const useCreatorInvitations = () => {
   };
 
   const respondToInvitation = async (invitationId: string, response: 'accepted' | 'declined') => {
+    setActionLoading(prev => ({ ...prev, [invitationId]: true }));
+    
     try {
       const { error } = await supabase
         .from('project_creators')
@@ -83,7 +88,17 @@ export const useCreatorInvitations = () => {
     } catch (error) {
       console.error('Error responding to invitation:', error);
       toast.error('Failed to respond to invitation');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [invitationId]: false }));
     }
+  };
+
+  const acceptInvitation = (invitationId: string) => {
+    return respondToInvitation(invitationId, 'accepted');
+  };
+
+  const declineInvitation = (invitationId: string) => {
+    return respondToInvitation(invitationId, 'declined');
   };
 
   useEffect(() => {
@@ -93,6 +108,9 @@ export const useCreatorInvitations = () => {
   return {
     invitations,
     isLoading,
+    actionLoading,
+    acceptInvitation,
+    declineInvitation,
     respondToInvitation,
     refetch: fetchInvitations
   };

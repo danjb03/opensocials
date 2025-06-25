@@ -56,25 +56,32 @@ class UserDataStore {
 
     console.log('🗄️ Executing user query:', { tableName, selectColumns, additionalFilters });
 
-    let query = supabase
-      .from(tableName)
-      .select(selectColumns)
-      .eq('user_id', this.currentUserId!);
+    try {
+      // Build query with proper type safety
+      const query = supabase
+        .from(tableName as any)
+        .select(selectColumns)
+        .eq('user_id', this.currentUserId!);
 
-    // Apply additional filters
-    Object.entries(additionalFilters).forEach(([key, value]) => {
-      query = query.eq(key, value);
-    });
+      // Apply additional filters
+      let finalQuery = query;
+      Object.entries(additionalFilters).forEach(([key, value]) => {
+        finalQuery = finalQuery.eq(key, value);
+      });
 
-    const { data, error } = await query;
+      const { data, error } = await finalQuery;
 
-    if (error) {
-      console.error('❌ User query error:', error);
+      if (error) {
+        console.error('❌ User query error:', error);
+        throw error;
+      }
+
+      console.log('✅ User query successful:', { count: data?.length || 0 });
+      return data;
+    } catch (error) {
+      console.error('❌ Error in executeUserQuery:', error);
       throw error;
     }
-
-    console.log('✅ User query successful:', { count: data?.length || 0 });
-    return data;
   }
 
   /**

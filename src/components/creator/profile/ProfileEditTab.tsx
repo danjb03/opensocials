@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { CreatorProfile } from '@/types/creatorProfile';
 import { ArrowRight, CheckCircle, Star, TrendingUp, Users } from 'lucide-react';
-import { SocialMediaConnectionPanel } from '@/components/creator/SocialMediaConnectionPanel';
+import SocialMediaConnectionPanel from '@/components/creator/SocialMediaConnectionPanel';
 
 interface ProfileEditTabProps {
   profileData: CreatorProfile | null;

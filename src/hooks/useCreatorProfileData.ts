@@ -48,6 +48,24 @@ export const useCreatorProfileData = () => {
 
       if (!data) return null;
 
+      const defaultVisibilitySettings = {
+        showInstagram: true,
+        showTiktok: true,
+        showYoutube: true,
+        showLinkedin: true,
+        showLocation: true,
+        showAnalytics: true
+      };
+
+      // Safe type casting for visibility settings
+      let visibilitySettings = defaultVisibilitySettings;
+      if (data.visibility_settings && typeof data.visibility_settings === 'object') {
+        visibilitySettings = {
+          ...defaultVisibilitySettings,
+          ...(data.visibility_settings as any)
+        };
+      }
+
       return {
         firstName: data.first_name || '',
         lastName: data.last_name || '',
@@ -62,14 +80,7 @@ export const useCreatorProfileData = () => {
         creatorType: data.creator_type || '',
         avatarUrl: data.avatar_url,
         bannerUrl: data.banner_url,
-        visibilitySettings: data.visibility_settings || {
-          showInstagram: true,
-          showTiktok: true,
-          showYoutube: true,
-          showLinkedin: true,
-          showLocation: true,
-          showAnalytics: true
-        }
+        visibilitySettings
       };
     },
     enabled: !!user?.id
