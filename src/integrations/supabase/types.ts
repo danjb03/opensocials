@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_operations: {
+        Row: {
+          id: string
+          metadata: Json | null
+          operation: string
+          timestamp: string
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          metadata?: Json | null
+          operation: string
+          timestamp?: string
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          metadata?: Json | null
+          operation?: string
+          timestamp?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       agency_users: {
         Row: {
           agency_id: string
@@ -956,6 +980,48 @@ export type Database = {
         }
         Relationships: []
       }
+      creators_social_accounts: {
+        Row: {
+          actor_id: string
+          created_at: string
+          creator_id: string
+          error_message: string | null
+          handle: string
+          id: string
+          last_run: string | null
+          next_run: string | null
+          platform: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          creator_id: string
+          error_message?: string | null
+          handle: string
+          id?: string
+          last_run?: string | null
+          next_run?: string | null
+          platform: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          creator_id?: string
+          error_message?: string | null
+          handle?: string
+          id?: string
+          last_run?: string | null
+          next_run?: string | null
+          platform?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       deal_earnings: {
         Row: {
           amount: number
@@ -1800,6 +1866,50 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      social_jobs: {
+        Row: {
+          account_id: string
+          actor_type: string
+          apify_run_id: string
+          completed_at: string | null
+          error_message: string | null
+          id: string
+          result_data: Json | null
+          started_at: string
+          status: string
+        }
+        Insert: {
+          account_id: string
+          actor_type?: string
+          apify_run_id: string
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          result_data?: Json | null
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          account_id?: string
+          actor_type?: string
+          apify_run_id?: string
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          result_data?: Json | null
+          started_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_jobs_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "creators_social_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       social_metrics: {
         Row: {

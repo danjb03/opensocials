@@ -61,10 +61,10 @@ const CreatorProfile = () => {
   const safeProfileData = profileData ? {
     ...profileData,
     platforms: profileData.platforms || [],
-    // Convert numeric values to strings for display in forms
-    followerCount: (creatorProfile?.follower_count || 0).toString(),
-    engagementRate: (creatorProfile?.engagement_rate || 0).toString() + '%',
-    creatorType: creatorProfile?.creator_type || '',
+    // Convert numeric values to strings for display in forms - use the CreatorProfile interface properties
+    followerCount: profileData.followerCount || '0',
+    engagementRate: profileData.engagementRate || '0%',
+    creatorType: profileData.creatorType || '',
     visibilitySettings: profileData.visibilitySettings || {
       showInstagram: true,
       showTiktok: true,
