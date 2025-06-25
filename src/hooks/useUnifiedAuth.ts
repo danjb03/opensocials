@@ -1,7 +1,7 @@
 
 import { useAuth } from '@/lib/auth';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, isSupabaseReady } from '@/integrations/supabase/client';
 
 export function useUnifiedAuth() {
   const { user, role, isLoading: authLoading } = useAuth();
@@ -10,7 +10,8 @@ export function useUnifiedAuth() {
     hasUser: !!user,
     userId: user?.id,
     role,
-    authLoading
+    authLoading,
+    supabaseReady: isSupabaseReady()
   });
 
   // Brand Profile Query - OPTIONAL, non-blocking
@@ -20,7 +21,7 @@ export function useUnifiedAuth() {
   } = useQuery({
     queryKey: ['brand-profile', user?.id],
     queryFn: async () => {
-      if (!user?.id) return null;
+      if (!user?.id || !isSupabaseReady() || !supabase) return null;
       
       try {
         const { data, error } = await supabase
@@ -40,7 +41,7 @@ export function useUnifiedAuth() {
         return null;
       }
     },
-    enabled: !!user?.id && (role === 'brand' || role === 'super_admin'),
+    enabled: !!user?.id && (role === 'brand' || role === 'super_admin') && isSupabaseReady(),
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
     retry: false, // Don't retry failed profile queries
@@ -53,7 +54,7 @@ export function useUnifiedAuth() {
   } = useQuery({
     queryKey: ['creator-profile', user?.id],
     queryFn: async () => {
-      if (!user?.id) return null;
+      if (!user?.id || !isSupabaseReady() || !supabase) return null;
       
       try {
         const { data, error } = await supabase
@@ -73,7 +74,7 @@ export function useUnifiedAuth() {
         return null;
       }
     },
-    enabled: !!user?.id && (role === 'creator' || role === 'super_admin'),
+    enabled: !!user?.id && (role === 'creator' || role === 'super_admin') && isSupabaseReady(),
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
     retry: false, // Don't retry failed profile queries

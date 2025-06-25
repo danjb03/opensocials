@@ -21,6 +21,13 @@ export const useInsightIQConnect = (): UseInsightIQConnectReturn => {
   const [error, setError] = useState<string | null>(null);
 
   const connect = async ({ creator_id, platform, identifier }: ConnectParams) => {
+    // Safety check - don't execute if supabase isn't ready
+    if (!supabase) {
+      console.warn('Supabase client not ready, skipping connect');
+      setError('Service temporarily unavailable');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setIsSuccess(false);

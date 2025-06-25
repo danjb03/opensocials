@@ -56,6 +56,12 @@ export const useInsightIQData = (creator_id: string): UseInsightIQDataReturn => 
   } = useQuery({
     queryKey: ['insightiq-data', creator_id],
     queryFn: async () => {
+      // Safety check - don't execute if supabase isn't ready
+      if (!supabase) {
+        console.warn('Supabase client not ready, returning empty data');
+        return [];
+      }
+
       if (!creator_id) {
         console.log('No creator_id provided to useInsightIQData');
         return [];
@@ -63,21 +69,26 @@ export const useInsightIQData = (creator_id: string): UseInsightIQDataReturn => 
 
       console.log('Fetching InsightIQ data for creator:', creator_id);
 
-      const { data, error } = await supabase
-        .from('creator_public_analytics')
-        .select('*')
-        .eq('creator_id', creator_id)
-        .order('fetched_at', { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from('creator_public_analytics')
+          .select('*')
+          .eq('creator_id', creator_id)
+          .order('fetched_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching InsightIQ data:', error);
-        throw error;
+        if (error) {
+          console.error('Error fetching InsightIQ data:', error);
+          throw error;
+        }
+
+        console.log('InsightIQ data fetched:', data);
+        return data as InsightIQAnalytics[] || [];
+      } catch (error) {
+        console.error('InsightIQ data fetch failed:', error);
+        return []; // Return empty array instead of throwing
       }
-
-      console.log('InsightIQ data fetched:', data);
-      return data as InsightIQAnalytics[] || [];
     },
-    enabled: !!creator_id,
+    enabled: !!creator_id && !!supabase,
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 30, // 30 minutes
     retry: 1,

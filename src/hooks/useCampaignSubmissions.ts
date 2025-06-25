@@ -11,48 +11,59 @@ export const useCampaignSubmissions = (campaignId: string) => {
   return useQuery({
     queryKey: ['campaign-submissions', campaignId],
     queryFn: async (): Promise<SubmissionWithMeta[]> => {
-      const { data: submissions, error } = await supabase
-        .from('campaign_submissions')
-        .select('*')
-        .eq('campaign_id', campaignId)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching campaign submissions:', error);
-        throw error;
+      // Safety check - don't execute if supabase isn't ready
+      if (!supabase) {
+        console.warn('Supabase client not ready, returning empty submissions');
+        return [];
       }
 
-      // Fetch creator info for each submission
-      const submissionsWithCreators = await Promise.all(
-        (submissions || []).map(async (submission) => {
-          // Count number of revision requests for this submission
-          const { count: revisionCount } = await supabase
-            .from('submission_reviews')
-            .select('id', { head: true, count: 'exact' })
-            .eq('submission_id', submission.id)
-            .eq('action', 'request_revision');
+      try {
+        const { data: submissions, error } = await supabase
+          .from('campaign_submissions')
+          .select('*')
+          .eq('campaign_id', campaignId)
+          .order('created_at', { ascending: false });
 
-          const { data: creator } = await supabase
-            .from('creator_profiles')
-            .select('id, user_id, first_name, last_name, avatar_url')
-            .eq('user_id', submission.creator_id)
-            .single();
+        if (error) {
+          console.error('Error fetching campaign submissions:', error);
+          throw error;
+        }
 
-          return {
-            ...submission,
-            revision_count: revisionCount ?? 0,
-            creator_info: creator ? {
-              id: creator.id,
-              name: `${creator.first_name || ''} ${creator.last_name || ''}`.trim() || 'Creator',
-              avatar_url: creator.avatar_url
-            } : undefined
-          } as SubmissionWithMeta;
-        })
-      );
+        // Fetch creator info for each submission
+        const submissionsWithCreators = await Promise.all(
+          (submissions || []).map(async (submission) => {
+            // Count number of revision requests for this submission
+            const { count: revisionCount } = await supabase
+              .from('submission_reviews')
+              .select('id', { head: true, count: 'exact' })
+              .eq('submission_id', submission.id)
+              .eq('action', 'request_revision');
 
-      return submissionsWithCreators;
+            const { data: creator } = await supabase
+              .from('creator_profiles')
+              .select('id, user_id, first_name, last_name, avatar_url')
+              .eq('user_id', submission.creator_id)
+              .single();
+
+            return {
+              ...submission,
+              revision_count: revisionCount ?? 0,
+              creator_info: creator ? {
+                id: creator.id,
+                name: `${creator.first_name || ''} ${creator.last_name || ''}`.trim() || 'Creator',
+                avatar_url: creator.avatar_url
+              } : undefined
+            } as SubmissionWithMeta;
+          })
+        );
+
+        return submissionsWithCreators;
+      } catch (error) {
+        console.error('Campaign submissions fetch failed:', error);
+        return []; // Return empty array instead of throwing
+      }
     },
-    enabled: !!campaignId,
+    enabled: !!campaignId && !!supabase,
   });
 };
 
@@ -69,6 +80,11 @@ export const useSubmitContent = () => {
       contentData: any;
       submissionNotes?: string;
     }) => {
+      // Safety check - don't execute if supabase isn't ready
+      if (!supabase) {
+        throw new Error('Service temporarily unavailable');
+      }
+
       const { data, error } = await supabase
         .from('campaign_submissions')
         .insert({
@@ -113,6 +129,11 @@ export const useReviewSubmission = () => {
       action: 'approve' | 'request_revision';
       feedbackText?: string;
     }) => {
+      // Safety check - don't execute if supabase isn't ready
+      if (!supabase) {
+        throw new Error('Service temporarily unavailable');
+      }
+
       const user = await supabase.auth.getUser();
       if (!user.data.user) throw new Error('Not authenticated');
 
