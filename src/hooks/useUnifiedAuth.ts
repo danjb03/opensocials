@@ -34,6 +34,9 @@ interface CreatorProfile {
   audience_location: any;
   visibility_settings: any;
   is_profile_complete?: boolean;
+  follower_count?: number;
+  engagement_rate?: number;
+  creator_type?: string;
 }
 
 interface AuthContextType {
@@ -138,11 +141,7 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     emailConfirmed
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return React.createElement(AuthContext.Provider, { value }, children);
 };
 
 export const useUnifiedAuth = () => {
