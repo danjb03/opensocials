@@ -1,22 +1,30 @@
 
+import React from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "sonner";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./components/AuthProvider";
 import AppRoutes from "./routes";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 function App() {
+  console.log('🚀 App component rendering...');
+
   return (
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <ErrorBoundary>
+              <AppRoutes />
+            </ErrorBoundary>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

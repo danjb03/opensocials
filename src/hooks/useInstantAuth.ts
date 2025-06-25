@@ -3,6 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from 'react';
 
+interface UserData {
+  profile: any;
+  role: string | null;
+}
+
 // Simplified auth hook to prevent infinite loops
 export const useInstantAuth = () => {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -23,7 +28,7 @@ export const useInstantAuth = () => {
   // Simplified user profile fetch without complex typing
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', session?.user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<UserData | null> => {
       if (!session?.user?.id) return null;
 
       try {
@@ -39,7 +44,7 @@ export const useInstantAuth = () => {
           .from('user_roles')
           .select('role')
           .eq('user_id', session.user.id)
-          .eq('approved', true)
+          .eq('status', 'approved')
           .single();
 
         return {

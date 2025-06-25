@@ -36,6 +36,7 @@ export interface CreatorProfile {
   engagementRate?: string;
   avatarUrl?: string | null;
   bannerUrl?: string | null;
+  completion?: number;
 }
 
 export const useCreatorProfile = () => {
@@ -70,6 +71,14 @@ export const useCreatorProfile = () => {
       }
     });
 
+    // Calculate completion percentage
+    let completion = 0;
+    if (dbProfile?.first_name) completion += 20;
+    if (dbProfile?.last_name) completion += 20;
+    if (dbProfile?.bio) completion += 20;
+    if (dbProfile?.industries?.length > 0) completion += 20;
+    if (hasConnectedSocials) completion += 20;
+
     return {
       firstName: dbProfile?.first_name || null,
       lastName: dbProfile?.last_name || null,
@@ -88,7 +97,8 @@ export const useCreatorProfile = () => {
       followerCount: analyticsData?.[0]?.follower_count?.toString() || dbProfile?.follower_count?.toString() || '0',
       engagementRate: analyticsData?.[0]?.engagement_rate?.toString() || dbProfile?.engagement_rate?.toString() || '0',
       avatarUrl: dbProfile?.avatar_url,
-      bannerUrl: dbProfile?.banner_url
+      bannerUrl: dbProfile?.banner_url,
+      completion
     };
   }, [rawProfile, analyticsData, user]);
 

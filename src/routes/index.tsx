@@ -22,13 +22,82 @@ import { CreatorRoutes } from './CreatorRoutes';
 import { SuperAdminRoutes } from './SuperAdminRoutes';
 import AgencyRoutes from './AgencyRoutes';
 
+// Error fallback component
+const ErrorFallback = ({ error }: { error: Error }) => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="text-center p-6">
+      <h2 className="text-xl font-semibold mb-2 text-white">Something went wrong</h2>
+      <p className="text-muted-foreground mb-4">Please refresh the page or try again</p>
+      <button 
+        onClick={() => window.location.reload()} 
+        className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
+      >
+        Refresh Page
+      </button>
+      <details className="mt-4 text-sm text-left">
+        <summary className="cursor-pointer text-muted-foreground">Error details</summary>
+        <pre className="mt-2 p-2 bg-muted rounded text-xs overflow-auto">
+          {error.message}
+        </pre>
+      </details>
+    </div>
+  </div>
+);
+
 const AppRoutes = () => {
   const { user, role, brandProfile, creatorProfile, isLoading } = useUnifiedAuth();
 
-  if (isLoading) {
+  console.log('🚦 AppRoutes - Current state:', {
+    user: user ? { id: user.id, email: user.email } : null,
+    role,
+    brandProfile: brandProfile ? { company_name: brandProfile.company_name } : null,
+    creatorProfile: creatorProfile ? { first_name: creatorProfile.first_name } : null,
+    isLoading,
+    currentPath: window.location.pathname
+  });
+
+  // Add loading timeout to prevent infinite loading
+  const [loadingTimeout, setLoadingTimeout] = React.useState(false);
+  
+  React.useEffect(() => {
+    if (isLoading) {
+      const timer = setTimeout(() => {
+        console.warn('⚠️ Loading timeout reached, forcing render');
+        setLoadingTimeout(true);
+      }, 10000); // 10 second timeout
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
+
+  // Show loading state with timeout
+  if (isLoading && !loadingTimeout) {
+    console.log('🔄 Still loading authentication state...');
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <LoadingSpinner />
+        <div className="text-center">
+          <LoadingSpinner />
+          <p className="mt-4 text-muted-foreground">Loading application...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If loading timed out, show a fallback
+  if (loadingTimeout && isLoading) {
+    console.warn('⚠️ Loading timed out, showing fallback');
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2 text-white">Taking longer than expected</h2>
+          <p className="text-muted-foreground mb-4">Please try refreshing the page</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
+          >
+            Refresh Page
+          </button>
+        </div>
       </div>
     );
   }
@@ -37,7 +106,10 @@ const AppRoutes = () => {
   const needsBrandSetup = role === 'brand' && !brandProfile?.company_name;
   const needsCreatorSetup = role === 'creator' && !creatorProfile?.first_name;
 
+  console.log('🔍 Setup checks:', { needsBrandSetup, needsCreatorSetup });
+
   if (needsBrandSetup) {
+    console.log('🔄 Redirecting to brand setup...');
     return (
       <Routes>
         <Route path="/setup/brand" element={<BrandSetup />} />
@@ -47,6 +119,7 @@ const AppRoutes = () => {
   }
 
   if (needsCreatorSetup) {
+    console.log('🔄 Redirecting to creator setup...');
     return (
       <Routes>
         <Route path="/setup/creator" element={<CreatorSetup />} />
@@ -55,50 +128,57 @@ const AppRoutes = () => {
     );
   }
 
-  // Main application routes - available to both authenticated and non-authenticated users
-  return (
-    <Routes>
-      {/* Public marketing website */}
-      <Route path="/" element={<Index />} />
-      
-      {/* Auth pages */}
-      <Route path="/auth/*" element={<AuthPage />} />
-      
-      {/* Protected role-based routes */}
-      <Route path="/admin/*" element={
-        <ProtectedRoute>
-          <AdminRoutes />
-        </ProtectedRoute>
-      } />
-      
-      <Route path="/brand/*" element={
-        <ProtectedRoute>
-          <BrandRoutes />
-        </ProtectedRoute>
-      } />
-      
-      <Route path="/creator/*" element={
-        <ProtectedRoute>
-          <CreatorRoutes />
-        </ProtectedRoute>
-      } />
+  console.log('✅ Rendering main application routes...');
 
-      <Route path="/agency/*" element={
-        <ProtectedRoute>
-          <AgencyRoutes />
-        </ProtectedRoute>
-      } />
+  try {
+    // Main application routes - wrapped in error boundary
+    return (
+      <Routes>
+        {/* Public marketing website */}
+        <Route path="/" element={<Index />} />
+        
+        {/* Auth pages */}
+        <Route path="/auth/*" element={<AuthPage />} />
+        
+        {/* Protected role-based routes */}
+        <Route path="/admin/*" element={
+          <ProtectedRoute>
+            <AdminRoutes />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/brand/*" element={
+          <ProtectedRoute>
+            <BrandRoutes />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/creator/*" element={
+          <ProtectedRoute>
+            <CreatorRoutes />
+          </ProtectedRoute>
+        } />
 
-      <Route path="/super_admin/*" element={
-        <ProtectedRoute>
-          <SuperAdminRoutes />
-        </ProtectedRoute>
-      } />
+        <Route path="/agency/*" element={
+          <ProtectedRoute>
+            <AgencyRoutes />
+          </ProtectedRoute>
+        } />
 
-      {/* Fallback to homepage for unknown routes */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
+        <Route path="/super_admin/*" element={
+          <ProtectedRoute>
+            <SuperAdminRoutes />
+          </ProtectedRoute>
+        } />
+
+        {/* Fallback to homepage for unknown routes */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    );
+  } catch (error) {
+    console.error('❌ Error in AppRoutes:', error);
+    return <ErrorFallback error={error as Error} />;
+  }
 };
 
 export default AppRoutes;
