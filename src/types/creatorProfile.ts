@@ -34,7 +34,7 @@ export interface CreatorProfile {
   industries: string[];
   creatorType: string;
   platforms: string[];
-  // Add database field mappings
+  // Primary database field mappings (snake_case)
   follower_count?: number;
   engagement_rate?: number;
   creator_type?: string;
