@@ -11,33 +11,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [emailConfirmed, setEmailConfirmed] = useState<boolean | null>(null);
 
   useEffect(() => {
-    console.log('🔐 AuthProvider: Initializing with aggressive timeout...');
+    console.log('🔐 AuthProvider: Starting EMERGENCY non-blocking initialization...');
     
     let mounted = true;
     
-    // AGGRESSIVE: Force loading to complete after 3 seconds maximum
-    const forceComplete = setTimeout(() => {
+    // EMERGENCY: Force auth to complete after 1 second maximum
+    const emergencyTimeout = setTimeout(() => {
       if (mounted) {
-        console.warn('⚠️ FORCING auth initialization completion after 3s timeout');
+        console.log('⚡ EMERGENCY: Auth forced complete after 1s');
         setIsLoading(false);
       }
-    }, 3000);
+    }, 1000);
     
-    // Simplified auth state management
-    const initializeAuth = async () => {
+    // Immediate auth check - don't wait for anything
+    const quickAuthCheck = async () => {
       try {
-        // Get current session immediately
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        // Get session with timeout
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Auth timeout')), 500)
+        );
+        
+        const { data: { session: currentSession } } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]) as any;
         
         if (mounted) {
-          console.log('🔍 Current session:', !!currentSession);
+          console.log('🔍 Quick session check:', !!currentSession);
           setSession(currentSession);
           setUser(currentSession?.user ?? null);
           setEmailConfirmed(currentSession?.user?.email_confirmed_at ? true : null);
           
-          // Simple role resolution - don't let this block the app
+          // Try to get role quickly - but don't block on it
           if (currentSession?.user) {
-            // Try to get role quickly, but don't block on it
+            // Async role fetch - doesn't block UI
             setTimeout(async () => {
               try {
                 const { data } = await supabase
@@ -52,8 +60,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                   setRole(data.role as UserRole);
                 }
               } catch (error) {
-                console.warn('Role fetch failed, continuing without role:', error);
-                // Don't block the app - role can be null
+                console.warn('Role fetch failed - continuing without role');
               }
             }, 100);
           }
@@ -61,15 +68,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setIsLoading(false);
         }
       } catch (error) {
-        console.error('Auth initialization error:', error);
+        console.warn('Quick auth check failed:', error);
         if (mounted) {
-          // Don't let auth errors block the app
+          // Always complete loading, never hang
           setIsLoading(false);
         }
       }
     };
 
-    // Set up auth state listener
+    // Set up auth state listener - but don't let it block
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
@@ -85,12 +92,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Initialize auth
-    initializeAuth();
+    // Start quick auth check
+    quickAuthCheck();
 
     return () => {
       mounted = false;
-      clearTimeout(forceComplete);
+      clearTimeout(emergencyTimeout);
       subscription.unsubscribe();
     };
   }, []);
@@ -103,7 +110,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     emailConfirmed
   };
 
-  console.log('🔐 AuthProvider rendering with:', {
+  console.log('🔐 AuthProvider context:', {
     isLoading: contextValue.isLoading,
     hasUser: !!contextValue.user,
     role: contextValue.role

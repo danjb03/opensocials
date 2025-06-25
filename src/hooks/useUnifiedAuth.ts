@@ -13,7 +13,7 @@ export function useUnifiedAuth() {
     authLoading
   });
 
-  // Brand Profile Query - only when needed
+  // Brand Profile Query - OPTIONAL, non-blocking
   const { 
     data: brandProfile, 
     isLoading: brandLoading 
@@ -40,7 +40,7 @@ export function useUnifiedAuth() {
     refetchOnWindowFocus: false,
   });
 
-  // Creator Profile Query - only when needed
+  // Creator Profile Query - OPTIONAL, non-blocking
   const { 
     data: creatorProfile, 
     isLoading: creatorLoading 
@@ -67,11 +67,9 @@ export function useUnifiedAuth() {
     refetchOnWindowFocus: false,
   });
 
-  const isLoading = authLoading || (
-    (role === 'brand' || role === 'super_admin') && brandLoading
-  ) || (
-    (role === 'creator' || role === 'super_admin') && creatorLoading
-  );
+  // CRITICAL: Only consider auth loading, never profile loading
+  // Profiles are optional enhancements, not requirements for rendering
+  const isLoading = authLoading;
 
   return {
     user,

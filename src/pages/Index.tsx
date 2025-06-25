@@ -20,35 +20,25 @@ const Index = () => {
   const { user, role, isLoading } = useUnifiedAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [pageReady, setPageReady] = useState(false);
 
   console.log('🏠 Index page state:', {
     userId: user?.id,
     role,
-    isLoading,
-    pageReady
+    isLoading
   });
 
-  // Force page to render after short delay regardless of auth state
+  // PROGRESSIVE ENHANCEMENT: Redirect authenticated users after UI is loaded
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setPageReady(true);
-    }, 500);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    // Only redirect authenticated users with confirmed roles
-    if (!isLoading && user && role && pageReady) {
-      console.log('🏠 Considering redirect for role:', role);
+    // Only redirect if we have confirmed auth data AND user wants to be redirected
+    if (!isLoading && user && role) {
+      console.log('🏠 User authenticated, considering redirect for role:', role);
       
       // Super admins stay on index to choose dashboard
       if (role === 'super_admin') {
         return;
       }
       
-      // Redirect other roles after a delay to ensure page is ready
+      // Redirect other roles after a delay to ensure page is usable first
       const redirectTimer = setTimeout(() => {
         switch (role) {
           case 'admin':
@@ -64,14 +54,14 @@ const Index = () => {
             navigate('/agency');
             break;
         }
-      }, 1000);
+      }, 2000); // Give users time to see the page
 
       return () => clearTimeout(redirectTimer);
     }
-  }, [user, role, isLoading, pageReady, navigate]);
+  }, [user, role, isLoading, navigate]);
 
-  // Always render the page - don't let auth state block it
-  console.log('🏠 Index rendering full page');
+  // ALWAYS render the page immediately - never block on auth state
+  console.log('🏠 Index rendering landing page');
 
   return (
     <div className="min-h-screen bg-background text-foreground">

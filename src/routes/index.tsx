@@ -32,19 +32,19 @@ const AppRoutes = () => {
     path: window.location.pathname
   });
 
-  // AGGRESSIVE: Only show loading for maximum 2 seconds
+  // EMERGENCY: Never show loading for more than 1 second
   const [forceRender, setForceRender] = React.useState(false);
   
   React.useEffect(() => {
     const timer = setTimeout(() => {
-      console.warn('⚠️ FORCING render after 2s timeout');
+      console.log('⚡ EMERGENCY: Forcing app render after 1s');
       setForceRender(true);
-    }, 2000);
+    }, 1000);
     
     return () => clearTimeout(timer);
   }, []);
 
-  // Force render after timeout or if loading is complete
+  // Only show loading spinner for a very brief moment
   if (isLoading && !forceRender) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
@@ -56,36 +56,20 @@ const AppRoutes = () => {
     );
   }
 
-  // Setup routes - only redirect if we have confirmed data
-  const needsBrandSetup = role === 'brand' && brandProfile === null;
-  const needsCreatorSetup = role === 'creator' && creatorProfile === null;
-
-  if (needsBrandSetup && !isLoading) {
-    return (
-      <Routes>
-        <Route path="/setup/brand" element={<BrandSetup />} />
-        <Route path="*" element={<Navigate to="/setup/brand" replace />} />
-      </Routes>
-    );
-  }
-
-  if (needsCreatorSetup && !isLoading) {
-    return (
-      <Routes>
-        <Route path="/setup/creator" element={<CreatorSetup />} />
-        <Route path="*" element={<Navigate to="/setup/creator" replace />} />
-      </Routes>
-    );
-  }
-
-  // Main routes - render regardless of auth state to prevent black screen
+  // SIMPLIFIED: Always render routes, let individual route guards handle protection
+  // Don't block the entire app based on profile completeness
+  
   return (
     <Routes>
-      {/* Public marketing website - always accessible */}
+      {/* Public marketing website - ALWAYS accessible */}
       <Route path="/" element={<Index />} />
       
       {/* Auth pages */}
       <Route path="/auth/*" element={<AuthPage />} />
+      
+      {/* Setup routes - only redirect if we're certain about the state */}
+      <Route path="/setup/brand" element={<BrandSetup />} />
+      <Route path="/setup/creator" element={<CreatorSetup />} />
       
       {/* Protected role-based routes */}
       <Route path="/admin/*" element={
