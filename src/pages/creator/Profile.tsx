@@ -7,8 +7,6 @@ import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import ProfileHeader from '@/components/creator/profile/ProfileHeader';
 import ProfileOverviewTab from '@/components/creator/profile/ProfileOverviewTab';
-import ProfilePreviewTab from '@/components/creator/profile/ProfilePreviewTab';
-import ProfileAnalyticsTab from '@/components/creator/profile/ProfileAnalyticsTab';
 import ProfileEditTab from '@/components/creator/profile/ProfileEditTab';
 
 const CreatorProfile = () => {
@@ -75,29 +73,16 @@ const CreatorProfile = () => {
     }
   } : null;
 
-  const defaultVisibilitySettings = {
-    showInstagram: true,
-    showTiktok: true,
-    showYoutube: true,
-    showLinkedin: true,
-    showLocation: true,
-    showAnalytics: true
-  };
-
   return (
     <div className="container mx-auto p-6 max-w-6xl space-y-6">
       <ProfileHeader onEditProfile={handleEditProfile} />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-muted">
+        <TabsList className="grid w-full grid-cols-2 bg-muted">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Eye className="w-4 h-4" />
             Overview
           </TabsTrigger>
-          <TabsTrigger value="preview" className="flex items-center gap-2">
-            Brand View
-          </TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="edit" disabled={!isEditing}>
             <Settings className="w-4 h-4" />
             Edit
@@ -108,16 +93,6 @@ const CreatorProfile = () => {
           <ProfileOverviewTab 
             creatorForCard={creatorForCard}
             creatorProfile={creatorProfile}
-          />
-        </TabsContent>
-
-        <TabsContent value="preview" className="space-y-6">
-          <ProfilePreviewTab creatorForCard={creatorForCard} />
-        </TabsContent>
-
-        <TabsContent value="analytics" className="space-y-6">
-          <ProfileAnalyticsTab 
-            visibilitySettings={safeProfileData?.visibilitySettings || defaultVisibilitySettings}
           />
         </TabsContent>
 

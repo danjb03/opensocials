@@ -41,6 +41,7 @@ export const transformCreatorProfile = (data: CreatorProfileRecord): CreatorProf
     followerCount: data.follower_count?.toString() || '0',
     engagementRate: data.engagement_rate ? `${data.engagement_rate}%` : '0%',
     isProfileComplete: isComplete,
+    platforms: data.platform_types || [], // Map platform_types to platforms
     socialConnections: {
       instagram: false, // Will need to be handled separately if needed
       tiktok: false,
@@ -85,6 +86,7 @@ export const createEmptyCreatorProfile = (userId: string): CreatorProfile => {
     followerCount: '0',
     engagementRate: '0%',
     isProfileComplete: false,
+    platforms: [], // Add empty platforms array
     socialConnections: {
       instagram: false,
       tiktok: false,
