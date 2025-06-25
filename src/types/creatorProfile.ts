@@ -31,8 +31,13 @@ export interface CreatorProfile {
     secondary?: string[];
     countries?: { name: string; percentage: number }[];
   };
-  industries?: string[];
-  creatorType?: string;
+  industries: string[];
+  creatorType: string;
+  platforms: string[];
+  // Add database field mappings
+  follower_count?: number;
+  engagement_rate?: number;
+  creator_type?: string;
 }
 
 export interface CreatorProfileRecord {

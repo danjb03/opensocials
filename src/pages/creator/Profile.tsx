@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Edit, Settings, Eye } from 'lucide-react';
 import { useCreatorProfileData } from '@/hooks/useCreatorProfileData';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
-import { useCreatorProfile } from '@/hooks/useCreatorProfile';
 import ProfileEditForm from '@/components/creator/ProfileEditForm';
 import SocialAnalytics from '@/components/creator/dashboard/SocialAnalytics';
 import CreatorProfileCard from '@/components/creator/CreatorProfileCard';
@@ -15,7 +14,6 @@ import LoadingSpinner from '@/components/ui/loading-spinner';
 const CreatorProfile = () => {
   const { user, creatorProfile } = useUnifiedAuth();
   const { profile: profileData, isLoading: profileDataLoading } = useCreatorProfileData();
-  const { profile: hookProfile } = useCreatorProfile();
   const [activeTab, setActiveTab] = useState('overview');
   const [isEditing, setIsEditing] = useState(false);
 
@@ -59,6 +57,23 @@ const CreatorProfile = () => {
     engagementRate: creatorProfile?.engagement_rate || 0,
     creatorType: creatorProfile?.creator_type || '',
   };
+
+  // Safe access to profile data with fallbacks
+  const safeProfileData = profileData ? {
+    ...profileData,
+    platforms: profileData.platforms || [],
+    followerCount: creatorProfile?.follower_count?.toString() || '0',
+    engagementRate: creatorProfile?.engagement_rate?.toString() || '0',
+    creatorType: creatorProfile?.creator_type || '',
+    visibilitySettings: profileData.visibilitySettings || {
+      showInstagram: true,
+      showTiktok: true,
+      showYoutube: true,
+      showLinkedin: true,
+      showLocation: true,
+      showAnalytics: true
+    }
+  } : null;
 
   return (
     <div className="container mx-auto p-6 max-w-6xl space-y-6">
@@ -195,7 +210,7 @@ const CreatorProfile = () => {
               tiktok: { followers: '0', engagement: '0%', growth: '0%' },
               youtube: { followers: '0', engagement: '0%', growth: '0%' }
             }}
-            visibilitySettings={{
+            visibilitySettings={safeProfileData?.visibilitySettings || {
               showInstagram: true,
               showTiktok: true,
               showYoutube: true,
@@ -209,9 +224,9 @@ const CreatorProfile = () => {
         </TabsContent>
 
         <TabsContent value="edit" className="space-y-6">
-          {profileData && (
+          {safeProfileData && (
             <ProfileEditForm
-              profile={profileData}
+              profile={safeProfileData}
               isLoading={false}
               onSubmit={handleSaveProfile}
               onCancel={handleCancelEdit}
