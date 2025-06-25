@@ -39,3 +39,50 @@ export const validatePassword = (password: string): { isValid: boolean; errors: 
   
   return { isValid: errors.length === 0, errors };
 };
+
+export const validateUrl = (url: string): boolean => {
+  if (!url || typeof url !== 'string') return true;
+  try {
+    const parsed = new URL(url);
+    return ['http:', 'https:'].includes(parsed.protocol);
+  } catch {
+    return false;
+  }
+};
+
+export const sanitizeUrl = (url: string): string => {
+  return validateUrl(url) ? new URL(url).toString() : '';
+};
+
+export const validateSocialHandle = (handle: string): boolean => {
+  if (!handle || typeof handle !== 'string') return true;
+  const clean = handle.replace(/^@/, '');
+  return clean.length <= 30 && /^[a-zA-Z0-9._]+$/.test(clean);
+};
+
+export const sanitizeSocialHandle = (handle: string): string => {
+  if (!handle || typeof handle !== 'string') return '';
+  // Remove @ symbol and sanitize
+  const clean = handle.replace(/^@/, '').trim();
+  // Only allow alphanumeric characters, dots, and underscores
+  const sanitized = clean.replace(/[^a-zA-Z0-9._]/g, '');
+  return sanitized.slice(0, 30);
+};
+
+interface SanitizeHtmlOptions {
+  allowedTags?: string[];
+  maxLength?: number;
+}
+
+export const sanitizeHtml = (input: string, options: SanitizeHtmlOptions = {}): string => {
+  if (!input || typeof input !== 'string') return '';
+  
+  const { allowedTags = [], maxLength = 1000 } = options;
+  
+  const sanitized = DOMPurify.sanitize(input.trim(), {
+    ALLOWED_TAGS: allowedTags,
+    ALLOWED_ATTR: []
+  });
+  
+  return sanitized.slice(0, maxLength);
+};
