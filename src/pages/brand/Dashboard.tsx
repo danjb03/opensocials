@@ -58,7 +58,7 @@ const BrandDashboard = () => {
           </div>
           
           <div className="space-y-6">
-            <TodoPanel todoItems={todoItems} />
+            <TodoPanel todos={todoItems} />
           </div>
         </div>
       </div>
