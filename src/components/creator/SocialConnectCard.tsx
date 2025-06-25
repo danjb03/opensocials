@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -146,7 +147,8 @@ export function SocialConnectCard({ creatorId, onSuccess }: SocialConnectCardPro
     const statusMap = {
       pending: <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Pending</span>,
       running: <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 flex items-center gap-1">
-        <LoadingSpinner className="w-3 h-3" /> Processing
+        <div className="w-3 h-3 border-t-2 border-b-2 border-blue-600 rounded-full animate-spin" />
+        Processing
       </span>,
       ready: <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Connected</span>,
       failed: <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Failed</span>,
@@ -235,7 +237,7 @@ export function SocialConnectCard({ creatorId, onSuccess }: SocialConnectCardPro
             >
               {loading ? (
                 <>
-                  <LoadingSpinner className="mr-2 h-4 w-4" />
+                  <div className="mr-2 h-4 w-4 border-t-2 border-b-2 border-white rounded-full animate-spin" />
                   Connecting...
                 </>
               ) : (

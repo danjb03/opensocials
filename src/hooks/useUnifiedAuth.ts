@@ -122,5 +122,10 @@ export function useUnifiedAuth() {
     isLoading,
     // Expose debug info for troubleshooting
     debugInfo,
+    // Add profile property for backward compatibility
+    profile: creatorProfile,
   };
 }
+
+// Export alias for creator-specific usage
+export const useCreatorAuth = useUnifiedAuth;
