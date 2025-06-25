@@ -4,17 +4,51 @@ import { useParams, useNavigate } from 'react-router-dom';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Upload } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import ContentUploader from '@/components/creator/campaigns/ContentUploader';
+import { useSubmitContent } from '@/hooks/useCampaignSubmissions';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const ContentUpload = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, role } = useUnifiedAuth();
-  const [isUploading, setIsUploading] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [caption, setCaption] = useState('');
+  const [hashtagsText, setHashtagsText] = useState('');
+  const [platform, setPlatform] = useState<'instagram' | 'tiktok' | 'youtube' | ''>('');
 
-  // Super admin preview mode
+  const submitContent = useSubmitContent();
+
+  // Fetch campaign/project details for header information
+  const { data: campaign, isLoading: campaignLoading } = useQuery({
+    queryKey: ['campaign', id],
+    enabled: !!id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('projects_new') // adjust to correct table if needed
+        .select('name, description')
+        .eq('id', id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Super-admin preview mode
   if (role === 'super_admin') {
     return (
       <CreatorLayout>
@@ -44,20 +78,52 @@ const ContentUpload = () => {
     );
   }
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  /* -------- helpers -------- */
+  const handleFilesSelected = (files: File[]) => {
+    setSelectedFiles((prev) => [...prev, ...files]);
+  };
 
-    setIsUploading(true);
+  const handleSubmit = async () => {
+    if (!id) return;
+    if (selectedFiles.length === 0) {
+      toast.error('Please add at least one file.');
+      return;
+    }
+    if (!platform) {
+      toast.error('Select a platform.');
+      return;
+    }
+
     try {
-      // Simulate upload process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      console.log('File uploaded:', file.name);
-      // Add actual upload logic here
-    } catch (error) {
-      console.error('Upload error:', error);
-    } finally {
-      setIsUploading(false);
+      const hashtags =
+        hashtagsText
+          .split(',')
+          .map((h) => h.trim())
+          .filter(Boolean) || [];
+
+      // NOTE: real file-uploading to storage should happen here.
+      // For now we only pass meta information so the backend record is created.
+      const filesMeta = selectedFiles.map((f) => ({
+        name: f.name,
+        type: f.type.startsWith('image') ? 'image' : 'video',
+        size: f.size,
+      }));
+
+      await submitContent.mutateAsync({
+        campaignId: id,
+        contentData: {
+          caption,
+          hashtags,
+          platform,
+          files: filesMeta,
+        },
+      });
+
+      toast.success('Content submitted for review.');
+      navigate('/creator/campaigns');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to submit content.');
     }
   };
 
@@ -81,34 +147,75 @@ const ContentUpload = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-white">Content Upload</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                  <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-white mb-2">Drag and drop your content here</p>
-                  <p className="text-sm text-muted-foreground mb-4">or click to browse</p>
-                  <input
-                    type="file"
-                    onChange={handleFileUpload}
-                    accept="image/*,video/*"
-                    className="hidden"
-                    id="file-upload"
-                  />
-                  <label htmlFor="file-upload">
-                    <Button 
-                      className="bg-white text-black hover:bg-gray-200"
-                      disabled={isUploading}
-                    >
-                      {isUploading ? 'Uploading...' : 'Choose File'}
-                    </Button>
-                  </label>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* --- left column : uploader and previews --- */}
+            <div className="space-y-6 lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-white">Content Files</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <ContentUploader onFilesSelected={handleFilesSelected} />
+
+                  {selectedFiles.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {selectedFiles.map((file, idx) => {
+                        const previewUrl = URL.createObjectURL(file);
+                        return (
+                          <div key={idx} className="relative">
+                            <img
+                              src={previewUrl}
+                              alt={file.name}
+                              className="h-32 w-full object-cover rounded-lg"
+                            />
+                            <span className="absolute bottom-1 right-1 text-xs bg-black/60 text-white px-1 rounded">
+                              {(file.size / 1024 / 1024).toFixed(1)} MB
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-white">Content Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-white">Caption</label>
+                    <Textarea
+                      value={caption}
+                      onChange={(e) => setCaption(e.target.value)}
+                      placeholder="Write a compelling caption…"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-white">Hashtags (comma separated)</label>
+                    <Input
+                      value={hashtagsText}
+                      onChange={(e) => setHashtagsText(e.target.value)}
+                      placeholder="#brand, #campaign"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-white">Platform</label>
+                    <Select value={platform} onValueChange={(v) => setPlatform(v as any)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select platform" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="instagram">Instagram</SelectItem>
+                        <SelectItem value="tiktok">TikTok</SelectItem>
+                        <SelectItem value="youtube">YouTube</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
             <Card>
               <CardHeader>
@@ -121,9 +228,20 @@ const ContentUpload = () => {
                   <li>• High resolution recommended</li>
                   <li>• Include captions if required</li>
                   <li>• Follow brand guidelines</li>
+                  <li>• After approval you will be prompted to post and add the live link</li>
                 </ul>
               </CardContent>
             </Card>
+          </div>
+
+          <div className="mt-8 flex justify-end">
+            <Button
+              onClick={handleSubmit}
+              disabled={submitContent.isPending}
+              className="bg-primary text-white"
+            >
+              {submitContent.isPending ? 'Submitting…' : 'Submit for Review'}
+            </Button>
           </div>
         </div>
       </CreatorLayout>

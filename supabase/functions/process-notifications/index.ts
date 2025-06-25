@@ -21,7 +21,19 @@ async function notifyUser(supabase: any, user_id: string, type: string, metadata
   
   try {
     // Example: Send email notification
-    if (type === 'upload_submitted' || type === 'upload_reviewed' || type === 'campaign_live') {
+    const emailEvents = [
+      'upload_submitted',
+      'upload_reviewed',
+      'campaign_live',
+      // Content-review workflow events
+      'content_submitted',     // creator → brand
+      'content_approved',      // brand  → creator
+      'revision_requested',    // brand  → creator with feedback
+      'proof_submitted',       // creator → brand / admin
+      'payment_ready'          // system → admin
+    ]
+
+    if (emailEvents.includes(type)) {
       await sendEmailNotification(user_id, type, metadata)
     }
     
