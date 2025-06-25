@@ -1,6 +1,6 @@
 
 import { useEffect } from 'react';
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { userDataStore } from '@/lib/userDataStore';
 
@@ -9,7 +9,7 @@ import { userDataStore } from '@/lib/userDataStore';
  * Initializes user-scoped data store and cleanup
  */
 export const useUserDataSync = () => {
-  const { user } = useAuth();
+  const { user } = useUnifiedAuth();
   const queryClient = useQueryClient();
 
   useEffect(() => {

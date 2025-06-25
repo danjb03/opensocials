@@ -1,5 +1,5 @@
 
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
@@ -9,7 +9,7 @@ export const useCreatorProfileActions = (
   profile: CreatorProfile | null, 
   setProfile: (updater: (prev: CreatorProfile | null) => CreatorProfile | null) => void
 ) => {
-  const { user } = useAuth();
+  const { user } = useUnifiedAuth();
   const { toast: uiToast } = useToast();
 
   const updateProfile = async (updatedData: Partial<CreatorProfile>) => {

@@ -1,7 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 
 export interface ProjectInvitation {
   id: string;
@@ -18,7 +18,7 @@ export interface ProjectInvitation {
 }
 
 export const useProjectInvitations = () => {
-  const { user } = useAuth();
+  const { user } = useUnifiedAuth();
 
   return useQuery({
     queryKey: ['project-invitations', user?.id],

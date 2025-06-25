@@ -1,80 +1,65 @@
+
+import { QueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
-import { useQueryClient } from '@tanstack/react-query';
 
 /**
- * User Data Store - Centralized user data management with strict isolation
- * Ensures data is always scoped to the authenticated user
+ * User-scoped data store for managing isolated user data across the application
+ * This store ensures that all user data is properly isolated and cleaned up when users switch
  */
+class UserDataStore {
+  private currentUserId: string | null = null;
+  private queryClient: QueryClient | null = null;
+  private cleanupCallbacks: (() => void)[] = [];
 
-export class UserDataStore {
-  private static instance: UserDataStore;
-  private userId: string | null = null;
-  private queryClient: any = null;
-  private activeChannels: Map<string, any> = new Map();
-  private isInitialized: boolean = false;
-
-  private constructor() {}
-
-  static getInstance(): UserDataStore {
-    if (!UserDataStore.instance) {
-      UserDataStore.instance = new UserDataStore();
+  /**
+   * Initialize the store for a specific user
+   */
+  initialize(userId: string, queryClient: QueryClient) {
+    console.log('🔧 UserDataStore initializing for user:', userId);
+    
+    // Clean up existing data if switching users
+    if (this.currentUserId && this.currentUserId !== userId) {
+      console.log('👤 User changed, cleaning up old user data');
+      this.cleanup();
     }
-    return UserDataStore.instance;
-  }
 
-  initialize(userId: string, queryClient: any) {
-    this.userId = userId;
+    this.currentUserId = userId;
     this.queryClient = queryClient;
-    this.isInitialized = true;
-    this.setupRealtimeSubscriptions();
-  }
 
-  cleanup() {
-    this.cleanupChannels();
-    this.userId = null;
-    this.queryClient = null;
-    this.isInitialized = false;
+    console.log('✅ UserDataStore initialized successfully');
   }
 
   /**
    * Check if the store is ready for use
    */
   isReady(): boolean {
-    return this.isInitialized && !!this.userId;
+    const ready = !!(this.currentUserId && this.queryClient);
+    console.log('🔍 UserDataStore ready check:', { 
+      userId: this.currentUserId, 
+      hasQueryClient: !!this.queryClient, 
+      ready 
+    });
+    return ready;
   }
 
   /**
-   * Get user-scoped query key - ensures cache isolation
+   * Execute a query that automatically filters by current user
    */
-  getUserQueryKey(baseKey: (string | any)[]): string[] {
-    if (!this.userId) throw new Error('User not authenticated');
-    return ['user', this.userId, ...baseKey.map(k => typeof k === 'object' ? JSON.stringify(k) : String(k))];
-  }
-
-  /**
-   * Execute user-scoped database query with automatic filtering
-   */
-  async executeUserQuery(tableName: string, selectColumns = '*', additionalFilters = {}) {
+  async executeUserQuery(
+    tableName: string, 
+    selectColumns: string = '*', 
+    additionalFilters: Record<string, any> = {}
+  ) {
     if (!this.isReady()) {
-      throw new Error('User not authenticated or store not initialized');
+      throw new Error('UserDataStore not initialized');
     }
+
+    console.log('🗄️ Executing user query:', { tableName, selectColumns, additionalFilters });
 
     let query = supabase
-      .from(tableName as any)
-      .select(selectColumns);
-
-    // Apply user filter based on table structure
-    if (tableName === 'projects') {
-      query = query.eq('brand_id', this.userId);
-    } else if (tableName === 'profiles') {
-      query = query.eq('id', this.userId);
-    } else if (tableName === 'user_roles') {
-      query = query.eq('user_id', this.userId);
-    } else {
-      // Default user_id filtering for other tables
-      query = query.eq('user_id', this.userId);
-    }
+      .from(tableName)
+      .select(selectColumns)
+      .eq('user_id', this.currentUserId!);
 
     // Apply additional filters
     Object.entries(additionalFilters).forEach(([key, value]) => {
@@ -82,89 +67,90 @@ export class UserDataStore {
     });
 
     const { data, error } = await query;
-    
+
     if (error) {
-      console.error(`Error fetching ${tableName}:`, error);
+      console.error('❌ User query error:', error);
       throw error;
     }
 
-    return data || [];
+    console.log('✅ User query successful:', { count: data?.length || 0 });
+    return data;
   }
 
   /**
-   * Setup real-time subscriptions with user isolation
-   */
-  private setupRealtimeSubscriptions() {
-    if (!this.userId) return;
-
-    // Projects subscription
-    this.subscribeToTable('projects', `brand_id=eq.${this.userId}`, ['projects']);
-    
-    // Profile subscription
-    this.subscribeToTable('profiles', `id=eq.${this.userId}`, ['profile']);
-    
-    // User roles subscription
-    this.subscribeToTable('user_roles', `user_id=eq.${this.userId}`, ['user-roles']);
-  }
-
-  /**
-   * Subscribe to table changes with user isolation
-   */
-  private subscribeToTable(tableName: string, filter: string, queryKeys: string[]) {
-    const channelName = `${tableName}-${this.userId}`;
-    
-    if (this.activeChannels.has(channelName)) {
-      supabase.removeChannel(this.activeChannels.get(channelName));
-    }
-
-    const channel = supabase
-      .channel(channelName)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: tableName,
-        filter: filter
-      }, (payload) => {
-        this.invalidateUserQueries(queryKeys);
-      })
-      .subscribe();
-
-    this.activeChannels.set(channelName, channel);
-  }
-
-  /**
-   * Invalidate user-specific queries
-   */
-  private invalidateUserQueries(queryKeys: string[]) {
-    if (!this.queryClient || !this.userId) return;
-
-    queryKeys.forEach(key => {
-      this.queryClient.invalidateQueries({ 
-        queryKey: this.getUserQueryKey([key])
-      });
-    });
-  }
-
-  /**
-   * Clean up all active channels
-   */
-  private cleanupChannels() {
-    this.activeChannels.forEach(channel => {
-      supabase.removeChannel(channel);
-    });
-    this.activeChannels.clear();
-  }
-
-  /**
-   * Force refresh all user data
+   * Refresh all user-specific query data
    */
   refreshAllUserData() {
-    if (!this.queryClient || !this.userId) return;
+    if (!this.isReady()) {
+      console.warn('⚠️ Cannot refresh: UserDataStore not ready');
+      return;
+    }
 
-    this.queryClient.invalidateQueries({ 
-      queryKey: ['user', this.userId]
+    console.log('🔄 Refreshing all user data for:', this.currentUserId);
+
+    // Invalidate all queries that include the current user ID
+    this.queryClient!.invalidateQueries({
+      predicate: (query) => {
+        const queryKey = query.queryKey;
+        return Array.isArray(queryKey) && queryKey.some(key => 
+          typeof key === 'string' && key.includes(`user-${this.currentUserId}`)
+        );
+      }
     });
+
+    console.log('✅ User data refresh initiated');
+  }
+
+  /**
+   * Add a cleanup callback to be executed when the store is cleaned up
+   */
+  addCleanupCallback(callback: () => void) {
+    this.cleanupCallbacks.push(callback);
+  }
+
+  /**
+   * Clean up all user data and reset the store
+   */
+  cleanup() {
+    console.log('🧹 UserDataStore cleanup initiated');
+
+    // Execute cleanup callbacks
+    this.cleanupCallbacks.forEach(callback => {
+      try {
+        callback();
+      } catch (error) {
+        console.warn('⚠️ Cleanup callback error:', error);
+      }
+    });
+
+    // Clear query cache for the current user
+    if (this.currentUserId && this.queryClient) {
+      console.log('🗑️ Clearing query cache for user:', this.currentUserId);
+      this.queryClient.invalidateQueries({
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return Array.isArray(queryKey) && queryKey.some(key => 
+            typeof key === 'string' && key.includes(`user-${this.currentUserId}`)
+          );
+        }
+      });
+    }
+
+    // Reset state
+    this.currentUserId = null;
+    this.queryClient = null;
+    this.cleanupCallbacks = [];
+
+    console.log('✅ UserDataStore cleanup completed');
+  }
+
+  /**
+   * Get the current user ID
+   */
+  getCurrentUserId(): string | null {
+    return this.currentUserId;
   }
 }
 
-export const userDataStore = UserDataStore.getInstance();
+// Export singleton instance
+export const userDataStore = new UserDataStore();

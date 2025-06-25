@@ -1,224 +1,87 @@
 
-import { useState, useEffect, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
-import { toast } from 'sonner';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 
-interface Creator {
-  id: string;
-  user_id: string;
-  display_name: string | null;
-  bio: string | null;
-  primary_platform: string | null;
-  follower_count: number | null;
-  engagement_rate: number | null;
-  audience_type: string | null;
-  content_type: string | null;
-  industries: string[] | null;
-  platforms: string[] | null;
-  avatar_url: string | null;
-  audience_location: any;
-  content_types: string[] | null;
+export interface CreatorSearchFilters {
+  platform?: string;
+  minFollowers?: number;
+  maxFollowers?: number;
+  engagementRate?: number;
+  location?: string;
+  contentTypes?: string[];
+  industries?: string[];
+  search?: string;
 }
 
-export const useCreatorSearchNew = () => {
-  const { user } = useAuth();
-  const [creators, setCreators] = useState<Creator[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // Search and filter states
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterPlatform, setFilterPlatform] = useState('');
-  const [filterAudience, setFilterAudience] = useState('');
-  const [filterContentType, setFilterContentType] = useState('');
-  const [filterLocation, setFilterLocation] = useState('');
-  const [filterSkills, setFilterSkills] = useState<string[]>([]);
-  const [filterIndustries, setFilterIndustries] = useState<string[]>([]);
-  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
-  
-  // Selection states
-  const [selectedCreators, setSelectedCreators] = useState<Creator[]>([]);
-  const [selectedCampaignId, setSelectedCampaignId] = useState<string>('');
-  const [availableCampaigns, setAvailableCampaigns] = useState<Array<{id: string, name: string}>>([]);
+export interface CreatorSearchResult {
+  id: string;
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  username: string;
+  bio: string;
+  primary_platform: string;
+  follower_count: number;
+  engagement_rate: number;
+  avatar_url: string;
+  platforms: string[];
+  content_types: string[];
+  industries: string[];
+}
 
-  // Fetch creators from creator_profiles table
-  useEffect(() => {
-    const fetchCreators = async () => {
-      try {
-        setIsLoading(true);
-        console.log('Fetching creators from creator_profiles table');
-        
-        const { data, error } = await supabase
-          .from('creator_profiles')
-          .select('*')
-          .eq('is_profile_complete', true);
+export const useCreatorSearchNew = (filters: CreatorSearchFilters = {}) => {
+  const { user } = useUnifiedAuth();
 
-        if (error) {
-          console.error('Error fetching creators:', error);
-          toast.error('Failed to load creators');
-          return;
-        }
+  return useQuery({
+    queryKey: ['creator-search-new', filters, user?.id],
+    queryFn: async (): Promise<CreatorSearchResult[]> => {
+      let query = supabase
+        .from('creator_profiles')
+        .select('*');
 
-        console.log('Raw creator profiles data:', data);
-        
-        // Transform data to match our Creator interface
-        const transformedData = (data || []).map(profile => ({
-          id: profile.id,
-          user_id: profile.user_id,
-          display_name: profile.first_name && profile.last_name 
-            ? `${profile.first_name} ${profile.last_name}`
-            : profile.username || null,
-          bio: profile.bio,
-          primary_platform: profile.primary_platform,
-          follower_count: profile.follower_count,
-          engagement_rate: profile.engagement_rate,
-          audience_type: profile.audience_type,
-          content_type: profile.content_type,
-          industries: profile.industries,
-          platforms: profile.platforms,
-          avatar_url: profile.avatar_url,
-          audience_location: profile.audience_location,
-          content_types: profile.content_types
-        }));
-        
-        setCreators(transformedData);
-      } catch (error) {
-        console.error('Error in fetchCreators:', error);
-        toast.error('Failed to load creators');
-      } finally {
-        setIsLoading(false);
+      // Apply filters
+      if (filters.platform) {
+        query = query.contains('platforms', [filters.platform]);
       }
-    };
 
-    fetchCreators();
-  }, []);
-
-  // Fetch available campaigns for the current brand
-  useEffect(() => {
-    const fetchCampaigns = async () => {
-      if (!user) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('projects')
-          .select('id, name')
-          .eq('brand_id', user.id)
-          .eq('status', 'active');
-
-        if (error) {
-          console.error('Error fetching campaigns:', error);
-          return;
-        }
-
-        setAvailableCampaigns(data || []);
-      } catch (error) {
-        console.error('Error fetching campaigns:', error);
+      if (filters.minFollowers) {
+        query = query.gte('follower_count', filters.minFollowers);
       }
-    };
 
-    fetchCampaigns();
-  }, [user]);
-
-  // Filter creators based on search criteria
-  const filteredCreators = useMemo(() => {
-    return creators.filter(creator => {
-      const matchesSearch = !searchTerm || 
-        creator.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        creator.bio?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesPlatform = !filterPlatform || creator.primary_platform === filterPlatform;
-      const matchesAudience = !filterAudience || creator.audience_type === filterAudience;
-      const matchesContentType = !filterContentType || 
-        creator.content_type === filterContentType ||
-        creator.content_types?.includes(filterContentType);
-      
-      const matchesSkills = filterSkills.length === 0 || 
-        filterSkills.some(skill => creator.content_types?.includes(skill));
-      
-      const matchesIndustries = filterIndustries.length === 0 ||
-        filterIndustries.some(industry => creator.industries?.includes(industry));
-
-      return matchesSearch && matchesPlatform && matchesAudience && 
-             matchesContentType && matchesSkills && matchesIndustries;
-    });
-  }, [creators, searchTerm, filterPlatform, filterAudience, filterContentType, 
-      filterSkills, filterIndustries]);
-
-  const handleToggleCreator = (creator: Creator) => {
-    setSelectedCreators(prev => {
-      const isSelected = prev.some(c => c.id === creator.id);
-      if (isSelected) {
-        return prev.filter(c => c.id !== creator.id);
-      } else {
-        return [...prev, creator];
+      if (filters.maxFollowers) {
+        query = query.lte('follower_count', filters.maxFollowers);
       }
-    });
-  };
 
-  const addCreatorsToProject = async () => {
-    if (!selectedCampaignId || selectedCreators.length === 0) {
-      toast.error('Please select a campaign and at least one creator');
-      return;
-    }
+      if (filters.engagementRate) {
+        query = query.gte('engagement_rate', filters.engagementRate);
+      }
 
-    try {
-      toast.success(`Added ${selectedCreators.length} creator(s) to campaign`);
-      setSelectedCreators([]);
-    } catch (error) {
-      console.error('Error adding creators to project:', error);
-      toast.error('Failed to add creators to campaign');
-    }
-  };
+      if (filters.contentTypes && filters.contentTypes.length > 0) {
+        query = query.overlaps('content_types', filters.contentTypes);
+      }
 
-  const resetFilters = () => {
-    setSearchTerm('');
-    setFilterPlatform('');
-    setFilterAudience('');
-    setFilterContentType('');
-    setFilterLocation('');
-    setFilterSkills([]);
-    setFilterIndustries([]);
-  };
+      if (filters.industries && filters.industries.length > 0) {
+        query = query.overlaps('industries', filters.industries);
+      }
 
-  const getActiveFilterCount = () => {
-    let count = 0;
-    if (searchTerm) count++;
-    if (filterPlatform) count++;
-    if (filterAudience) count++;
-    if (filterContentType) count++;
-    if (filterLocation) count++;
-    if (filterSkills.length > 0) count++;
-    if (filterIndustries.length > 0) count++;
-    return count;
-  };
+      if (filters.search) {
+        query = query.or(
+          `first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%,username.ilike.%${filters.search}%`
+        );
+      }
 
-  return {
-    creators: filteredCreators,
-    isLoading,
-    searchTerm,
-    setSearchTerm,
-    filterPlatform,
-    setFilterPlatform,
-    filterAudience,
-    setFilterAudience,
-    filterContentType,
-    setFilterContentType,
-    filterLocation,
-    setFilterLocation,
-    filterSkills,
-    setFilterSkills,
-    filterIndustries,
-    setFilterIndustries,
-    isFilterSheetOpen,
-    setIsFilterSheetOpen,
-    selectedCreators,
-    filteredCreators,
-    handleToggleCreator,
-    addCreatorsToProject,
-    resetFilters,
-    getActiveFilterCount,
-    availableCampaigns,
-    selectedCampaignId,
-    setSelectedCampaignId
-  };
+      const { data, error } = await query
+        .order('follower_count', { ascending: false })
+        .limit(50);
+
+      if (error) {
+        console.error('Error searching creators:', error);
+        throw error;
+      }
+
+      return data || [];
+    },
+    enabled: !!user?.id
+  });
 };

@@ -1,7 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 
 export interface AgencyDeal {
   id: string;
@@ -15,7 +15,7 @@ export interface AgencyDeal {
 }
 
 export const useAgencyDeals = () => {
-  const { user } = useAuth();
+  const { user } = useUnifiedAuth();
 
   return useQuery({
     queryKey: ['agency-deals', user?.id],

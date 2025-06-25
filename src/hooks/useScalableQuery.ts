@@ -1,6 +1,6 @@
 
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { userDataStore } from '@/lib/userDataStore';
 
 /**
@@ -22,7 +22,7 @@ export function useScalableQuery<T = any>({
   customQueryFn,
   ...options
 }: ScalableQueryOptions<T>) {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading } = useUnifiedAuth();
 
   // Create a safe query key that includes auth loading state
   const queryKey = user?.id 
