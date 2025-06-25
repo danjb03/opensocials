@@ -26,7 +26,7 @@ export const clearAuthState = () => {
   }
 };
 
-// Get user role with improved priority logic
+// Get user role with improved priority logic and error handling
 export const getUserRole = async (userId: string): Promise<UserRole | null> => {
   try {
     console.log('🔍 Getting user role for:', userId);
@@ -44,47 +44,59 @@ export const getUserRole = async (userId: string): Promise<UserRole | null> => {
       console.warn('⚠️ Security definer function failed:', functionError);
     }
 
-    // Fallback 1: Check user_roles table directly
-    const { data: userRoles, error: rolesError } = await supabase
-      .from('user_roles')
-      .select('role, status')
-      .eq('user_id', userId)
-      .eq('status', 'approved');
+    // Fallback 1: Check user_roles table directly with error handling
+    try {
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('role, status')
+        .eq('user_id', userId)
+        .eq('status', 'approved');
 
-    if (!rolesError && userRoles && userRoles.length > 0) {
-      const role = userRoles[0].role as UserRole;
-      console.log('✅ Role from user_roles table:', role);
-      return role;
-    }
+      if (!rolesError && userRoles && userRoles.length > 0) {
+        const role = userRoles[0].role as UserRole;
+        console.log('✅ Role from user_roles table:', role);
+        return role;
+      }
 
-    if (rolesError) {
-      console.warn('⚠️ user_roles query failed:', rolesError);
+      if (rolesError) {
+        console.warn('⚠️ user_roles query failed:', rolesError);
+      }
+    } catch (error) {
+      console.warn('⚠️ user_roles table access failed:', error);
     }
 
     // Fallback 2: Check profiles table
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .maybeSingle();
+    try {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle();
 
-    if (!profileError && profile?.role) {
-      const role = profile.role as UserRole;
-      console.log('✅ Role from profiles table:', role);
-      return role;
-    }
+      if (!profileError && profile?.role) {
+        const role = profile.role as UserRole;
+        console.log('✅ Role from profiles table:', role);
+        return role;
+      }
 
-    if (profileError) {
-      console.warn('⚠️ profiles query failed:', profileError);
+      if (profileError) {
+        console.warn('⚠️ profiles query failed:', profileError);
+      }
+    } catch (error) {
+      console.warn('⚠️ profiles table access failed:', error);
     }
 
     // Fallback 3: Check auth user metadata
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
-    if (!userError && user?.user_metadata?.role) {
-      const role = user.user_metadata.role as UserRole;
-      console.log('✅ Role from auth metadata:', role);
-      return role;
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (!userError && user?.user_metadata?.role) {
+        const role = user.user_metadata.role as UserRole;
+        console.log('✅ Role from auth metadata:', role);
+        return role;
+      }
+    } catch (error) {
+      console.warn('⚠️ auth metadata access failed:', error);
     }
 
     console.warn('⚠️ No role found for user:', userId);
