@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { useNavigate } from 'react-router-dom';
 import { CreatorProfile } from '@/hooks/useCreatorProfile'; // Use the interface from the hook
 import { CreatorTypeDropdown } from '@/components/creator/setup/CreatorTypeDropdown';
 import { SocialMediaConnection } from '@/components/creator/SocialMediaConnection';
@@ -16,6 +17,7 @@ export interface ProfileEditFormProps {
 }
 
 const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEditFormProps) => {
+  const navigate = useNavigate();
   const [firstName, setFirstName] = useState(profile.firstName || '');
   const [lastName, setLastName] = useState(profile.lastName || '');
   const [bio, setBio] = useState(profile.bio || '');
@@ -30,6 +32,10 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>(profile.industries || []);
   const [creatorType, setCreatorType] = useState(profile.creatorType || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleComprehensiveSetup = () => {
+    navigate('/creator/profile/complete-setup');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,58 +117,77 @@ const ProfileEditForm = ({ profile, isLoading, onSubmit, onCancel }: ProfileEdit
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <BasicInfoSection 
-        firstName={firstName}
-        setFirstName={setFirstName}
-        lastName={lastName}
-        setLastName={setLastName}
-        bio={bio}
-        setBio={setBio}
-      />
-
-      <Card>
+    <div className="space-y-6">
+      {/* Quick Setup Option */}
+      <Card className="border-primary/20 bg-primary/5">
         <CardContent className="pt-6">
-          <CreatorTypeDropdown selected={creatorType} setSelected={setCreatorType} />
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-white mb-1">Complete Profile Setup</h3>
+              <p className="text-sm text-muted-foreground">
+                Use our comprehensive 4-step setup to optimize your profile for brand discovery
+              </p>
+            </div>
+            <Button onClick={handleComprehensiveSetup} variant="outline">
+              Complete Setup
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="pt-6">
-          <SocialMediaConnection onConnectionSuccess={handleConnectionSuccess} />
-        </CardContent>
-      </Card>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <BasicInfoSection 
+          firstName={firstName}
+          setFirstName={setFirstName}
+          lastName={lastName}
+          setLastName={setLastName}
+          bio={bio}
+          setBio={setBio}
+        />
 
-      <IndustryContentSection 
-        selectedIndustries={selectedIndustries}
-        setSelectedIndustries={setSelectedIndustries}
-        primaryPlatforms={primaryPlatforms}
-        setPrimaryPlatforms={setPrimaryPlatforms}
-        contentTypes={contentTypes}
-        setContentTypes={setContentTypes}
-        audienceType={audienceType}
-        setAudienceType={setAudienceType}
-        audienceLocation={audienceLocation}
-        setAudienceLocation={setAudienceLocation}
-      />
+        <Card>
+          <CardContent className="pt-6">
+            <CreatorTypeDropdown selected={creatorType} setSelected={setCreatorType} />
+          </CardContent>
+        </Card>
 
-      <div className="flex justify-end gap-3">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={onCancel}
-          disabled={isSubmitting}
-        >
-          Cancel
-        </Button>
-        <Button 
-          type="submit"
-          disabled={isSubmitting || isLoading}
-        >
-          {isSubmitting ? 'Saving...' : 'Finish Setup & Start Earning'}
-        </Button>
-      </div>
-    </form>
+        <Card>
+          <CardContent className="pt-6">
+            <SocialMediaConnection onConnectionSuccess={handleConnectionSuccess} />
+          </CardContent>
+        </Card>
+
+        <IndustryContentSection 
+          selectedIndustries={selectedIndustries}
+          setSelectedIndustries={setSelectedIndustries}
+          primaryPlatforms={primaryPlatforms}
+          setPrimaryPlatforms={setPrimaryPlatforms}
+          contentTypes={contentTypes}
+          setContentTypes={setContentTypes}
+          audienceType={audienceType}
+          setAudienceType={setAudienceType}
+          audienceLocation={audienceLocation}
+          setAudienceLocation={setAudienceLocation}
+        />
+
+        <div className="flex justify-end gap-3">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button 
+            type="submit"
+            disabled={isSubmitting || isLoading}
+          >
+            {isSubmitting ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 };
 

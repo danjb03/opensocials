@@ -23,6 +23,7 @@ export const CreatorRoutes = () => {
               <Route path="dashboard" element={<CreatorDashboard />} />
               <Route path="profile" element={<CreatorProfile />} />
               <Route path="profile/setup" element={<ProfileSetup />} />
+              <Route path="profile/complete-setup" element={<ProfileSetup />} />
               <Route path="analytics" element={<CreatorAnalytics />} />
               <Route path="deals" element={<CreatorDeals />} />
               <Route path="campaigns" element={<CreatorCampaigns />} />
