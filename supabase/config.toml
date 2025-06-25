@@ -8,34 +8,48 @@ schemas = ["public", "storage", "graphql_public"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000
 
-[auth]
-enabled = true
-port = 54324
-site_url = "http://localhost:3000"
-additional_redirect_urls = ["https://lovable.dev"]
-jwt_expiry = 3600
-enable_signup = true
-email_confirm_url = "http://localhost:3000"
-
 [db]
 enabled = true
 port = 54322
 shadow_port = 54320
+major_version = 15
 
-[functions]
-enabled = true
-port = 54321
-
-[functions.get-auth-users]
-verify_jwt = true
-
-[realtime]
+[studio]
 enabled = true
 port = 54323
+api_url = "http://127.0.0.1:54321"
+
+[inbucket]
+enabled = true
+port = 54324
+smtp_port = 54325
+pop3_port = 54326
 
 [storage]
 enabled = true
-port = 54324
+port = 54327
+file_size_limit = "50MiB"
 
-[analytics]
-enabled = false
+[auth]
+enabled = true
+port = 54328
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["https://127.0.0.1:3000"]
+jwt_expiry = 3600
+enable_signup = true
+enable_confirmations = false
+
+[functions]
+verify_jwt = false
+
+[functions.connect-social-account]
+verify_jwt = true
+
+[functions.poll-apify-jobs]
+verify_jwt = true
+
+[functions.schedule-social-refreshes]
+verify_jwt = false
+
+[functions.refresh-all-social-accounts]
+verify_jwt = false
