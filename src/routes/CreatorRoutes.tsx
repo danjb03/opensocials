@@ -3,6 +3,8 @@ import React, { Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
+import InstantLoadingFallback from '@/components/creator/dashboard/InstantLoadingFallback';
+import { useRoutePreloader } from '@/hooks/useRoutePreloader';
 
 // Lazy load pages for better initial bundle size
 const CreatorDashboard = React.lazy(() => import('@/pages/creator/Dashboard'));
@@ -14,22 +16,15 @@ const ContentUpload = React.lazy(() => import('@/pages/creator/ContentUpload'));
 const ProfileSetup = React.lazy(() => import('@/pages/creator/profile/Setup'));
 const CreatorProfile = React.lazy(() => import('@/pages/creator/Profile'));
 
-const PageLoadingFallback = () => (
-  <div className="flex items-center justify-center min-h-[400px]">
-    <div className="text-center">
-      <div className="w-8 h-8 border-t-2 border-b-2 border-white rounded-full animate-spin mx-auto mb-4"></div>
-      <p className="text-white">Loading...</p>
-    </div>
-  </div>
-);
-
 export const CreatorRoutes = () => {
+  useRoutePreloader(); // Preload routes for faster navigation
+
   return (
     <Routes>
       <Route path="/*" element={
         <ProtectedRoute requiredRole="creator">
           <CreatorLayout>
-            <Suspense fallback={<PageLoadingFallback />}>
+            <Suspense fallback={<InstantLoadingFallback />}>
               <Routes>
                 <Route index element={<CreatorDashboard />} />
                 <Route path="dashboard" element={<CreatorDashboard />} />

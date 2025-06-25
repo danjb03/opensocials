@@ -2,17 +2,18 @@
 import React from 'react';
 import DashboardContent from '@/components/creator/dashboard/DashboardContent';
 import { CreatorIntroModal } from '@/components/creator/CreatorIntroModal';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useInstantAuth } from '@/hooks/useInstantAuth';
 import { useCreatorProfile } from '@/hooks/useCreatorProfile';
 import { useCreatorIntro } from '@/hooks/creator/useCreatorIntro';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 const Dashboard = () => {
-  const { user, role, isLoading: authLoading } = useUnifiedAuth();
+  const { user, role, isLoading: authLoading } = useInstantAuth();
   const { profile, isLoading: profileLoading, error: profileError } = useCreatorProfile();
   const { showIntro, isLoading: introLoading, dismissIntro } = useCreatorIntro();
 
-  const isLoading = authLoading || profileLoading || introLoading;
+  // Only show loading if auth is still initializing
+  const isLoading = authLoading;
 
   console.log('Creator Dashboard Debug:', {
     user: !!user,
@@ -24,33 +25,6 @@ const Dashboard = () => {
     introLoading,
     profileError
   });
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="w-8 h-8 border-t-2 border-b-2 border-white rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-white">Loading your dashboard...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // If user doesn't exist, show loading state
-  if (!user) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="w-8 h-8 border-t-2 border-b-2 border-white rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-white">Authenticating...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Show error state if there's a profile error
   if (profileError) {
@@ -67,7 +41,7 @@ const Dashboard = () => {
   }
 
   // For super admins without creator profiles
-  if (role === 'super_admin' && !profile) {
+  if (role === 'super_admin' && !profile && !profileLoading) {
     return (
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
@@ -86,7 +60,7 @@ const Dashboard = () => {
       <div className="container mx-auto p-6">
         <DashboardContent 
           profile={profile}
-          isLoading={false}
+          isLoading={profileLoading}
           isEditing={false}
           isPreviewMode={role === 'super_admin'}
           totalEarnings={0}
@@ -107,7 +81,7 @@ const Dashboard = () => {
       </div>
 
       {/* Creator Intro Modal - only show for actual creators */}
-      {profile && (
+      {profile && !introLoading && (
         <CreatorIntroModal 
           isOpen={showIntro} 
           onClose={dismissIntro} 

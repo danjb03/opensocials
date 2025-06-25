@@ -1,93 +1,86 @@
 
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
-  FolderOpen, 
-  Heart, 
-  BarChart3,
-  Settings 
+  BarChart3, 
+  Briefcase, 
+  Camera, 
+  User,
+  DollarSign
 } from 'lucide-react';
+import { useRoutePreloader } from '@/hooks/useRoutePreloader';
 
-interface CreatorSidebarNavigationProps {
-  isSidebarOpen: boolean;
-}
-
-const CreatorSidebarNavigation = ({ isSidebarOpen }: CreatorSidebarNavigationProps) => {
-  const navigate = useNavigate();
+const CreatorSidebarNavigation = () => {
   const location = useLocation();
+  const { preloadRoute } = useRoutePreloader();
 
   const navigationItems = [
     { 
       name: 'Dashboard', 
-      href: '/creator', 
+      href: '/creator/dashboard', 
       icon: LayoutDashboard,
-      description: 'Overview and analytics'
-    },
-    { 
-      name: 'Campaigns', 
-      href: '/creator/campaigns', 
-      icon: FolderOpen,
-      description: 'Active projects'
-    },
-    { 
-      name: 'Deals', 
-      href: '/creator/deals', 
-      icon: Heart,
-      description: 'Brand partnerships'
+      preloadKey: '/creator/dashboard' as const
     },
     { 
       name: 'Analytics', 
       href: '/creator/analytics', 
       icon: BarChart3,
-      description: 'Performance insights'
+      preloadKey: '/creator/analytics' as const
+    },
+    { 
+      name: 'Campaigns', 
+      href: '/creator/campaigns', 
+      icon: Briefcase,
+      preloadKey: '/creator/campaigns' as const
+    },
+    { 
+      name: 'Deals', 
+      href: '/creator/deals', 
+      icon: DollarSign,
+      preloadKey: '/creator/deals' as const
     },
     { 
       name: 'Profile', 
       href: '/creator/profile', 
-      icon: Settings,
-      description: 'Account settings'
-    }
+      icon: User,
+      preloadKey: '/creator/profile' as const
+    },
   ];
 
-  const isActiveRoute = (href: string) => {
-    if (href === '/creator') {
+  const isActive = (href: string) => {
+    if (href === '/creator/dashboard') {
       return location.pathname === '/creator' || location.pathname === '/creator/dashboard';
     }
-    return location.pathname === href || location.pathname.startsWith(href + '/');
+    return location.pathname === href;
   };
 
   return (
-    <nav className="flex-1 p-4">
-      <ul className="space-y-2">
-        {navigationItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = isActiveRoute(item.href);
-          
-          return (
-            <li key={item.name}>
-              <Button
-                variant="ghost"
-                onClick={() => navigate(item.href)}
-                className={`w-full justify-start h-auto p-3 rounded-lg ${
-                  isActive 
-                    ? 'bg-white text-black hover:bg-white hover:text-black' 
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
-                }`}
-              >
-                <Icon className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : ''}`} />
-                {isSidebarOpen && (
-                  <div className="text-left">
-                    <div className="font-medium text-sm">{item.name}</div>
-                    <div className="text-xs opacity-70">{item.description}</div>
-                  </div>
-                )}
-              </Button>
-            </li>
-          );
-        })}
-      </ul>
+    <nav className="space-y-1">
+      {navigationItems.map((item) => {
+        const Icon = item.icon;
+        const active = isActive(item.href);
+        
+        return (
+          <Link
+            key={item.name}
+            to={item.href}
+            onMouseEnter={() => preloadRoute(item.preloadKey)} // Preload on hover
+            className={`
+              group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
+              ${active 
+                ? 'bg-white text-black' 
+                : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+              }
+            `}
+          >
+            <Icon 
+              className={`mr-3 h-5 w-5 ${active ? 'text-black' : 'text-gray-400 group-hover:text-white'}`} 
+            />
+            {item.name}
+          </Link>
+        );
+      })}
     </nav>
   );
 };
