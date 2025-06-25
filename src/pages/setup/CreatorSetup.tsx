@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
+import useProfilePersistence from '@/hooks/useProfilePersistence';
 import { SocialPlatformConnectApify } from '@/components/creator/SocialPlatformConnectApify';
 import { Loader2, CheckCircle, UploadCloud, Sparkles } from 'lucide-react';
 
@@ -40,18 +41,58 @@ const CreatorSetup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [profileCompletion, setProfileCompletion] = useState(0);
 
-  // Form state
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [bio, setBio] = useState('');
-  const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null);
-  const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-  const [selectedContentTypes, setSelectedContentTypes] = useState<string[]>([]);
-  const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
-  const [audienceType, setAudienceType] = useState('');
-  const [audienceLocation, setAudienceLocation] = useState('Global');
-  const [socialAccountsConnected, setSocialAccountsConnected] = useState(false); // Track if at least one social is connected
+  // ------------------------------------------------------------------
+  // PERSISTED FORM STATE
+  // ------------------------------------------------------------------
+  type FormState = {
+    firstName: string;
+    lastName: string;
+    bio: string;
+    profilePictureUrl: string | null;
+    selectedPlatforms: string[];
+    selectedContentTypes: string[];
+    selectedIndustries: string[];
+    audienceType: string;
+    audienceLocation: string;
+    socialAccountsConnected: boolean;
+  };
+
+  const initialState: FormState = {
+    firstName: '',
+    lastName: '',
+    bio: '',
+    profilePictureUrl: null,
+    selectedPlatforms: [],
+    selectedContentTypes: [],
+    selectedIndustries: [],
+    audienceType: '',
+    audienceLocation: 'Global',
+    socialAccountsConnected: false,
+  };
+
+  const [
+    formState,
+    setFormState,
+    clearPersistedForm,
+  ] = useProfilePersistence<FormState>('creator-onboarding', initialState);
+
+  // convenient destructure
+  const {
+    firstName,
+    lastName,
+    bio,
+    profilePictureUrl,
+    selectedPlatforms,
+    selectedContentTypes,
+    selectedIndustries,
+    audienceType,
+    audienceLocation,
+    socialAccountsConnected,
+  } = formState;
+
+  // helper to update field
+  const updateField = <K extends keyof FormState>(key: K, value: FormState[K]) =>
+    setFormState({ ...formState, [key]: value });
 
   useEffect(() => {
     if (creatorProfile?.is_profile_complete) {
@@ -121,7 +162,7 @@ const CreatorSetup = () => {
       return;
     }
     const file = event.target.files[0];
-    setProfilePictureFile(file);
+    // keep local file if needed
     setIsLoading(true);
 
     try {
@@ -144,7 +185,7 @@ const CreatorSetup = () => {
         .from('avatars')
         .getPublicUrl(filePath);
 
-      setProfilePictureUrl(publicUrlData.publicUrl);
+      updateField('profilePictureUrl', publicUrlData.publicUrl);
       toast.success('Profile picture uploaded successfully!');
     } catch (error: any) {
       console.error('Error uploading profile picture:', error);
@@ -155,7 +196,7 @@ const CreatorSetup = () => {
   };
 
   const handleSocialConnectionSuccess = () => {
-    setSocialAccountsConnected(true);
+    updateField('socialAccountsConnected', true);
     toast.success('Social account connected successfully!');
   };
 
@@ -191,6 +232,7 @@ const CreatorSetup = () => {
       }
 
       toast.success('Profile setup complete! Welcome to OpenSocials!');
+      clearPersistedForm(); // clear saved progress
       navigate('/creator/dashboard'); // Redirect to dashboard after completion
     } catch (error) {
       console.error('Error saving profile:', error);
@@ -257,30 +299,30 @@ const CreatorSetup = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name <span className="text-red-500">*</span></Label>
-                <Input 
-                  id="firstName" 
-                  placeholder="Your first name" 
-                  value={firstName} 
-                  onChange={(e) => setFirstName(e.target.value)} 
+                <Input
+                  id="firstName"
+                  placeholder="Your first name"
+                  value={firstName}
+                  onChange={(e) => updateField('firstName', e.target.value)}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name <span className="text-red-500">*</span></Label>
-                <Input 
-                  id="lastName" 
-                  placeholder="Your last name" 
-                  value={lastName} 
-                  onChange={(e) => setLastName(e.target.value)} 
+                <Input
+                  id="lastName"
+                  placeholder="Your last name"
+                  value={lastName}
+                  onChange={(e) => updateField('lastName', e.target.value)}
                 />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="bio">Bio <span className="text-red-500">*</span></Label>
-              <Textarea 
-                id="bio" 
-                placeholder="Tell brands about yourself and what you do (max 500 characters)" 
-                value={bio} 
-                onChange={(e) => setBio(e.target.value)} 
+              <Textarea
+                id="bio"
+                placeholder="Tell brands about yourself and what you do (max 500 characters)"
+                value={bio}
+                onChange={(e) => updateField('bio', e.target.value)}
                 maxLength={500} 
                 rows={4} 
               />
@@ -320,7 +362,7 @@ const CreatorSetup = () => {
                     variant="outline" 
                     size="sm" 
                     className="absolute -bottom-2 -right-2 rounded-full h-8 w-8 p-0"
-                    onClick={() => setProfilePictureUrl(null)}
+                    onClick={() => updateField('profilePictureUrl', null)}
                   >
                     ✕
                   </Button>
@@ -410,12 +452,11 @@ const CreatorSetup = () => {
                     <Checkbox 
                       id={`platform-${platform}`}
                       checked={selectedPlatforms.includes(platform)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setSelectedPlatforms([...selectedPlatforms, platform]);
-                        } else {
-                          setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
-                        }
+                    onCheckedChange={(checked) => {
+                        const next = checked
+                          ? [...selectedPlatforms, platform]
+                          : selectedPlatforms.filter(p => p !== platform);
+                        updateField('selectedPlatforms', next);
                       }}
                     />
                     <Label htmlFor={`platform-${platform}`} className="cursor-pointer">{platform}</Label>
