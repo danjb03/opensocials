@@ -41,7 +41,7 @@ const CreatorProfile = () => {
     setActiveTab('overview');
   };
 
-  // Transform creator profile for the card
+  // Transform creator profile for the card using the unified auth data and profile data
   const creatorForCard = {
     id: user?.id || '',
     firstName: creatorProfile?.first_name || profile?.firstName || '',
@@ -50,11 +50,11 @@ const CreatorProfile = () => {
     bio: creatorProfile?.bio || profile?.bio || '',
     avatarUrl: creatorProfile?.avatar_url || profile?.avatarUrl || '',
     primaryPlatform: creatorProfile?.primary_platform || profile?.primaryPlatform || '',
-    platforms: creatorProfile?.platforms || [],
+    platforms: creatorProfile?.platforms || profile?.platforms || [],
     industries: creatorProfile?.industries || profile?.industries || [],
     audienceLocation: creatorProfile?.audience_location || profile?.audienceLocation,
-    followerCount: creatorProfile?.follower_count || 0,
-    engagementRate: creatorProfile?.engagement_rate || 0,
+    followerCount: creatorProfile?.follower_count || parseInt(profile?.followerCount || '0') || 0,
+    engagementRate: creatorProfile?.engagement_rate || parseFloat(profile?.engagementRate || '0') || 0,
     creatorType: creatorProfile?.creator_type || profile?.creatorType || '',
   };
 

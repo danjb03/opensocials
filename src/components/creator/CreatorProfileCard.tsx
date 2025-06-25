@@ -97,6 +97,7 @@ const CreatorProfileCard = ({
     }
   };
 
+  // Use analytics data first, then fallback to creator data
   const followerCount = primaryAnalytics?.follower_count || creator.followerCount || 0;
   const engagementRate = primaryAnalytics?.engagement_rate || creator.engagementRate || 0;
   const avgViews = primaryAnalytics?.average_views;
