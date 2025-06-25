@@ -1,15 +1,15 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Edit, Settings, Eye } from 'lucide-react';
+import { Eye, Settings } from 'lucide-react';
 import { useCreatorProfileData } from '@/hooks/useCreatorProfileData';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
-import ProfileEditForm from '@/components/creator/ProfileEditForm';
-import SocialAnalytics from '@/components/creator/dashboard/SocialAnalytics';
-import CreatorProfileCard from '@/components/creator/CreatorProfileCard';
 import LoadingSpinner from '@/components/ui/loading-spinner';
+import ProfileHeader from '@/components/creator/profile/ProfileHeader';
+import ProfileOverviewTab from '@/components/creator/profile/ProfileOverviewTab';
+import ProfilePreviewTab from '@/components/creator/profile/ProfilePreviewTab';
+import ProfileAnalyticsTab from '@/components/creator/profile/ProfileAnalyticsTab';
+import ProfileEditTab from '@/components/creator/profile/ProfileEditTab';
 
 const CreatorProfile = () => {
   const { user, creatorProfile } = useUnifiedAuth();
@@ -75,24 +75,18 @@ const CreatorProfile = () => {
     }
   } : null;
 
+  const defaultVisibilitySettings = {
+    showInstagram: true,
+    showTiktok: true,
+    showYoutube: true,
+    showLinkedin: true,
+    showLocation: true,
+    showAnalytics: true
+  };
+
   return (
     <div className="container mx-auto p-6 max-w-6xl space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">My Profile</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your creator profile and social media connections.
-          </p>
-        </div>
-        <Button 
-          onClick={handleEditProfile}
-          className="bg-white text-black hover:bg-gray-100"
-        >
-          <Edit className="w-4 h-4 mr-2" />
-          Edit Profile
-        </Button>
-      </div>
+      <ProfileHeader onEditProfile={handleEditProfile} />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 bg-muted">
@@ -111,127 +105,28 @@ const CreatorProfile = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Profile Card Preview */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-foreground">Profile Preview</h2>
-              <CreatorProfileCard 
-                creator={creatorForCard}
-                showActions={false}
-              />
-            </div>
-
-            {/* Quick Stats */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-foreground">Quick Stats</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-foreground">
-                        {creatorProfile?.platforms?.length || 0}
-                      </p>
-                      <p className="text-sm text-muted-foreground">Connected Platforms</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-foreground">
-                        {creatorProfile?.industries?.length || 0}
-                      </p>
-                      <p className="text-sm text-muted-foreground">Industries</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Profile Completion */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Profile Completion</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Complete</span>
-                      <span>{creatorProfile?.is_profile_complete ? '100%' : '60%'}</span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div 
-                        className="bg-green-500 h-2 rounded-full transition-all duration-500" 
-                        style={{ width: creatorProfile?.is_profile_complete ? '100%' : '60%' }}
-                      />
-                    </div>
-                    {!creatorProfile?.is_profile_complete && (
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Complete your profile setup to maximize visibility
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          <ProfileOverviewTab 
+            creatorForCard={creatorForCard}
+            creatorProfile={creatorProfile}
+          />
         </TabsContent>
 
         <TabsContent value="preview" className="space-y-6">
-          <div className="text-center space-y-4">
-            <h2 className="text-2xl font-semibold text-foreground">Brand View</h2>
-            <p className="text-muted-foreground">
-              This is how brands will see your profile when they discover you
-            </p>
-          </div>
-          
-          <div className="flex justify-center">
-            <div className="max-w-md">
-              <CreatorProfileCard 
-                creator={creatorForCard}
-                onInvite={() => {}}
-                onViewProfile={() => {}}
-                showActions={true}
-              />
-            </div>
-          </div>
+          <ProfilePreviewTab creatorForCard={creatorForCard} />
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
-          <SocialAnalytics
-            socialConnections={{
-              instagram: true,
-              tiktok: true,
-              youtube: true,
-              linkedin: true
-            }}
-            platformAnalytics={{
-              instagram: { followers: '0', engagement: '0%', growth: '0%' },
-              tiktok: { followers: '0', engagement: '0%', growth: '0%' },
-              youtube: { followers: '0', engagement: '0%', growth: '0%' }
-            }}
-            visibilitySettings={safeProfileData?.visibilitySettings || {
-              showInstagram: true,
-              showTiktok: true,
-              showYoutube: true,
-              showLinkedin: true,
-              showLocation: true,
-              showAnalytics: true
-            }}
-            onConnect={() => {}}
-            isLoading={false}
+          <ProfileAnalyticsTab 
+            visibilitySettings={safeProfileData?.visibilitySettings || defaultVisibilitySettings}
           />
         </TabsContent>
 
         <TabsContent value="edit" className="space-y-6">
-          {safeProfileData && (
-            <ProfileEditForm
-              profile={safeProfileData}
-              isLoading={false}
-              onSubmit={handleSaveProfile}
-              onCancel={handleCancelEdit}
-            />
-          )}
+          <ProfileEditTab
+            profileData={safeProfileData}
+            onSave={handleSaveProfile}
+            onCancel={handleCancelEdit}
+          />
         </TabsContent>
       </Tabs>
     </div>
