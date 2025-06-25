@@ -59,13 +59,14 @@ const CreatorProfile = () => {
   };
 
   // Create a safe profile data object that matches what the edit form expects
+  // Use the transformed camelCase properties from useCreatorProfileData
   const safeProfileData = profileData ? {
     ...profileData,
     platforms: profileData.platforms || [],
-    // Convert numeric values to strings for display in forms - use the correct database fields
-    followerCount: profileData.follower_count?.toString() || '0',
-    engagementRate: profileData.engagement_rate?.toString() || '0%',
-    creatorType: profileData.creator_type || '',
+    // Use the camelCase properties from the transformed CreatorProfile
+    followerCount: profileData.followerCount || '0',
+    engagementRate: profileData.engagementRate || '0%',
+    creatorType: profileData.creatorType || '',
     visibilitySettings: profileData.visibilitySettings || {
       showInstagram: true,
       showTiktok: true,
