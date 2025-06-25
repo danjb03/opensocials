@@ -51,7 +51,7 @@ const CreatorProfile = () => {
     platforms: creatorProfile?.platforms || [],
     industries: creatorProfile?.industries || [],
     audienceLocation: creatorProfile?.audience_location,
-    // Use the correct property names from the unified auth data
+    // Use the correct camelCase property names from the CreatorProfile interface
     followerCount: creatorProfile?.follower_count || 0,
     engagementRate: creatorProfile?.engagement_rate || 0,
     creatorType: creatorProfile?.creator_type || '',
@@ -61,7 +61,7 @@ const CreatorProfile = () => {
   const safeProfileData = profileData ? {
     ...profileData,
     platforms: profileData.platforms || [],
-    // Convert numeric values to strings for display in forms - use the CreatorProfile interface properties
+    // Convert numeric values to strings for display in forms - use the correct camelCase properties
     followerCount: profileData.followerCount || '0',
     engagementRate: profileData.engagementRate || '0%',
     creatorType: profileData.creatorType || '',
