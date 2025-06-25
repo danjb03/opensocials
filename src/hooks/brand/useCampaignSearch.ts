@@ -80,18 +80,23 @@ export const useCampaignSearch = (searchTerm?: string) => {
           })));
         }
 
-        // Process draft projects
+        // Process draft projects with proper type casting
         if (drafts) {
-          results.push(...drafts.map(draft => ({
-            id: draft.id,
-            name: draft.draft_data?.name || 'Untitled Draft',
-            status: 'draft',
-            created_at: draft.created_at,
-            table_source: 'project_drafts' as const,
-            description: draft.draft_data?.description,
-            budget: draft.draft_data?.totalBudget,
-            currency: draft.draft_data?.currency
-          })));
+          results.push(...drafts.map(draft => {
+            // Safely cast draft_data to any for property access
+            const draftData = draft.draft_data as any;
+            
+            return {
+              id: draft.id,
+              name: draftData?.name || 'Untitled Draft',
+              status: 'draft',
+              created_at: draft.created_at,
+              table_source: 'project_drafts' as const,
+              description: draftData?.description,
+              budget: draftData?.total_budget,
+              currency: draftData?.currency || 'USD'
+            };
+          }));
         }
 
         // Filter by search term if provided
