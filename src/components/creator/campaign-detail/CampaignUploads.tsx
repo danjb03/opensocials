@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Campaign } from '@/types/creator';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,7 +18,7 @@ interface UploadItem {
   uploadedAt?: string;
   status: string;
   title?: string;
-  created_at: string;
+  created_at?: string;
   content_data?: {
     files?: Array<{
       url: string;
@@ -105,6 +106,12 @@ export const CampaignUploads = ({ campaign, isCompleted }: CampaignUploadsProps)
     // Could add a success message or refresh data here
   };
 
+  // Format upload date from either created_at or uploadedAt
+  const getUploadDate = (upload: UploadItem) => {
+    const dateStr = upload.created_at || upload.uploadedAt;
+    return dateStr ? format(new Date(dateStr), 'MMM d, yyyy') : 'Unknown date';
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-4">
@@ -130,7 +137,7 @@ export const CampaignUploads = ({ campaign, isCompleted }: CampaignUploadsProps)
                   <div>
                     <h4 className="font-medium">{upload.title || 'Uploaded Content'}</h4>
                     <p className="text-sm text-muted-foreground">
-                      Uploaded {format(new Date(upload.created_at), 'MMM d, yyyy')}
+                      Uploaded {getUploadDate(upload)}
                     </p>
                     {upload.status === 'revision_requested' && (
                       <p className="text-xs text-yellow-600 flex items-center mt-1">

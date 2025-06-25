@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import CreatorLayout from '@/components/layouts/CreatorLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Upload } from 'lucide-react';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import ContentUploader from '@/components/creator/campaigns/ContentUploader';
