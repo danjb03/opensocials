@@ -22,117 +22,45 @@ import { CreatorRoutes } from './CreatorRoutes';
 import { SuperAdminRoutes } from './SuperAdminRoutes';
 import AgencyRoutes from './AgencyRoutes';
 
-// Error fallback component
-const ErrorFallback = ({ error }: { error: Error }) => (
-  <div className="min-h-screen flex items-center justify-center bg-background">
-    <div className="text-center p-6">
-      <h2 className="text-xl font-semibold mb-2 text-white">Something went wrong</h2>
-      <p className="text-muted-foreground mb-4">Please refresh the page or try again</p>
-      <button 
-        onClick={() => window.location.reload()} 
-        className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
-      >
-        Refresh Page
-      </button>
-      <details className="mt-4 text-sm text-left">
-        <summary className="cursor-pointer text-muted-foreground">Error details</summary>
-        <pre className="mt-2 p-2 bg-muted rounded text-xs overflow-auto">
-          {error.message}
-        </pre>
-      </details>
-    </div>
-  </div>
-);
-
 const AppRoutes = () => {
   const { user, role, brandProfile, creatorProfile, isLoading } = useUnifiedAuth();
 
-  console.log('🚦 AppRoutes - Current state:', {
-    user: user ? { id: user.id, email: user.email } : null,
-    role,
-    brandProfile: brandProfile ? { company_name: brandProfile.company_name } : null,
-    creatorProfile: creatorProfile ? { first_name: creatorProfile.first_name } : null,
+  console.log('🚦 AppRoutes state:', {
     isLoading,
-    currentPath: window.location.pathname
+    hasUser: !!user,
+    role,
+    path: window.location.pathname
   });
 
-  // Add loading timeout to prevent infinite loading
-  const [loadingTimeout, setLoadingTimeout] = React.useState(false);
+  // AGGRESSIVE: Only show loading for maximum 2 seconds
   const [forceRender, setForceRender] = React.useState(false);
   
   React.useEffect(() => {
-    if (isLoading) {
-      const timer = setTimeout(() => {
-        console.warn('⚠️ Loading timeout reached, forcing render');
-        setLoadingTimeout(true);
-        setForceRender(true);
-      }, 8000); // 8 second timeout
-      
-      return () => clearTimeout(timer);
-    }
-  }, [isLoading]);
+    const timer = setTimeout(() => {
+      console.warn('⚠️ FORCING render after 2s timeout');
+      setForceRender(true);
+    }, 2000);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
-  // Force render after timeout even if still loading
-  React.useEffect(() => {
-    if (forceRender) {
-      console.log('🔄 Force rendering due to timeout');
-    }
-  }, [forceRender]);
-
-  // Show loading state with timeout
-  if (isLoading && !loadingTimeout && !forceRender) {
-    console.log('🔄 Still loading authentication state...');
+  // Force render after timeout or if loading is complete
+  if (isLoading && !forceRender) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="text-center">
           <LoadingSpinner />
-          <p className="mt-4 text-muted-foreground">Loading application...</p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            If this takes too long, try refreshing the page
-          </p>
+          <p className="mt-4 text-white">Loading...</p>
         </div>
       </div>
     );
   }
 
-  // If loading timed out, show a fallback
-  if (loadingTimeout && isLoading && !forceRender) {
-    console.warn('⚠️ Loading timed out, showing fallback');
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2 text-white">Taking longer than expected</h2>
-          <p className="text-muted-foreground mb-4">Please try refreshing the page</p>
-          <div className="space-x-4">
-            <button 
-              onClick={() => window.location.reload()} 
-              className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
-            >
-              Refresh Page
-            </button>
-            <button 
-              onClick={() => {
-                setForceRender(true);
-                setLoadingTimeout(false);
-              }} 
-              className="px-4 py-2 bg-secondary text-white rounded hover:bg-secondary/90"
-            >
-              Continue Anyway
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Setup routes - only redirect if we have confirmed data
+  const needsBrandSetup = role === 'brand' && brandProfile === null;
+  const needsCreatorSetup = role === 'creator' && creatorProfile === null;
 
-  // Setup routes for users who need to complete their profiles
-  const needsBrandSetup = role === 'brand' && !brandProfile?.company_name;
-  const needsCreatorSetup = role === 'creator' && !creatorProfile?.first_name;
-
-  console.log('🔍 Setup checks:', { needsBrandSetup, needsCreatorSetup });
-
-  if (needsBrandSetup) {
-    console.log('🔄 Redirecting to brand setup...');
+  if (needsBrandSetup && !isLoading) {
     return (
       <Routes>
         <Route path="/setup/brand" element={<BrandSetup />} />
@@ -141,8 +69,7 @@ const AppRoutes = () => {
     );
   }
 
-  if (needsCreatorSetup) {
-    console.log('🔄 Redirecting to creator setup...');
+  if (needsCreatorSetup && !isLoading) {
     return (
       <Routes>
         <Route path="/setup/creator" element={<CreatorSetup />} />
@@ -151,57 +78,50 @@ const AppRoutes = () => {
     );
   }
 
-  console.log('✅ Rendering main application routes...');
+  // Main routes - render regardless of auth state to prevent black screen
+  return (
+    <Routes>
+      {/* Public marketing website - always accessible */}
+      <Route path="/" element={<Index />} />
+      
+      {/* Auth pages */}
+      <Route path="/auth/*" element={<AuthPage />} />
+      
+      {/* Protected role-based routes */}
+      <Route path="/admin/*" element={
+        <ProtectedRoute>
+          <AdminRoutes />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/brand/*" element={
+        <ProtectedRoute>
+          <BrandRoutes />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/creator/*" element={
+        <ProtectedRoute>
+          <CreatorRoutes />
+        </ProtectedRoute>
+      } />
 
-  try {
-    // Main application routes - wrapped in error boundary
-    return (
-      <Routes>
-        {/* Public marketing website */}
-        <Route path="/" element={<Index />} />
-        
-        {/* Auth pages */}
-        <Route path="/auth/*" element={<AuthPage />} />
-        
-        {/* Protected role-based routes */}
-        <Route path="/admin/*" element={
-          <ProtectedRoute>
-            <AdminRoutes />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/brand/*" element={
-          <ProtectedRoute>
-            <BrandRoutes />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/creator/*" element={
-          <ProtectedRoute>
-            <CreatorRoutes />
-          </ProtectedRoute>
-        } />
+      <Route path="/agency/*" element={
+        <ProtectedRoute>
+          <AgencyRoutes />
+        </ProtectedRoute>
+      } />
 
-        <Route path="/agency/*" element={
-          <ProtectedRoute>
-            <AgencyRoutes />
-          </ProtectedRoute>
-        } />
+      <Route path="/super_admin/*" element={
+        <ProtectedRoute>
+          <SuperAdminRoutes />
+        </ProtectedRoute>
+      } />
 
-        <Route path="/super_admin/*" element={
-          <ProtectedRoute>
-            <SuperAdminRoutes />
-          </ProtectedRoute>
-        } />
-
-        {/* Fallback to homepage for unknown routes */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    );
-  } catch (error) {
-    console.error('❌ Error in AppRoutes:', error);
-    return <ErrorFallback error={error as Error} />;
-  }
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 };
 
 export default AppRoutes;

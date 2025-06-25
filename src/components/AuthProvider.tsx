@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AuthContext, type UserRole } from '@/lib/auth';
-import { getUserRole } from '@/utils/getUserRole';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -12,117 +11,89 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [emailConfirmed, setEmailConfirmed] = useState<boolean | null>(null);
 
   useEffect(() => {
-    console.log('🔐 AuthProvider: Setting up auth state listener...');
+    console.log('🔐 AuthProvider: Initializing with aggressive timeout...');
     
     let mounted = true;
-    let initializationTimeout: NodeJS.Timeout;
     
-    // Force initialization completion after 5 seconds to prevent infinite loading
-    initializationTimeout = setTimeout(() => {
-      if (mounted && isLoading) {
-        console.warn('⚠️ Auth initialization timeout - forcing completion');
+    // AGGRESSIVE: Force loading to complete after 3 seconds maximum
+    const forceComplete = setTimeout(() => {
+      if (mounted) {
+        console.warn('⚠️ FORCING auth initialization completion after 3s timeout');
         setIsLoading(false);
       }
-    }, 5000);
+    }, 3000);
     
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
+    // Simplified auth state management
+    const initializeAuth = async () => {
+      try {
+        // Get current session immediately
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
         
-        console.log('🔐 Auth state change:', { 
-          event, 
-          userId: session?.user?.id, 
-          hasSession: !!session 
-        });
-        
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Set email confirmation status
-        if (session?.user) {
-          const confirmed = !!session.user.email_confirmed_at;
-          setEmailConfirmed(confirmed);
+        if (mounted) {
+          console.log('🔍 Current session:', !!currentSession);
+          setSession(currentSession);
+          setUser(currentSession?.user ?? null);
+          setEmailConfirmed(currentSession?.user?.email_confirmed_at ? true : null);
           
-          // Only fetch role if email is confirmed
-          if (confirmed) {
-            // Use setTimeout to prevent auth deadlocks
-            setTimeout(() => {
-              if (mounted) {
-                retrieveRole(session.user.id);
+          // Simple role resolution - don't let this block the app
+          if (currentSession?.user) {
+            // Try to get role quickly, but don't block on it
+            setTimeout(async () => {
+              try {
+                const { data } = await supabase
+                  .from('user_roles')
+                  .select('role')
+                  .eq('user_id', currentSession.user.id)
+                  .eq('status', 'approved')
+                  .limit(1)
+                  .single();
+                
+                if (mounted && data) {
+                  setRole(data.role as UserRole);
+                }
+              } catch (error) {
+                console.warn('Role fetch failed, continuing without role:', error);
+                // Don't block the app - role can be null
               }
             }, 100);
-          } else {
-            setRole(null);
-            setIsLoading(false);
           }
-        } else {
-          setRole(null);
-          setEmailConfirmed(null);
+          
           setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        if (mounted) {
+          // Don't let auth errors block the app
+          setIsLoading(false);
+        }
+      }
+    };
+
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!mounted) return;
+        
+        console.log('🔐 Auth state change:', event);
+        setSession(session);
+        setUser(session?.user ?? null);
+        setEmailConfirmed(session?.user?.email_confirmed_at ? true : null);
+        
+        if (!session) {
+          setRole(null);
         }
       }
     );
 
-    // Check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return;
-      
-      console.log('🔍 Initial session check:', { 
-        hasSession: !!session, 
-        userId: session?.user?.id 
-      });
-      
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        const confirmed = !!session.user.email_confirmed_at;
-        setEmailConfirmed(confirmed);
-        if (confirmed) {
-          retrieveRole(session.user.id);
-        } else {
-          setIsLoading(false);
-        }
-      } else {
-        setIsLoading(false);
-      }
-    }).catch((error) => {
-      console.error('❌ Error getting initial session:', error);
-      if (mounted) {
-        setIsLoading(false);
-      }
-    });
+    // Initialize auth
+    initializeAuth();
 
     return () => {
       mounted = false;
-      clearTimeout(initializationTimeout);
-      console.log('🔐 Cleaning up auth subscription');
+      clearTimeout(forceComplete);
       subscription.unsubscribe();
     };
   }, []);
-
-  const retrieveRole = async (userId: string) => {
-    try {
-      setIsLoading(true);
-      console.log('🔍 Fetching role for user:', userId);
-      
-      const resolvedRole = await getUserRole(userId);
-      
-      if (resolvedRole) {
-        console.log('✅ Role resolved:', resolvedRole);
-        setRole(resolvedRole);
-      } else {
-        console.warn('⚠️ No role found for user');
-        setRole(null);
-      }
-    } catch (error) {
-      console.error('❌ Failed to fetch user role:', error);
-      setRole(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const contextValue = {
     session,
@@ -132,12 +103,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     emailConfirmed
   };
 
-  console.log('🔐 AuthProvider final state:', {
+  console.log('🔐 AuthProvider rendering with:', {
     isLoading: contextValue.isLoading,
-    hasSession: !!contextValue.session,
     hasUser: !!contextValue.user,
-    role: contextValue.role,
-    emailConfirmed: contextValue.emailConfirmed
+    role: contextValue.role
   });
 
   return (

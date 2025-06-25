@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -20,68 +20,58 @@ const Index = () => {
   const { user, role, isLoading } = useUnifiedAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const [pageReady, setPageReady] = useState(false);
 
-  console.log('🏠 Index page - Auth state:', {
+  console.log('🏠 Index page state:', {
     userId: user?.id,
     role,
     isLoading,
-    path: window.location.pathname
+    pageReady
   });
 
+  // Force page to render after short delay regardless of auth state
   useEffect(() => {
-    // Only redirect if we have confirmed auth state (not loading)
-    if (!isLoading && user && role) {
-      console.log('🏠 Index - User logged in with role:', role);
+    const timer = setTimeout(() => {
+      setPageReady(true);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    // Only redirect authenticated users with confirmed roles
+    if (!isLoading && user && role && pageReady) {
+      console.log('🏠 Considering redirect for role:', role);
       
-      // Super admins should STAY on index page to choose their dashboard
+      // Super admins stay on index to choose dashboard
       if (role === 'super_admin') {
-        console.log('🏠 Index - Super admin detected, staying on index page');
         return;
       }
       
-      // Redirect based on user role for non-super-admin users
-      const redirectTimeout = setTimeout(() => {
+      // Redirect other roles after a delay to ensure page is ready
+      const redirectTimer = setTimeout(() => {
         switch (role) {
           case 'admin':
-            console.log('🏠 Index - Redirecting admin to /admin');
             navigate('/admin');
             break;
           case 'brand':
-            console.log('🏠 Index - Redirecting brand to /brand');
             navigate('/brand');
             break;
           case 'creator':
-            console.log('🏠 Index - Redirecting creator to /creator');
             navigate('/creator');
             break;
           case 'agency':
-            console.log('🏠 Index - Redirecting agency to /agency');
             navigate('/agency');
             break;
-          default:
-            console.log('🏠 Index - Unknown role, staying on index');
-            break;
         }
-      }, 100); // Small delay to prevent navigation conflicts
+      }, 1000);
 
-      return () => clearTimeout(redirectTimeout);
+      return () => clearTimeout(redirectTimer);
     }
-  }, [user, role, isLoading, navigate]);
+  }, [user, role, isLoading, pageReady, navigate]);
 
-  // Show loading only if still actually loading
-  if (isLoading) {
-    console.log('🏠 Index - Still loading...');
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-white">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  console.log('🏠 Index - Rendering full page');
+  // Always render the page - don't let auth state block it
+  console.log('🏠 Index rendering full page');
 
   return (
     <div className="min-h-screen bg-background text-foreground">
