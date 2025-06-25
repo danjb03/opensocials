@@ -1,5 +1,5 @@
 
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
 import { Badge } from '@/components/ui/badge';
 
 interface RoleDisplayProps {

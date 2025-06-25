@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, Settings } from 'lucide-react';
 import { useCreatorProfileData } from '@/hooks/useCreatorProfileData';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import ProfileHeader from '@/components/creator/profile/ProfileHeader';
 import ProfileOverviewTab from '@/components/creator/profile/ProfileOverviewTab';
