@@ -1,9 +1,31 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Ultra-minimal app that WILL render
 export const MinimalApp = () => {
   console.log('🏗️ MinimalApp rendering...');
+  
+  // Safe navigation hook usage
+  let navigate;
+  try {
+    navigate = useNavigate();
+  } catch (error) {
+    console.warn('Navigation not available in minimal mode');
+    navigate = null;
+  }
+  
+  const handleGetStarted = () => {
+    if (navigate) {
+      navigate('/auth');
+    } else {
+      window.location.href = '/auth';
+    }
+  };
+
+  const handleTryFullApp = () => {
+    window.location.reload();
+  };
   
   return (
     <div style={{
@@ -45,31 +67,45 @@ export const MinimalApp = () => {
         maxWidth: '600px',
         lineHeight: '1.6'
       }}>
-        Debug Mode: App is loading successfully
+        Creator partnerships, the efficient way
       </p>
       
-      <div style={{
-        padding: '12px 24px',
-        border: '1px solid #ffffff',
-        borderRadius: '6px',
-        color: '#ffffff',
-        backgroundColor: 'transparent',
-        cursor: 'pointer',
-        fontSize: '16px',
-        marginBottom: '20px'
-      }}
-      onClick={() => {
-        console.log('Button clicked - app is working');
-        alert('App is rendering correctly!');
-      }}
-      >
-        Test Button
+      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <button
+          style={{
+            padding: '12px 24px',
+            border: '1px solid #ffffff',
+            borderRadius: '6px',
+            color: '#ffffff',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            fontSize: '16px'
+          }}
+          onClick={handleGetStarted}
+        >
+          Get Started
+        </button>
+        
+        <button
+          style={{
+            padding: '12px 24px',
+            border: '1px solid #666666',
+            borderRadius: '6px',
+            color: '#666666',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            fontSize: '16px'
+          }}
+          onClick={handleTryFullApp}
+        >
+          Load Full App
+        </button>
       </div>
       
-      <div style={{ fontSize: '14px', color: '#666' }}>
+      <div style={{ fontSize: '14px', color: '#666', marginTop: '40px' }}>
         <p>✅ React is working</p>
         <p>✅ Styling is working</p>
-        <p>✅ Event handlers are working</p>
+        <p>✅ Basic routing ready</p>
         <p>Current time: {new Date().toLocaleTimeString()}</p>
       </div>
     </div>
