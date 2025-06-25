@@ -49,16 +49,16 @@ const BrandDashboard = () => {
     <BrandLayout>
       <div className="container mx-auto p-6 space-y-6">
         <DashboardHeader />
-        <StatsCards stats={projectStats} />
+        <StatsCards stats={projectStats} isLoading={isLoading} />
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <QuickActions />
-            <RecentProjects projects={projects} />
+            <RecentProjects projects={projects} isLoading={isLoading} />
           </div>
           
           <div className="space-y-6">
-            <TodoPanel items={todoItems} />
+            <TodoPanel todoItems={todoItems} />
           </div>
         </div>
       </div>

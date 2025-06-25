@@ -2,16 +2,25 @@
 import React, { useState } from 'react';
 import { useCreatorSearchNew } from '@/hooks/useCreatorSearchNew';
 import BrandLayout from '@/components/layouts/BrandLayout';
-import CreatorSearchHeader from '@/components/brand/creator-search/CreatorSearchHeader';
-import CreatorSearchFilters from '@/components/brand/creator-search/CreatorSearchFilters';
-import CreatorSearchResults from '@/components/brand/creator-search/CreatorSearchResults';
-import CreatorSearchModals from '@/components/brand/creator-search/CreatorSearchModals';
-import { CreatorSearchFilters as FilterType } from '@/hooks/brand/useCreatorFilters';
+import { CreatorSearchHeader } from '@/components/brand/creator-search/CreatorSearchHeader';
+import { CreatorSearchFilters } from '@/components/brand/creator-search/CreatorSearchFilters';
+import { CreatorSearchResults } from '@/components/brand/creator-search/CreatorSearchResults';
+import { CreatorSearchModals } from '@/components/brand/creator-search/CreatorSearchModals';
+
+interface CreatorSearchFilters {
+  platforms: string[];
+  industries: string[];
+  followerRange: { min: number; max: number };
+  engagementRange: { min: number; max: number };
+  location: string;
+  contentTypes: string[];
+  verified: boolean;
+}
 
 const CreatorSearch = () => {
   // Search and filtering state
   const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState<FilterType>({
+  const [filters, setFilters] = useState<CreatorSearchFilters>({
     platforms: [],
     industries: [],
     followerRange: { min: 0, max: 10000000 },
@@ -32,9 +41,6 @@ const CreatorSearch = () => {
 
   // Data fetching
   const { data: creators = [], isLoading } = useCreatorSearchNew();
-
-  // Remove the incorrect function call
-  const setSelectedCampaignId = () => {};
 
   const handleCreatorSelect = (creatorId: string) => {
     setSelectedCreators(prev => 

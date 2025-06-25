@@ -6,19 +6,18 @@ import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 export interface Campaign {
   id: string;
   name: string;
-  status: string;
+  status: 'draft' | 'active' | 'completed' | 'paused';
   budget: number;
   currency: string;
   created_at: string;
   description?: string;
-  // Add missing properties to match CampaignRow expectations
-  startDate?: string;
-  endDate?: string;
-  creators?: number;
-  reach?: number;
-  engagement?: number;
-  conversion?: number;
-  platform?: string; // Add missing platform property
+  startDate: string;
+  endDate: string;
+  creators: number;
+  reach: number;
+  engagement: number;
+  conversion: number;
+  platform: string;
 }
 
 export const useCampaigns = () => {
@@ -47,34 +46,38 @@ export const useCampaigns = () => {
         ...(newProjects || []).map(p => ({
           id: p.id,
           name: p.name || 'Untitled Campaign',
-          status: p.status || 'draft',
+          status: (p.status === 'draft' || p.status === 'active' || p.status === 'completed' || p.status === 'paused') 
+            ? p.status as 'draft' | 'active' | 'completed' | 'paused'
+            : 'draft' as const,
           budget: p.budget || 0,
           currency: p.currency || 'USD',
           created_at: p.created_at,
           description: p.description,
-          startDate: p.start_date,
-          endDate: p.end_date,
+          startDate: p.start_date || '',
+          endDate: p.end_date || '',
           creators: 0,
           reach: 0,
           engagement: 0,
           conversion: 0,
-          platform: 'Multi-platform' // Add default platform
+          platform: 'Multi-platform'
         })),
         ...(legacyProjects || []).map(p => ({
           id: p.id,
           name: p.name || 'Untitled Campaign',
-          status: p.status || 'draft',
+          status: (p.status === 'draft' || p.status === 'active' || p.status === 'completed' || p.status === 'paused') 
+            ? p.status as 'draft' | 'active' | 'completed' | 'paused'
+            : 'draft' as const,
           budget: p.budget || 0,
           currency: p.currency || 'USD',
           created_at: p.created_at,
           description: p.description,
-          startDate: p.start_date,
-          endDate: p.end_date,
+          startDate: p.start_date || '',
+          endDate: p.end_date || '',
           creators: 0,
           reach: 0,
           engagement: 0,
           conversion: 0,
-          platform: 'Multi-platform' // Add default platform
+          platform: 'Multi-platform'
         }))
       ];
 

@@ -21,7 +21,7 @@ export const useProjectData = () => {
   const { data: rawProjectData, isLoading, error, refetch } = projectQuery;
   
   // Extract projects array from the data structure
-  const rawProjects = Array.isArray(rawProjectData) ? rawProjectData : (rawProjectData?.projects || []);
+  const rawProjects = Array.isArray(rawProjectData) ? rawProjectData : (rawProjectData?.projects || rawProjectData || []);
   
   const filteredProjects = useProjectFiltering(rawProjects, filters);
   const { orders, campaignRows } = useProjectTransforms(filteredProjects);

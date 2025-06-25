@@ -53,10 +53,10 @@ const CreatorProfile = () => {
     platforms: creatorProfile?.platforms || [],
     industries: creatorProfile?.industries || [],
     audienceLocation: creatorProfile?.audience_location,
-    // Use database fields directly from creatorProfile
-    followerCount: creatorProfile?.follower_count || 0,
-    engagementRate: creatorProfile?.engagement_rate || 0,
-    creatorType: creatorProfile?.creator_type || '',
+    // Use database fields directly from creatorProfile or detailedProfile
+    followerCount: detailedProfile?.follower_count || creatorProfile?.follower_count || 0,
+    engagementRate: detailedProfile?.engagement_rate || creatorProfile?.engagement_rate || 0,
+    creatorType: detailedProfile?.creator_type || creatorProfile?.creator_type || '',
   };
 
   // Create a safe profile data object that matches what the edit form expects
