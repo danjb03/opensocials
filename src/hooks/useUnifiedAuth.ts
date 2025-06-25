@@ -1,3 +1,4 @@
+
 import {
   createContext,
   useContext,
@@ -25,6 +26,9 @@ interface CreatorProfile {
   audience_location: any
   visibility_settings: any
   is_profile_complete?: boolean
+  follower_count?: number
+  engagement_rate?: number
+  creator_type?: string
 }
 
 interface BrandProfile {
