@@ -42,6 +42,6 @@ export const useCreatorSearchNew = () => {
 
   return {
     ...query,
-    setSelectedCampaignId: () => {} // Placeholder function
+    setSelectedCampaignId: () => {} // Placeholder function - no parameters expected
   };
 };

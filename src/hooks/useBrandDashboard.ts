@@ -4,10 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 
 export interface BrandDashboardData {
-  totalCampaigns: number;
-  activeCampaigns: number;
-  totalCreators: number;
-  totalSpent: number;
+  projects: any[];
+  todoItems: any[];
+  projectStats: {
+    totalProjects: number;
+    activeProjects: number;
+    completedProjects: number;
+    totalSpend: number;
+  };
 }
 
 export const useBrandDashboard = () => {
@@ -18,51 +22,40 @@ export const useBrandDashboard = () => {
     queryFn: async (): Promise<BrandDashboardData> => {
       if (!user?.id) {
         return {
-          totalCampaigns: 0,
-          activeCampaigns: 0,
-          totalCreators: 0,
-          totalSpent: 0
+          projects: [],
+          todoItems: [],
+          projectStats: {
+            totalProjects: 0,
+            activeProjects: 0,
+            completedProjects: 0,
+            totalSpend: 0
+          }
         };
       }
 
-      try {
-        // Fetch campaigns from both tables
-        const [{ data: newProjects }, { data: legacyProjects }] = await Promise.all([
-          supabase
-            .from('projects_new')
-            .select('status, budget')
-            .eq('brand_id', user.id),
-          supabase
-            .from('projects')
-            .select('status, budget')
-            .eq('brand_id', user.id)
-        ]);
+      // Fetch projects
+      const { data: projects } = await supabase
+        .from('projects_new')
+        .select('*')
+        .eq('brand_id', user.id);
 
-        const allProjects = [...(newProjects || []), ...(legacyProjects || [])];
-        
-        const totalCampaigns = allProjects.length;
-        const activeCampaigns = allProjects.filter(p => p.status === 'active').length;
-        const totalSpent = allProjects.reduce((sum, p) => sum + (p.budget || 0), 0);
+      const projectStats = {
+        totalProjects: projects?.length || 0,
+        activeProjects: projects?.filter(p => p.status === 'active').length || 0,
+        completedProjects: projects?.filter(p => p.status === 'completed').length || 0,
+        totalSpend: projects?.reduce((sum, p) => sum + (p.budget || 0), 0) || 0
+      };
 
-        // Get unique creators from deals
-        const { data: deals } = await supabase
-          .from('deals')
-          .select('creator_id')
-          .eq('brand_id', user.id);
+      const todoItems = [
+        { id: '1', text: 'Review campaign proposals', priority: 'high' },
+        { id: '2', text: 'Approve content submissions', priority: 'medium' }
+      ];
 
-        const uniqueCreators = new Set(deals?.map(d => d.creator_id) || []);
-        const totalCreators = uniqueCreators.size;
-
-        return {
-          totalCampaigns,
-          activeCampaigns,
-          totalCreators,
-          totalSpent
-        };
-      } catch (error) {
-        console.error('Error fetching brand dashboard data:', error);
-        throw error;
-      }
+      return {
+        projects: projects || [],
+        todoItems,
+        projectStats
+      };
     },
     enabled: !!user?.id
   });

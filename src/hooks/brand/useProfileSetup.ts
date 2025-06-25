@@ -19,7 +19,8 @@ export const useProfileSetup = () => {
   const { user } = useUnifiedAuth();
   const navigate = useNavigate();
 
-  const handleLogoChange = (file: File) => {
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -30,7 +31,11 @@ export const useProfileSetup = () => {
   };
 
   const handleLogoFileSelect = (file: File) => {
-    handleLogoChange(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setLogoPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const clearLogo = () => {

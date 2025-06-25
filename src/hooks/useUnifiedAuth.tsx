@@ -1,6 +1,7 @@
+
+import React, { createContext, useContext } from 'react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
 import { getUserRole, updateUserMetadata } from '@/utils/getUserRole';
 import type { UserRole } from '@/lib/auth';
 
@@ -35,103 +36,126 @@ interface CreatorProfile {
   is_profile_complete?: boolean;
 }
 
-export const useUnifiedAuth = () => {
-  const { user, session, isLoading: authLoading, emailConfirmed } = useAuth();
+interface AuthContextType {
+  user: any;
+  session: any;
+  role: UserRole | null;
+  brandProfile: BrandProfile | null;
+  creatorProfile: CreatorProfile | null;
+  isLoading: boolean;
+  emailConfirmed: boolean;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<any>(null);
+  const [session, setSession] = useState<any>(null);
   const [role, setRole] = useState<UserRole | null>(null);
   const [brandProfile, setBrandProfile] = useState<BrandProfile | null>(null);
   const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [emailConfirmed, setEmailConfirmed] = useState(false);
 
   useEffect(() => {
-    if (authLoading) {
-      return;
-    }
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setEmailConfirmed(!!session?.user?.email_confirmed_at);
+    });
 
-    if (!user) {
-      console.log('🔍 useUnifiedAuth - No user, clearing state');
-      setRole(null);
-      setBrandProfile(null);
-      setCreatorProfile(null);
-      setIsLoading(false);
-      return;
-    }
-
-    console.log('🔍 useUnifiedAuth - User authenticated:', user.id);
-
-    const fetchUserData = async () => {
-      try {
-        setIsLoading(true);
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setEmailConfirmed(!!session?.user?.email_confirmed_at);
         
-        // Fetch role using improved priority logic
-        console.log('🔍 useUnifiedAuth - Fetching user role');
-        let userRole = await getUserRole(user.id);
-        
-        // Special handling for known super admin user
-        if (!userRole && user.id === 'af6ad2ce-be6c-4620-a440-867c52d66918') {
-          console.log('🔧 useUnifiedAuth - Detected known super admin user, ensuring correct role');
-          userRole = 'super_admin';
-          // Update metadata to match
-          await updateUserMetadata(user.id, 'super_admin');
+        if (session?.user) {
+          // Fetch user data
+          await fetchUserData(session.user);
+        } else {
+          // Clear data when logged out
+          setRole(null);
+          setBrandProfile(null);
+          setCreatorProfile(null);
         }
-
-        console.log('🎯 useUnifiedAuth - Retrieved user role:', userRole);
-        setRole(userRole);
-
-        // Only fetch profiles if role is determined and not super_admin accessing other dashboards
-        if (userRole && userRole !== 'super_admin') {
-          // If user is a brand, fetch their profile
-          if (userRole === 'brand') {
-            console.log('👔 useUnifiedAuth - Fetching brand profile');
-            const { data: brandData, error: brandError } = await supabase
-              .from('brand_profiles')
-              .select('*')
-              .eq('user_id', user.id)
-              .maybeSingle();
-
-            if (brandError) {
-              console.error('❌ useUnifiedAuth - Error fetching brand profile:', brandError);
-            } else if (brandData) {
-              console.log('✅ useUnifiedAuth - Brand profile fetched:', brandData);
-              setBrandProfile(brandData);
-            }
-          }
-
-          // If user is a creator, fetch their profile
-          if (userRole === 'creator') {
-            console.log('🎨 useUnifiedAuth - Fetching creator profile');
-            const { data: creatorData, error: creatorError } = await supabase
-              .from('creator_profiles')
-              .select('*')
-              .eq('user_id', user.id)
-              .maybeSingle();
-
-            if (creatorError) {
-              console.error('❌ useUnifiedAuth - Error fetching creator profile:', creatorError);
-            } else if (creatorData) {
-              console.log('✅ useUnifiedAuth - Creator profile fetched:', creatorData);
-              setCreatorProfile(creatorData);
-            }
-          }
-        }
-      } catch (error) {
-        console.error('❌ useUnifiedAuth - Error in fetchUserData:', error);
-      } finally {
         setIsLoading(false);
       }
-    };
+    );
 
-    fetchUserData();
-  }, [user, authLoading]);
+    return () => subscription.unsubscribe();
+  }, []);
 
-  return {
+  const fetchUserData = async (user: any) => {
+    try {
+      setIsLoading(true);
+      
+      // Fetch role
+      let userRole = await getUserRole(user.id);
+      
+      // Special handling for known super admin user
+      if (!userRole && user.id === 'af6ad2ce-be6c-4620-a440-867c52d66918') {
+        userRole = 'super_admin';
+        await updateUserMetadata(user.id, 'super_admin');
+      }
+
+      setRole(userRole);
+
+      // Fetch profiles based on role
+      if (userRole === 'brand') {
+        const { data: brandData } = await supabase
+          .from('brand_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        setBrandProfile(brandData);
+      }
+
+      if (userRole === 'creator') {
+        const { data: creatorData } = await supabase
+          .from('creator_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        setCreatorProfile(creatorData);
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const value = {
     user,
     session,
     role,
     brandProfile,
     creatorProfile,
-    isLoading: authLoading || isLoading,
+    isLoading,
     emailConfirmed
   };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useUnifiedAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useUnifiedAuth must be used within a UnifiedAuthProvider');
+  }
+  return context;
+};
+
+// Legacy compatibility - create useAuth export
+export const useAuth = () => {
+  return useUnifiedAuth();
 };
 
 // Brand-specific hook
@@ -164,7 +188,7 @@ export const useAdminAuth = () => {
   
   return {
     user: authData.user,
-    profile: authData.user, // Admins use basic user data
+    profile: authData.user,
     isLoading: authData.isLoading,
     role: authData.role
   };
@@ -176,7 +200,7 @@ export const useAgencyAuth = () => {
   
   return {
     user: authData.user,
-    profile: authData.user, // Agencies use basic user data
+    profile: authData.user,
     isLoading: authData.isLoading,
     role: authData.role
   };

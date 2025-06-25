@@ -17,8 +17,9 @@ export type ProjectViewMode = 'table' | 'pipeline' | 'campaigns';
 export const useProjectData = () => {
   // Use smaller, focused hooks
   const { filters, handleFiltersChange } = useProjectFilters();
-  const { rawProjects, isLoading, error, refetch } = useProjectQuery(filters);
-  const filteredProjects = useProjectFiltering(rawProjects, filters);
+  const projectQuery = useProjectQuery(filters);
+  const { data: rawProjects, isLoading, error, refetch } = projectQuery;
+  const filteredProjects = useProjectFiltering(rawProjects || [], filters);
   const { orders, campaignRows } = useProjectTransforms(filteredProjects);
   const {
     activeStage,

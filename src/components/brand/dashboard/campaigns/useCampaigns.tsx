@@ -11,6 +11,13 @@ export interface Campaign {
   currency: string;
   created_at: string;
   description?: string;
+  // Add missing properties to match CampaignRow expectations
+  startDate?: string;
+  endDate?: string;
+  creators?: number;
+  reach?: number;
+  engagement?: number;
+  conversion?: number;
 }
 
 export const useCampaigns = () => {
@@ -43,7 +50,13 @@ export const useCampaigns = () => {
           budget: p.budget || 0,
           currency: p.currency || 'USD',
           created_at: p.created_at,
-          description: p.description
+          description: p.description,
+          startDate: p.start_date,
+          endDate: p.end_date,
+          creators: 0,
+          reach: 0,
+          engagement: 0,
+          conversion: 0
         })),
         ...(legacyProjects || []).map(p => ({
           id: p.id,
@@ -52,7 +65,13 @@ export const useCampaigns = () => {
           budget: p.budget || 0,
           currency: p.currency || 'USD',
           created_at: p.created_at,
-          description: p.description
+          description: p.description,
+          startDate: p.start_date,
+          endDate: p.end_date,
+          creators: 0,
+          reach: 0,
+          engagement: 0,
+          conversion: 0
         }))
       ];
 
