@@ -40,7 +40,7 @@ const CreatorProfile = () => {
   };
 
   // Transform creator profile for the card using the unified auth data
-  // Access the actual database fields (snake_case) from useUnifiedAuth
+  // Safely access the database fields (snake_case) from useUnifiedAuth
   const creatorForCard = {
     id: user?.id || '',
     firstName: creatorProfile?.first_name || '',
@@ -52,7 +52,7 @@ const CreatorProfile = () => {
     platforms: creatorProfile?.platforms || [],
     industries: creatorProfile?.industries || [],
     audienceLocation: creatorProfile?.audience_location,
-    // Access the actual database fields (snake_case) returned by useUnifiedAuth
+    // Use the database fields with proper fallbacks
     followerCount: creatorProfile?.follower_count || 0,
     engagementRate: creatorProfile?.engagement_rate || 0,
     creatorType: creatorProfile?.creator_type || '',

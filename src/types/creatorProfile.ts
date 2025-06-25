@@ -34,10 +34,18 @@ export interface CreatorProfile {
   industries: string[];
   creatorType: string;
   platforms: string[];
-  // Primary database field mappings (snake_case) - ADD THESE
+  // Database field mappings (snake_case) - These match the actual database columns
   follower_count?: number;
   engagement_rate?: number;
   creator_type?: string;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  avatar_url?: string;
+  primary_platform?: string;
+  bio?: string;
+  audience_location?: any;
+  industries?: string[];
 }
 
 export interface CreatorProfileRecord {

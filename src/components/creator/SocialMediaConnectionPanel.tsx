@@ -36,14 +36,20 @@ export const SocialMediaConnectionPanel: React.FC = () => {
     setErrorMessage('');
 
     try {
-      console.log('Connecting social account:', { platform: selectedPlatform, handle: handle.trim() });
+      console.log('🔗 Starting social account connection:', { 
+        platform: selectedPlatform, 
+        handle: handle.trim(),
+        userId: user.id
+      });
 
       // Get the current session token
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session?.access_token) {
-        throw new Error('Authentication required');
+        throw new Error('Authentication required - please refresh the page and try again');
       }
+
+      console.log('🔐 Session token obtained, calling edge function...');
 
       // Call the connect-social-account edge function
       const { data, error } = await supabase.functions.invoke('connect-social-account', {
@@ -54,16 +60,19 @@ export const SocialMediaConnectionPanel: React.FC = () => {
         }
       });
 
+      console.log('📡 Edge function response:', { data, error });
+
       if (error) {
-        console.error('Edge function error:', error);
+        console.error('❌ Edge function error:', error);
         throw new Error(error.message || 'Failed to connect social account');
       }
 
       if (!data?.success) {
+        console.error('❌ Edge function returned failure:', data);
         throw new Error(data?.error || 'Failed to connect social account');
       }
 
-      console.log('Social account connected successfully:', data);
+      console.log('✅ Social account connected successfully:', data);
       
       setConnectionStatus('success');
       toast.success(`${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)} account connected successfully!`);
@@ -73,7 +82,7 @@ export const SocialMediaConnectionPanel: React.FC = () => {
       setHandle('');
 
     } catch (err) {
-      console.error('Connection error:', err);
+      console.error('💥 Connection error:', err);
       const errorMsg = err instanceof Error ? err.message : 'An unexpected error occurred';
       setErrorMessage(errorMsg);
       setConnectionStatus('error');
@@ -142,9 +151,9 @@ export const SocialMediaConnectionPanel: React.FC = () => {
         )}
 
         {connectionStatus === 'error' && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <AlertCircle className="h-4 w-4 text-red-800" />
-            <span className="text-sm text-red-800 font-medium">{errorMessage}</span>
+          <div className="flex items-center gap-2 p-3 bg-red-900 border border-red-800 rounded-lg">
+            <AlertCircle className="h-4 w-4 text-red-100" />
+            <span className="text-sm text-red-100 font-medium">{errorMessage}</span>
           </div>
         )}
 
