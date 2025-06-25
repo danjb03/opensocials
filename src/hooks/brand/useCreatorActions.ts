@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useAuth } from '@/lib/auth';
 import { toast } from 'sonner';
 
 interface Creator {
@@ -10,7 +10,7 @@ interface Creator {
 }
 
 export const useCreatorActions = () => {
-  const { user } = useUnifiedAuth();
+  const { user } = useAuth();
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>('');
   const [availableCampaigns, setAvailableCampaigns] = useState<Array<{id: string, name: string}>>([]);
 

@@ -1,13 +1,13 @@
 
 import { useState, useEffect } from 'react';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { checkIntro } from '@/utils/intro';
 
 export const useCreatorIntro = () => {
   const [showIntro, setShowIntro] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { user, role } = useUnifiedAuth();
+  const { user, role } = useAuth();
 
   useEffect(() => {
     const loadIntro = async () => {

@@ -6,17 +6,23 @@ import './index.css';
 
 const root = createRoot(document.getElementById('root')!);
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 60000, // 1 minute
-      refetchOnWindowFocus: false,
+// Create QueryClient inside the render function to avoid issues
+function AppWithProviders() {
+  // Create a client inside the component to ensure React context is available
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 60000, // 1 minute
+        refetchOnWindowFocus: false,
+      },
     },
-  },
-});
+  });
 
-root.render(
-  <QueryClientProvider client={queryClient}>
-    <App />
-  </QueryClientProvider>
-);
+  return (
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
+  );
+}
+
+root.render(<AppWithProviders />);

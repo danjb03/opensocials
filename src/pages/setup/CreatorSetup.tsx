@@ -4,25 +4,26 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useAuth } from '@/lib/auth';
 import { toast } from 'sonner';
 
 const CreatorSetup = () => {
   const navigate = useNavigate();
-  const { user } = useUnifiedAuth();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Form state
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [bio, setBio] = useState('');
+  const [platform, setPlatform] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!firstName.trim()) {
-      toast.error('First name is required');
+    if (!firstName.trim() || !lastName.trim() || !platform.trim()) {
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -35,16 +36,37 @@ const CreatorSetup = () => {
     setIsLoading(true);
 
     try {
-      console.log('🚀 Creating creator profile with data:', { firstName, lastName, bio });
-
+      console.log('🚀 Starting creator profile setup');
+      
+      // Create basic creator profile
       const profileData = {
         user_id: user.id,
         first_name: firstName.trim(),
         last_name: lastName.trim(),
-        bio: bio.trim() || null,
+        primary_platform: platform.trim(),
+        bio: null,
+        avatar_url: null,
+        banner_url: null,
+        username: null,
+        content_types: [],
+        platforms: [platform.trim()],
+        industries: [],
+        social_handles: {},
+        audience_location: {},
+        visibility_settings: {
+          showInstagram: true,
+          showTiktok: true,
+          showYoutube: true,
+          showLinkedin: true,
+          showLocation: true,
+          showAnalytics: true
+        },
+        is_profile_complete: false,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
+
+      console.log('💾 Creating creator profile:', profileData);
 
       const { error } = await supabase
         .from('creator_profiles')
@@ -61,13 +83,13 @@ const CreatorSetup = () => {
       console.log('✅ Creator profile created successfully');
       toast.success('Profile setup complete!');
       
-      // Force page refresh to ensure auth context updates with new profile
+      // Force page refresh to ensure auth context is updated
       setTimeout(() => {
-        window.location.href = '/creator';
+        window.location.href = '/creator/dashboard';
       }, 500);
 
     } catch (error: any) {
-      console.error('❌ Error setting up profile:', error);
+      console.error('❌ Error setting up creator profile:', error);
       toast.error('Failed to set up profile: ' + (error.message || 'Unknown error'));
     } finally {
       setIsLoading(false);
@@ -88,33 +110,35 @@ const CreatorSetup = () => {
               <Label htmlFor="firstName">First Name</Label>
               <Input 
                 id="firstName" 
-                type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Enter your first name" 
+                placeholder="Enter your first name"
                 required
               />
             </div>
+            
             <div className="space-y-2">
               <Label htmlFor="lastName">Last Name</Label>
               <Input 
                 id="lastName" 
-                type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                placeholder="Enter your last name" 
+                placeholder="Enter your last name"
+                required
               />
             </div>
+            
             <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea 
-                id="bio" 
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                placeholder="Tell us about yourself..." 
-                rows={3}
+              <Label htmlFor="platform">Main Platform</Label>
+              <Input 
+                id="platform" 
+                value={platform}
+                onChange={(e) => setPlatform(e.target.value)}
+                placeholder="Instagram, TikTok, etc."
+                required
               />
             </div>
+            
             <Button 
               type="submit" 
               className="w-full" 

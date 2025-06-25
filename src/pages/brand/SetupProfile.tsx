@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import ProfileForm from '@/components/brand/setup/ProfileForm';
-import { useProfileSetup } from '@/hooks/brand/useProfileSetup';
+import { useProfileSetup } from '@/hooks/useProfileSetup';
 import BrandLayout from '@/components/layouts/BrandLayout';
 
 const industries = [

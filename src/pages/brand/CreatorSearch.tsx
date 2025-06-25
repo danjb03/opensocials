@@ -1,73 +1,76 @@
 
-import React, { useState } from 'react';
-import { useCreatorSearchNew } from '@/hooks/useCreatorSearchNew';
+import { useState, useEffect } from 'react';
 import BrandLayout from '@/components/layouts/BrandLayout';
 import { CreatorSearchHeader } from '@/components/brand/creator-search/CreatorSearchHeader';
 import { CreatorSearchFilters } from '@/components/brand/creator-search/CreatorSearchFilters';
 import { CreatorSearchResults } from '@/components/brand/creator-search/CreatorSearchResults';
 import { CreatorSearchModals } from '@/components/brand/creator-search/CreatorSearchModals';
-
-interface CreatorSearchFilters {
-  platforms: string[];
-  industries: string[];
-  followerRange: { min: number; max: number };
-  engagementRange: { min: number; max: number };
-  location: string;
-  contentTypes: string[];
-  verified: boolean;
-}
+import { useCreatorSearchNew } from '@/hooks/useCreatorSearchNew';
+import { useCreatorProfileModal } from '@/hooks/useCreatorProfileModal';
+import { useCreatorFavorites } from '@/hooks/useCreatorFavorites';
+import { useCreatorInvitationActions } from '@/hooks/useCreatorInvitationActions';
+import { useCreatorSearchHandlers } from '@/hooks/useCreatorSearchHandlers';
+import { useSearchParams } from 'react-router-dom';
 
 const CreatorSearch = () => {
-  // Search and filtering state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState<CreatorSearchFilters>({
-    platforms: [],
-    industries: [],
-    followerRange: { min: 0, max: 10000000 },
-    engagementRange: { min: 0, max: 20 },
-    location: '',
-    contentTypes: [],
-    verified: false
-  });
-  
-  // View and UI state
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [selectedCreators, setSelectedCreators] = useState<string[]>([]);
-  
-  // Modal state
-  const [selectedCreatorId, setSelectedCreatorId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [searchParams] = useSearchParams();
+  const campaignId = searchParams.get('campaign');
   const [showFavoritesModal, setShowFavoritesModal] = useState(false);
-  const [showCampaignModal, setShowCampaignModal] = useState(false);
+  
+  const searchHookData = useCreatorSearchNew();
+  const { isFavorite, toggleFavorite, isToggling } = useCreatorFavorites();
+  const { handleInviteCreator } = useCreatorInvitationActions();
+  const profileModalData = useCreatorProfileModal();
 
-  // Data fetching
-  const { data: creators = [], isLoading } = useCreatorSearchNew();
+  const {
+    transformedCreators,
+    transformedSelectedCreators,
+    campaignsForBar,
+    selectedCreatorIds,
+    handlers
+  } = useCreatorSearchHandlers({
+    searchHookData,
+    profileModalData,
+    handleInviteCreator,
+    setShowFavoritesModal
+  });
 
-  const handleCreatorSelect = (creatorId: string) => {
-    setSelectedCreators(prev => 
-      prev.includes(creatorId) 
-        ? prev.filter(id => id !== creatorId)
-        : [...prev, creatorId]
-    );
-  };
-
-  const handleViewCreator = (creatorId: string) => {
-    setSelectedCreatorId(creatorId);
-  };
-
-  const handleInviteCreators = () => {
-    if (selectedCreators.length > 0) {
-      setShowCampaignModal(true);
+  // Set the campaign ID from URL parameter if present
+  useEffect(() => {
+    if (campaignId) {
+      searchHookData.setSelectedCampaignId(campaignId);
     }
-  };
+  }, [campaignId, searchHookData.setSelectedCampaignId]);
 
   return (
     <BrandLayout>
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="text-center py-8 text-muted-foreground">
-          Creator search components are not available in the current build.
-          <br />
-          Please check the component definitions for proper prop interfaces.
-        </div>
+      <div className="container mx-auto px-4 py-8 max-w-7xl bg-background">
+        <CreatorSearchHeader
+          viewMode={viewMode}
+          onViewChange={setViewMode}
+          onShowFavorites={() => setShowFavoritesModal(true)}
+        />
+        
+        <CreatorSearchFilters searchHookData={searchHookData} />
+        
+        <CreatorSearchResults
+          searchHookData={searchHookData}
+          transformedCreators={transformedCreators}
+          transformedSelectedCreators={transformedSelectedCreators}
+          campaignsForBar={campaignsForBar}
+          selectedCreatorIds={selectedCreatorIds}
+          viewMode={viewMode}
+          handlers={handlers}
+        />
+        
+        <CreatorSearchModals
+          profileModalData={profileModalData}
+          showFavoritesModal={showFavoritesModal}
+          onCloseFavoritesModal={() => setShowFavoritesModal(false)}
+          onInviteFromModal={handlers.handleInviteFromModal}
+          onInviteFromProfile={handlers.handleInviteFromProfile}
+        />
       </div>
     </BrandLayout>
   );

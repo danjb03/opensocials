@@ -1,12 +1,12 @@
 
 import { useState, useEffect } from 'react';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useAuth } from '@/lib/auth';
 import { checkIntro } from '@/utils/intro';
 
 export const useBrandIntro = () => {
   const [showIntro, setShowIntro] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { user, role } = useUnifiedAuth();
+  const { user, role } = useAuth();
 
   useEffect(() => {
     const loadIntro = async () => {

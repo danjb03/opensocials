@@ -2,12 +2,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useAuth } from '@/lib/auth';
 
 export const useBrandRedirect = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, role, isLoading: authLoading } = useUnifiedAuth();
+  const { user, role, isLoading: authLoading } = useAuth();
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {

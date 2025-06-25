@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, Settings } from 'lucide-react';
 import { useCreatorProfileData } from '@/hooks/useCreatorProfileData';
-import { useCreatorProfile } from '@/hooks/creator/useCreatorProfile';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import ProfileHeader from '@/components/creator/profile/ProfileHeader';
@@ -12,8 +11,7 @@ import ProfileEditTab from '@/components/creator/profile/ProfileEditTab';
 
 const CreatorProfile = () => {
   const { user, creatorProfile } = useUnifiedAuth();
-  const { data: profileData, isLoading: profileDataLoading } = useCreatorProfileData();
-  const { data: detailedProfile } = useCreatorProfile();
+  const { profile: profileData, isLoading: profileDataLoading } = useCreatorProfileData();
   const [activeTab, setActiveTab] = useState('overview');
   const [isEditing, setIsEditing] = useState(false);
 
@@ -42,6 +40,7 @@ const CreatorProfile = () => {
   };
 
   // Transform creator profile for the card using the unified auth data
+  // Access the actual database fields (snake_case) from useUnifiedAuth
   const creatorForCard = {
     id: user?.id || '',
     firstName: creatorProfile?.first_name || '',
@@ -53,42 +52,29 @@ const CreatorProfile = () => {
     platforms: creatorProfile?.platforms || [],
     industries: creatorProfile?.industries || [],
     audienceLocation: creatorProfile?.audience_location,
-    // Get follower_count, engagement_rate, and creator_type from detailedProfile or creatorProfile
-    followerCount: detailedProfile?.follower_count || creatorProfile?.follower_count || 0,
-    engagementRate: detailedProfile?.engagement_rate || creatorProfile?.engagement_rate || 0,
-    creatorType: detailedProfile?.creator_type || creatorProfile?.creator_type || '',
+    // Access the actual database fields (snake_case) returned by useUnifiedAuth
+    followerCount: creatorProfile?.follower_count || 0,
+    engagementRate: creatorProfile?.engagement_rate || 0,
+    creatorType: creatorProfile?.creator_type || '',
   };
 
   // Create a safe profile data object that matches what the edit form expects
+  // Use the transformed camelCase properties from useCreatorProfileData
   const safeProfileData = profileData ? {
-    id: user?.id || '',
-    firstName: profileData.firstName,
-    lastName: profileData.lastName,
-    bio: profileData.bio,
-    avatarUrl: profileData.avatarUrl,
-    bannerUrl: profileData.bannerUrl,
-    primaryPlatform: profileData.primaryPlatform,
-    contentType: profileData.contentTypes?.[0] || '',
-    audienceType: '',
-    followerCount: profileData.followerCount,
-    engagementRate: profileData.engagementRate,
-    isProfileComplete: true,
-    socialConnections: {
-      instagram: false,
-      tiktok: false,
-      youtube: false,
-      linkedin: false
-    },
-    visibilitySettings: profileData.visibilitySettings,
-    audienceLocation: {
-      primary: 'Global',
-      secondary: [],
-      countries: []
-    },
-    industries: profileData.industries,
-    creatorType: profileData.creatorType,
-    platforms: profileData.platforms,
-    username: profileData.username
+    ...profileData,
+    platforms: profileData.platforms || [],
+    // Use the camelCase properties from the transformed CreatorProfile
+    followerCount: profileData.followerCount || '0',
+    engagementRate: profileData.engagementRate || '0%',
+    creatorType: profileData.creatorType || '',
+    visibilitySettings: profileData.visibilitySettings || {
+      showInstagram: true,
+      showTiktok: true,
+      showYoutube: true,
+      showLinkedin: true,
+      showLocation: true,
+      showAnalytics: true
+    }
   } : null;
 
   return (

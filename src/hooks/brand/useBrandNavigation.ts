@@ -1,9 +1,9 @@
 
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useAuth } from '@/lib/auth';
 import { useNavigate } from 'react-router-dom';
 
 export const useBrandNavigation = () => {
-  const { role } = useUnifiedAuth();
+  const { role } = useAuth();
   const navigate = useNavigate();
 
   const redirectToDashboard = () => {
