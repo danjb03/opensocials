@@ -1,4 +1,5 @@
 
+
 export interface CreatorProfile {
   id: string;
   firstName: string;
@@ -85,3 +86,4 @@ export interface CreatorProfileRecord {
   created_at?: string | null;
   updated_at?: string | null;
 }
+
