@@ -14,40 +14,42 @@ export const useInstantAuth = () => {
       const { data } = await supabase.auth.getSession();
       return data.session;
     },
-    staleTime: 10000, // Reduced from 30 seconds
-    gcTime: 30000, // Reduced from 1 minute
+    staleTime: 10000,
+    gcTime: 30000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });
 
-  // Simplified user profile fetch without dependencies that could cause loops
+  // Simplified user profile fetch without complex typing
   const { data: userProfile } = useQuery({
     queryKey: ['user-profile', session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id) return null;
 
-      // Sequential queries instead of parallel to avoid race conditions
-      const profileResult = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
+      try {
+        // Get profile first
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
 
-      if (profileResult.error) {
-        console.log('Profile not found, checking user_roles');
+        // Get role separately
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .eq('approved', true)
+          .single();
+
+        return {
+          profile,
+          role: roleData?.role || profile?.role || null
+        };
+      } catch (error) {
+        console.log('Profile fetch error:', error);
+        return { profile: null, role: null };
       }
-
-      const rolesResult = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', session.user.id)
-        .eq('approved', true)
-        .single();
-
-      return {
-        profile: profileResult.data,
-        role: rolesResult.data?.role || profileResult.data?.role || null
-      };
     },
     enabled: !!session?.user?.id,
     staleTime: 10000,

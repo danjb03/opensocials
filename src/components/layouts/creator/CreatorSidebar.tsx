@@ -50,8 +50,12 @@ const CreatorSidebar = () => {
 
       <CreatorSidebarQuickActions isSidebarOpen={isSidebarOpen} />
 
-      <CreatorSidebarNavigation isSidebarOpen={isSidebarOpen} />
+      {/* Navigation section - grows to push user profile to bottom */}
+      <div className="flex-1">
+        <CreatorSidebarNavigation isSidebarOpen={isSidebarOpen} />
+      </div>
 
+      {/* User profile at the bottom */}
       <CreatorSidebarUserProfile isSidebarOpen={isSidebarOpen} />
     </div>
   );
