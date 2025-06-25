@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useMemo } from 'react';
 
 interface CreatorUpdate {
   id: string;
@@ -17,30 +18,39 @@ interface CreatorUpdate {
 export const useCreatorUpdates = () => {
   const { user } = useUnifiedAuth();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['creator-updates', user?.id],
     queryFn: async (): Promise<CreatorUpdate[]> => {
       if (!user?.id) return [];
 
       const updates: CreatorUpdate[] = [];
 
-      // Get recent project invitations with project details
-      const { data: invitations } = await supabase
-        .from('project_creators')
-        .select(`
-          id,
-          status,
-          invitation_date,
-          response_date,
-          project_id
-        `)
-        .eq('creator_id', user.id)
-        .order('invitation_date', { ascending: false })
-        .limit(3);
+      // Get recent project invitations with project details in parallel
+      const [invitationsResult, notificationsResult] = await Promise.all([
+        supabase
+          .from('project_creators')
+          .select(`
+            id,
+            status,
+            invitation_date,
+            response_date,
+            project_id
+          `)
+          .eq('creator_id', user.id)
+          .order('invitation_date', { ascending: false })
+          .limit(3),
+        
+        supabase
+          .from('campaign_notifications')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(5)
+      ]);
 
-      if (invitations) {
-        // Get project details separately
-        const projectIds = invitations.map(inv => inv.project_id).filter(Boolean);
+      // Process invitations
+      if (invitationsResult.data) {
+        const projectIds = invitationsResult.data.map(inv => inv.project_id).filter(Boolean);
         
         let projectsData: any[] = [];
         if (projectIds.length > 0) {
@@ -64,7 +74,7 @@ export const useCreatorUpdates = () => {
           }
         }
 
-        invitations.forEach((invitation) => {
+        invitationsResult.data.forEach((invitation) => {
           const project = projectsData.find(p => p.id === invitation.project_id);
           const projectName = project?.name || 'Unknown Project';
 
@@ -94,16 +104,9 @@ export const useCreatorUpdates = () => {
         });
       }
 
-      // Get recent campaign notifications
-      const { data: notifications } = await supabase
-        .from('campaign_notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (notifications) {
-        notifications.forEach((notification) => {
+      // Process notifications
+      if (notificationsResult.data) {
+        notificationsResult.data.forEach((notification) => {
           let type: CreatorUpdate['type'] = 'approval';
           if (notification.notification_type.includes('payment')) type = 'payment';
           if (notification.notification_type.includes('deadline')) type = 'deadline';
@@ -126,5 +129,15 @@ export const useCreatorUpdates = () => {
         .slice(0, 5);
     },
     enabled: !!user?.id,
+    staleTime: 30000, // Cache for 30 seconds
+    gcTime: 300000, // Keep in cache for 5 minutes
   });
+
+  // Memoize the return value to prevent unnecessary re-renders
+  return useMemo(() => ({
+    data: query.data || [],
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch
+  }), [query.data, query.isLoading, query.error, query.refetch]);
 };

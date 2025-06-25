@@ -7,10 +7,65 @@ import { Button } from '@/components/ui/button';
 import { Edit2 } from 'lucide-react';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
+const ProfileDisplay = React.memo(({ profile }: { profile: any }) => (
+  <div className="bg-card rounded-lg p-6 border border-border">
+    <div className="flex items-center space-x-4 mb-4">
+      {profile.avatarUrl && (
+        <img 
+          src={profile.avatarUrl} 
+          alt={`${profile.firstName} ${profile.lastName}`}
+          className="w-16 h-16 rounded-full object-cover"
+        />
+      )}
+      <div>
+        <h2 className="text-xl font-semibold text-white">
+          {profile.firstName} {profile.lastName}
+        </h2>
+        {profile.bio && (
+          <p className="text-muted-foreground">{profile.bio}</p>
+        )}
+      </div>
+    </div>
+    
+    {profile.primaryPlatform && (
+      <div className="mb-2">
+        <span className="text-sm font-medium text-white">Primary Platform: </span>
+        <span className="text-muted-foreground">{profile.primaryPlatform}</span>
+      </div>
+    )}
+    
+    {profile.industries && profile.industries.length > 0 && (
+      <div className="mb-2">
+        <span className="text-sm font-medium text-white">Industries: </span>
+        <span className="text-muted-foreground">{profile.industries.join(', ')}</span>
+      </div>
+    )}
+  </div>
+));
+
+ProfileDisplay.displayName = 'ProfileDisplay';
+
 const CreatorProfile = () => {
   const { user, role } = useUnifiedAuth();
   const { profile, isLoading } = useCreatorProfile();
   const [isEditing, setIsEditing] = useState(false);
+
+  const handleProfileSubmit = React.useCallback(async (values: any) => {
+    try {
+      console.log('Profile update values:', values);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
+  }, []);
+
+  const handleEditClick = React.useCallback(() => {
+    setIsEditing(true);
+  }, []);
+
+  const handleCancelEdit = React.useCallback(() => {
+    setIsEditing(false);
+  }, []);
 
   if (isLoading) {
     return (
@@ -41,16 +96,6 @@ const CreatorProfile = () => {
     );
   }
 
-  const handleProfileSubmit = async (values: any) => {
-    try {
-      // For now, just log the submission since updateProfile isn't available
-      console.log('Profile update values:', values);
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Error updating profile:', error);
-    }
-  };
-
   if (isEditing) {
     return (
       <ErrorBoundary>
@@ -59,7 +104,7 @@ const CreatorProfile = () => {
             profile={profile}
             isLoading={false}
             onSubmit={handleProfileSubmit}
-            onCancel={() => setIsEditing(false)}
+            onCancel={handleCancelEdit}
           />
         </div>
       </ErrorBoundary>
@@ -77,7 +122,7 @@ const CreatorProfile = () => {
             </p>
           </div>
           <Button
-            onClick={() => setIsEditing(true)}
+            onClick={handleEditClick}
             className="bg-white text-black hover:bg-gray-200"
           >
             <Edit2 className="h-4 w-4 mr-2" />
@@ -90,41 +135,7 @@ const CreatorProfile = () => {
             <p className="text-white text-center">Profile display temporarily unavailable</p>
           </div>
         )}>
-          {profile && (
-            <div className="bg-card rounded-lg p-6 border border-border">
-              <div className="flex items-center space-x-4 mb-4">
-                {profile.avatarUrl && (
-                  <img 
-                    src={profile.avatarUrl} 
-                    alt={`${profile.firstName} ${profile.lastName}`}
-                    className="w-16 h-16 rounded-full object-cover"
-                  />
-                )}
-                <div>
-                  <h2 className="text-xl font-semibold text-white">
-                    {profile.firstName} {profile.lastName}
-                  </h2>
-                  {profile.bio && (
-                    <p className="text-muted-foreground">{profile.bio}</p>
-                  )}
-                </div>
-              </div>
-              
-              {profile.primaryPlatform && (
-                <div className="mb-2">
-                  <span className="text-sm font-medium text-white">Primary Platform: </span>
-                  <span className="text-muted-foreground">{profile.primaryPlatform}</span>
-                </div>
-              )}
-              
-              {profile.industries && profile.industries.length > 0 && (
-                <div className="mb-2">
-                  <span className="text-sm font-medium text-white">Industries: </span>
-                  <span className="text-muted-foreground">{profile.industries.join(', ')}</span>
-                </div>
-              )}
-            </div>
-          )}
+          {profile && <ProfileDisplay profile={profile} />}
         </ErrorBoundary>
       </div>
     </ErrorBoundary>
