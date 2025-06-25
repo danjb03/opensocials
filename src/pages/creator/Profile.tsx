@@ -57,27 +57,38 @@ const CreatorProfile = () => {
     followerCount: creatorProfile?.follower_count || 0,
     engagementRate: creatorProfile?.engagement_rate || 0,
     creatorType: creatorProfile?.creator_type || '',
-    // Add missing properties for compatibility
-    follower_count: creatorProfile?.follower_count || 0,
-    engagement_rate: creatorProfile?.engagement_rate || 0,
-    creator_type: creatorProfile?.creator_type || '',
   };
 
   // Create a safe profile data object that matches what the edit form expects
   const safeProfileData = profileData ? {
-    ...profileData,
-    platforms: profileData.platforms || [],
-    followerCount: profileData.followerCount || '0',
-    engagementRate: profileData.engagementRate || '0%',
-    creatorType: profileData.creatorType || '',
-    visibilitySettings: profileData.visibilitySettings || {
-      showInstagram: true,
-      showTiktok: true,
-      showYoutube: true,
-      showLinkedin: true,
-      showLocation: true,
-      showAnalytics: true
-    }
+    id: user?.id || '',
+    firstName: profileData.firstName,
+    lastName: profileData.lastName,
+    bio: profileData.bio,
+    avatarUrl: profileData.avatarUrl,
+    bannerUrl: profileData.bannerUrl,
+    primaryPlatform: profileData.primaryPlatform,
+    contentType: profileData.contentTypes?.[0] || '',
+    audienceType: '',
+    followerCount: profileData.followerCount,
+    engagementRate: profileData.engagementRate,
+    isProfileComplete: true,
+    socialConnections: {
+      instagram: false,
+      tiktok: false,
+      youtube: false,
+      linkedin: false
+    },
+    visibilitySettings: profileData.visibilitySettings,
+    audienceLocation: {
+      primary: 'Global',
+      secondary: [],
+      countries: []
+    },
+    industries: profileData.industries,
+    creatorType: profileData.creatorType,
+    platforms: profileData.platforms,
+    username: profileData.username
   } : null;
 
   return (

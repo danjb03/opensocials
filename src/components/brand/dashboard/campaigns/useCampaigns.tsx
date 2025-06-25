@@ -18,6 +18,7 @@ export interface Campaign {
   reach?: number;
   engagement?: number;
   conversion?: number;
+  platform?: string; // Add missing platform property
 }
 
 export const useCampaigns = () => {
@@ -56,7 +57,8 @@ export const useCampaigns = () => {
           creators: 0,
           reach: 0,
           engagement: 0,
-          conversion: 0
+          conversion: 0,
+          platform: 'Multi-platform' // Add default platform
         })),
         ...(legacyProjects || []).map(p => ({
           id: p.id,
@@ -71,7 +73,8 @@ export const useCampaigns = () => {
           creators: 0,
           reach: 0,
           engagement: 0,
-          conversion: 0
+          conversion: 0,
+          platform: 'Multi-platform' // Add default platform
         }))
       ];
 

@@ -17,9 +17,13 @@ export type ProjectViewMode = 'table' | 'pipeline' | 'campaigns';
 export const useProjectData = () => {
   // Use smaller, focused hooks
   const { filters, handleFiltersChange } = useProjectFilters();
-  const projectQuery = useProjectQuery(filters);
-  const { data: rawProjects, isLoading, error, refetch } = projectQuery;
-  const filteredProjects = useProjectFiltering(rawProjects || [], filters);
+  const projectQuery = useProjectQuery();
+  const { data: rawProjectData, isLoading, error, refetch } = projectQuery;
+  
+  // Extract projects array from the data structure
+  const rawProjects = Array.isArray(rawProjectData) ? rawProjectData : (rawProjectData?.projects || []);
+  
+  const filteredProjects = useProjectFiltering(rawProjects, filters);
   const { orders, campaignRows } = useProjectTransforms(filteredProjects);
   const {
     activeStage,
