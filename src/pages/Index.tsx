@@ -21,52 +21,67 @@ const Index = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  console.log('Index - User:', user?.id);
-  console.log('Index - Role:', role);
-  console.log('Index - Loading:', isLoading);
+  console.log('🏠 Index page - Auth state:', {
+    userId: user?.id,
+    role,
+    isLoading,
+    path: window.location.pathname
+  });
 
   useEffect(() => {
+    // Only redirect if we have confirmed auth state (not loading)
     if (!isLoading && user && role) {
-      console.log('Index - User logged in with role:', role);
+      console.log('🏠 Index - User logged in with role:', role);
       
       // Super admins should STAY on index page to choose their dashboard
       if (role === 'super_admin') {
-        console.log('Index - Super admin detected, staying on index page for dashboard selection');
+        console.log('🏠 Index - Super admin detected, staying on index page');
         return;
       }
       
       // Redirect based on user role for non-super-admin users
-      switch (role) {
-        case 'admin':
-          console.log('Index - Redirecting admin to /admin');
-          navigate('/admin');
-          break;
-        case 'brand':
-          console.log('Index - Redirecting brand to /brand');
-          navigate('/brand');
-          break;
-        case 'creator':
-          console.log('Index - Redirecting creator to /creator');
-          navigate('/creator');
-          break;
-        case 'agency':
-          console.log('Index - Redirecting agency to /agency');
-          navigate('/agency');
-          break;
-        default:
-          console.log('Index - Unknown role, staying on index');
-          break;
-      }
+      const redirectTimeout = setTimeout(() => {
+        switch (role) {
+          case 'admin':
+            console.log('🏠 Index - Redirecting admin to /admin');
+            navigate('/admin');
+            break;
+          case 'brand':
+            console.log('🏠 Index - Redirecting brand to /brand');
+            navigate('/brand');
+            break;
+          case 'creator':
+            console.log('🏠 Index - Redirecting creator to /creator');
+            navigate('/creator');
+            break;
+          case 'agency':
+            console.log('🏠 Index - Redirecting agency to /agency');
+            navigate('/agency');
+            break;
+          default:
+            console.log('🏠 Index - Unknown role, staying on index');
+            break;
+        }
+      }, 100); // Small delay to prevent navigation conflicts
+
+      return () => clearTimeout(redirectTimeout);
     }
   }, [user, role, isLoading, navigate]);
 
+  // Show loading only if still actually loading
   if (isLoading) {
+    console.log('🏠 Index - Still loading...');
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-white">Loading...</p>
+        </div>
       </div>
     );
   }
+
+  console.log('🏠 Index - Rendering full page');
 
   return (
     <div className="min-h-screen bg-background text-foreground">
