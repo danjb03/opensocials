@@ -56,13 +56,14 @@ const CreatorProfile = () => {
     creatorType: creatorProfile?.creator_type || '',
   };
 
-  // Safe access to profile data with fallbacks using camelCase properties
+  // Create a safe profile data object that matches what the edit form expects
   const safeProfileData = profileData ? {
     ...profileData,
     platforms: profileData.platforms || [],
-    followerCount: profileData.followerCount || '0',
-    engagementRate: profileData.engagementRate || '0',
-    creatorType: profileData.creatorType || '',
+    // Use the actual database values from creatorProfile (snake_case)
+    followerCount: creatorProfile?.follower_count?.toString() || '0',
+    engagementRate: creatorProfile?.engagement_rate?.toString() || '0%',
+    creatorType: creatorProfile?.creator_type || '',
     visibilitySettings: profileData.visibilitySettings || {
       showInstagram: true,
       showTiktok: true,
