@@ -22,22 +22,28 @@ export function useUnifiedAuth() {
     queryFn: async () => {
       if (!user?.id) return null;
       
-      const { data, error } = await supabase
-        .from('brand_profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('brand_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
 
-      if (error) {
-        console.error('Brand profile error:', error);
+        if (error) {
+          console.error('Brand profile error:', error);
+          return null;
+        }
+        
+        return data;
+      } catch (error) {
+        console.error('Brand profile fetch failed:', error);
         return null;
       }
-      
-      return data;
     },
     enabled: !!user?.id && (role === 'brand' || role === 'super_admin'),
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
+    retry: false, // Don't retry failed profile queries
   });
 
   // Creator Profile Query - OPTIONAL, non-blocking
@@ -49,22 +55,28 @@ export function useUnifiedAuth() {
     queryFn: async () => {
       if (!user?.id) return null;
       
-      const { data, error } = await supabase
-        .from('creator_profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('creator_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
 
-      if (error) {
-        console.error('Creator profile error:', error);
+        if (error) {
+          console.error('Creator profile error:', error);
+          return null;
+        }
+        
+        return data;
+      } catch (error) {
+        console.error('Creator profile fetch failed:', error);
         return null;
       }
-      
-      return data;
     },
     enabled: !!user?.id && (role === 'creator' || role === 'super_admin'),
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
+    retry: false, // Don't retry failed profile queries
   });
 
   // CRITICAL: Only consider auth loading, never profile loading
@@ -74,11 +86,11 @@ export function useUnifiedAuth() {
   return {
     user,
     role,
-    brandProfile,
-    creatorProfile,
+    brandProfile: brandProfile || null,
+    creatorProfile: creatorProfile || null,
     isLoading,
     // Add profile property for backward compatibility
-    profile: creatorProfile,
+    profile: creatorProfile || null,
   };
 }
 
