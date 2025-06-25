@@ -195,7 +195,7 @@ const CreatorProfile = () => {
               tiktok: { followers: '0', engagement: '0%', growth: '0%' },
               youtube: { followers: '0', engagement: '0%', growth: '0%' }
             }}
-            visibilitySettings={hookProfile?.visibilitySettings || {
+            visibilitySettings={{
               showInstagram: true,
               showTiktok: true,
               showYoutube: true,
