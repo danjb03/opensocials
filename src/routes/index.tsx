@@ -23,7 +23,7 @@ import { SuperAdminRoutes } from './SuperAdminRoutes';
 import AgencyRoutes from './AgencyRoutes';
 
 const AppRoutes = () => {
-  const { user, role, brandProfile, creatorProfile, isLoading } = useUnifiedAuth();
+  const { user, role, isLoading } = useUnifiedAuth();
 
   console.log('🚦 AppRoutes state:', {
     isLoading,
@@ -32,33 +32,18 @@ const AppRoutes = () => {
     path: window.location.pathname
   });
 
-  // EMERGENCY: Never show loading for more than 1 second
-  const [forceRender, setForceRender] = React.useState(false);
-  
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      console.log('⚡ EMERGENCY: Forcing app render after 1s');
-      setForceRender(true);
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Only show loading spinner for a very brief moment
-  if (isLoading && !forceRender) {
+  // Show loading only briefly
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="text-center">
           <LoadingSpinner />
-          <p className="mt-4 text-white">Loading...</p>
+          <p className="mt-4 text-white">Loading OS Platform...</p>
         </div>
       </div>
     );
   }
 
-  // SIMPLIFIED: Always render routes, let individual route guards handle protection
-  // Don't block the entire app based on profile completeness
-  
   return (
     <Routes>
       {/* Public marketing website - ALWAYS accessible */}
@@ -67,7 +52,7 @@ const AppRoutes = () => {
       {/* Auth pages */}
       <Route path="/auth/*" element={<AuthPage />} />
       
-      {/* Setup routes - only redirect if we're certain about the state */}
+      {/* Setup routes */}
       <Route path="/setup/brand" element={<BrandSetup />} />
       <Route path="/setup/creator" element={<CreatorSetup />} />
       

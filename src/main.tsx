@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App.tsx';
 import './index.css';
 
-console.log('🏁 Main.tsx executing...');
+console.log('🏁 OS Platform initializing...');
 
 // Create QueryClient with error handling
 const queryClient = new QueryClient({
@@ -20,7 +20,7 @@ const queryClient = new QueryClient({
 
 const root = createRoot(document.getElementById('root')!);
 
-console.log('🏁 Root created, rendering App with providers...');
+console.log('🏁 Rendering OS Platform with providers...');
 
 // Render with all necessary providers
 root.render(
@@ -31,4 +31,4 @@ root.render(
   </QueryClientProvider>
 );
 
-console.log('✅ App rendered successfully with providers');
+console.log('✅ OS Platform rendered successfully');

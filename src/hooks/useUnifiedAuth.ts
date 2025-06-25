@@ -6,7 +6,7 @@ import { supabase, isSupabaseReady } from '@/integrations/supabase/client';
 export function useUnifiedAuth() {
   const { user, role, isLoading: authLoading } = useAuth();
 
-  console.log('🔐 useUnifiedAuth - Basic state:', {
+  console.log('🔐 useUnifiedAuth - Auth state:', {
     hasUser: !!user,
     userId: user?.id,
     role,
@@ -44,7 +44,7 @@ export function useUnifiedAuth() {
     enabled: !!user?.id && (role === 'brand' || role === 'super_admin') && isSupabaseReady(),
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
-    retry: false, // Don't retry failed profile queries
+    retry: false,
   });
 
   // Creator Profile Query - OPTIONAL, non-blocking
@@ -77,11 +77,10 @@ export function useUnifiedAuth() {
     enabled: !!user?.id && (role === 'creator' || role === 'super_admin') && isSupabaseReady(),
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
-    retry: false, // Don't retry failed profile queries
+    retry: false,
   });
 
-  // CRITICAL: Only consider auth loading, never profile loading
-  // Profiles are optional enhancements, not requirements for rendering
+  // Only consider auth loading critical - profiles are optional
   const isLoading = authLoading;
 
   return {
