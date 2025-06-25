@@ -1,5 +1,6 @@
 
 import React, { Component, ReactNode } from 'react';
+import SomethingWentWrong from './SomethingWentWrong';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -79,54 +80,16 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
   render() {
     if (this.state.hasError) {
+      const FallbackComponent = this.props.fallback || SomethingWentWrong;
+      
       return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <div className="text-center p-6">
-            <h2 className="text-xl font-semibold mb-2 text-white">Something went wrong</h2>
-            <p className="text-muted-foreground mb-4">
-              {this.props.customMessage || 'Please refresh the page or try again'}
-            </p>
-            
-            <div className="space-x-4">
-              <button 
-                onClick={this.handleReset}
-                className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
-              >
-                Try Again
-              </button>
-              
-              <button 
-                onClick={() => window.location.reload()} 
-                className="px-4 py-2 bg-secondary text-white rounded hover:bg-secondary/90"
-              >
-                Refresh Page
-              </button>
-              
-              {this.props.showHomeButton && (
-                <button 
-                  onClick={() => window.location.href = '/'} 
-                  className="px-4 py-2 bg-accent text-black rounded hover:bg-accent/90"
-                >
-                  Go Home
-                </button>
-              )}
-            </div>
-            
-            <details className="mt-4 text-sm text-left">
-              <summary className="cursor-pointer text-muted-foreground">Error details</summary>
-              <pre className="mt-2 p-2 bg-muted rounded text-xs overflow-auto">
-                {this.state.error?.message || 'Unknown error'}
-                {this.state.error?.stack && (
-                  <>
-                    <br />
-                    <br />
-                    {this.state.error.stack}
-                  </>
-                )}
-              </pre>
-            </details>
-          </div>
-        </div>
+        <FallbackComponent 
+          error={this.state.error}
+          resetErrorBoundary={this.handleReset}
+          showHomeButton={this.props.showHomeButton}
+          showBackButton={this.props.showBackButton}
+          customMessage={this.props.customMessage}
+        />
       );
     }
 

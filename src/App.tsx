@@ -1,20 +1,22 @@
 
-import React from "react";
-import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/components/AuthProvider";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "sonner";
+import { BrowserRouter } from "react-router-dom";
+import { AuthProvider } from "./components/AuthProvider";
 import AppRoutes from "./routes";
 
 function App() {
-  console.log('🚀 OS Platform App starting...');
-
   return (
-    <TooltipProvider>
-      <AuthProvider>
-        <AppRoutes />
+    <AuthProvider>
+      <TooltipProvider>
         <Toaster />
-      </AuthProvider>
-    </TooltipProvider>
+        <Sonner />
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   );
 }
 

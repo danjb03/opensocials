@@ -23,38 +23,46 @@ import { SuperAdminRoutes } from './SuperAdminRoutes';
 import AgencyRoutes from './AgencyRoutes';
 
 const AppRoutes = () => {
-  const { user, role, isLoading } = useUnifiedAuth();
+  const { user, role, brandProfile, creatorProfile, isLoading } = useUnifiedAuth();
 
-  console.log('🚦 AppRoutes state:', {
-    isLoading,
-    hasUser: !!user,
-    role,
-    path: window.location.pathname
-  });
-
-  // Show loading only briefly
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="text-center">
-          <LoadingSpinner />
-          <p className="mt-4 text-white">Loading OS Platform...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <LoadingSpinner />
       </div>
     );
   }
 
+  // Setup routes for users who need to complete their profiles
+  const needsBrandSetup = role === 'brand' && !brandProfile?.company_name;
+  const needsCreatorSetup = role === 'creator' && !creatorProfile?.first_name;
+
+  if (needsBrandSetup) {
+    return (
+      <Routes>
+        <Route path="/setup/brand" element={<BrandSetup />} />
+        <Route path="*" element={<Navigate to="/setup/brand" replace />} />
+      </Routes>
+    );
+  }
+
+  if (needsCreatorSetup) {
+    return (
+      <Routes>
+        <Route path="/setup/creator" element={<CreatorSetup />} />
+        <Route path="*" element={<Navigate to="/setup/creator" replace />} />
+      </Routes>
+    );
+  }
+
+  // Main application routes - available to both authenticated and non-authenticated users
   return (
     <Routes>
-      {/* Public marketing website - ALWAYS accessible */}
+      {/* Public marketing website */}
       <Route path="/" element={<Index />} />
       
       {/* Auth pages */}
       <Route path="/auth/*" element={<AuthPage />} />
-      
-      {/* Setup routes */}
-      <Route path="/setup/brand" element={<BrandSetup />} />
-      <Route path="/setup/creator" element={<CreatorSetup />} />
       
       {/* Protected role-based routes */}
       <Route path="/admin/*" element={
@@ -87,7 +95,7 @@ const AppRoutes = () => {
         </ProtectedRoute>
       } />
 
-      {/* Fallback */}
+      {/* Fallback to homepage for unknown routes */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

@@ -23,12 +23,11 @@ const CampaignReviewPanel: React.FC<CampaignReviewPanelProps> = ({
   const reviewSubmission = useReviewSubmission();
   
   const [selectedSubmission, setSelectedSubmission] = useState<CampaignSubmission | null>(null);
-  const [reviewAction, setReviewAction] = useState<'approve' | 'request_revision' | null>(null);
+  const [reviewAction, setReviewAction] = useState<'approve' | 'request_revision' | 'reject' | null>(null);
   const [feedbackText, setFeedbackText] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [previewFile, setPreviewFile] = useState<{ url: string; type: 'image' | 'video' } | null>(null);
 
-  const handleReviewAction = (submission: CampaignSubmission, action: 'approve' | 'request_revision') => {
+  const handleReviewAction = (submission: CampaignSubmission, action: 'approve' | 'request_revision' | 'reject') => {
     setSelectedSubmission(submission);
     setReviewAction(action);
     setFeedbackText('');
@@ -55,7 +54,7 @@ const CampaignReviewPanel: React.FC<CampaignReviewPanelProps> = ({
       case 'submitted': return 'bg-blue-100 text-blue-800';
       case 'approved': return 'bg-green-100 text-green-800';
       case 'revision_requested': return 'bg-yellow-100 text-yellow-800';
-      /* no reject now */
+      case 'rejected': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -134,22 +133,17 @@ const CampaignReviewPanel: React.FC<CampaignReviewPanelProps> = ({
                       <div className="flex flex-wrap gap-2">
                         {submission.content_data.files.map((file, index) => (
                           <div key={index} className="relative">
-                            <button
-                              type="button"
-                              onClick={() => setPreviewFile({ url: file.url, type: file.type })}
-                            >
-                              {file.type === 'image' ? (
-                                <img
-                                  src={file.url}
-                                  alt={file.name}
-                                  className="w-20 h-20 object-cover rounded-lg border"
-                                />
-                              ) : (
-                                <div className="w-20 h-20 bg-gray-100 rounded-lg border flex items-center justify-center">
-                                  <span className="text-xs text-gray-500">Video</span>
-                                </div>
-                              )}
-                            </button>
+                            {file.type === 'image' ? (
+                              <img
+                                src={file.url}
+                                alt={file.name}
+                                className="w-20 h-20 object-cover rounded-lg border"
+                              />
+                            ) : (
+                              <div className="w-20 h-20 bg-gray-100 rounded-lg border flex items-center justify-center">
+                                <span className="text-xs text-gray-500">Video</span>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -170,16 +164,18 @@ const CampaignReviewPanel: React.FC<CampaignReviewPanelProps> = ({
                       size="sm"
                       variant="outline"
                       onClick={() => handleReviewAction(submission, 'request_revision')}
-                      disabled={(submission as any).revision_count >= 2}
                     >
                       <MessageSquare className="h-4 w-4 mr-1" />
                       Request Revisions
                     </Button>
-                    {(submission as any).revision_count !== undefined && (
-                      <span className="text-xs text-muted-foreground self-center">
-                        {`Revisions used: ${(submission as any).revision_count}/2`}
-                      </span>
-                    )}
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleReviewAction(submission, 'reject')}
+                    >
+                      <XCircle className="h-4 w-4 mr-1" />
+                      Reject
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -240,14 +236,16 @@ const CampaignReviewPanel: React.FC<CampaignReviewPanelProps> = ({
             <DialogTitle>
               {reviewAction === 'approve' && 'Approve Content'}
               {reviewAction === 'request_revision' && 'Request Revisions'}
+              {reviewAction === 'reject' && 'Reject Content'}
             </DialogTitle>
             <DialogDescription>
               {reviewAction === 'approve' && 'Are you sure you want to approve this content? The creator will be notified to post it live.'}
-              {reviewAction === 'request_revision' && 'Revisions are limited to a maximum of 2 per submission. Please provide clear, actionable feedback for the creator.'}
+              {reviewAction === 'request_revision' && 'Please provide feedback for the creator to revise their content.'}
+              {reviewAction === 'reject' && 'Please provide a reason for rejecting this content.'}
             </DialogDescription>
           </DialogHeader>
 
-          {reviewAction === 'request_revision' && (
+          {(reviewAction === 'request_revision' || reviewAction === 'reject') && (
             <div className="space-y-2">
               <label className="text-sm font-medium">Feedback</label>
               <Textarea
@@ -265,27 +263,17 @@ const CampaignReviewPanel: React.FC<CampaignReviewPanelProps> = ({
             </Button>
             <Button
               onClick={confirmReview}
-              disabled={reviewSubmission.isPending || (reviewAction === 'request_revision' && !feedbackText.trim())}
+              disabled={reviewSubmission.isPending || ((reviewAction === 'request_revision' || reviewAction === 'reject') && !feedbackText.trim())}
               className={
-                reviewAction === 'approve' ? 'bg-green-600 hover:bg-green-700' : ''
+                reviewAction === 'approve' ? 'bg-green-600 hover:bg-green-700' :
+                reviewAction === 'reject' ? 'bg-red-600 hover:bg-red-700' : ''
               }
             >
               {reviewSubmission.isPending ? 'Processing...' : 
                reviewAction === 'approve' ? 'Approve' :
-               'Request Revisions'}
+               reviewAction === 'request_revision' ? 'Request Revisions' : 'Reject'}
             </Button>
           </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Preview Modal */}
-      <Dialog open={!!previewFile} onOpenChange={() => setPreviewFile(null)}>
-        <DialogContent className="sm:max-w-2xl">
-          {previewFile?.type === 'image' ? (
-            <img src={previewFile.url} className="w-full h-auto" />
-          ) : (
-            <video src={previewFile?.url} controls className="w-full h-auto" />
-          )}
         </DialogContent>
       </Dialog>
     </div>

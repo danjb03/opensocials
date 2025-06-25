@@ -8,18 +8,17 @@ const corsHeaders = {
 
 interface SubmitProofRequest {
   upload_id: string;
-  campaign_id: string;
   proof_url: string;
   platform: 'instagram' | 'tiktok' | 'youtube';
   post_type: 'story' | 'post' | 'reel' | 'video';
-  posted_at: string;
+  posted_at: string; // ISO timestamp
   metrics?: {
     likes?: number;
     comments?: number;
     views?: number;
     shares?: number;
+    engagement_rate?: number;
   };
-  notes?: string;
 }
 
 serve(async (req) => {
@@ -47,45 +46,57 @@ serve(async (req) => {
 
     // Validate upload exists and belongs to creator
     const { data: upload, error: uploadError } = await supabase
-      .from('campaign_submissions')
-      .select(`
-        id,
-        campaign_id,
-        creator_id,
-        status,
-        projects_new:campaign_id (
-          id,
-          brand_id,
-          name
-        )
-      `)
+      .from('uploads')
+      .select('id, campaign_id, creator_id, status')
       .eq('id', requestData.upload_id)
       .eq('creator_id', creator_id)
       .single()
 
     if (uploadError || !upload) {
-      throw new Error('Submission not found or you do not have permission to access it')
+      throw new Error('Upload not found or access denied')
     }
 
-    // Validate submission is in approved status
+    // Validate upload is approved
     if (upload.status !== 'approved') {
-      throw new Error('Only approved submissions can have proof submitted')
+      throw new Error('Upload must be approved before submitting proof')
     }
 
-    // Create proof record
+    // Check if proof already exists for this upload
+    const { data: existingProof } = await supabase
+      .from('proof_log')
+      .select('id')
+      .eq('upload_id', requestData.upload_id)
+      .single()
+
+    if (existingProof) {
+      throw new Error('Proof already exists for this upload')
+    }
+
+    // Validate proof URL format (basic validation)
+    if (!requestData.proof_url.startsWith('http')) {
+      throw new Error('Invalid proof URL format')
+    }
+
+    // Validate posted_at timestamp
+    const postedAt = new Date(requestData.posted_at)
+    if (isNaN(postedAt.getTime())) {
+      throw new Error('Invalid posted_at timestamp')
+    }
+
+    // Create proof log entry
     const { data: proof, error: proofError } = await supabase
       .from('proof_log')
       .insert({
         upload_id: requestData.upload_id,
-        campaign_id: requestData.campaign_id,
+        campaign_id: upload.campaign_id,
         creator_id,
         proof_url: requestData.proof_url,
         platform: requestData.platform,
         post_type: requestData.post_type,
         posted_at: requestData.posted_at,
+        detection_method: 'manual',
         metrics: requestData.metrics || {},
-        notes: requestData.notes,
-        status: 'pending_verification'
+        is_live: true
       })
       .select()
       .single()
@@ -94,79 +105,15 @@ serve(async (req) => {
       throw new Error('Failed to create proof record')
     }
 
-    // Update submission status
-    const { error: updateError } = await supabase
-      .from('campaign_submissions')
-      .update({
-        status: 'posted',
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', requestData.upload_id)
+    // Triggers will automatically:
+    // 1. Notify brand via notification_queue
+    // 2. Update campaign analytics
 
-    if (updateError) {
-      throw new Error('Failed to update submission status')
-    }
-
-    // Create notification for brand
-    if (upload.projects_new?.brand_id) {
-      const { error: brandNotificationError } = await supabase
-        .from('notification_queue')
-        .insert({
-          user_id: upload.projects_new.brand_id,
-          campaign_id: requestData.campaign_id,
-          submission_id: requestData.upload_id,
-          notification_type: 'content_posted',
-          title: 'Content Posted',
-          message: `A creator has posted content for your campaign: ${upload.projects_new.name}. Payment can now be processed.`,
-          is_read: false,
-          created_at: new Date().toISOString()
-        })
-
-      if (brandNotificationError) {
-        console.error('Failed to create brand notification:', brandNotificationError)
-      }
-    }
-
-    // Create notification for admins
-    const { data: admins } = await supabase
-      .from('user_roles')
-      .select('user_id')
-      .eq('role', 'admin')
-
-    if (admins && admins.length > 0) {
-      const adminNotifications = admins.map(admin => ({
-        user_id: admin.user_id,
-        campaign_id: requestData.campaign_id,
-        submission_id: requestData.upload_id,
-        notification_type: 'payment_ready',
-        title: 'Payment Ready',
-        message: `Creator has posted content for campaign: ${upload.projects_new?.name}. Payment is ready to be processed.`,
-        is_read: false,
-        created_at: new Date().toISOString()
-      }))
-
-      const { error: adminNotificationError } = await supabase
-        .from('notification_queue')
-        .insert(adminNotifications)
-
-      if (adminNotificationError) {
-        console.error('Failed to create admin notifications:', adminNotificationError)
-      }
-    }
-
-    // Trigger email notifications via process-notifications function
-    await supabase.functions.invoke('process-notifications', {
-      body: { check_new: true }
-    }).catch(error => {
-      console.error('Failed to trigger notification processing:', error)
-    })
-    
     return new Response(
       JSON.stringify({
         success: true,
         proof_id: proof.id,
-        status: 'pending_verification',
-        message: 'Proof submitted successfully. Your payment will be processed soon.'
+        message: 'Proof submitted successfully. Brand has been notified that your campaign is live!'
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

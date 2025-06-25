@@ -1,34 +1,28 @@
 
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App.tsx';
 import './index.css';
 
-console.log('🏁 OS Platform initializing...');
-
-// Create QueryClient with error handling
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
 const root = createRoot(document.getElementById('root')!);
 
-console.log('🏁 Rendering OS Platform with providers...');
+// Create QueryClient inside the render function to avoid issues
+function AppWithProviders() {
+  // Create a client inside the component to ensure React context is available
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 60000, // 1 minute
+        refetchOnWindowFocus: false,
+      },
+    },
+  });
 
-// Render with all necessary providers
-root.render(
-  <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
+  return (
+    <QueryClientProvider client={queryClient}>
       <App />
-    </BrowserRouter>
-  </QueryClientProvider>
-);
+    </QueryClientProvider>
+  );
+}
 
-console.log('✅ OS Platform rendered successfully');
+root.render(<AppWithProviders />);

@@ -12,15 +12,45 @@ const Dashboard = () => {
   const { profile, isLoading: profileLoading, error: profileError } = useCreatorProfile();
   const { showIntro, isLoading: introLoading, dismissIntro } = useCreatorIntro();
 
+  const isLoading = authLoading || profileLoading || introLoading;
+
   console.log('Creator Dashboard Debug:', {
     user: !!user,
     role,
     profile: !!profile,
+    isLoading,
     authLoading,
     profileLoading,
     introLoading,
     profileError
   });
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="w-8 h-8 border-t-2 border-b-2 border-white rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-white">Loading your dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If user doesn't exist, show loading state
+  if (!user) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="w-8 h-8 border-t-2 border-b-2 border-white rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-white">Authenticating...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Show error state if there's a profile error
   if (profileError) {
@@ -37,7 +67,7 @@ const Dashboard = () => {
   }
 
   // For super admins without creator profiles
-  if (role === 'super_admin' && !profile && !profileLoading) {
+  if (role === 'super_admin' && !profile) {
     return (
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
@@ -56,7 +86,7 @@ const Dashboard = () => {
       <div className="container mx-auto p-6">
         <DashboardContent 
           profile={profile}
-          isLoading={profileLoading}
+          isLoading={false}
           isEditing={false}
           isPreviewMode={role === 'super_admin'}
           totalEarnings={0}
@@ -77,7 +107,7 @@ const Dashboard = () => {
       </div>
 
       {/* Creator Intro Modal - only show for actual creators */}
-      {profile && !introLoading && (
+      {profile && (
         <CreatorIntroModal 
           isOpen={showIntro} 
           onClose={dismissIntro} 

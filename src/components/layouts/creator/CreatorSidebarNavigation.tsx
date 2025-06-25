@@ -7,8 +7,7 @@ import {
   FolderOpen, 
   Heart, 
   BarChart3,
-  Settings,
-  Share2
+  Settings 
 } from 'lucide-react';
 
 interface CreatorSidebarNavigationProps {
@@ -43,12 +42,6 @@ const CreatorSidebarNavigation = ({ isSidebarOpen }: CreatorSidebarNavigationPro
       href: '/creator/analytics', 
       icon: BarChart3,
       description: 'Performance insights'
-    },
-    { 
-      name: 'Social Accounts', 
-      href: '/creator/social-accounts', 
-      icon: Share2,
-      description: 'Connect & view socials'
     },
     { 
       name: 'Profile', 

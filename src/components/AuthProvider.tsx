@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AuthContext, type UserRole } from '@/lib/auth';
+import { getUserRole } from '@/utils/getUserRole';
+import { toast } from 'sonner';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -11,113 +13,97 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [emailConfirmed, setEmailConfirmed] = useState<boolean | null>(null);
 
   useEffect(() => {
-    console.log('🔐 AuthProvider: Starting EMERGENCY non-blocking initialization...');
+    console.log('🔐 Setting up auth state listener...');
     
-    let mounted = true;
-    
-    // EMERGENCY: Force auth to complete after 1 second maximum
-    const emergencyTimeout = setTimeout(() => {
-      if (mounted) {
-        console.log('⚡ EMERGENCY: Auth forced complete after 1s');
-        setIsLoading(false);
-      }
-    }, 1000);
-    
-    // Immediate auth check - don't wait for anything
-    const quickAuthCheck = async () => {
-      try {
-        // Get session with timeout
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Auth timeout')), 500)
-        );
-        
-        const { data: { session: currentSession } } = await Promise.race([
-          sessionPromise,
-          timeoutPromise
-        ]) as any;
-        
-        if (mounted) {
-          console.log('🔍 Quick session check:', !!currentSession);
-          setSession(currentSession);
-          setUser(currentSession?.user ?? null);
-          setEmailConfirmed(currentSession?.user?.email_confirmed_at ? true : null);
-          
-          // Try to get role quickly - but don't block on it
-          if (currentSession?.user) {
-            // Async role fetch - doesn't block UI
-            setTimeout(async () => {
-              try {
-                const { data } = await supabase
-                  .from('user_roles')
-                  .select('role')
-                  .eq('user_id', currentSession.user.id)
-                  .eq('status', 'approved')
-                  .limit(1)
-                  .single();
-                
-                if (mounted && data) {
-                  setRole(data.role as UserRole);
-                }
-              } catch (error) {
-                console.warn('Role fetch failed - continuing without role');
-              }
-            }, 100);
-          }
-          
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.warn('Quick auth check failed:', error);
-        if (mounted) {
-          // Always complete loading, never hang
-          setIsLoading(false);
-        }
-      }
-    };
-
-    // Set up auth state listener - but don't let it block
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!mounted) return;
+      async (event, session) => {
+        console.log('🔐 Auth state change:', event, session?.user?.id);
         
-        console.log('🔐 Auth state change:', event);
         setSession(session);
         setUser(session?.user ?? null);
-        setEmailConfirmed(session?.user?.email_confirmed_at ? true : null);
         
-        if (!session) {
+        // Set email confirmation status
+        if (session?.user) {
+          setEmailConfirmed(!!session.user.email_confirmed_at);
+          
+          // Only fetch role if email is confirmed
+          if (session.user.email_confirmed_at) {
+            console.log('👤 User authenticated, fetching role...');
+            // Defer role fetching to prevent potential auth deadlocks
+            setTimeout(() => {
+              retrieveRole(session.user.id);
+            }, 100);
+          } else {
+            console.log('📧 Email not confirmed yet, skipping role fetch');
+            setRole(null);
+            setIsLoading(false);
+          }
+        } else {
           setRole(null);
+          setEmailConfirmed(null);
+          setIsLoading(false);
         }
       }
     );
 
-    // Start quick auth check
-    quickAuthCheck();
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('🔍 Initial session check:', session?.user?.id);
+      
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        setEmailConfirmed(!!session.user.email_confirmed_at);
+        if (session.user.email_confirmed_at) {
+          retrieveRole(session.user.id);
+        } else {
+          setIsLoading(false);
+        }
+      } else {
+        setIsLoading(false);
+      }
+    });
 
     return () => {
-      mounted = false;
-      clearTimeout(emergencyTimeout);
       subscription.unsubscribe();
     };
   }, []);
 
-  const contextValue = {
-    session,
-    user,
-    role,
-    isLoading,
-    emailConfirmed
+  const retrieveRole = async (userId: string) => {
+    try {
+      setIsLoading(true);
+      console.log('🔍 Fetching role for user:', userId);
+      
+      const resolvedRole = await getUserRole(userId);
+      
+      if (resolvedRole) {
+        console.log('✅ Role resolved successfully:', resolvedRole);
+        setRole(resolvedRole);
+      } else {
+        console.warn('⚠️ No role found for user, this might indicate a setup issue');
+        setRole(null);
+        
+        // Show a helpful message to the user
+        toast.error('Account setup incomplete. Please contact support if this persists.');
+      }
+    } catch (error) {
+      console.error('❌ Failed to fetch user role:', error);
+      
+      // Don't show toast for recursion errors - they're system-level issues
+      if (!error?.message?.includes('infinite recursion')) {
+        toast.error('Failed to fetch user role. Please try refreshing the page.');
+      }
+      
+      setRole(null);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  console.log('🔐 AuthProvider context:', {
-    isLoading: contextValue.isLoading,
-    hasUser: !!contextValue.user,
-    role: contextValue.role
-  });
-
   return (
-    <AuthContext.Provider value={contextValue}>
+    <AuthContext.Provider value={{ session, user, role, isLoading, emailConfirmed }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,118 +1,89 @@
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { IndexNavigation } from "@/components/index/IndexNavigation";
+import { HeroSection } from "@/components/index/HeroSection";
+import { TrustedBySection } from "@/components/index/TrustedBySection";
+import { FeaturesSection } from "@/components/index/FeaturesSection";
+import { WorkflowSection } from "@/components/index/WorkflowSection";
+import { CreatorSelectionSection } from "@/components/index/CreatorSelectionSection";
+import { BenefitsSection } from "@/components/index/BenefitsSection";
+import { HowItWorksSection } from "@/components/index/HowItWorksSection";
+import { StatsSection } from "@/components/index/StatsSection";
+import { FAQSection } from "@/components/index/FAQSection";
+import { CTASection } from "@/components/index/CTASection";
+import { IndexFooter } from "@/components/index/IndexFooter";
 
 const Index = () => {
-  const { user, role } = useUnifiedAuth();
+  const { user, role, isLoading } = useUnifiedAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  console.log('🏠 Index page - User state:', { hasUser: !!user, role });
+  console.log('Index - User:', user?.id);
+  console.log('Index - Role:', role);
+  console.log('Index - Loading:', isLoading);
 
-  // Handle authenticated user redirects
   useEffect(() => {
-    if (user && role) {
-      console.log('🏠 User authenticated, redirecting based on role:', role);
+    if (!isLoading && user && role) {
+      console.log('Index - User logged in with role:', role);
       
+      // Super admins should STAY on index page to choose their dashboard
       if (role === 'super_admin') {
-        return; // Super admins stay on index
+        console.log('Index - Super admin detected, staying on index page for dashboard selection');
+        return;
       }
       
-      // Redirect other roles after a brief delay
-      const redirectTimer = setTimeout(() => {
-        switch (role) {
-          case 'admin':
-            navigate('/admin');
-            break;
-          case 'brand':
-            navigate('/brand');
-            break;
-          case 'creator':
-            navigate('/creator');
-            break;
-          case 'agency':
-            navigate('/agency');
-            break;
-        }
-      }, 1500);
-
-      return () => clearTimeout(redirectTimer);
+      // Redirect based on user role for non-super-admin users
+      switch (role) {
+        case 'admin':
+          console.log('Index - Redirecting admin to /admin');
+          navigate('/admin');
+          break;
+        case 'brand':
+          console.log('Index - Redirecting brand to /brand');
+          navigate('/brand');
+          break;
+        case 'creator':
+          console.log('Index - Redirecting creator to /creator');
+          navigate('/creator');
+          break;
+        case 'agency':
+          console.log('Index - Redirecting agency to /agency');
+          navigate('/agency');
+          break;
+        default:
+          console.log('Index - Unknown role, staying on index');
+          break;
+      }
     }
-  }, [user, role, navigate]);
+  }, [user, role, isLoading, navigate]);
 
-  // Try to render the full index page
-  try {
-    // Lazy load components
-    const { IndexNavigation } = require("@/components/index/IndexNavigation");
-    const { HeroSection } = require("@/components/index/HeroSection");
-    const { TrustedBySection } = require("@/components/index/TrustedBySection");
-    const { FeaturesSection } = require("@/components/index/FeaturesSection");
-    const { WorkflowSection } = require("@/components/index/WorkflowSection");
-    const { CreatorSelectionSection } = require("@/components/index/CreatorSelectionSection");
-    const { BenefitsSection } = require("@/components/index/BenefitsSection");
-    const { HowItWorksSection } = require("@/components/index/HowItWorksSection");
-    const { StatsSection } = require("@/components/index/StatsSection");
-    const { CTASection } = require("@/components/index/CTASection");
-    const { FAQSection } = require("@/components/index/FAQSection");
-    const { IndexFooter } = require("@/components/index/IndexFooter");
-
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-background text-foreground">
-        <IndexNavigation user={user} />
-        <HeroSection user={user} />
-        <TrustedBySection />
-        {!isMobile && <FeaturesSection />}
-        <WorkflowSection />
-        <CreatorSelectionSection />
-        <BenefitsSection />
-        {!isMobile && <HowItWorksSection />}
-        <StatsSection />
-        <CTASection user={user} />
-        {!isMobile && <FAQSection />}
-        <IndexFooter />
-      </div>
-    );
-  } catch (error) {
-    console.error('Failed to load full Index page:', error);
-    
-    // Minimal fallback
-    return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6">
-        <div className="text-center max-w-4xl">
-          <div className="mb-8">
-            <img 
-              src="/lovable-uploads/21ae8cf5-2c99-4851-89c8-71f69414fc49.png" 
-              alt="OS Logo" 
-              className="h-32 w-auto mx-auto"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          </div>
-          
-          <h1 className="text-6xl md:text-8xl font-light mb-8 tracking-tight">
-            Creator partnerships,<br />
-            <span className="text-gray-400">the efficient way</span>
-          </h1>
-          
-          <p className="text-xl md:text-2xl text-gray-400 mb-12 leading-relaxed">
-            The fastest way to close creator deals, without cutting any corners.
-          </p>
-          
-          {!user && (
-            <button
-              onClick={() => navigate('/auth')}
-              className="px-6 py-3 border border-white text-white bg-transparent hover:bg-white hover:text-black transition-colors rounded"
-            >
-              Get Started
-            </button>
-          )}
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <IndexNavigation user={user} />
+      <HeroSection user={user} />
+      <TrustedBySection />
+      {!isMobile && <FeaturesSection />}
+      <WorkflowSection />
+      <CreatorSelectionSection />
+      <BenefitsSection />
+      {!isMobile && <HowItWorksSection />}
+      <StatsSection />
+      <CTASection user={user} />
+      {!isMobile && <FAQSection />}
+      <IndexFooter />
+    </div>
+  );
 };
 
 export default Index;

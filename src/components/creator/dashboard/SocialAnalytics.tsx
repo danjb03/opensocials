@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { SafeSocialMediaConnection } from '@/components/creator/SafeSocialMediaConnection';
+import { SocialMediaConnection } from '@/components/creator/SocialMediaConnection';
 import AnalyticsModule from '@/components/creator/AnalyticsModule';
 import { useInsightIQData } from '@/hooks/useInsightIQData';
 import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
@@ -110,7 +110,7 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
     <div className="space-y-6">
       {/* Show connection interface if no data */}
       {(!analyticsData || analyticsData.length === 0) && (
-        <SafeSocialMediaConnection onConnectionSuccess={handleConnectionSuccess} />
+        <SocialMediaConnection onConnectionSuccess={handleConnectionSuccess} />
       )}
       
       {/* Debug info */}

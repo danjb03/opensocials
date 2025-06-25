@@ -1,12 +1,13 @@
 
-import React, { Suspense } from 'react';
+import React from 'react';
 import ProfileEditForm from '@/components/creator/ProfileEditForm';
 import EmptyProfileState from '@/components/creator/EmptyProfileState';
 import DashboardStats from './DashboardStats';
+import EarningsChart from './EarningsChart';
 import WelcomeSection from './WelcomeSection';
+import UpdatesSection from './UpdatesSection';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { CreatorProfile } from '@/hooks/useCreatorProfile';
-import { LazyEarningsChart, LazyUpdatesSection } from './LazyComponents';
 
 interface DashboardContentProps {
   profile: CreatorProfile | null;
@@ -36,13 +37,7 @@ interface DashboardContentProps {
   onConnectPlatform: (platform: string) => void;
 }
 
-const LoadingFallback = () => (
-  <div className="animate-pulse">
-    <div className="h-32 bg-muted rounded-lg mb-4"></div>
-  </div>
-);
-
-const DashboardContent: React.FC<DashboardContentProps> = React.memo(({
+const DashboardContent: React.FC<DashboardContentProps> = ({
   profile,
   isLoading,
   isEditing,
@@ -108,20 +103,14 @@ const DashboardContent: React.FC<DashboardContentProps> = React.memo(({
       {/* Two-column layout for updates and charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
-          <Suspense fallback={<LoadingFallback />}>
-            <LazyUpdatesSection />
-          </Suspense>
+          <UpdatesSection />
         </div>
         <div className="lg:col-span-2">
-          <Suspense fallback={<LoadingFallback />}>
-            <LazyEarningsChart earningsData={earningsData} />
-          </Suspense>
+          <EarningsChart earningsData={earningsData} />
         </div>
       </div>
     </div>
   );
-});
-
-DashboardContent.displayName = 'DashboardContent';
+};
 
 export default DashboardContent;
