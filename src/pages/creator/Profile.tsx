@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Edit, Settings, Eye } from 'lucide-react';
 import { useCreatorProfileData } from '@/hooks/useCreatorProfileData';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useCreatorProfile } from '@/hooks/useCreatorProfile';
 import ProfileEditForm from '@/components/creator/ProfileEditForm';
 import SocialAnalytics from '@/components/creator/dashboard/SocialAnalytics';
 import CreatorProfileCard from '@/components/creator/CreatorProfileCard';
@@ -13,11 +14,12 @@ import LoadingSpinner from '@/components/ui/loading-spinner';
 
 const CreatorProfile = () => {
   const { user, creatorProfile } = useUnifiedAuth();
-  const { profile, isLoading } = useCreatorProfileData();
+  const { profile: profileData, isLoading: profileDataLoading } = useCreatorProfileData();
+  const { profile: hookProfile } = useCreatorProfile();
   const [activeTab, setActiveTab] = useState('overview');
   const [isEditing, setIsEditing] = useState(false);
 
-  if (isLoading) {
+  if (profileDataLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <LoadingSpinner />
@@ -41,21 +43,21 @@ const CreatorProfile = () => {
     setActiveTab('overview');
   };
 
-  // Transform creator profile for the card using the unified auth data and profile data
+  // Transform creator profile for the card using the unified auth data
   const creatorForCard = {
     id: user?.id || '',
-    firstName: creatorProfile?.first_name || profile?.firstName || '',
-    lastName: creatorProfile?.last_name || profile?.lastName || '',
+    firstName: creatorProfile?.first_name || '',
+    lastName: creatorProfile?.last_name || '',
     username: creatorProfile?.username || '',
-    bio: creatorProfile?.bio || profile?.bio || '',
-    avatarUrl: creatorProfile?.avatar_url || profile?.avatarUrl || '',
-    primaryPlatform: creatorProfile?.primary_platform || profile?.primaryPlatform || '',
-    platforms: creatorProfile?.platforms || profile?.platforms || [],
-    industries: creatorProfile?.industries || profile?.industries || [],
-    audienceLocation: creatorProfile?.audience_location || profile?.audienceLocation,
-    followerCount: creatorProfile?.follower_count || parseInt(profile?.followerCount || '0') || 0,
-    engagementRate: creatorProfile?.engagement_rate || parseFloat(profile?.engagementRate || '0') || 0,
-    creatorType: creatorProfile?.creator_type || profile?.creatorType || '',
+    bio: creatorProfile?.bio || '',
+    avatarUrl: creatorProfile?.avatar_url || '',
+    primaryPlatform: creatorProfile?.primary_platform || '',
+    platforms: creatorProfile?.platforms || [],
+    industries: creatorProfile?.industries || [],
+    audienceLocation: creatorProfile?.audience_location,
+    followerCount: creatorProfile?.follower_count || 0,
+    engagementRate: creatorProfile?.engagement_rate || 0,
+    creatorType: creatorProfile?.creator_type || '',
   };
 
   return (
@@ -193,7 +195,7 @@ const CreatorProfile = () => {
               tiktok: { followers: '0', engagement: '0%', growth: '0%' },
               youtube: { followers: '0', engagement: '0%', growth: '0%' }
             }}
-            visibilitySettings={profile?.visibilitySettings || {
+            visibilitySettings={hookProfile?.visibilitySettings || {
               showInstagram: true,
               showTiktok: true,
               showYoutube: true,
@@ -207,9 +209,9 @@ const CreatorProfile = () => {
         </TabsContent>
 
         <TabsContent value="edit" className="space-y-6">
-          {profile && (
+          {profileData && (
             <ProfileEditForm
-              profile={profile}
+              profile={profileData}
               isLoading={false}
               onSubmit={handleSaveProfile}
               onCancel={handleCancelEdit}
