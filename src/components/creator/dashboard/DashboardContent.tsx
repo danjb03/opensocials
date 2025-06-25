@@ -37,40 +37,6 @@ interface DashboardContentProps {
   onConnectPlatform: (platform: string) => void;
 }
 
-// Safe Analytics Component with Error Boundary
-const SafeAnalyticsSection: React.FC<{ profile: CreatorProfile | null }> = ({ profile }) => {
-  if (!profile) {
-    return (
-      <div className="bg-card rounded-lg p-6 border border-border">
-        <h3 className="text-lg font-semibold text-foreground mb-2">Social Analytics</h3>
-        <p className="text-muted-foreground">Connect your social profiles to display analytics</p>
-      </div>
-    );
-  }
-
-  return (
-    <ErrorBoundary
-      fallback={({ resetErrorBoundary }) => (
-        <div className="bg-card rounded-lg p-6 border border-border">
-          <h3 className="text-lg font-semibold text-foreground mb-2">Social Analytics</h3>
-          <p className="text-muted-foreground mb-4">Analytics temporarily unavailable</p>
-          <button 
-            onClick={resetErrorBoundary}
-            className="text-sm text-primary hover:underline"
-          >
-            Try again
-          </button>
-        </div>
-      )}
-    >
-      <div className="bg-card rounded-lg p-6 border border-border">
-        <h3 className="text-lg font-semibold text-foreground mb-2">Social Analytics</h3>
-        <p className="text-muted-foreground">Analytics data will be displayed here once available</p>
-      </div>
-    </ErrorBoundary>
-  );
-};
-
 const DashboardContent: React.FC<DashboardContentProps> = ({
   profile,
   isLoading,
@@ -126,9 +92,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     <div className="space-y-6">
       {/* Welcome Message */}
       <WelcomeSection firstName={profile?.firstName} />
-      
-      {/* Social Media Analytics - Wrapped in Error Boundary */}
-      <SafeAnalyticsSection profile={profile} />
       
       {/* Stats Overview */}
       <DashboardStats 
