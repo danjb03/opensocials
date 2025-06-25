@@ -24,7 +24,7 @@ export const useCreatorUpdates = () => {
 
       const updates: CreatorUpdate[] = [];
 
-      // Get recent project invitations
+      // Get recent project invitations with project details
       const { data: invitations } = await supabase
         .from('project_creators')
         .select(`
@@ -32,35 +32,63 @@ export const useCreatorUpdates = () => {
           status,
           invitation_date,
           response_date,
-          projects_new!inner(name, id)
+          project_id
         `)
         .eq('creator_id', user.id)
         .order('invitation_date', { ascending: false })
         .limit(3);
 
       if (invitations) {
+        // Get project details separately
+        const projectIds = invitations.map(inv => inv.project_id).filter(Boolean);
+        
+        let projectsData: any[] = [];
+        if (projectIds.length > 0) {
+          // Try projects_new first, then fallback to projects
+          const { data: newProjects } = await supabase
+            .from('projects_new')
+            .select('id, name')
+            .in('id', projectIds);
+          
+          if (newProjects && newProjects.length > 0) {
+            projectsData = newProjects;
+          } else {
+            const { data: oldProjects } = await supabase
+              .from('projects')
+              .select('id, name')
+              .in('id', projectIds);
+            
+            if (oldProjects) {
+              projectsData = oldProjects;
+            }
+          }
+        }
+
         invitations.forEach((invitation) => {
+          const project = projectsData.find(p => p.id === invitation.project_id);
+          const projectName = project?.name || 'Unknown Project';
+
           if (invitation.status === 'invited') {
             updates.push({
               id: `invitation-${invitation.id}`,
               type: 'invitation',
               title: 'New campaign invitation',
-              description: `You've been invited to "${invitation.projects_new?.name}" campaign.`,
+              description: `You've been invited to "${projectName}" campaign.`,
               time: new Date(invitation.invitation_date).toLocaleDateString(),
               badge: 'Invitation',
-              project_name: invitation.projects_new?.name,
-              project_id: invitation.projects_new?.id
+              project_name: projectName,
+              project_id: invitation.project_id
             });
           } else if (invitation.status === 'accepted' && invitation.response_date) {
             updates.push({
               id: `accepted-${invitation.id}`,
               type: 'approval',
               title: 'Campaign accepted',
-              description: `You accepted the "${invitation.projects_new?.name}" campaign invitation.`,
+              description: `You accepted the "${projectName}" campaign invitation.`,
               time: new Date(invitation.response_date).toLocaleDateString(),
               badge: 'Accepted',
-              project_name: invitation.projects_new?.name,
-              project_id: invitation.projects_new?.id
+              project_name: projectName,
+              project_id: invitation.project_id
             });
           }
         });
