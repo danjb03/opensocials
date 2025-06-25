@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, CheckCircle, AlertCircle, Instagram, Youtube, Twitter, Linkedin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
 import { toast } from 'sonner';
 
 const PLATFORM_OPTIONS = [
@@ -18,7 +18,7 @@ const PLATFORM_OPTIONS = [
 ];
 
 export const SocialMediaConnectionPanel: React.FC = () => {
-  const { user } = useAuth();
+  const { user } = useUnifiedAuth();
   const [selectedPlatform, setSelectedPlatform] = useState<string>('');
   const [handle, setHandle] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -67,19 +67,26 @@ export const SocialMediaConnectionPanel: React.FC = () => {
         throw new Error(error.message || 'Failed to connect social account');
       }
 
-      if (!data?.success) {
+      // Handle both new connections and already connected accounts as success
+      if (data?.success) {
+        console.log('✅ Social account connected successfully:', data);
+        
+        setConnectionStatus('success');
+        
+        // Show appropriate success message based on whether it was already connected
+        if (data.message && data.message.includes('already connected')) {
+          toast.success(`${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)} account is already connected!`);
+        } else {
+          toast.success(`${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)} account connected successfully!`);
+        }
+        
+        // Reset form
+        setSelectedPlatform('');
+        setHandle('');
+      } else {
         console.error('❌ Edge function returned failure:', data);
         throw new Error(data?.error || 'Failed to connect social account');
       }
-
-      console.log('✅ Social account connected successfully:', data);
-      
-      setConnectionStatus('success');
-      toast.success(`${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)} account connected successfully!`);
-      
-      // Reset form
-      setSelectedPlatform('');
-      setHandle('');
 
     } catch (err) {
       console.error('💥 Connection error:', err);
