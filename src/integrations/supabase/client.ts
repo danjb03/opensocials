@@ -6,17 +6,6 @@ import type { Database } from './types'
 const supabaseUrl = 'https://pcnrnciwgdrukzciwexi.supabase.co'
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjbnJuY2l3Z2RydWt6Y2l3ZXhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU3NDAyMDEsImV4cCI6MjA2MTMxNjIwMX0.3IcY8LAe71hLlYQ7ZzkABWEQUiqiv98Tu-IiCbxGPr4'
 
-// Enhanced validation with detailed error messages
-if (!supabaseUrl || supabaseUrl === 'undefined') {
-  console.error('🚨 Supabase URL is missing or invalid:', supabaseUrl);
-  throw new Error('Supabase URL is required and cannot be undefined.');
-}
-
-if (!supabaseAnonKey || supabaseAnonKey === 'undefined') {
-  console.error('🚨 Supabase Anon Key is missing or invalid:', supabaseAnonKey);
-  throw new Error('Supabase Anon Key is required and cannot be undefined.');
-}
-
 console.log('🔧 Supabase client initializing with URL:', supabaseUrl);
 
 // Create client with enhanced error handling
@@ -39,10 +28,10 @@ try {
           'x-client-info': 'os-platform@1.0.0',
         },
         // Set aggressive timeout for all requests with better error handling
-        fetch: (url: RequestInfo | URL, init?: RequestInit) => {
+        fetch: (url: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
           if (typeof window === 'undefined') {
             // During build time, return a promise that never resolves
-            return new Promise(() => {});
+            return new Promise(() => {}) as Promise<Response>;
           }
           
           const controller = new AbortController();
