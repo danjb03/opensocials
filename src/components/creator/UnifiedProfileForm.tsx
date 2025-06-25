@@ -7,26 +7,37 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
 interface UnifiedProfileFormProps {
-  onSubmit: (data: any) => void;
+  onSubmit?: (data: any) => void;
   isLoading?: boolean;
+  isNewUser?: boolean;
+  initialData?: any;
+  onProfileComplete?: () => void;
 }
 
 export const UnifiedProfileForm: React.FC<UnifiedProfileFormProps> = ({ 
   onSubmit, 
-  isLoading = false 
+  isLoading = false,
+  isNewUser = false,
+  initialData = null,
+  onProfileComplete
 }) => {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    bio: '',
-    contentTypes: [] as string[],
-    platforms: [] as string[],
-    industries: [] as string[]
+    firstName: initialData?.firstName || '',
+    lastName: initialData?.lastName || '',
+    bio: initialData?.bio || '',
+    contentTypes: initialData?.contentTypes || [],
+    platforms: initialData?.platforms || [],
+    industries: initialData?.industries || []
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    if (onSubmit) {
+      onSubmit(formData);
+    }
+    if (onProfileComplete) {
+      onProfileComplete();
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -39,7 +50,9 @@ export const UnifiedProfileForm: React.FC<UnifiedProfileFormProps> = ({
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle className="text-white">Complete Your Profile</CardTitle>
+        <CardTitle className="text-white">
+          {isNewUser ? 'Complete Your Profile' : 'Edit Profile'}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">

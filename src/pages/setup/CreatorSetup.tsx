@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -14,9 +15,19 @@ const CreatorSetup = () => {
     return null; // Render nothing while redirecting
   }
 
+  const handleProfileSubmit = async (data: any) => {
+    // Handle profile submission logic here
+    console.log('Profile submitted:', data);
+    // For now, just navigate to dashboard
+    navigate('/creator/dashboard');
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
-      <UnifiedProfileForm isNewUser={true} />
+      <UnifiedProfileForm 
+        isNewUser={true} 
+        onSubmit={handleProfileSubmit}
+      />
     </div>
   );
 };
