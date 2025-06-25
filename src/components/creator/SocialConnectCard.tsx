@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import LoadingSpinner from "@/components/ui/loading-spinner";
 import { createClient } from "@supabase/supabase-js";
 
 // Platform configuration
