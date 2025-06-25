@@ -14,15 +14,26 @@ serve(async (req) => {
   }
 
   try {
+    console.log('🚀 connect-social-account function started');
+    
     // Initialize Supabase client
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('❌ Missing Supabase environment variables');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Server configuration error' }),
+        { headers: corsHeaders, status: 500 }
+      );
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get the authorization token
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
+      console.error('❌ No authorization header provided');
       return new Response(
         JSON.stringify({ success: false, error: 'Authorization required' }),
         { headers: corsHeaders, status: 401 }
@@ -34,26 +45,41 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     
     if (userError || !user) {
+      console.error('❌ Invalid user token:', userError);
       return new Response(
         JSON.stringify({ success: false, error: 'Invalid user token' }),
         { headers: corsHeaders, status: 401 }
       );
     }
 
-    // Parse request body
-    const { platform, handle, creator_id } = await req.json();
+    console.log('👤 User verified:', user.id);
+
+    // Parse request body with error handling
+    let requestBody;
+    try {
+      requestBody = await req.json();
+    } catch (parseError) {
+      console.error('❌ Failed to parse request body:', parseError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid request format' }),
+        { headers: corsHeaders, status: 400 }
+      );
+    }
+
+    const { platform, handle, creator_id } = requestBody;
 
     if (!platform || !handle) {
+      console.error('❌ Missing required fields:', { platform, handle });
       return new Response(
         JSON.stringify({ success: false, error: 'Platform and handle are required' }),
         { headers: corsHeaders, status: 400 }
       );
     }
 
-    console.log(`Connecting ${platform} account for user ${user.id} with handle: ${handle}`);
+    console.log(`🔗 Connecting ${platform} account for user ${user.id} with handle: ${handle}`);
 
     // Check if account already exists
-    const { data: existingAccount } = await supabase
+    const { data: existingAccount, error: queryError } = await supabase
       .from('creators_social_accounts')
       .select('id, status')
       .eq('creator_id', user.id)
@@ -61,8 +87,16 @@ serve(async (req) => {
       .eq('handle', handle.toLowerCase())
       .maybeSingle();
 
+    if (queryError) {
+      console.error('❌ Database query error:', queryError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Database error occurred' }),
+        { headers: corsHeaders, status: 500 }
+      );
+    }
+
     if (existingAccount) {
-      console.log('Account already exists:', existingAccount);
+      console.log('✅ Account already exists:', existingAccount);
       return new Response(
         JSON.stringify({ 
           success: true, 
@@ -85,6 +119,7 @@ serve(async (req) => {
 
     const actorId = platformActors[platform.toLowerCase()];
     if (!actorId) {
+      console.error('❌ Unsupported platform:', platform);
       return new Response(
         JSON.stringify({ success: false, error: `Platform ${platform} is not currently supported` }),
         { headers: corsHeaders, status: 400 }
@@ -100,7 +135,7 @@ serve(async (req) => {
         handle: handle.toLowerCase(),
         actor_id: actorId,
         status: 'ready',
-        next_run: new Date().toISOString(), // Schedule immediate run
+        next_run: new Date().toISOString(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
@@ -108,14 +143,14 @@ serve(async (req) => {
       .single();
 
     if (insertError) {
-      console.error('Database insert error:', insertError);
+      console.error('❌ Database insert error:', insertError);
       return new Response(
         JSON.stringify({ success: false, error: 'Failed to save social account connection' }),
         { headers: corsHeaders, status: 500 }
       );
     }
 
-    console.log('Social account created successfully:', newAccount);
+    console.log('✅ Social account created successfully:', newAccount);
 
     // Trigger the Apify scraping job immediately
     const apifyToken = Deno.env.get("APIFY_TOKEN");
@@ -123,14 +158,13 @@ serve(async (req) => {
     
     if (apifyToken) {
       try {
-        console.log(`Triggering Apify actor ${actorId} for ${handle} on ${platform}`);
+        console.log(`🤖 Triggering Apify actor ${actorId} for ${handle} on ${platform}`);
         
         const apifyResponse = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs?token=${apifyToken}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
             username: handle,
-            // Platform-specific parameters
             ...(platform === "instagram" && { scrapeComments: false, scrapeStories: false }),
             ...(platform === "tiktok" && { maxPostCount: 20 }),
             ...(platform === "youtube" && { maxVideos: 30 }),
@@ -141,7 +175,7 @@ serve(async (req) => {
         if (apifyResponse.ok) {
           const apifyResult = await apifyResponse.json();
           apifyJobId = apifyResult.data.id;
-          console.log('Apify job started:', apifyJobId);
+          console.log('✅ Apify job started:', apifyJobId);
           
           // Update the account status to running
           await supabase
@@ -154,13 +188,13 @@ serve(async (req) => {
 
         } else {
           const errorText = await apifyResponse.text();
-          console.error('Failed to trigger Apify actor:', errorText);
+          console.error('❌ Failed to trigger Apify actor:', errorText);
         }
       } catch (apifyError) {
-        console.error('Error triggering Apify job:', apifyError);
+        console.error('❌ Error triggering Apify job:', apifyError);
       }
     } else {
-      console.warn('APIFY_TOKEN not configured, analytics collection will be delayed');
+      console.warn('⚠️ APIFY_TOKEN not configured, analytics collection will be delayed');
     }
 
     return new Response(
@@ -177,11 +211,11 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in connect-social-account:', error);
+    console.error('💥 Unexpected error in connect-social-account:', error);
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message || 'An unexpected error occurred while connecting your account'
+        error: error.message || 'An unexpected server error occurred'
       }),
       { headers: corsHeaders, status: 500 }
     );

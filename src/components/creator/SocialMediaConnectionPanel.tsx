@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, CheckCircle, AlertCircle, Instagram, Youtube, Twitter, Linkedin, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { toast } from 'sonner';
 
 const PLATFORM_OPTIONS = [
@@ -57,8 +57,8 @@ export const SocialMediaConnectionPanel: React.FC = () => {
 
       console.log('🔐 Session token obtained, calling edge function...');
 
-      // Call the connect-social-account edge function
-      const { data, error } = await supabase.functions.invoke('connect-social-account', {
+      // Call the connect-social-account edge function with better error handling
+      const response = await supabase.functions.invoke('connect-social-account', {
         body: {
           platform: selectedPlatform,
           handle: handle.trim(),
@@ -66,15 +66,23 @@ export const SocialMediaConnectionPanel: React.FC = () => {
         }
       });
 
-      console.log('📡 Edge function response:', { data, error });
+      console.log('📡 Edge function response:', response);
 
-      if (error) {
-        console.error('❌ Edge function error:', error);
-        throw new Error(error.message || 'Failed to connect social account');
+      // Check for function invocation errors first
+      if (response.error) {
+        console.error('❌ Function invocation error:', response.error);
+        throw new Error(`Function error: ${response.error.message || 'Unknown function error'}`);
+      }
+
+      // Check the response data
+      const { data } = response;
+      
+      if (!data) {
+        throw new Error('No response data received from the function');
       }
 
       // Handle successful responses (both new and existing connections)
-      if (data?.success) {
+      if (data.success) {
         console.log('✅ Social account operation successful:', data);
         
         const isExisting = data.isExisting || (data.message && data.message.includes('already connected'));
@@ -108,7 +116,9 @@ export const SocialMediaConnectionPanel: React.FC = () => {
       setConnectionStatus('error');
       
       // Provide more helpful error messages
-      if (errorMsg.includes('Authorization required')) {
+      if (errorMsg.includes('Failed to send a request')) {
+        toast.error('Network error - please check your connection and try again');
+      } else if (errorMsg.includes('Authorization required')) {
         toast.error('Session expired - please refresh the page and try again');
       } else if (errorMsg.includes('not currently supported')) {
         toast.error(`${selectedPlatform} connections are not available yet`);
