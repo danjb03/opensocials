@@ -1,57 +1,31 @@
 
 import React, { useState, useEffect } from "react";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "sonner";
-import { BrowserRouter } from "react-router-dom";
-import { AuthProvider } from "./components/AuthProvider";
-import AppRoutes from "./routes";
-import ErrorBoundary from "./components/ErrorBoundary";
-import { ProgressiveLoader } from "./components/ProgressiveLoader";
+import { MinimalApp } from "./components/MinimalApp";
 
+// EMERGENCY MODE: Ultra-simple app that will always render
 function App() {
-  const [emergencyRender, setEmergencyRender] = useState(false);
+  const [showMinimal, setShowMinimal] = useState(true);
+  const [debugMode, setDebugMode] = useState(true);
   
-  console.log('🚀 App component rendering...');
+  console.log('🚀 App component rendering in EMERGENCY MODE...');
 
-  // EMERGENCY: Always render app within 500ms
-  useEffect(() => {
-    const emergencyTimer = setTimeout(() => {
-      console.log('⚡ EMERGENCY: App forced to render after 500ms');
-      setEmergencyRender(true);
-    }, 500);
-    
-    return () => clearTimeout(emergencyTimer);
-  }, []);
+  // For now, let's just render the minimal app to confirm React works
+  if (showMinimal) {
+    return <MinimalApp />;
+  }
 
-  // Add error handling for any initialization issues
-  useEffect(() => {
-    const handleError = (event: ErrorEvent) => {
-      console.error('🚨 Global error caught:', event.error);
-      // Force render on any critical errors
-      setEmergencyRender(true);
-    };
-
-    window.addEventListener('error', handleError);
-    return () => window.removeEventListener('error', handleError);
-  }, []);
-
+  // This won't run initially - we're in emergency mode
   return (
-    <ErrorBoundary>
-      <ProgressiveLoader timeout={2000}>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <ErrorBoundary>
-                <AppRoutes />
-              </ErrorBoundary>
-            </BrowserRouter>
-          </TooltipProvider>
-        </AuthProvider>
-      </ProgressiveLoader>
-    </ErrorBoundary>
+    <div style={{ 
+      minHeight: '100vh', 
+      backgroundColor: '#000', 
+      color: '#fff',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}>
+      <p>Loading...</p>
+    </div>
   );
 }
 

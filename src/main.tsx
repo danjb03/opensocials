@@ -1,28 +1,15 @@
 
 import { createRoot } from 'react-dom/client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App.tsx';
 import './index.css';
 
+console.log('🏁 Main.tsx executing...');
+
 const root = createRoot(document.getElementById('root')!);
 
-// Create QueryClient inside the render function to avoid issues
-function AppWithProviders() {
-  // Create a client inside the component to ensure React context is available
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 60000, // 1 minute
-        refetchOnWindowFocus: false,
-      },
-    },
-  });
+console.log('🏁 Root created, rendering App...');
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  );
-}
+// Ultra-simple render without any providers for now
+root.render(<App />);
 
-root.render(<AppWithProviders />);
+console.log('✅ App rendered successfully');
