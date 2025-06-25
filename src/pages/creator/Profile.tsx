@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { useCreatorProfile } from '@/hooks/useCreatorProfile';
-import ProfileEditForm from '@/components/creator/ProfileEditForm';
+import { UnifiedProfileForm } from '@/components/creator/UnifiedProfileForm';
 import { Button } from '@/components/ui/button';
 import { Edit2 } from 'lucide-react';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -55,11 +55,11 @@ const CreatorProfile = () => {
     return (
       <ErrorBoundary>
         <div className="container mx-auto p-6 bg-background">
-          <ProfileEditForm
-            profile={profile}
-            isLoading={false}
-            onSubmit={handleProfileSubmit}
-            onCancel={() => setIsEditing(false)}
+          {/* UnifiedProfileForm is reused for both onboarding and editing */}
+          <UnifiedProfileForm
+            isNewUser={false}
+            initialData={profile}
+            onProfileComplete={() => setIsEditing(false)}
           />
         </div>
       </ErrorBoundary>
