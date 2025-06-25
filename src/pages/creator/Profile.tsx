@@ -40,6 +40,7 @@ const CreatorProfile = () => {
   };
 
   // Transform creator profile for the card using the unified auth data
+  // Access the actual database fields (snake_case) from useUnifiedAuth
   const creatorForCard = {
     id: user?.id || '',
     firstName: creatorProfile?.first_name || '',
@@ -51,20 +52,20 @@ const CreatorProfile = () => {
     platforms: creatorProfile?.platforms || [],
     industries: creatorProfile?.industries || [],
     audienceLocation: creatorProfile?.audience_location,
-    // Use the correct camelCase property names that should exist on the CreatorProfile interface
-    followerCount: creatorProfile?.followerCount || 0,
-    engagementRate: creatorProfile?.engagementRate || 0,
-    creatorType: creatorProfile?.creatorType || '',
+    // Access the actual database fields (snake_case) returned by useUnifiedAuth
+    followerCount: creatorProfile?.follower_count || 0,
+    engagementRate: creatorProfile?.engagement_rate || 0,
+    creatorType: creatorProfile?.creator_type || '',
   };
 
   // Create a safe profile data object that matches what the edit form expects
   const safeProfileData = profileData ? {
     ...profileData,
     platforms: profileData.platforms || [],
-    // Convert numeric values to strings for display in forms - use the correct camelCase properties
-    followerCount: profileData.followerCount || '0',
-    engagementRate: profileData.engagementRate || '0%',
-    creatorType: profileData.creatorType || '',
+    // Convert numeric values to strings for display in forms - use the correct database fields
+    followerCount: profileData.follower_count?.toString() || '0',
+    engagementRate: profileData.engagement_rate?.toString() || '0%',
+    creatorType: profileData.creator_type || '',
     visibilitySettings: profileData.visibilitySettings || {
       showInstagram: true,
       showTiktok: true,
