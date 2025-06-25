@@ -1,30 +1,9 @@
+// This file now only contains types and utilities, no context
+export type UserRole = 'admin' | 'super_admin' | 'brand' | 'creator' | 'agency';
 
-import { createContext, useContext } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { type Session, type User } from '@supabase/supabase-js';
-
-export type UserRole = 'creator' | 'brand' | 'admin' | 'agency' | 'super_admin';
-
-export interface AuthState {
-  session: Session | null;
-  user: User | null;
-  role: UserRole | null;
-  isLoading: boolean;
-  emailConfirmed: boolean | null;
+// Remove the old AuthContext export since we're using UnifiedAuthProvider
+// Keep only the type definitions that other parts of the app might need
+export interface AuthUser {
+  id: string;
+  email: string;
 }
-
-export const AuthContext = createContext<AuthState>({
-  session: null,
-  user: null,
-  role: null,
-  isLoading: true,
-  emailConfirmed: null,
-});
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
