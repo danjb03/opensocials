@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
-// Preload critical routes to eliminate loading delays
+// Simplified route preloader to prevent infinite loops
 const routePreloadMap = {
   '/creator': () => import('@/pages/creator/Dashboard'),
   '/creator/dashboard': () => import('@/pages/creator/Dashboard'),
@@ -16,14 +16,16 @@ export const useRoutePreloader = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Preload commonly accessed routes
-    const currentPath = location.pathname;
-    
-    // Preload routes based on current location
-    if (currentPath.startsWith('/creator')) {
-      // Preload all creator routes immediately
-      Object.values(routePreloadMap).forEach(loader => {
-        setTimeout(() => loader(), 100); // Stagger preloading
+    // Simple preloading without aggressive optimization that caused loops
+    if (location.pathname.startsWith('/creator')) {
+      // Preload only the most commonly accessed routes
+      const commonRoutes = ['/creator/dashboard', '/creator/campaigns'];
+      commonRoutes.forEach(route => {
+        if (routePreloadMap[route as keyof typeof routePreloadMap]) {
+          setTimeout(() => {
+            routePreloadMap[route as keyof typeof routePreloadMap]();
+          }, 500); // Delayed preloading to prevent issues
+        }
       });
     }
   }, [location.pathname]);

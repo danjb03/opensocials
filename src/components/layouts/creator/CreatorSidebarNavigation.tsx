@@ -5,13 +5,16 @@ import {
   LayoutDashboard, 
   BarChart3, 
   Briefcase, 
-  Camera, 
   User,
   DollarSign
 } from 'lucide-react';
 import { useRoutePreloader } from '@/hooks/useRoutePreloader';
 
-const CreatorSidebarNavigation = () => {
+interface CreatorSidebarNavigationProps {
+  isSidebarOpen?: boolean;
+}
+
+const CreatorSidebarNavigation: React.FC<CreatorSidebarNavigationProps> = ({ isSidebarOpen = true }) => {
   const location = useLocation();
   const { preloadRoute } = useRoutePreloader();
 
@@ -65,7 +68,7 @@ const CreatorSidebarNavigation = () => {
           <Link
             key={item.name}
             to={item.href}
-            onMouseEnter={() => preloadRoute(item.preloadKey)} // Preload on hover
+            onMouseEnter={() => preloadRoute(item.preloadKey)}
             className={`
               group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
               ${active 
@@ -75,9 +78,9 @@ const CreatorSidebarNavigation = () => {
             `}
           >
             <Icon 
-              className={`mr-3 h-5 w-5 ${active ? 'text-black' : 'text-gray-400 group-hover:text-white'}`} 
+              className={`${isSidebarOpen ? 'mr-3' : ''} h-5 w-5 ${active ? 'text-black' : 'text-gray-400 group-hover:text-white'}`} 
             />
-            {item.name}
+            {isSidebarOpen && item.name}
           </Link>
         );
       })}

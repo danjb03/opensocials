@@ -2,24 +2,20 @@
 import React from 'react';
 import DashboardContent from '@/components/creator/dashboard/DashboardContent';
 import { CreatorIntroModal } from '@/components/creator/CreatorIntroModal';
-import { useInstantAuth } from '@/hooks/useInstantAuth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { useCreatorProfile } from '@/hooks/useCreatorProfile';
 import { useCreatorIntro } from '@/hooks/creator/useCreatorIntro';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 const Dashboard = () => {
-  const { user, role, isLoading: authLoading } = useInstantAuth();
+  const { user, role, isLoading: authLoading } = useUnifiedAuth();
   const { profile, isLoading: profileLoading, error: profileError } = useCreatorProfile();
   const { showIntro, isLoading: introLoading, dismissIntro } = useCreatorIntro();
-
-  // Only show loading if auth is still initializing
-  const isLoading = authLoading;
 
   console.log('Creator Dashboard Debug:', {
     user: !!user,
     role,
     profile: !!profile,
-    isLoading,
     authLoading,
     profileLoading,
     introLoading,
