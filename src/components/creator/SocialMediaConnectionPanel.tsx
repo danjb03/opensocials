@@ -142,9 +142,9 @@ export const SocialMediaConnectionPanel: React.FC = () => {
         )}
 
         {connectionStatus === 'error' && (
-          <div className="flex items-center gap-2 p-3 bg-destructive/10 text-destructive rounded-lg">
-            <AlertCircle className="h-4 w-4" />
-            <span className="text-sm">{errorMessage}</span>
+          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <AlertCircle className="h-4 w-4 text-red-800" />
+            <span className="text-sm text-red-800 font-medium">{errorMessage}</span>
           </div>
         )}
 
