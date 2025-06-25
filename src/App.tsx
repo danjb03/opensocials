@@ -23,6 +23,18 @@ function App() {
     return () => clearTimeout(emergencyTimer);
   }, []);
 
+  // Add error handling for any initialization issues
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      console.error('🚨 Global error caught:', event.error);
+      // Force render on any critical errors
+      setEmergencyRender(true);
+    };
+
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+
   return (
     <ErrorBoundary>
       <AuthProvider>
