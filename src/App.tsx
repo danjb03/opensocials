@@ -7,6 +7,7 @@ import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./components/AuthProvider";
 import AppRoutes from "./routes";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { AuthDebugger } from "./components/auth/AuthDebugger";
 
 function App() {
   console.log('🚀 App component rendering...');
@@ -20,6 +21,7 @@ function App() {
           <BrowserRouter>
             <ErrorBoundary>
               <AppRoutes />
+              <AuthDebugger />
             </ErrorBoundary>
           </BrowserRouter>
         </TooltipProvider>

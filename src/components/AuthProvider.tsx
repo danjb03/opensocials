@@ -15,6 +15,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     console.log('🔐 AuthProvider: Setting up auth state listener...');
     
     let mounted = true;
+    let initializationTimeout: NodeJS.Timeout;
+    
+    // Force initialization completion after 5 seconds to prevent infinite loading
+    initializationTimeout = setTimeout(() => {
+      if (mounted && isLoading) {
+        console.warn('⚠️ Auth initialization timeout - forcing completion');
+        setIsLoading(false);
+      }
+    }, 5000);
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -78,10 +87,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } else {
         setIsLoading(false);
       }
+    }).catch((error) => {
+      console.error('❌ Error getting initial session:', error);
+      if (mounted) {
+        setIsLoading(false);
+      }
     });
 
     return () => {
       mounted = false;
+      clearTimeout(initializationTimeout);
       console.log('🔐 Cleaning up auth subscription');
       subscription.unsubscribe();
     };

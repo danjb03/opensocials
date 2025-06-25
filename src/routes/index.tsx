@@ -58,45 +58,68 @@ const AppRoutes = () => {
 
   // Add loading timeout to prevent infinite loading
   const [loadingTimeout, setLoadingTimeout] = React.useState(false);
+  const [forceRender, setForceRender] = React.useState(false);
   
   React.useEffect(() => {
     if (isLoading) {
       const timer = setTimeout(() => {
         console.warn('⚠️ Loading timeout reached, forcing render');
         setLoadingTimeout(true);
-      }, 10000); // 10 second timeout
+        setForceRender(true);
+      }, 8000); // 8 second timeout
       
       return () => clearTimeout(timer);
     }
   }, [isLoading]);
 
+  // Force render after timeout even if still loading
+  React.useEffect(() => {
+    if (forceRender) {
+      console.log('🔄 Force rendering due to timeout');
+    }
+  }, [forceRender]);
+
   // Show loading state with timeout
-  if (isLoading && !loadingTimeout) {
+  if (isLoading && !loadingTimeout && !forceRender) {
     console.log('🔄 Still loading authentication state...');
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <LoadingSpinner />
           <p className="mt-4 text-muted-foreground">Loading application...</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            If this takes too long, try refreshing the page
+          </p>
         </div>
       </div>
     );
   }
 
   // If loading timed out, show a fallback
-  if (loadingTimeout && isLoading) {
+  if (loadingTimeout && isLoading && !forceRender) {
     console.warn('⚠️ Loading timed out, showing fallback');
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2 text-white">Taking longer than expected</h2>
           <p className="text-muted-foreground mb-4">Please try refreshing the page</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
-          >
-            Refresh Page
-          </button>
+          <div className="space-x-4">
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
+            >
+              Refresh Page
+            </button>
+            <button 
+              onClick={() => {
+                setForceRender(true);
+                setLoadingTimeout(false);
+              }} 
+              className="px-4 py-2 bg-secondary text-white rounded hover:bg-secondary/90"
+            >
+              Continue Anyway
+            </button>
+          </div>
         </div>
       </div>
     );
