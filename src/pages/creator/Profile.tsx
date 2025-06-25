@@ -56,13 +56,13 @@ const CreatorProfile = () => {
     creatorType: creatorProfile?.creator_type || '',
   };
 
-  // Safe access to profile data with fallbacks
+  // Safe access to profile data with fallbacks using camelCase properties
   const safeProfileData = profileData ? {
     ...profileData,
     platforms: profileData.platforms || [],
-    followerCount: creatorProfile?.follower_count?.toString() || '0',
-    engagementRate: creatorProfile?.engagement_rate?.toString() || '0',
-    creatorType: creatorProfile?.creator_type || '',
+    followerCount: profileData.followerCount || '0',
+    engagementRate: profileData.engagementRate || '0',
+    creatorType: profileData.creatorType || '',
     visibilitySettings: profileData.visibilitySettings || {
       showInstagram: true,
       showTiktok: true,
