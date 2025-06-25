@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState<UserRole | null>(null);
   const [emailConfirmed, setEmailConfirmed] = useState<boolean | null>(null);
+  const [debugInfo, setDebugInfo] = useState<any>({});
 
   useEffect(() => {
     console.log('🔐 Setting up auth state listener...');
@@ -18,17 +19,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔐 Auth state change:', event, session?.user?.id);
+        console.log('🔐 Auth state change:', { event, userId: session?.user?.id, hasSession: !!session });
         
         setSession(session);
         setUser(session?.user ?? null);
         
         // Set email confirmation status
         if (session?.user) {
-          setEmailConfirmed(!!session.user.email_confirmed_at);
+          const confirmed = !!session.user.email_confirmed_at;
+          setEmailConfirmed(confirmed);
+          console.log('📧 Email confirmation status:', confirmed);
           
           // Only fetch role if email is confirmed
-          if (session.user.email_confirmed_at) {
+          if (confirmed) {
             console.log('👤 User authenticated, fetching role...');
             // Defer role fetching to prevent potential auth deadlocks
             setTimeout(() => {
@@ -40,23 +43,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setIsLoading(false);
           }
         } else {
+          console.log('🔐 No user session, clearing state');
           setRole(null);
           setEmailConfirmed(null);
           setIsLoading(false);
         }
+
+        // Update debug info
+        setDebugInfo({
+          event,
+          hasSession: !!session,
+          hasUser: !!session?.user,
+          userId: session?.user?.id,
+          emailConfirmed: !!session?.user?.email_confirmed_at,
+          timestamp: new Date().toISOString()
+        });
       }
     );
 
     // Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('🔍 Initial session check:', session?.user?.id);
+      console.log('🔍 Initial session check:', { hasSession: !!session, userId: session?.user?.id });
       
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        setEmailConfirmed(!!session.user.email_confirmed_at);
-        if (session.user.email_confirmed_at) {
+        const confirmed = !!session.user.email_confirmed_at;
+        setEmailConfirmed(confirmed);
+        if (confirmed) {
           retrieveRole(session.user.id);
         } else {
           setIsLoading(false);
@@ -67,6 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     return () => {
+      console.log('🔐 Cleaning up auth subscription');
       subscription.unsubscribe();
     };
   }, []);
@@ -84,8 +100,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } else {
         console.warn('⚠️ No role found for user, this might indicate a setup issue');
         setRole(null);
-        
-        // Show a helpful message to the user
         toast.error('Account setup incomplete. Please contact support if this persists.');
       }
     } catch (error) {
@@ -98,9 +112,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       setRole(null);
     } finally {
+      console.log('🔄 Setting isLoading to false');
       setIsLoading(false);
     }
   };
+
+  // Log the final provider state
+  useEffect(() => {
+    console.log('🔐 AuthProvider final state:', {
+      isLoading,
+      hasSession: !!session,
+      hasUser: !!user,
+      role,
+      emailConfirmed,
+      debugInfo
+    });
+  }, [isLoading, session, user, role, emailConfirmed, debugInfo]);
 
   return (
     <AuthContext.Provider value={{ session, user, role, isLoading, emailConfirmed }}>

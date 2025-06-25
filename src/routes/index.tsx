@@ -25,7 +25,18 @@ import AgencyRoutes from './AgencyRoutes';
 const AppRoutes = () => {
   const { user, role, brandProfile, creatorProfile, isLoading } = useUnifiedAuth();
 
+  // Debug logging to track the authentication state
+  console.log('🔍 AppRoutes Debug:', {
+    user: user ? { id: user.id, email: user.email } : null,
+    role,
+    brandProfile: brandProfile ? { company_name: brandProfile.company_name } : null,
+    creatorProfile: creatorProfile ? { first_name: creatorProfile.first_name } : null,
+    isLoading,
+    currentPath: window.location.pathname
+  });
+
   if (isLoading) {
+    console.log('🔄 Still loading authentication state...');
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <LoadingSpinner />
@@ -37,7 +48,10 @@ const AppRoutes = () => {
   const needsBrandSetup = role === 'brand' && !brandProfile?.company_name;
   const needsCreatorSetup = role === 'creator' && !creatorProfile?.first_name;
 
+  console.log('🔍 Setup checks:', { needsBrandSetup, needsCreatorSetup });
+
   if (needsBrandSetup) {
+    console.log('🔄 Redirecting to brand setup...');
     return (
       <Routes>
         <Route path="/setup/brand" element={<BrandSetup />} />
@@ -47,6 +61,7 @@ const AppRoutes = () => {
   }
 
   if (needsCreatorSetup) {
+    console.log('🔄 Redirecting to creator setup...');
     return (
       <Routes>
         <Route path="/setup/creator" element={<CreatorSetup />} />
@@ -54,6 +69,8 @@ const AppRoutes = () => {
       </Routes>
     );
   }
+
+  console.log('✅ Rendering main application routes...');
 
   // Main application routes - available to both authenticated and non-authenticated users
   return (
