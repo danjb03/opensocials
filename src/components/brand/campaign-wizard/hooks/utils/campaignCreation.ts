@@ -25,7 +25,7 @@ export const createCampaignFromDraft = async (
     description: formData.description || '',
     objective: formData.objective || '',
     campaign_type: formData.campaign_type || 'Single',
-    platforms: formData.brief_data?.platforms || [],
+    platforms: formData.brief_data?.platform_destination || [],
     budget: formData.total_budget || 0,
     currency: 'USD', // Default currency since it's not in CampaignWizardData
     start_date: formData.timeline?.start_date ? formData.timeline.start_date.toISOString().split('T')[0] : null,
