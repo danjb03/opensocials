@@ -51,10 +51,10 @@ const CreatorProfile = () => {
     platforms: creatorProfile?.platforms || [],
     industries: creatorProfile?.industries || [],
     audienceLocation: creatorProfile?.audience_location,
-    // Use the correct camelCase property names from the CreatorProfile interface
-    followerCount: creatorProfile?.follower_count || 0,
-    engagementRate: creatorProfile?.engagement_rate || 0,
-    creatorType: creatorProfile?.creator_type || '',
+    // Use the correct camelCase property names that should exist on the CreatorProfile interface
+    followerCount: creatorProfile?.followerCount || 0,
+    engagementRate: creatorProfile?.engagementRate || 0,
+    creatorType: creatorProfile?.creatorType || '',
   };
 
   // Create a safe profile data object that matches what the edit form expects
