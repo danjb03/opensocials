@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, CheckCircle, AlertCircle, Instagram, Youtube, Twitter, Linkedin } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, Instagram, Youtube, Twitter, Linkedin, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
 import { toast } from 'sonner';
@@ -22,8 +22,13 @@ export const SocialMediaConnectionPanel: React.FC = () => {
   const [selectedPlatform, setSelectedPlatform] = useState<string>('');
   const [handle, setHandle] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error' | 'existing'>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [successDetails, setSuccessDetails] = useState<{
+    message: string;
+    isExisting: boolean;
+    note?: string;
+  } | null>(null);
 
   const handleConnect = async () => {
     if (!user || !selectedPlatform || !handle.trim()) {
@@ -34,6 +39,7 @@ export const SocialMediaConnectionPanel: React.FC = () => {
     setIsLoading(true);
     setConnectionStatus('idle');
     setErrorMessage('');
+    setSuccessDetails(null);
 
     try {
       console.log('🔗 Starting social account connection:', { 
@@ -67,20 +73,27 @@ export const SocialMediaConnectionPanel: React.FC = () => {
         throw new Error(error.message || 'Failed to connect social account');
       }
 
-      // Handle both new connections and already connected accounts as success
+      // Handle successful responses (both new and existing connections)
       if (data?.success) {
-        console.log('✅ Social account connected successfully:', data);
+        console.log('✅ Social account operation successful:', data);
         
-        setConnectionStatus('success');
+        const isExisting = data.isExisting || (data.message && data.message.includes('already connected'));
         
-        // Show appropriate success message based on whether it was already connected
-        if (data.message && data.message.includes('already connected')) {
+        setConnectionStatus(isExisting ? 'existing' : 'success');
+        setSuccessDetails({
+          message: data.message || `${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)} account connected`,
+          isExisting,
+          note: data.note
+        });
+        
+        // Show appropriate success toast
+        if (isExisting) {
           toast.success(`${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)} account is already connected!`);
         } else {
           toast.success(`${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)} account connected successfully!`);
         }
         
-        // Reset form
+        // Reset form after successful connection
         setSelectedPlatform('');
         setHandle('');
       } else {
@@ -93,7 +106,15 @@ export const SocialMediaConnectionPanel: React.FC = () => {
       const errorMsg = err instanceof Error ? err.message : 'An unexpected error occurred';
       setErrorMessage(errorMsg);
       setConnectionStatus('error');
-      toast.error(`Failed to connect account: ${errorMsg}`);
+      
+      // Provide more helpful error messages
+      if (errorMsg.includes('Authorization required')) {
+        toast.error('Session expired - please refresh the page and try again');
+      } else if (errorMsg.includes('not currently supported')) {
+        toast.error(`${selectedPlatform} connections are not available yet`);
+      } else {
+        toast.error(`Failed to connect account: ${errorMsg}`);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -101,6 +122,42 @@ export const SocialMediaConnectionPanel: React.FC = () => {
 
   const selectedPlatformConfig = PLATFORM_OPTIONS.find(p => p.value === selectedPlatform);
   const Icon = selectedPlatformConfig?.icon;
+
+  const getStatusDisplay = () => {
+    switch (connectionStatus) {
+      case 'success':
+        return (
+          <div className="flex items-center gap-2 p-3 bg-green-900/20 border border-green-800 rounded-lg">
+            <CheckCircle className="h-4 w-4 text-green-400" />
+            <div className="text-sm">
+              <span className="text-green-100 font-medium">{successDetails?.message}</span>
+              {successDetails?.note && (
+                <p className="text-green-200 text-xs mt-1">{successDetails.note}</p>
+              )}
+            </div>
+          </div>
+        );
+      case 'existing':
+        return (
+          <div className="flex items-center gap-2 p-3 bg-blue-900/20 border border-blue-800 rounded-lg">
+            <Info className="h-4 w-4 text-blue-400" />
+            <div className="text-sm">
+              <span className="text-blue-100 font-medium">{successDetails?.message}</span>
+              <p className="text-blue-200 text-xs mt-1">Your analytics are being updated automatically.</p>
+            </div>
+          </div>
+        );
+      case 'error':
+        return (
+          <div className="flex items-center gap-2 p-3 bg-red-900/20 border border-red-800 rounded-lg">
+            <AlertCircle className="h-4 w-4 text-red-400" />
+            <span className="text-sm text-red-100 font-medium">{errorMessage}</span>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <Card>
@@ -157,21 +214,7 @@ export const SocialMediaConnectionPanel: React.FC = () => {
           </div>
         )}
 
-        {connectionStatus === 'error' && (
-          <div className="flex items-center gap-2 p-3 bg-red-900 border border-red-800 rounded-lg">
-            <AlertCircle className="h-4 w-4 text-red-100" />
-            <span className="text-sm text-red-100 font-medium">{errorMessage}</span>
-          </div>
-        )}
-
-        {connectionStatus === 'success' && (
-          <div className="flex items-center gap-2 p-3 bg-green-50 text-green-700 rounded-lg">
-            <CheckCircle className="h-4 w-4" />
-            <span className="text-sm">
-              Account connected successfully! Metrics will be available within 5-10 minutes.
-            </span>
-          </div>
-        )}
+        {getStatusDisplay()}
 
         <Button
           onClick={handleConnect}

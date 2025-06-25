@@ -55,20 +55,23 @@ serve(async (req) => {
     // Check if account already exists
     const { data: existingAccount } = await supabase
       .from('creators_social_accounts')
-      .select('id')
+      .select('id, status')
       .eq('creator_id', user.id)
       .eq('platform', platform)
       .eq('handle', handle.toLowerCase())
       .maybeSingle();
 
     if (existingAccount) {
+      console.log('Account already exists:', existingAccount);
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: 'Account already connected',
-          account_id: existingAccount.id 
+          message: `${platform.charAt(0).toUpperCase() + platform.slice(1)} account is already connected`,
+          account_id: existingAccount.id,
+          status: existingAccount.status,
+          isExisting: true
         }),
-        { headers: corsHeaders }
+        { headers: corsHeaders, status: 200 }
       );
     }
 
@@ -83,7 +86,7 @@ serve(async (req) => {
     const actorId = platformActors[platform.toLowerCase()];
     if (!actorId) {
       return new Response(
-        JSON.stringify({ success: false, error: `Unsupported platform: ${platform}` }),
+        JSON.stringify({ success: false, error: `Platform ${platform} is not currently supported` }),
         { headers: corsHeaders, status: 400 }
       );
     }
@@ -107,7 +110,7 @@ serve(async (req) => {
     if (insertError) {
       console.error('Database insert error:', insertError);
       return new Response(
-        JSON.stringify({ success: false, error: 'Failed to save social account' }),
+        JSON.stringify({ success: false, error: 'Failed to save social account connection' }),
         { headers: corsHeaders, status: 500 }
       );
     }
@@ -116,6 +119,8 @@ serve(async (req) => {
 
     // Trigger the Apify scraping job immediately
     const apifyToken = Deno.env.get("APIFY_TOKEN");
+    let apifyJobId = null;
+    
     if (apifyToken) {
       try {
         console.log(`Triggering Apify actor ${actorId} for ${handle} on ${platform}`);
@@ -135,7 +140,8 @@ serve(async (req) => {
 
         if (apifyResponse.ok) {
           const apifyResult = await apifyResponse.json();
-          console.log('Apify job started:', apifyResult.data.id);
+          apifyJobId = apifyResult.data.id;
+          console.log('Apify job started:', apifyJobId);
           
           // Update the account status to running
           await supabase
@@ -147,22 +153,27 @@ serve(async (req) => {
             .eq('id', newAccount.id);
 
         } else {
-          console.error('Failed to trigger Apify actor:', await apifyResponse.text());
+          const errorText = await apifyResponse.text();
+          console.error('Failed to trigger Apify actor:', errorText);
         }
       } catch (apifyError) {
         console.error('Error triggering Apify job:', apifyError);
       }
     } else {
-      console.warn('APIFY_TOKEN not configured, skipping job trigger');
+      console.warn('APIFY_TOKEN not configured, analytics collection will be delayed');
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: `${platform} account connected successfully`,
-        account_id: newAccount.id
+        message: `${platform.charAt(0).toUpperCase() + platform.slice(1)} account connected successfully`,
+        account_id: newAccount.id,
+        status: 'running',
+        apify_job_id: apifyJobId,
+        isExisting: false,
+        note: apifyJobId ? 'Analytics collection started' : 'Analytics collection will begin shortly'
       }),
-      { headers: corsHeaders }
+      { headers: corsHeaders, status: 201 }
     );
 
   } catch (error) {
@@ -170,7 +181,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message || 'Internal server error' 
+        error: error.message || 'An unexpected error occurred while connecting your account'
       }),
       { headers: corsHeaders, status: 500 }
     );
