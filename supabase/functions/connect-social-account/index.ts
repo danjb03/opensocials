@@ -201,6 +201,7 @@ serve(async (req) => {
         const encodedActorId = encodeURIComponent(actorId);
         const apifyUrl = `https://api.apify.com/v2/acts/${encodedActorId}/runs?token=${apifyToken}`;
         console.log('🔗 Apify URL:', apifyUrl);
+        console.log('📤 Apify Input:', JSON.stringify(apifyInput, null, 2));
         
         const apifyResponse = await fetch(apifyUrl, {
           method: "POST",
@@ -208,10 +209,12 @@ serve(async (req) => {
           body: JSON.stringify(apifyInput)
         });
 
+        console.log('📡 Apify Response Status:', apifyResponse.status);
+
         if (apifyResponse.ok) {
           const apifyResult = await apifyResponse.json();
           apifyJobId = apifyResult.data.id;
-          console.log('✅ Apify job started:', apifyJobId);
+          console.log('✅ Apify job started successfully:', apifyJobId);
           scrapingTriggered = true;
           
           // Update the account status to running and set last_run
@@ -226,6 +229,8 @@ serve(async (req) => {
 
           if (updateError) {
             console.error('❌ Failed to update account status:', updateError);
+          } else {
+            console.log('✅ Account status updated to running');
           }
 
           // Log the job in social_jobs table
@@ -241,11 +246,13 @@ serve(async (req) => {
 
           if (jobError) {
             console.error('❌ Failed to log social job:', jobError);
+          } else {
+            console.log('✅ Social job logged successfully');
           }
 
         } else {
           const errorText = await apifyResponse.text();
-          console.error('❌ Failed to trigger Apify actor:', errorText);
+          console.error('❌ Apify API error response:', errorText);
           
           // Update account with error status
           await supabase
@@ -288,6 +295,8 @@ serve(async (req) => {
       message = `${platform.charAt(0).toUpperCase() + platform.slice(1)} account connected`;
       note = 'Analytics collection will begin shortly.';
     }
+
+    console.log('✅ Connection process completed successfully');
 
     return new Response(
       JSON.stringify({

@@ -50,11 +50,21 @@ export const SocialMediaConnectionPanel: React.FC = () => {
         userId: user.id
       });
 
+      // Get the current session token for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No valid session found. Please refresh the page and try again.');
+      }
+
+      // Call the edge function with proper authentication
       const { data, error } = await supabase.functions.invoke('connect-social-account', {
         body: {
           platform: selectedPlatform,
-          handle: handle.trim(),
-          creator_id: user.id
+          handle: handle.trim()
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
         }
       });
 
@@ -62,11 +72,11 @@ export const SocialMediaConnectionPanel: React.FC = () => {
 
       if (error) {
         console.error('❌ Function invocation error:', error);
-        throw new Error(`Function error: ${error.message || 'Unknown function error'}`);
+        throw new Error(`Connection failed: ${error.message || 'Unknown error occurred'}`);
       }
 
       if (!data) {
-        throw new Error('No response data received from the function');
+        throw new Error('No response received from the connection service');
       }
 
       if (data.success) {
@@ -93,7 +103,7 @@ export const SocialMediaConnectionPanel: React.FC = () => {
         setSelectedPlatform('');
         setHandle('');
       } else {
-        console.error('❌ Edge function returned failure:', data);
+        console.error('❌ Connection service returned failure:', data);
         throw new Error(data?.error || 'Failed to connect social account');
       }
 
@@ -103,14 +113,15 @@ export const SocialMediaConnectionPanel: React.FC = () => {
       setErrorMessage(errorMsg);
       setConnectionStatus('error');
       
-      if (errorMsg.includes('Failed to send a request')) {
-        toast.error('Network error - please check your connection and try again');
-      } else if (errorMsg.includes('Authorization required')) {
+      // Show specific error messages
+      if (errorMsg.includes('No valid session')) {
         toast.error('Session expired - please refresh the page and try again');
+      } else if (errorMsg.includes('Authorization required')) {
+        toast.error('Authentication failed - please refresh and try again');
       } else if (errorMsg.includes('not currently supported')) {
         toast.error(`${selectedPlatform} connections are not available yet`);
       } else {
-        toast.error(`Failed to connect account: ${errorMsg}`);
+        toast.error(`Connection failed: ${errorMsg}`);
       }
     } finally {
       setIsLoading(false);
