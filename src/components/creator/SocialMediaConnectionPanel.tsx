@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, CheckCircle, AlertCircle, Instagram, Youtube, Twitter, Linkedin, Info } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, Instagram, Youtube, Twitter, Linkedin, Info, Play } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { toast } from 'sonner';
@@ -22,12 +22,14 @@ export const SocialMediaConnectionPanel: React.FC = () => {
   const [selectedPlatform, setSelectedPlatform] = useState<string>('');
   const [handle, setHandle] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isTriggerLoading, setIsTriggerLoading] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error' | 'existing'>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [successDetails, setSuccessDetails] = useState<{
     message: string;
     isExisting: boolean;
     note?: string;
+    scrapingTriggered?: boolean;
   } | null>(null);
 
   const handleConnect = async () => {
@@ -48,17 +50,7 @@ export const SocialMediaConnectionPanel: React.FC = () => {
         userId: user.id
       });
 
-      // Get the current session token
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.access_token) {
-        throw new Error('Authentication required - please refresh the page and try again');
-      }
-
-      console.log('🔐 Session token obtained, calling edge function...');
-
-      // Call the connect-social-account edge function with better error handling
-      const response = await supabase.functions.invoke('connect-social-account', {
+      const { data, error } = await supabase.functions.invoke('connect-social-account', {
         body: {
           platform: selectedPlatform,
           handle: handle.trim(),
@@ -66,39 +58,35 @@ export const SocialMediaConnectionPanel: React.FC = () => {
         }
       });
 
-      console.log('📡 Edge function response:', response);
+      console.log('📡 Edge function response:', { data, error });
 
-      // Check for function invocation errors first
-      if (response.error) {
-        console.error('❌ Function invocation error:', response.error);
-        throw new Error(`Function error: ${response.error.message || 'Unknown function error'}`);
+      if (error) {
+        console.error('❌ Function invocation error:', error);
+        throw new Error(`Function error: ${error.message || 'Unknown function error'}`);
       }
 
-      // Check the response data
-      const { data } = response;
-      
       if (!data) {
         throw new Error('No response data received from the function');
       }
 
-      // Handle successful responses (both new and existing connections)
       if (data.success) {
         console.log('✅ Social account operation successful:', data);
         
-        const isExisting = data.isExisting || (data.message && data.message.includes('already connected'));
+        const isExisting = data.isExisting || false;
         
         setConnectionStatus(isExisting ? 'existing' : 'success');
         setSuccessDetails({
           message: data.message || `${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)} account connected`,
           isExisting,
-          note: data.note
+          note: data.note,
+          scrapingTriggered: data.scraping_triggered
         });
         
         // Show appropriate success toast
         if (isExisting) {
-          toast.success(`${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)} account is already connected!`);
+          toast.success(data.message || `${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)} account is already connected!`);
         } else {
-          toast.success(`${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)} account connected successfully!`);
+          toast.success(data.message || `${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)} account connected successfully!`);
         }
         
         // Reset form after successful connection
@@ -115,7 +103,6 @@ export const SocialMediaConnectionPanel: React.FC = () => {
       setErrorMessage(errorMsg);
       setConnectionStatus('error');
       
-      // Provide more helpful error messages
       if (errorMsg.includes('Failed to send a request')) {
         toast.error('Network error - please check your connection and try again');
       } else if (errorMsg.includes('Authorization required')) {
@@ -127,6 +114,39 @@ export const SocialMediaConnectionPanel: React.FC = () => {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleTriggerScraping = async () => {
+    setIsTriggerLoading(true);
+    
+    try {
+      console.log('🔧 Triggering social scraping...');
+      
+      const { data, error } = await supabase.functions.invoke('trigger-social-scraping');
+      
+      if (error) {
+        console.error('❌ Trigger scraping error:', error);
+        toast.error(`Failed to trigger scraping: ${error.message}`);
+        return;
+      }
+      
+      if (data?.success) {
+        console.log('✅ Scraping triggered:', data);
+        toast.success(`Triggered scraping for ${data.triggered} accounts`);
+        
+        if (data.errors > 0) {
+          toast.warning(`${data.errors} accounts had errors - check logs`);
+        }
+      } else {
+        toast.error(data?.error || 'Failed to trigger scraping');
+      }
+      
+    } catch (err) {
+      console.error('💥 Trigger scraping error:', err);
+      toast.error('Failed to trigger scraping');
+    } finally {
+      setIsTriggerLoading(false);
     }
   };
 
@@ -144,6 +164,9 @@ export const SocialMediaConnectionPanel: React.FC = () => {
               {successDetails?.note && (
                 <p className="text-green-200 text-xs mt-1">{successDetails.note}</p>
               )}
+              {successDetails?.scrapingTriggered && (
+                <p className="text-green-300 text-xs mt-1">✅ Analytics scraping started</p>
+              )}
             </div>
           </div>
         );
@@ -153,7 +176,10 @@ export const SocialMediaConnectionPanel: React.FC = () => {
             <Info className="h-4 w-4 text-blue-400" />
             <div className="text-sm">
               <span className="text-blue-100 font-medium">{successDetails?.message}</span>
-              <p className="text-blue-200 text-xs mt-1">Your analytics are being updated automatically.</p>
+              <p className="text-blue-200 text-xs mt-1">{successDetails?.note || 'Your analytics are being updated automatically.'}</p>
+              {successDetails?.scrapingTriggered && (
+                <p className="text-blue-300 text-xs mt-1">✅ Fresh scraping triggered</p>
+              )}
             </div>
           </div>
         );
@@ -170,82 +196,118 @@ export const SocialMediaConnectionPanel: React.FC = () => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Instagram className="h-5 w-5" />
-          Connect Social Media Account
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Connect your social media accounts to pull in real-time analytics and metrics.
-        </p>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="platform">Platform</Label>
-          <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a platform" />
-            </SelectTrigger>
-            <SelectContent>
-              {PLATFORM_OPTIONS.map((platform) => {
-                const PlatformIcon = platform.icon;
-                return (
-                  <SelectItem key={platform.value} value={platform.value}>
-                    <div className="flex items-center gap-2">
-                      <PlatformIcon className="h-4 w-4" />
-                      {platform.label}
-                    </div>
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {selectedPlatform && (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Instagram className="h-5 w-5" />
+            Connect Social Media Account
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Connect your social media accounts to pull in real-time analytics and metrics.
+          </p>
+        </CardHeader>
+        
+        <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="handle" className="flex items-center gap-2">
-              {Icon && <Icon className="h-4 w-4" />}
-              {selectedPlatformConfig?.label} Handle
-            </Label>
-            <Input
-              id="handle"
-              value={handle}
-              onChange={(e) => setHandle(e.target.value)}
-              placeholder={selectedPlatformConfig?.placeholder || 'Enter your handle'}
-              disabled={isLoading}
-              className="font-mono"
-            />
-            <p className="text-xs text-muted-foreground">
-              Enter just your handle without @ symbol (e.g., "opensocials")
-            </p>
+            <Label htmlFor="platform">Platform</Label>
+            <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a platform" />
+              </SelectTrigger>
+              <SelectContent>
+                {PLATFORM_OPTIONS.map((platform) => {
+                  const PlatformIcon = platform.icon;
+                  return (
+                    <SelectItem key={platform.value} value={platform.value}>
+                      <div className="flex items-center gap-2">
+                        <PlatformIcon className="h-4 w-4" />
+                        {platform.label}
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
           </div>
-        )}
 
-        {getStatusDisplay()}
-
-        <Button
-          onClick={handleConnect}
-          disabled={!selectedPlatform || !handle.trim() || isLoading}
-          className="w-full bg-white text-black hover:bg-gray-100"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Connecting...
-            </>
-          ) : (
-            'Connect Account'
+          {selectedPlatform && (
+            <div className="space-y-2">
+              <Label htmlFor="handle" className="flex items-center gap-2">
+                {Icon && <Icon className="h-4 w-4" />}
+                {selectedPlatformConfig?.label} Handle
+              </Label>
+              <Input
+                id="handle"
+                value={handle}
+                onChange={(e) => setHandle(e.target.value)}
+                placeholder={selectedPlatformConfig?.placeholder || 'Enter your handle'}
+                disabled={isLoading}
+                className="font-mono"
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter just your handle without @ symbol (e.g., "opensocials")
+              </p>
+            </div>
           )}
-        </Button>
 
-        <div className="text-xs text-muted-foreground text-center space-y-1">
-          <p>We only collect public data from your social media profiles.</p>
-          <p>Your account credentials are never stored or accessed.</p>
-        </div>
-      </CardContent>
-    </Card>
+          {getStatusDisplay()}
+
+          <Button
+            onClick={handleConnect}
+            disabled={!selectedPlatform || !handle.trim() || isLoading}
+            className="w-full bg-white text-black hover:bg-gray-100"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Connecting...
+              </>
+            ) : (
+              'Connect Account'
+            )}
+          </Button>
+
+          <div className="text-xs text-muted-foreground text-center space-y-1">
+            <p>We only collect public data from your social media profiles.</p>
+            <p>Your account credentials are never stored or accessed.</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Admin trigger button for testing */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Play className="h-5 w-5" />
+            Manual Scraping Trigger
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Manually trigger scraping for accounts that haven't been processed yet.
+          </p>
+        </CardHeader>
+        
+        <CardContent>
+          <Button
+            onClick={handleTriggerScraping}
+            disabled={isTriggerLoading}
+            variant="outline"
+            className="w-full"
+          >
+            {isTriggerLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Triggering Scraping...
+              </>
+            ) : (
+              <>
+                <Play className="mr-2 h-4 w-4" />
+                Trigger Social Media Scraping
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
