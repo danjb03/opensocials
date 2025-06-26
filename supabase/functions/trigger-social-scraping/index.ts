@@ -104,8 +104,9 @@ serve(async (req) => {
             break;
         }
 
-        // Fixed Apify API URL format
-        const apifyUrl = `https://api.apify.com/v2/acts/${account.actor_id}/runs?token=${apifyToken}`;
+        // Fix Apify URL format - replace / with ~ in actor ID
+        const encodedActorId = account.actor_id.replace('/', '~');
+        const apifyUrl = `https://api.apify.com/v2/acts/${encodedActorId}/runs?token=${apifyToken}`;
         console.log('🔗 Apify URL:', apifyUrl);
 
         const apifyResponse = await fetch(apifyUrl, {
