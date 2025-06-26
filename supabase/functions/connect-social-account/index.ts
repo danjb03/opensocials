@@ -197,7 +197,11 @@ serve(async (req) => {
             break;
         }
         
-        const apifyResponse = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs?token=${apifyToken}`, {
+        // Fixed Apify API URL format
+        const apifyUrl = `https://api.apify.com/v2/acts/${actorId}/runs?token=${apifyToken}`;
+        console.log('🔗 Apify URL:', apifyUrl);
+        
+        const apifyResponse = await fetch(apifyUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(apifyInput)
