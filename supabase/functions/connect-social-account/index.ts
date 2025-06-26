@@ -197,8 +197,8 @@ serve(async (req) => {
             break;
         }
         
-        // Fix Apify URL format - replace / with ~ in actor ID
-        const encodedActorId = actorId.replace('/', '~');
+        // Properly encode the actor ID for Apify API
+        const encodedActorId = encodeURIComponent(actorId);
         const apifyUrl = `https://api.apify.com/v2/acts/${encodedActorId}/runs?token=${apifyToken}`;
         console.log('🔗 Apify URL:', apifyUrl);
         

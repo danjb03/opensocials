@@ -81,8 +81,8 @@ function parseActorId(actorId: any): any {
 
 // Helper to trigger Apify actor run
 async function triggerApifyRun(actorId: string, handle: string, platform: string, apifyToken: string) {
-  // URL encode the actor ID by replacing '/' with '~'
-  const encodedActorId = actorId.replace('/', '~');
+  // Properly encode the actor ID for Apify API
+  const encodedActorId = encodeURIComponent(actorId);
   
   const apifyResponse = await fetch(`https://api.apify.com/v2/acts/${encodedActorId}/runs?token=${apifyToken}`, {
     method: "POST",
@@ -90,10 +90,10 @@ async function triggerApifyRun(actorId: string, handle: string, platform: string
     body: JSON.stringify({ 
       username: handle,
       // Additional platform-specific parameters
-      ...(platform === "instagram" && { scrapeComments: true, scrapeStories: false }),
-      ...(platform === "tiktok" && { maxPostCount: 20 }),
-      ...(platform === "youtube" && { maxVideos: 30 }),
-      ...(platform === "linkedin" && { scrapePostContent: true })
+      ...(platform === "instagram" && { scrapeComments: false, scrapeStories: false, resultsLimit: 50 }),
+      ...(platform === "tiktok" && { maxPostCount: 20, resultsLimit: 20 }),
+      ...(platform === "youtube" && { maxVideos: 30, resultsLimit: 30 }),
+      ...(platform === "linkedin" && { scrapePostContent: true, resultsLimit: 25 })
     })
   });
   
