@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../shared/admin-utils.ts";
@@ -80,7 +81,10 @@ function parseActorId(actorId: any): any {
 
 // Helper to trigger Apify actor run
 async function triggerApifyRun(actorId: string, handle: string, platform: string, apifyToken: string) {
-  const apifyResponse = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs?token=${apifyToken}`, {
+  // URL encode the actor ID by replacing '/' with '~'
+  const encodedActorId = actorId.replace('/', '~');
+  
+  const apifyResponse = await fetch(`https://api.apify.com/v2/acts/${encodedActorId}/runs?token=${apifyToken}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ 
