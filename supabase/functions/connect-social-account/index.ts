@@ -162,37 +162,34 @@ serve(async (req) => {
       try {
         console.log(`🤖 Triggering Apify actor ${actorId} for ${handle} on ${platform}`);
         
-        // Platform-specific input configuration
-        let apifyInput = { username: handle };
+        // Platform-specific input configuration - FIXED FORMAT
+        let apifyInput = {};
         
         switch (platform.toLowerCase()) {
           case 'instagram':
             apifyInput = { 
-              ...apifyInput,
-              scrapeComments: false, 
-              scrapeStories: false,
-              resultsLimit: 50
+              usernames: [handle], // Instagram expects usernames as array
+              resultsLimit: 1,
+              scrapeComments: false,
+              scrapeStories: false
             };
             break;
           case 'tiktok':
             apifyInput = { 
-              ...apifyInput,
-              maxPostCount: 20,
-              resultsLimit: 20
+              profiles: [handle], // TikTok expects profiles as array
+              resultsLimit: 1
             };
             break;
           case 'youtube':
             apifyInput = { 
-              ...apifyInput,
-              maxVideos: 30,
-              resultsLimit: 30
+              handles: [handle], // YouTube expects handles as array
+              resultsLimit: 1
             };
             break;
           case 'linkedin':
             apifyInput = { 
-              ...apifyInput,
-              scrapePostContent: true,
-              resultsLimit: 25
+              startUrls: [`https://www.linkedin.com/in/${handle}`], // LinkedIn expects full URLs
+              resultsLimit: 1
             };
             break;
         }
