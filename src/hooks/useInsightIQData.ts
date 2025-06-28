@@ -3,41 +3,41 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 interface InsightIQAnalytics {
-  id: string;
+  id?: string;
   creator_id: string;
   platform: string;
-  work_platform_id: string | null;
+  work_platform_id?: string | null;
   identifier: string;
   fetched_at: string;
-  profile_url: string | null;
-  image_url: string | null;
-  full_name: string | null;
-  is_verified: boolean | null;
-  follower_count: number | null;
-  engagement_rate: number | null;
-  platform_account_type: string | null;
-  introduction: string | null;
-  gender: string | null;
-  age_group: string | null;
-  language: string | null;
-  content_count: number | null;
-  average_likes: number | null;
-  average_comments: number | null;
-  average_views: number | null;
-  average_reels_views: number | null;
-  sponsored_posts_performance: number | null;
-  credibility_score: number | null;
-  top_contents: any | null;
-  recent_contents: any | null;
-  sponsored_contents: any | null;
-  top_hashtags: any | null;
-  top_mentions: any | null;
-  top_interests: any | null;
-  brand_affinity: any | null;
-  audience: any | null;
-  pricing: any | null;
-  created_at: string;
-  updated_at: string;
+  profile_url?: string | null;
+  image_url?: string | null;
+  full_name?: string | null;
+  is_verified?: boolean | null;
+  follower_count?: number | null;
+  engagement_rate?: number | null;
+  platform_account_type?: string | null;
+  introduction?: string | null;
+  gender?: string | null;
+  age_group?: string | null;
+  language?: string | null;
+  content_count?: number | null;
+  average_likes?: number | null;
+  average_comments?: number | null;
+  average_views?: number | null;
+  average_reels_views?: number | null;
+  sponsored_posts_performance?: number | null;
+  credibility_score?: number | null;
+  top_contents?: any | null;
+  recent_contents?: any | null;
+  sponsored_contents?: any | null;
+  top_hashtags?: any | null;
+  top_mentions?: any | null;
+  top_interests?: any | null;
+  brand_affinity?: any | null;
+  audience?: any | null;
+  pricing?: any | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface UseInsightIQDataReturn {
@@ -72,20 +72,29 @@ export const useInsightIQData = (creator_id: string): UseInsightIQDataReturn => 
 
       if (analyticsError) {
         console.error('Error fetching analytics data:', analyticsError);
-        throw analyticsError;
+      } else {
+        console.log('Analytics data fetched:', analyticsData);
       }
-
-      console.log('Analytics data fetched:', analyticsData);
 
       // If we have analytics data, use it
       if (analyticsData && analyticsData.length > 0) {
-        return analyticsData as InsightIQAnalytics[];
+        return analyticsData.map(data => ({
+          ...data,
+          // Ensure all required fields have defaults
+          follower_count: data.follower_count || 0,
+          engagement_rate: data.engagement_rate || 0,
+          content_count: data.content_count || 0,
+          average_likes: data.average_likes || 0,
+          average_comments: data.average_comments || 0,
+          average_views: data.average_views || 0,
+          credibility_score: data.credibility_score || 0,
+        })) as InsightIQAnalytics[];
       }
 
       // If no analytics data, try to get basic data from creator_profiles
       const { data: profileData, error: profileError } = await supabase
         .from('creator_profiles')
-        .select('follower_count, engagement_rate, updated_at')
+        .select('follower_count, engagement_rate, updated_at, primary_platform')
         .eq('user_id', creator_id)
         .single();
 
@@ -100,7 +109,7 @@ export const useInsightIQData = (creator_id: string): UseInsightIQDataReturn => 
         return [{
           id: crypto.randomUUID(),
           creator_id,
-          platform: 'instagram', // Default platform
+          platform: profileData.primary_platform || 'instagram',
           work_platform_id: null,
           identifier: 'unknown',
           fetched_at: profileData.updated_at || new Date().toISOString(),
@@ -142,7 +151,7 @@ export const useInsightIQData = (creator_id: string): UseInsightIQDataReturn => 
     enabled: !!creator_id,
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 30, // 30 minutes
-    retry: 3, // Increased retry count
+    retry: 2,
     retryOnMount: true,
   });
 
