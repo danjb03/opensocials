@@ -2,7 +2,8 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Instagram, Youtube, Twitter, Linkedin, CheckCircle, Clock, AlertCircle, Loader2, User, Eye, Heart, MessageCircle } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Instagram, Youtube, Twitter, Linkedin, CheckCircle, Clock, AlertCircle, Loader2, User, Eye, Heart, MessageCircle, FileText, ExternalLink } from 'lucide-react';
 import { useConnectedAccounts } from '@/hooks/creator/useConnectedAccounts';
 import { useInsightIQData } from '@/hooks/useInsightIQData';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
@@ -111,30 +112,53 @@ export const ConnectedAccountsList: React.FC = () => {
         )}
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-6">
           {connectedAccounts.map((account) => {
             const PlatformIcon = PLATFORM_ICONS[account.platform as keyof typeof PLATFORM_ICONS];
             const platformColor = PLATFORM_COLORS[account.platform as keyof typeof PLATFORM_COLORS];
             const analytics = getAnalyticsForAccount(account.platform, account.handle);
             
             return (
-              <div key={account.id} className="border rounded-lg p-4 space-y-3">
-                {/* Header Row */}
+              <div key={account.id} className="border rounded-lg p-4 space-y-4">
+                {/* Header Row with Profile Picture */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg text-white ${platformColor}`}>
-                      {PlatformIcon && <PlatformIcon className="h-4 w-4" />}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium capitalize">{account.platform}</span>
-                        <span className="text-muted-foreground">@{account.handle}</span>
-                      </div>
-                      {account.last_run && (
-                        <div className="text-xs text-muted-foreground">
-                          Last updated: {new Date(account.last_run).toLocaleDateString()}
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage 
+                          src={analytics?.image_url || ''} 
+                          alt={analytics?.full_name || account.handle} 
+                        />
+                        <AvatarFallback className={`text-white ${platformColor}`}>
+                          {PlatformIcon && <PlatformIcon className="h-5 w-5" />}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium capitalize">{account.platform}</span>
+                          {analytics?.is_verified && (
+                            <CheckCircle className="h-4 w-4 text-blue-500" />
+                          )}
                         </div>
-                      )}
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span>@{account.handle}</span>
+                          {analytics?.profile_url && (
+                            <a 
+                              href={analytics.profile_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="hover:text-primary"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          )}
+                        </div>
+                        {analytics?.full_name && (
+                          <div className="text-sm font-medium text-foreground">
+                            {analytics.full_name}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                   
@@ -145,6 +169,16 @@ export const ConnectedAccountsList: React.FC = () => {
                     </Badge>
                   </div>
                 </div>
+
+                {/* Bio Section */}
+                {analytics?.introduction && (
+                  <div className="bg-muted/30 rounded-lg p-3">
+                    <div className="flex items-start gap-2">
+                      <FileText className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-foreground">{analytics.introduction}</p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Analytics Row */}
                 {analytics && (
@@ -160,7 +194,9 @@ export const ConnectedAccountsList: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <Heart className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <div className="font-medium">{analytics.engagement_rate?.toFixed(1)}%</div>
+                        <div className="font-medium">
+                          {analytics.engagement_rate > 0 ? `${analytics.engagement_rate.toFixed(1)}%` : 'N/A'}
+                        </div>
                         <div className="text-xs text-muted-foreground">Engagement</div>
                       </div>
                     </div>
@@ -180,6 +216,34 @@ export const ConnectedAccountsList: React.FC = () => {
                         <div className="text-xs text-muted-foreground">Posts</div>
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {/* Additional Metrics Row */}
+                {analytics && (analytics.average_likes > 0 || analytics.average_comments > 0 || analytics.credibility_score > 0) && (
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div className="text-center">
+                      <div className="font-medium">{formatNumber(analytics.average_likes)}</div>
+                      <div className="text-xs text-muted-foreground">Avg Likes</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-medium">{formatNumber(analytics.average_comments)}</div>
+                      <div className="text-xs text-muted-foreground">Avg Comments</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-medium">
+                        {analytics.credibility_score > 0 ? analytics.credibility_score.toFixed(1) : 'N/A'}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Credibility</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Last Updated */}
+                {account.last_run && (
+                  <div className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    Last updated: {new Date(account.last_run).toLocaleDateString()} at {new Date(account.last_run).toLocaleTimeString()}
                   </div>
                 )}
 

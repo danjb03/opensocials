@@ -6,6 +6,9 @@ import { ConnectedAccountsList } from '@/components/creator/ConnectedAccountsLis
 import { useInsightIQData } from '@/hooks/useInsightIQData';
 import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle, Eye, Heart, MessageCircle, User } from 'lucide-react';
 
 interface SocialAnalyticsProps {
   socialConnections: {
@@ -69,7 +72,11 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
         verified: insightIQData.is_verified || false,
         growthRate: '+0%', // Not available in current API
         contentCount: insightIQData.content_count || 0,
-        credibilityScore: insightIQData.credibility_score || 0
+        credibilityScore: insightIQData.credibility_score || 0,
+        profileImage: insightIQData.image_url,
+        fullName: insightIQData.full_name,
+        bio: insightIQData.introduction,
+        profileUrl: insightIQData.profile_url
       };
     }
 
@@ -84,7 +91,11 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
       verified: false,
       growthRate: platformData?.growth || '0%',
       contentCount: 0,
-      credibilityScore: 0
+      credibilityScore: 0,
+      profileImage: null,
+      fullName: null,
+      bio: null,
+      profileUrl: null
     };
   };
 
@@ -116,20 +127,59 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
       {/* Platform Analytics */}
       {analyticsData && analyticsData.length > 0 && (
         <div className="space-y-6">
-          {/* Summary Card */}
+          {/* Enhanced Summary Card */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Analytics Summary</CardTitle>
+              <CardTitle className="text-sm">Enhanced Analytics Summary</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                {analyticsData.map((data, index) => (
-                  <div key={index} className="text-sm">
-                    <strong>{data.platform}</strong>: @{data.identifier} 
-                    {data.follower_count && ` - ${formatNumber(data.follower_count)} followers`}
-                    {data.engagement_rate && ` - ${data.engagement_rate.toFixed(1)}% engagement`}
-                  </div>
-                ))}
+              <div className="space-y-4">
+                {analyticsData.map((data, index) => {
+                  const analytics = getAnalyticsData(data.platform);
+                  return (
+                    <div key={index} className="flex items-center gap-4 p-4 border rounded-lg">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={analytics.profileImage || ''} alt={analytics.fullName || data.identifier} />
+                        <AvatarFallback className="bg-primary text-primary-foreground">
+                          {data.platform.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium capitalize">{data.platform}</h3>
+                          {analytics.verified && <CheckCircle className="h-4 w-4 text-blue-500" />}
+                        </div>
+                        <p className="text-sm text-muted-foreground">@{data.identifier}</p>
+                        {analytics.fullName && (
+                          <p className="text-sm font-medium">{analytics.fullName}</p>
+                        )}
+                        {analytics.bio && (
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{analytics.bio}</p>
+                        )}
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 text-center">
+                        <div className="flex items-center gap-1">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">{analytics.followers}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Heart className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">{analytics.engagement}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">{analytics.views}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">{analytics.contentCount}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
