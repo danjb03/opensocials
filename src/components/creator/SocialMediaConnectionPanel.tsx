@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { Loader2, CheckCircle, AlertCircle, Instagram, Youtube, Twitter, Linkedi
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 const PLATFORM_OPTIONS = [
   { value: 'instagram', label: 'Instagram', icon: Instagram, placeholder: 'Enter your Instagram handle (e.g., opensocials)' },
@@ -19,6 +19,7 @@ const PLATFORM_OPTIONS = [
 
 export const SocialMediaConnectionPanel: React.FC = () => {
   const { user } = useUnifiedAuth();
+  const queryClient = useQueryClient();
   const [selectedPlatform, setSelectedPlatform] = useState<string>('');
   const [handle, setHandle] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -103,9 +104,29 @@ export const SocialMediaConnectionPanel: React.FC = () => {
           toast.success(data.message || `${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)} account connected successfully!`);
         }
         
+        // Refresh analytics data after successful connection
+        console.log('🔄 Refreshing analytics data...');
+        await queryClient.invalidateQueries({ 
+          queryKey: ['insightiq-data', user.id] 
+        });
+        
+        // Also refresh any social accounts data
+        await queryClient.invalidateQueries({ 
+          queryKey: ['social-accounts', user.id] 
+        });
+        
         // Reset form after successful connection
         setSelectedPlatform('');
         setHandle('');
+        
+        // Wait a moment then refresh again to catch newly processed data
+        setTimeout(() => {
+          console.log('🔄 Secondary refresh for new data...');
+          queryClient.invalidateQueries({ 
+            queryKey: ['insightiq-data', user.id] 
+          });
+        }, 2000);
+        
       } else {
         console.error('❌ Connection service returned failure:', data);
         throw new Error(data?.error || data?.message || 'Failed to connect social account');
@@ -153,6 +174,12 @@ export const SocialMediaConnectionPanel: React.FC = () => {
         if (data.errors > 0) {
           toast.warning(`${data.errors} accounts had errors - check logs`);
         }
+        
+        // Refresh analytics data after triggering scraping
+        await queryClient.invalidateQueries({ 
+          queryKey: ['insightiq-data', user.id] 
+        });
+        
       } else {
         toast.error(data?.error || 'Failed to trigger scraping');
       }

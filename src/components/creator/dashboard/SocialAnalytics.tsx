@@ -2,6 +2,7 @@
 import React from 'react';
 import { SocialMediaConnection } from '@/components/creator/SocialMediaConnection';
 import AnalyticsModule from '@/components/creator/AnalyticsModule';
+import { ConnectedAccountsList } from '@/components/creator/ConnectedAccountsList';
 import { useInsightIQData } from '@/hooks/useInsightIQData';
 import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,10 +40,6 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
 }) => {
   const { user } = useCreatorAuth();
   const { data: analyticsData, isLoading: analyticsLoading } = useInsightIQData(user?.id || '');
-
-  const handleConnectionSuccess = () => {
-    console.log('Social media connection successful - refreshing analytics');
-  };
 
   const formatNumber = (num: number | null) => {
     if (!num) return '0';
@@ -108,70 +105,68 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Connected Accounts List */}
+      <ConnectedAccountsList />
+      
       {/* Show connection interface if no data */}
       {(!analyticsData || analyticsData.length === 0) && (
-        <SocialMediaConnection onConnectionSuccess={handleConnectionSuccess} />
-      )}
-      
-      {/* Debug info */}
-      {analyticsData && analyticsData.length > 0 && (
-        <Card className="mb-4">
-          <CardHeader>
-            <CardTitle className="text-sm">Connected Platforms ({analyticsData.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {analyticsData.map((data, index) => (
-                <div key={index} className="text-xs text-muted-foreground">
-                  <strong>{data.platform}</strong>: @{data.identifier} 
-                  {data.follower_count && ` - ${formatNumber(data.follower_count)} followers`}
-                  {data.engagement_rate && ` - ${data.engagement_rate.toFixed(1)}% engagement`}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <SocialMediaConnection onConnectionSuccess={() => console.log('Connection successful')} />
       )}
 
       {/* Platform Analytics */}
-      {(socialConnections.instagram || getPlatformData('instagram')) && (
-        <AnalyticsModule 
-          platform="Instagram" 
-          metrics={getAnalyticsData('instagram')}
-          isVisible={visibilitySettings.showInstagram}
-        />
-      )}
-      
-      {(socialConnections.tiktok || getPlatformData('tiktok')) && (
-        <AnalyticsModule 
-          platform="TikTok" 
-          metrics={getAnalyticsData('tiktok')}
-          isVisible={visibilitySettings.showTiktok}
-        />
-      )}
-      
-      {(socialConnections.youtube || getPlatformData('youtube')) && (
-        <AnalyticsModule 
-          platform="YouTube" 
-          metrics={getAnalyticsData('youtube')}
-          isVisible={visibilitySettings.showYoutube}
-        />
-      )}
+      {analyticsData && analyticsData.length > 0 && (
+        <div className="space-y-6">
+          {/* Summary Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Analytics Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {analyticsData.map((data, index) => (
+                  <div key={index} className="text-sm">
+                    <strong>{data.platform}</strong>: @{data.identifier} 
+                    {data.follower_count && ` - ${formatNumber(data.follower_count)} followers`}
+                    {data.engagement_rate && ` - ${data.engagement_rate.toFixed(1)}% engagement`}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-      {getPlatformData('twitter') && (
-        <AnalyticsModule 
-          platform="Twitter" 
-          metrics={getAnalyticsData('twitter')}
-          isVisible={visibilitySettings.showLinkedin}
-        />
-      )}
+          {/* Individual Platform Analytics */}
+          {getPlatformData('instagram') && (
+            <AnalyticsModule 
+              platform="Instagram" 
+              metrics={getAnalyticsData('instagram')}
+              isVisible={visibilitySettings.showInstagram}
+            />
+          )}
+          
+          {getPlatformData('tiktok') && (
+            <AnalyticsModule 
+              platform="TikTok" 
+              metrics={getAnalyticsData('tiktok')}
+              isVisible={visibilitySettings.showTiktok}
+            />
+          )}
+          
+          {getPlatformData('youtube') && (
+            <AnalyticsModule 
+              platform="YouTube" 
+              metrics={getAnalyticsData('youtube')}
+              isVisible={visibilitySettings.showYoutube}
+            />
+          )}
 
-      {getPlatformData('linkedin') && (
-        <AnalyticsModule 
-          platform="LinkedIn" 
-          metrics={getAnalyticsData('linkedin')}
-          isVisible={visibilitySettings.showLinkedin}
-        />
+          {getPlatformData('linkedin') && (
+            <AnalyticsModule 
+              platform="LinkedIn" 
+              metrics={getAnalyticsData('linkedin')}
+              isVisible={visibilitySettings.showLinkedin}
+            />
+          )}
+        </div>
       )}
     </div>
   );
