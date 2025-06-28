@@ -63,7 +63,7 @@ export const useInsightIQData = (creator_id: string): UseInsightIQDataReturn => 
 
       console.log('Fetching InsightIQ data for creator:', creator_id);
 
-      // First try to get data from creator_public_analytics
+      // Get data from creator_public_analytics (primary source with rich Apify data)
       const { data: analyticsData, error: analyticsError } = await supabase
         .from('creator_public_analytics')
         .select('*')
@@ -73,10 +73,10 @@ export const useInsightIQData = (creator_id: string): UseInsightIQDataReturn => 
       if (analyticsError) {
         console.error('Error fetching analytics data:', analyticsError);
       } else {
-        console.log('Analytics data fetched:', analyticsData);
+        console.log('Analytics data fetched:', analyticsData?.length, 'records');
       }
 
-      // If we have analytics data, use it
+      // If we have analytics data, use it (this is the rich Apify data)
       if (analyticsData && analyticsData.length > 0) {
         return analyticsData.map(data => ({
           ...data,
@@ -91,10 +91,12 @@ export const useInsightIQData = (creator_id: string): UseInsightIQDataReturn => 
         })) as InsightIQAnalytics[];
       }
 
-      // If no analytics data, try to get basic data from creator_profiles
+      console.log('No analytics data found, checking creator_profiles for fallback data');
+
+      // Fallback: get basic data from creator_profiles
       const { data: profileData, error: profileError } = await supabase
         .from('creator_profiles')
-        .select('follower_count, engagement_rate, updated_at, primary_platform')
+        .select('follower_count, engagement_rate, updated_at, primary_platform, avatar_url, bio, username, first_name, last_name')
         .eq('user_id', creator_id)
         .single();
 
@@ -111,16 +113,17 @@ export const useInsightIQData = (creator_id: string): UseInsightIQDataReturn => 
           creator_id,
           platform: profileData.primary_platform || 'instagram',
           work_platform_id: null,
-          identifier: 'unknown',
+          identifier: profileData.username || 'unknown',
           fetched_at: profileData.updated_at || new Date().toISOString(),
           profile_url: null,
-          image_url: null,
-          full_name: null,
+          image_url: profileData.avatar_url,
+          full_name: profileData.first_name && profileData.last_name ? 
+            `${profileData.first_name} ${profileData.last_name}` : null,
           is_verified: false,
           follower_count: profileData.follower_count || 0,
           engagement_rate: profileData.engagement_rate || 0,
           platform_account_type: null,
-          introduction: null,
+          introduction: profileData.bio,
           gender: null,
           age_group: null,
           language: null,

@@ -154,20 +154,63 @@ serve(async (req) => {
               console.log('✅ Updated creator_public_analytics');
             }
 
-            // Also update the creator_profiles table with key metrics
+            // Now update the creator_profiles table with comprehensive data from Apify
+            console.log('🔄 Updating creator_profiles with Apify data...');
+            
+            const profileUpdateData = {
+              // Update with scraped profile data
+              avatar_url: analyticsData.image_url,
+              bio: analyticsData.introduction,
+              username: analyticsData.identifier,
+              first_name: analyticsData.full_name ? analyticsData.full_name.split(' ')[0] : null,
+              last_name: analyticsData.full_name ? analyticsData.full_name.split(' ').slice(1).join(' ') : null,
+              // Update metrics
+              follower_count: analyticsData.follower_count,
+              engagement_rate: analyticsData.engagement_rate,
+              // Set primary platform if not already set
+              primary_platform: job.creators_social_accounts.platform,
+              // Update other profile fields
+              is_profile_complete: true,
+              updated_at: new Date().toISOString()
+            };
+
+            // Only update fields that have meaningful data
+            const cleanedUpdateData = Object.fromEntries(
+              Object.entries(profileUpdateData).filter(([_, value]) => 
+                value !== null && value !== undefined && value !== ''
+              )
+            );
+
             const { error: profileError } = await supabase
               .from('creator_profiles')
-              .update({
-                follower_count: analyticsData.follower_count,
-                engagement_rate: analyticsData.engagement_rate,
-                updated_at: new Date().toISOString()
-              })
+              .update(cleanedUpdateData)
               .eq('user_id', job.creators_social_accounts.creator_id);
 
             if (profileError) {
               console.error('❌ Error updating creator profile:', profileError);
             } else {
-              console.log('✅ Updated creator_profiles');
+              console.log('✅ Updated creator_profiles with Apify data:', cleanedUpdateData);
+            }
+
+            // Update social handles in creator profile
+            const { data: currentProfile } = await supabase
+              .from('creator_profiles')
+              .select('social_handles')
+              .eq('user_id', job.creators_social_accounts.creator_id)
+              .single();
+
+            if (currentProfile) {
+              const updatedSocialHandles = {
+                ...currentProfile.social_handles,
+                [job.creators_social_accounts.platform]: analyticsData.identifier
+              };
+
+              await supabase
+                .from('creator_profiles')
+                .update({ social_handles: updatedSocialHandles })
+                .eq('user_id', job.creators_social_accounts.creator_id);
+
+              console.log('✅ Updated social handles');
             }
 
             // Update job status to completed
