@@ -57,6 +57,8 @@ export const SocialMediaConnectionPanel: React.FC = () => {
         throw new Error('No valid session found. Please refresh the page and try again.');
       }
 
+      console.log('🔑 Session token found, making request...');
+
       // Call the edge function with proper authentication
       const { data, error } = await supabase.functions.invoke('connect-social-account', {
         body: {
@@ -76,20 +78,22 @@ export const SocialMediaConnectionPanel: React.FC = () => {
       }
 
       if (!data) {
+        console.error('❌ No data returned from function');
         throw new Error('No response received from the connection service');
       }
 
-      if (data.success) {
+      // Check for explicit success field in response
+      if (data.success === true) {
         console.log('✅ Social account operation successful:', data);
         
-        const isExisting = data.isExisting || false;
+        const isExisting = data.isExisting === true;
         
         setConnectionStatus(isExisting ? 'existing' : 'success');
         setSuccessDetails({
           message: data.message || `${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)} account connected`,
           isExisting,
           note: data.note,
-          scrapingTriggered: data.scraping_triggered
+          scrapingTriggered: data.scraping_triggered === true
         });
         
         // Show appropriate success toast
@@ -104,7 +108,7 @@ export const SocialMediaConnectionPanel: React.FC = () => {
         setHandle('');
       } else {
         console.error('❌ Connection service returned failure:', data);
-        throw new Error(data?.error || 'Failed to connect social account');
+        throw new Error(data?.error || data?.message || 'Failed to connect social account');
       }
 
     } catch (err) {
