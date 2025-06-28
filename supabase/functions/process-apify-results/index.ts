@@ -52,26 +52,51 @@ serve(async (req) => {
       try {
         console.log(`🔍 Checking Apify run: ${job.apify_run_id}`);
         
-        // Check job status from Apify
-        const statusResponse = await fetch(
-          `https://api.apify.com/v2/acts/runs/${job.apify_run_id}?token=${apifyToken}`
-        );
-
+        // Check job status from Apify with better error handling
+        const statusUrl = `https://api.apify.com/v2/actor-runs/${job.apify_run_id}?token=${apifyToken}`;
+        console.log('📡 Status URL:', statusUrl);
+        
+        const statusResponse = await fetch(statusUrl);
+        
         if (!statusResponse.ok) {
-          console.error(`❌ Failed to get status for run ${job.apify_run_id}`);
+          const errorText = await statusResponse.text();
+          console.error(`❌ Failed to get status for run ${job.apify_run_id}:`, statusResponse.status, errorText);
+          
+          // If it's a 404, the run might not exist anymore - mark as failed
+          if (statusResponse.status === 404) {
+            await supabase
+              .from('social_jobs')
+              .update({
+                status: 'failed',
+                completed_at: new Date().toISOString(),
+                error_message: 'Apify run not found (404)'
+              })
+              .eq('id', job.id);
+              
+            await supabase
+              .from('creators_social_accounts')
+              .update({
+                status: 'failed',
+                error_message: 'Apify run not found'
+              })
+              .eq('id', job.account_id);
+          }
+          
+          errorCount++;
           continue;
         }
 
         const statusData = await statusResponse.json();
-        const runStatus = statusData.data.status;
+        const runStatus = statusData.data?.status;
 
         console.log(`📊 Run ${job.apify_run_id} status: ${runStatus}`);
 
         if (runStatus === 'SUCCEEDED') {
           // Get the results
-          const resultsResponse = await fetch(
-            `https://api.apify.com/v2/acts/runs/${job.apify_run_id}/dataset/items?token=${apifyToken}`
-          );
+          const resultsUrl = `https://api.apify.com/v2/datasets/${statusData.data.defaultDatasetId}/items?token=${apifyToken}`;
+          console.log('📡 Results URL:', resultsUrl);
+          
+          const resultsResponse = await fetch(resultsUrl);
 
           if (resultsResponse.ok) {
             const results = await resultsResponse.json();
@@ -79,6 +104,7 @@ serve(async (req) => {
 
             if (results.length > 0) {
               const result = results[0]; // Take first result
+              console.log('📋 Result data keys:', Object.keys(result));
               
               // Update creator_public_analytics with the scraped data
               const analyticsData = {
@@ -87,19 +113,21 @@ serve(async (req) => {
                 identifier: job.creators_social_accounts.handle,
                 fetched_at: new Date().toISOString(),
                 profile_url: result.url || null,
-                image_url: result.profilePicUrl || result.avatar || null,
-                full_name: result.fullName || result.displayName || null,
-                is_verified: result.verified || false,
-                follower_count: result.followersCount || result.followers || 0,
+                image_url: result.profilePicUrl || result.avatar || result.profilePic || null,
+                full_name: result.fullName || result.displayName || result.name || null,
+                is_verified: result.verified || result.isVerified || false,
+                follower_count: result.followersCount || result.followers || result.followingCount || 0,
                 engagement_rate: result.engagementRate || 0,
-                platform_account_type: result.accountType || null,
-                introduction: result.biography || result.bio || null,
-                content_count: result.postsCount || result.posts || 0,
-                average_likes: result.avgLikes || 0,
-                average_comments: result.avgComments || 0,
-                average_views: result.avgViews || 0,
+                platform_account_type: result.accountType || result.type || null,
+                introduction: result.biography || result.bio || result.description || null,
+                content_count: result.postsCount || result.posts || result.videosCount || 0,
+                average_likes: result.avgLikes || result.averageLikes || 0,
+                average_comments: result.avgComments || result.averageComments || 0,
+                average_views: result.avgViews || result.averageViews || 0,
                 credibility_score: result.credibilityScore || 0,
               };
+
+              console.log('💾 Saving analytics data:', analyticsData);
 
               const { error: upsertError } = await supabase
                 .from('creator_public_analytics')
@@ -128,6 +156,8 @@ serve(async (req) => {
               } else {
                 console.log('✅ Updated creator profile for:', job.creators_social_accounts.creator_id);
               }
+            } else {
+              console.log('⚠️ No results found in dataset');
             }
 
             // Update job status to completed
@@ -151,8 +181,14 @@ serve(async (req) => {
               .eq('id', job.account_id);
 
             processedCount++;
+          } else {
+            const errorText = await resultsResponse.text();
+            console.error(`❌ Failed to get results for run ${job.apify_run_id}:`, resultsResponse.status, errorText);
+            errorCount++;
           }
         } else if (runStatus === 'FAILED' || runStatus === 'ABORTED' || runStatus === 'TIMED_OUT') {
+          console.log(`❌ Job ${job.apify_run_id} ${runStatus}`);
+          
           // Update job as failed
           await supabase
             .from('social_jobs')
@@ -173,6 +209,8 @@ serve(async (req) => {
             .eq('id', job.account_id);
 
           errorCount++;
+        } else {
+          console.log(`⏳ Job ${job.apify_run_id} still ${runStatus || 'UNKNOWN'}, waiting...`);
         }
         // If still running, we leave it as is and check again next time
 

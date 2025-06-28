@@ -72,9 +72,17 @@ export const useInsightIQData = (creator_id: string): UseInsightIQDataReturn => 
 
       if (analyticsError) {
         console.error('Error fetching analytics data:', analyticsError);
+        throw analyticsError;
       }
 
-      // Also get creator profile data for any additional metrics
+      console.log('Analytics data fetched:', analyticsData);
+
+      // If we have analytics data, use it
+      if (analyticsData && analyticsData.length > 0) {
+        return analyticsData as InsightIQAnalytics[];
+      }
+
+      // If no analytics data, try to get basic data from creator_profiles
       const { data: profileData, error: profileError } = await supabase
         .from('creator_profiles')
         .select('follower_count, engagement_rate, updated_at')
@@ -83,15 +91,10 @@ export const useInsightIQData = (creator_id: string): UseInsightIQDataReturn => 
 
       if (profileError && profileError.code !== 'PGRST116') {
         console.error('Error fetching profile data:', profileError);
+        throw profileError;
       }
 
-      console.log('Analytics data fetched:', analyticsData);
-      console.log('Profile data fetched:', profileData);
-
-      // If we have analytics data, use it; otherwise create basic entries from profile data
-      if (analyticsData && analyticsData.length > 0) {
-        return analyticsData as InsightIQAnalytics[] || [];
-      } else if (profileData && (profileData.follower_count || profileData.engagement_rate)) {
+      if (profileData && (profileData.follower_count || profileData.engagement_rate)) {
         // Create a basic analytics entry from profile data
         console.log('Creating basic analytics from profile data');
         return [{
@@ -131,16 +134,16 @@ export const useInsightIQData = (creator_id: string): UseInsightIQDataReturn => 
           created_at: profileData.updated_at || new Date().toISOString(),
           updated_at: profileData.updated_at || new Date().toISOString(),
         }] as InsightIQAnalytics[];
-      } else {
-        console.log('No analytics or profile data found');
-        return [];
       }
+
+      console.log('No analytics or profile data found');
+      return [];
     },
     enabled: !!creator_id,
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 30, // 30 minutes
-    retry: 1,
-    retryOnMount: false,
+    retry: 3, // Increased retry count
+    retryOnMount: true,
   });
 
   return {
