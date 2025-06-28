@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, CheckCircle, AlertCircle, Instagram, Youtube, Twitter, Linkedin, Info, Play } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, Instagram, Youtube, Twitter, Linkedin, Info, Play, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { toast } from 'sonner';
@@ -24,6 +24,7 @@ export const SocialMediaConnectionPanel: React.FC = () => {
   const [handle, setHandle] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [isTriggerLoading, setIsTriggerLoading] = useState(false);
+  const [isProcessingLoading, setIsProcessingLoading] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error' | 'existing'>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [successDetails, setSuccessDetails] = useState<{
@@ -51,7 +52,6 @@ export const SocialMediaConnectionPanel: React.FC = () => {
         userId: user.id
       });
 
-      // Get the current session token for authentication
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session?.access_token) {
@@ -60,7 +60,6 @@ export const SocialMediaConnectionPanel: React.FC = () => {
 
       console.log('🔑 Session token found, making request...');
 
-      // Call the edge function with proper authentication
       const { data, error } = await supabase.functions.invoke('connect-social-account', {
         body: {
           platform: selectedPlatform,
@@ -83,7 +82,6 @@ export const SocialMediaConnectionPanel: React.FC = () => {
         throw new Error('No response received from the connection service');
       }
 
-      // Check for explicit success field in response
       if (data.success === true) {
         console.log('✅ Social account operation successful:', data);
         
@@ -97,33 +95,31 @@ export const SocialMediaConnectionPanel: React.FC = () => {
           scrapingTriggered: data.scraping_triggered === true
         });
         
-        // Show appropriate success toast
         if (isExisting) {
           toast.success(data.message || `${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)} account is already connected!`);
         } else {
           toast.success(data.message || `${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)} account connected successfully!`);
         }
         
-        // Refresh analytics data after successful connection
         console.log('🔄 Refreshing analytics data...');
         await queryClient.invalidateQueries({ 
           queryKey: ['insightiq-data', user.id] 
         });
         
-        // Also refresh any social accounts data
         await queryClient.invalidateQueries({ 
           queryKey: ['social-accounts', user.id] 
         });
         
-        // Reset form after successful connection
         setSelectedPlatform('');
         setHandle('');
         
-        // Wait a moment then refresh again to catch newly processed data
         setTimeout(() => {
           console.log('🔄 Secondary refresh for new data...');
           queryClient.invalidateQueries({ 
             queryKey: ['insightiq-data', user.id] 
+          });
+          queryClient.invalidateQueries({ 
+            queryKey: ['social-accounts', user.id] 
           });
         }, 2000);
         
@@ -138,7 +134,6 @@ export const SocialMediaConnectionPanel: React.FC = () => {
       setErrorMessage(errorMsg);
       setConnectionStatus('error');
       
-      // Show specific error messages
       if (errorMsg.includes('No valid session')) {
         toast.error('Session expired - please refresh the page and try again');
       } else if (errorMsg.includes('Authorization required')) {
@@ -175,9 +170,11 @@ export const SocialMediaConnectionPanel: React.FC = () => {
           toast.warning(`${data.errors} accounts had errors - check logs`);
         }
         
-        // Refresh analytics data after triggering scraping
         await queryClient.invalidateQueries({ 
           queryKey: ['insightiq-data', user.id] 
+        });
+        await queryClient.invalidateQueries({ 
+          queryKey: ['social-accounts', user.id] 
         });
         
       } else {
@@ -189,6 +186,47 @@ export const SocialMediaConnectionPanel: React.FC = () => {
       toast.error('Failed to trigger scraping');
     } finally {
       setIsTriggerLoading(false);
+    }
+  };
+
+  const handleProcessResults = async () => {
+    setIsProcessingLoading(true);
+    
+    try {
+      console.log('🔄 Processing Apify results...');
+      
+      const { data, error } = await supabase.functions.invoke('process-apify-results');
+      
+      if (error) {
+        console.error('❌ Process results error:', error);
+        toast.error(`Failed to process results: ${error.message}`);
+        return;
+      }
+      
+      if (data?.success) {
+        console.log('✅ Results processed:', data);
+        toast.success(`Processed ${data.processed} jobs successfully`);
+        
+        if (data.errors > 0) {
+          toast.warning(`${data.errors} jobs had errors`);
+        }
+        
+        await queryClient.invalidateQueries({ 
+          queryKey: ['insightiq-data', user.id] 
+        });
+        await queryClient.invalidateQueries({ 
+          queryKey: ['social-accounts', user.id] 
+        });
+        
+      } else {
+        toast.error(data?.error || 'Failed to process results');
+      }
+      
+    } catch (err) {
+      console.error('💥 Process results error:', err);
+      toast.error('Failed to process results');
+    } finally {
+      setIsProcessingLoading(false);
     }
   };
 
@@ -317,39 +355,74 @@ export const SocialMediaConnectionPanel: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Admin trigger button for testing */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Play className="h-5 w-5" />
-            Manual Scraping Trigger
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Manually trigger scraping for accounts that haven't been processed yet.
-          </p>
-        </CardHeader>
-        
-        <CardContent>
-          <Button
-            onClick={handleTriggerScraping}
-            disabled={isTriggerLoading}
-            variant="outline"
-            className="w-full"
-          >
-            {isTriggerLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Triggering Scraping...
-              </>
-            ) : (
-              <>
-                <Play className="mr-2 h-4 w-4" />
-                Trigger Social Media Scraping
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
+      {/* Admin control buttons */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Play className="h-5 w-5" />
+              Trigger Scraping
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Manually trigger scraping for accounts that haven't been processed yet.
+            </p>
+          </CardHeader>
+          
+          <CardContent>
+            <Button
+              onClick={handleTriggerScraping}
+              disabled={isTriggerLoading}
+              variant="outline"
+              className="w-full"
+            >
+              {isTriggerLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Triggering...
+                </>
+              ) : (
+                <>
+                  <Play className="mr-2 h-4 w-4" />
+                  Trigger Scraping
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <RefreshCw className="h-5 w-5" />
+              Process Results
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Check completed Apify jobs and update your analytics data.
+            </p>
+          </CardHeader>
+          
+          <CardContent>
+            <Button
+              onClick={handleProcessResults}
+              disabled={isProcessingLoading}
+              variant="outline"
+              className="w-full"
+            >
+              {isProcessingLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Process Results
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

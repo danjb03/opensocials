@@ -63,19 +63,78 @@ export const useInsightIQData = (creator_id: string): UseInsightIQDataReturn => 
 
       console.log('Fetching InsightIQ data for creator:', creator_id);
 
-      const { data, error } = await supabase
+      // First try to get data from creator_public_analytics
+      const { data: analyticsData, error: analyticsError } = await supabase
         .from('creator_public_analytics')
         .select('*')
         .eq('creator_id', creator_id)
         .order('fetched_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching InsightIQ data:', error);
-        throw error;
+      if (analyticsError) {
+        console.error('Error fetching analytics data:', analyticsError);
       }
 
-      console.log('InsightIQ data fetched:', data);
-      return data as InsightIQAnalytics[] || [];
+      // Also get creator profile data for any additional metrics
+      const { data: profileData, error: profileError } = await supabase
+        .from('creator_profiles')
+        .select('follower_count, engagement_rate, updated_at')
+        .eq('user_id', creator_id)
+        .single();
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error('Error fetching profile data:', profileError);
+      }
+
+      console.log('Analytics data fetched:', analyticsData);
+      console.log('Profile data fetched:', profileData);
+
+      // If we have analytics data, use it; otherwise create basic entries from profile data
+      if (analyticsData && analyticsData.length > 0) {
+        return analyticsData as InsightIQAnalytics[] || [];
+      } else if (profileData && (profileData.follower_count || profileData.engagement_rate)) {
+        // Create a basic analytics entry from profile data
+        console.log('Creating basic analytics from profile data');
+        return [{
+          id: crypto.randomUUID(),
+          creator_id,
+          platform: 'instagram', // Default platform
+          work_platform_id: null,
+          identifier: 'unknown',
+          fetched_at: profileData.updated_at || new Date().toISOString(),
+          profile_url: null,
+          image_url: null,
+          full_name: null,
+          is_verified: false,
+          follower_count: profileData.follower_count || 0,
+          engagement_rate: profileData.engagement_rate || 0,
+          platform_account_type: null,
+          introduction: null,
+          gender: null,
+          age_group: null,
+          language: null,
+          content_count: 0,
+          average_likes: 0,
+          average_comments: 0,
+          average_views: 0,
+          average_reels_views: 0,
+          sponsored_posts_performance: 0,
+          credibility_score: 0,
+          top_contents: null,
+          recent_contents: null,
+          sponsored_contents: null,
+          top_hashtags: null,
+          top_mentions: null,
+          top_interests: null,
+          brand_affinity: null,
+          audience: null,
+          pricing: null,
+          created_at: profileData.updated_at || new Date().toISOString(),
+          updated_at: profileData.updated_at || new Date().toISOString(),
+        }] as InsightIQAnalytics[];
+      } else {
+        console.log('No analytics or profile data found');
+        return [];
+      }
     },
     enabled: !!creator_id,
     staleTime: 1000 * 60 * 5, // 5 minutes
