@@ -1,122 +1,190 @@
-
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, Settings } from 'lucide-react';
-import { useCreatorProfileData } from '@/hooks/useCreatorProfileData';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
-import LoadingSpinner from '@/components/ui/loading-spinner';
-import ProfileHeader from '@/components/creator/profile/ProfileHeader';
-import ProfileOverviewTab from '@/components/creator/profile/ProfileOverviewTab';
-import ProfileEditTab from '@/components/creator/profile/ProfileEditTab';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useCreatorProfile } from '@/hooks/useCreatorProfile';
+import { UnifiedProfileForm } from '@/components/creator/UnifiedProfileForm';
+import { Button } from '@/components/ui/button';
+import { Edit2 } from 'lucide-react';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const CreatorProfile = () => {
-  const { user, creatorProfile } = useUnifiedAuth();
-  const { profile: profileData, isLoading: profileDataLoading } = useCreatorProfileData();
-  const [activeTab, setActiveTab] = useState('overview');
+  const { user, role } = useUnifiedAuth();
+  const { profile, isLoading } = useCreatorProfile();
   const [isEditing, setIsEditing] = useState(false);
 
-  console.log('🔍 Creator Profile Debug:', {
-    user: !!user,
-    creatorProfile: !!creatorProfile,
-    profileData: !!profileData,
-    isLoading: profileDataLoading
-  });
-
-  if (profileDataLoading) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <LoadingSpinner />
+      <div className="container mx-auto p-6 bg-background">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="w-8 h-8 border-t-2 border-b-2 border-white rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-white">Loading your profile...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
-  const handleEditProfile = () => {
-    setIsEditing(true);
-    setActiveTab('edit');
-  };
+  // Super admin preview mode
+  if (role === 'super_admin') {
+    return (
+      <div className="container mx-auto p-6 bg-background">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2 text-white">Creator Profile</h1>
+          <p className="text-muted-foreground">You are viewing the creator profile page as a super admin.</p>
+        </div>
+        
+        <div className="bg-card rounded-lg p-6 border border-border">
+          <p className="text-white text-center">Create a creator profile to see the full profile experience.</p>
+        </div>
+      </div>
+    );
+  }
 
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    setActiveTab('overview');
-  };
-
-  const handleSaveProfile = async (updatedProfile: any) => {
-    // Profile saving logic would go here
-    setIsEditing(false);
-    setActiveTab('overview');
-  };
-
-  // Transform creator profile for the card using the unified auth data
-  // Safely access the database fields (snake_case) from useUnifiedAuth
-  const creatorForCard = {
-    id: user?.id || '',
-    firstName: creatorProfile?.first_name || '',
-    lastName: creatorProfile?.last_name || '',
-    username: creatorProfile?.username || '',
-    bio: creatorProfile?.bio || '',
-    avatarUrl: creatorProfile?.avatar_url || '',
-    primaryPlatform: creatorProfile?.primary_platform || '',
-    platforms: creatorProfile?.platforms || [],
-    industries: creatorProfile?.industries || [],
-    audienceLocation: creatorProfile?.audience_location,
-    // Use the database fields with proper fallbacks
-    followerCount: creatorProfile?.follower_count || 0,
-    engagementRate: creatorProfile?.engagement_rate || 0,
-    creatorType: creatorProfile?.creator_type || '',
-  };
-
-  // Create a safe profile data object that matches what the edit form expects
-  // Use the transformed camelCase properties from useCreatorProfileData
-  const safeProfileData = profileData ? {
-    ...profileData,
-    platforms: profileData.platforms || [],
-    // Use the camelCase properties from the transformed CreatorProfile
-    followerCount: profileData.followerCount || '0',
-    engagementRate: profileData.engagementRate || '0%',
-    creatorType: profileData.creatorType || '',
-    visibilitySettings: profileData.visibilitySettings || {
-      showInstagram: true,
-      showTiktok: true,
-      showYoutube: true,
-      showLinkedin: true,
-      showLocation: true,
-      showAnalytics: true
-    }
-  } : null;
+  if (isEditing) {
+    return (
+      <ErrorBoundary>
+        <div className="container mx-auto p-6 bg-background">
+          {/* UnifiedProfileForm is reused for both onboarding and editing */}
+          <UnifiedProfileForm
+            isNewUser={false}
+            initialData={profile}
+            onProfileComplete={() => setIsEditing(false)}
+          />
+        </div>
+      </ErrorBoundary>
+    );
+  }
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl space-y-6">
-      <ProfileHeader onEditProfile={handleEditProfile} />
+    <ErrorBoundary>
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Cover + Avatar */}
+        {profile && (
+          <section className="relative bg-muted/20 rounded-lg overflow-hidden h-56 md:h-64">
+            {/* Cover image placeholder */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/40 to-secondary/40" />
+            {/* Avatar */}
+            <div className="absolute -bottom-10 left-6 flex items-end space-x-4">
+              {profile.avatarUrl ? (
+                <img
+                  src={profile.avatarUrl}
+                  alt="avatar"
+                  className="w-28 h-28 rounded-full border-4 border-background object-cover shadow-lg"
+                />
+              ) : (
+                <div className="w-28 h-28 rounded-full bg-muted flex items-center justify-center text-4xl text-muted-foreground border-4 border-background">
+                  {profile.firstName?.[0]}
+                </div>
+              )}
+              <div className="text-white pt-6">
+                <h1 className="text-2xl md:text-3xl font-bold">
+                  {profile.firstName} {profile.lastName}
+                </h1>
+                <p className="text-sm text-muted-foreground">{profile.creatorType || 'Creator'}</p>
+              </div>
+            </div>
+            {/* Edit Btn */}
+            <Button
+              size="sm"
+              className="absolute top-4 right-4 bg-white text-black hover:bg-gray-200"
+              onClick={() => setIsEditing(true)}
+            >
+              <Edit2 className="h-4 w-4 mr-2" />
+              Edit Profile
+            </Button>
+          </section>
+        )}
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-muted">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            <Eye className="w-4 h-4" />
-            Overview
-          </TabsTrigger>
-          <TabsTrigger value="edit" disabled={!isEditing}>
-            <Settings className="w-4 h-4" />
-            Edit
-          </TabsTrigger>
-        </TabsList>
+        <ErrorBoundary fallback={() => (
+          <div className="bg-card rounded-lg p-6 border border-border">
+            <p className="text-white text-center">Profile display temporarily unavailable</p>
+          </div>
+        )}>
+          {profile && (
+            <div className="space-y-8">
+              {/* Completion */}
+              <div className="bg-card p-4 rounded-lg border border-border">
+                <h3 className="text-lg font-medium text-white mb-2">Profile Completion</h3>
+                <div className="w-full bg-muted h-2 rounded">
+                  <div
+                    style={{ width: `${profile.completion || 80}%` }}
+                    className="h-2 rounded bg-primary transition-all"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {(profile.completion || 80)}% complete — finish connecting more socials to reach 100%.
+                </p>
+              </div>
 
-        <TabsContent value="overview" className="space-y-6">
-          <ProfileOverviewTab 
-            creatorForCard={creatorForCard}
-            creatorProfile={creatorProfile}
-          />
-        </TabsContent>
+              {/* Tabs */}
+              <div className="bg-card rounded-lg border border-border">
+                <TabContainer />
+              </div>
+            </div>
+          )}
+        </ErrorBoundary>
+      </div>
+    </ErrorBoundary>
+  );
+};
 
-        <TabsContent value="edit" className="space-y-6">
-          <ProfileEditTab
-            profileData={safeProfileData}
-            onSave={handleSaveProfile}
-            onCancel={handleCancelEdit}
-          />
-        </TabsContent>
-      </Tabs>
+/* ---------------- Tabs & Sections ---------------- */
+const TabContainer = () => {
+  const [tab, setTab] = useState<'overview'|'portfolio'|'audience'>('overview');
+  return (
+    <div className="p-6">
+      {/* Tab Headers */}
+      <div className="flex space-x-4 mb-6">
+        {['overview','portfolio','audience'].map(k => (
+          <button
+            key={k}
+            className={`text-sm font-medium capitalize px-3 py-1 rounded ${
+              tab===k ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-white'
+            }`}
+            onClick={() => setTab(k as any)}
+          >
+            {k}
+          </button>
+        ))}
+      </div>
+      {/* Tab Content */}
+      {tab === 'overview' && <OverviewSection />}
+      {tab === 'portfolio' && <PortfolioSection />}
+      {tab === 'audience' && <AudienceSection />}
     </div>
   );
 };
+
+const OverviewSection = () => {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Social Metrics Card Placeholder */}
+      <div className="bg-background rounded-lg p-4 border border-border">
+        <h4 className="font-semibold mb-4">Social Metrics</h4>
+        <p className="text-muted-foreground text-sm">Connect more social accounts to see detailed metrics.</p>
+      </div>
+      {/* About Card */}
+      <div className="bg-background rounded-lg p-4 border border-border">
+        <h4 className="font-semibold mb-4">About</h4>
+        <p className="text-muted-foreground text-sm">
+          Showcase your bio, experience, languages and location here. (coming soon)
+        </p>
+      </div>
+    </div>
+  );
+};
+
+const PortfolioSection = () => (
+  <div className="text-muted-foreground text-sm">
+    Upload your best work to impress brands. (portfolio feature coming soon)
+  </div>
+);
+
+const AudienceSection = () => (
+  <div className="text-muted-foreground text-sm">
+    Audience demographics and insights will appear here once enough data is available.
+  </div>
+);
+
 
 export default CreatorProfile;

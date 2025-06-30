@@ -1,826 +1,316 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders } from "../shared/admin-utils.ts";
 
-// Platform-specific data transformers
-const dataTransformers = {
-  instagram: (rawData: any) => {
-    // The official `apify/instagram-profile-scraper` returns
-    // an object with the main profile details nested under `profile`
-    // and posts under `latestPosts` (or `posts` for some versions).
-    const root    = rawData[0] || {};
-    const profile = root.profile || {};           // new location for profile stats
-    const posts   = root.latestPosts || root.posts || [];
-
-    const lastMonth = new Date();
-    lastMonth.setDate(lastMonth.getDate() - 30);
-    
-    const postsLast30Days = posts.filter((post: any) => 
-      new Date(post.timestamp) >= lastMonth
-    );
-    
-    // Calculate averages
-    const likes = posts.map((p: any) => p.likesCount || 0);
-    const comments = posts.map((p: any) => p.commentsCount || 0);
-    const views = posts.filter((p: any) => p.videoViewCount > 0).map((p: any) => p.videoViewCount);
-    
-    const likesAvg = likes.length ? Math.round(likes.reduce((a: number, b: number) => a + b, 0) / likes.length) : 0;
-    const commentsAvg = comments.length ? Math.round(comments.reduce((a: number, b: number) => a + b, 0) / comments.length) : 0;
-    const viewsAvg = views.length ? Math.round(views.reduce((a: number, b: number) => a + b, 0) / views.length) : 0;
-    
-    // Followers count is now under `profile.followersCount`
-    const followerCount =
-      profile.followersCount ?? profile.followers ?? 0;
-
-    // Calculate engagement rate
-    const engagementRate = followerCount > 0
-      ? parseFloat(((likesAvg + commentsAvg) / followerCount * 100).toFixed(2))
-      : 0;
-    
-    // Get last post date
-    const lastPostDate = posts.length > 0 
-      ? new Date(posts[0].timestamp).toISOString().split('T')[0]
-      : null;
-    
-    // Calculate posts per week
-    const postsPerWeek = posts.length > 0 
-      ? parseFloat((posts.length / (posts.length > 7 ? 4 : 1)).toFixed(1))
-      : 0;
-    
-    // Get audience insights if available
-    const audienceInsights = root.audienceInsights || {};
-    
-    return {
-      // Platform presence
-      profile_image:
-        profile.profilePicUrlHD ||
-        profile.profilePicUrl   ||
-        null,
-      username: profile.username,
-      display_name: profile.fullName,
-      account_type:
-        profile.categoryName ||
-        profile.businessCategory ||
-        (profile.isBusinessAccount ? 'Business' : 'Personal'),
-      is_verified: profile.isVerified || false,
-      
-      // Audience size
-      followers: followerCount,
-      
-      // Engagement performance
-      engagement_rate: engagementRate,
-      views_avg: viewsAvg,
-      likes_avg: likesAvg,
-      comments_avg: commentsAvg,
-      peak_reach: Math.max(...views, 0),
-      
-      // Audience insights
-      gender_male: audienceInsights.genderMale || null,
-      gender_female: audienceInsights.genderFemale || null,
-      gender_other: audienceInsights.genderOther || null,
-      age_ranges: audienceInsights.ageRanges || null,
-      top_countries: audienceInsights.topCountries || null,
-      top_cities: audienceInsights.topCities || null,
-      languages: audienceInsights.languages || null,
-      active_hours: audienceInsights.activeHours || null,
-      
-      // Posting frequency & recency
-      posts_per_week: postsPerWeek,
-      last_post_date: lastPostDate,
-      posts_30d: postsLast30Days.length,
-      inactivity_days: lastPostDate 
-        ? Math.round((new Date().getTime() - new Date(lastPostDate).getTime()) / (1000 * 60 * 60 * 24))
-        : null
-    };
-  },
-  
-  tiktok: {
-    // Primary transformer for profile data
-    primary: (rawData: any) => {
-      // Two possible shapes:
-      //  1) Official apify/tiktok-scraper  -> data.user, data.user.stats
-      //  2) Clockworks actors              -> everything flat
-      const root = rawData[0] || {};
-      const user = root.user || root;            // user-level info
-      const stats = user.stats || {};            // follower / following counts
-      
-      return {
-        // Platform presence
-        profile_image:
-          user.avatarLarger ||
-          user.avatarMedium ||
-          user.avatarThumb ||
-          null,
-        username: user.uniqueId,
-        display_name: user.nickname,
-        account_type: user.isCommerce ? 'Business' : 'Personal',
-        is_verified: user.verified || false,
-        
-        // Audience size
-        followers: stats.followerCount ?? root.followerCount ?? 0,
-        following: stats.followingCount ?? root.followingCount ?? 0,
-        
-        // Basic profile data
-        bio: user.signature || '',
-        website: user.bioLink || null
-      };
-    },
-    
-    // Secondary transformer for engagement data
-    secondary: (rawData: any) => {
-      const data = rawData[0] || {};
-      // Official scraper stores videos in `collector`, clockworks in `items`
-      const videos = data.collector || data.items || [];
-      const lastMonth = new Date();
-      lastMonth.setDate(lastMonth.getDate() - 30);
-      
-      const videosLast30Days = videos.filter((video: any) => 
-        new Date(video.createTime) >= lastMonth
-      );
-      
-      // Calculate averages
-      const likes = videos.map((v: any) => v.stats?.diggCount || 0);
-      const comments = videos.map((v: any) => v.stats?.commentCount || 0);
-      const views = videos.map((v: any) => v.stats?.playCount || 0);
-      
-      const likesAvg = likes.length ? Math.round(likes.reduce((a: number, b: number) => a + b, 0) / likes.length) : 0;
-      const commentsAvg = comments.length ? Math.round(comments.reduce((a: number, b: number) => a + b, 0) / comments.length) : 0;
-      const viewsAvg = views.length ? Math.round(views.reduce((a: number, b: number) => a + b, 0) / views.length) : 0;
-      
-      // Get last post date
-      const lastPostDate = videos.length > 0 
-        ? new Date(videos[0].createTime).toISOString().split('T')[0]
-        : null;
-      
-      // Calculate posts per week
-      const postsPerWeek = videos.length > 0 
-        ? parseFloat((videos.length / (videos.length > 7 ? 4 : 1)).toFixed(1))
-        : 0;
-      
-      return {
-        // Engagement performance
-        views_avg: viewsAvg,
-        likes_avg: likesAvg,
-        comments_avg: commentsAvg,
-        peak_reach: Math.max(...views, 0),
-        
-        // Posting frequency & recency
-        posts_per_week: postsPerWeek,
-        last_post_date: lastPostDate,
-        posts_30d: videosLast30Days.length,
-        inactivity_days: lastPostDate 
-          ? Math.round((new Date().getTime() - new Date(lastPostDate).getTime()) / (1000 * 60 * 60 * 24))
-          : null
-      };
-    },
-    
-    // Merge data from primary and secondary transformers
-    merge: (primaryData: any, secondaryData: any) => {
-      // Calculate engagement rate using followers from primary and engagement from secondary
-      const engagementRate = primaryData.followers > 0 
-        ? parseFloat(((secondaryData.likes_avg + secondaryData.comments_avg) / primaryData.followers * 100).toFixed(2))
-        : 0;
-      
-      return {
-        ...primaryData,
-        ...secondaryData,
-        engagement_rate: engagementRate
-      };
-    }
-  },
-  
-  youtube: (rawData: any) => {
-    const data = rawData[0] || {}; // YouTube usually returns a single item
-    const videos = data.videos || [];
-    const lastMonth = new Date();
-    lastMonth.setDate(lastMonth.getDate() - 30);
-    
-    const videosLast30Days = videos.filter((video: any) => 
-      new Date(video.publishedAt) >= lastMonth
-    );
-    
-    // Calculate averages
-    const likes = videos.map((v: any) => v.likeCount || 0);
-    const comments = videos.map((v: any) => v.commentCount || 0);
-    const views = videos.map((v: any) => v.viewCount || 0);
-    
-    const likesAvg = likes.length ? Math.round(likes.reduce((a: number, b: number) => a + b, 0) / likes.length) : 0;
-    const commentsAvg = comments.length ? Math.round(comments.reduce((a: number, b: number) => a + b, 0) / comments.length) : 0;
-    const viewsAvg = views.length ? Math.round(views.reduce((a: number, b: number) => a + b, 0) / views.length) : 0;
-    
-    // Calculate engagement rate
-    const engagementRate = data.subscriberCount > 0 
-      ? parseFloat(((likesAvg + commentsAvg) / data.subscriberCount * 100).toFixed(2))
-      : 0;
-    
-    // Get last post date
-    const lastPostDate = videos.length > 0 
-      ? new Date(videos[0].publishedAt).toISOString().split('T')[0]
-      : null;
-    
-    // Calculate posts per week
-    const postsPerWeek = videos.length > 0 
-      ? parseFloat((videos.length / (videos.length > 7 ? 4 : 1)).toFixed(1))
-      : 0;
-    
-    return {
-      // Platform presence
-      profile_image: data.thumbnails?.high?.url || data.thumbnails?.default?.url,
-      username: data.customUrl?.replace(/^@/, '') || data.title,
-      display_name: data.title,
-      is_verified: data.verified || false,
-      
-      // Audience size
-      followers: data.subscriberCount || 0,
-      
-      // Engagement performance
-      engagement_rate: engagementRate,
-      views_avg: viewsAvg,
-      likes_avg: likesAvg,
-      comments_avg: commentsAvg,
-      peak_reach: Math.max(...views, 0),
-      
-      // Posting frequency & recency
-      posts_per_week: postsPerWeek,
-      last_post_date: lastPostDate,
-      posts_30d: videosLast30Days.length,
-      inactivity_days: lastPostDate 
-        ? Math.round((new Date().getTime() - new Date(lastPostDate).getTime()) / (1000 * 60 * 60 * 24))
-        : null
-    };
-  },
-  
-  linkedin: {
-    // Primary transformer for post engagement
-    primary: (rawData: any) => {
-      const data = rawData[0] || {}; // LinkedIn usually returns a single item
-      const posts = data.posts || [];
-      const lastMonth = new Date();
-      lastMonth.setDate(lastMonth.getDate() - 30);
-      
-      const postsLast30Days = posts.filter((post: any) => 
-        new Date(post.date) >= lastMonth
-      );
-      
-      // Calculate averages
-      const likes = posts.map((p: any) => p.likeCount || 0);
-      const comments = posts.map((p: any) => p.commentCount || 0);
-      
-      const likesAvg = likes.length ? Math.round(likes.reduce((a: number, b: number) => a + b, 0) / likes.length) : 0;
-      const commentsAvg = comments.length ? Math.round(comments.reduce((a: number, b: number) => a + b, 0) / comments.length) : 0;
-      
-      // Get last post date
-      const lastPostDate = posts.length > 0 
-        ? new Date(posts[0].date).toISOString().split('T')[0]
-        : null;
-      
-      // Calculate posts per week
-      const postsPerWeek = posts.length > 0 
-        ? parseFloat((posts.length / (posts.length > 7 ? 4 : 1)).toFixed(1))
-        : 0;
-      
-      return {
-        // Platform presence
-        profile_image: data.profilePicture || null,
-        username: data.username || data.publicIdentifier,
-        display_name: data.fullName || data.title,
-        account_type: data.premium ? 'Premium' : 'Standard',
-        is_verified: false, // LinkedIn doesn't have verification badges like other platforms
-        
-        // Basic metrics
-        headline: data.headline || '',
-        company: data.company || '',
-        
-        // Engagement performance
-        likes_avg: likesAvg,
-        comments_avg: commentsAvg,
-        
-        // Posting frequency & recency
-        posts_per_week: postsPerWeek,
-        last_post_date: lastPostDate,
-        posts_30d: postsLast30Days.length,
-        inactivity_days: lastPostDate 
-          ? Math.round((new Date().getTime() - new Date(lastPostDate).getTime()) / (1000 * 60 * 60 * 24))
-          : null
-      };
-    },
-    
-    // Secondary transformer for follower metrics
-    secondary: (rawData: any) => {
-      const data = rawData[0] || {};
-      
-      return {
-        // Audience size
-        followers: data.followers || 0,
-        connections: data.connections || 0
-      };
-    },
-    
-    // Merge data from primary and secondary transformers
-    merge: (primaryData: any, secondaryData: any) => {
-      // Calculate engagement rate using followers from secondary and engagement from primary
-      const engagementRate = secondaryData.followers > 0 
-        ? parseFloat(((primaryData.likes_avg + primaryData.comments_avg) / secondaryData.followers * 100).toFixed(2))
-        : 0;
-      
-      return {
-        ...primaryData,
-        ...secondaryData,
-        engagement_rate: engagementRate
-      };
-    }
-  }
+// Shared headers for CORS
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Helper function to determine if a platform uses dual actors
-function usesDualActors(platform: string, actorId: any): boolean {
-  // If actorId is a JSON string, parse it
-  if (typeof actorId === 'string' && (actorId.startsWith('{') || actorId.includes('primary'))) {
-    try {
-      const parsed = JSON.parse(actorId);
-      return parsed && parsed.primary && parsed.secondary;
-    } catch (e) {
-      return false;
+/**
+ * A robust helper function to extract a value from a potentially nested object
+ * by trying a list of possible keys.
+ * @param data The raw data object from Apify.
+ * @param keys An array of possible keys to try.
+ * @param defaultValue The value to return if no key is found.
+ * @returns The found value or the default value.
+ */
+function extractValue(data: any, keys: string[], defaultValue: any = null) {
+  if (!data) return defaultValue;
+  for (const key of keys) {
+    if (data[key] !== undefined && data[key] !== null) {
+      return data[key];
     }
   }
-  
-  // If actorId is already an object, check for primary and secondary keys
-  if (typeof actorId === 'object' && actorId !== null) {
-    return actorId.primary && actorId.secondary;
+  // Fallback to search nested objects if no top-level key is found
+  for (const prop in data) {
+    if (typeof data[prop] === 'object' && data[prop] !== null) {
+      for (const key of keys) {
+        if (data[prop][key] !== undefined && data[prop][key] !== null) {
+          return data[prop][key];
+        }
+      }
+    }
   }
-  
-  return false;
+  return defaultValue;
 }
 
-// Helper function to parse actor ID from database
-function parseActorId(actorId: any): { primary: string; secondary?: string } {
-  if (typeof actorId === 'string') {
-    // Try to parse as JSON
-    try {
-      const parsed = JSON.parse(actorId);
-      if (parsed && parsed.primary) {
-        return {
-          primary: parsed.primary,
-          secondary: parsed.secondary
-        };
-      }
-    } catch (e) {
-      // Not a JSON string, treat as a single actor ID
-      return { primary: actorId };
-    }
-  } else if (typeof actorId === 'object' && actorId !== null) {
-    // Already an object
+/**
+ * A collection of transformer functions to map raw Apify data from different
+ * platforms into our standardized `social_metrics` schema.
+ */
+const dataTransformers = {
+  instagram: (rawData: any) => {
+    const followers = extractValue(rawData, ['followersCount', 'followers_count', 'followers']);
+    const posts = extractValue(rawData, ['latestPosts', 'posts', 'items'], []);
+    const avgLikes = posts.slice(0, 10).reduce((sum, post) => sum + (extractValue(post, ['likesCount', 'likes'], 0)), 0) / (posts.length || 1);
+    const avgComments = posts.slice(0, 10).reduce((sum, post) => sum + (extractValue(post, ['commentsCount', 'comments'], 0)), 0) / (posts.length || 1);
+    
     return {
-      primary: actorId.primary,
-      secondary: actorId.secondary
+      username: extractValue(rawData, ['username', 'handle']),
+      profile_url: `https://instagram.com/${extractValue(rawData, ['username', 'handle'])}`,
+      profile_picture_url: extractValue(rawData, ['profilePicUrl', 'profile_picture_url']),
+      followers_count: followers,
+      following_count: extractValue(rawData, ['followsCount', 'following_count']),
+      bio: extractValue(rawData, ['biography', 'bio']),
+      location: extractValue(rawData, ['location']),
+      engagement_rate: followers > 0 ? ((avgLikes + avgComments) / followers) * 100 : 0,
+      post_frequency: null, // Needs historical data to calculate
+      is_verified: extractValue(rawData, ['verified', 'isVerified'], false),
+      account_type: extractValue(rawData, ['isBusinessAccount']) ? 'business' : 'personal',
+      platform_data: {
+        avg_likes: avgLikes,
+        avg_comments: avgComments,
+        posts_count: extractValue(rawData, ['postsCount', 'posts_count']),
+      }
     };
-  }
-  
-  // Default fallback
-  return { primary: String(actorId) };
-}
+  },
+  tiktok: (primaryData: any, secondaryData: any) => {
+    const followers = extractValue(primaryData, ['followerCount', 'followers']);
+    const videos = extractValue(secondaryData, ['videos', 'items'], []);
+    const avgLikes = videos.slice(0, 10).reduce((sum, video) => sum + (extractValue(video, ['diggCount', 'likes'], 0)), 0) / (videos.length || 1);
+    const avgComments = videos.slice(0, 10).reduce((sum, video) => sum + (extractValue(video, ['commentCount', 'comments'], 0)), 0) / (videos.length || 1);
+    const avgViews = videos.slice(0, 10).reduce((sum, video) => sum + (extractValue(video, ['playCount', 'views'], 0)), 0) / (videos.length || 1);
 
-serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders, status: 204 });
-  }
-  
-  try {
-    // Initialize Supabase client
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
-    
-    // Get Apify token
-    const APIFY_TOKEN = Deno.env.get("APIFY_TOKEN");
-    if (!APIFY_TOKEN) {
-      throw new Error("APIFY_TOKEN environment variable not set");
-    }
-    
-    // Fetch all running jobs
-    const { data: runningJobs, error: jobsError } = await supabase
-      .from("social_jobs")
-      .select(`
-        id,
-        account_id,
-        apify_run_id,
-        actor_type,
-        social_accounts:creators_social_accounts (
-          id,
-          creator_id,
-          platform,
-          handle,
-          actor_id
-        )
-      `)
-      .in("status", ["running", "pending"])
-      .order("started_at", { ascending: true });
-    
-    if (jobsError) {
-      throw new Error(`Failed to fetch running jobs: ${jobsError.message}`);
-    }
-    
-    if (!runningJobs || runningJobs.length === 0) {
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: "No running jobs to process", 
-          processed: 0 
-        }),
-        { headers: corsHeaders }
-      );
-    }
-    
-    // Process each job
-    const results = [];
-    
-    for (const job of runningJobs) {
-      try {
-        // Check job status with Apify
-        const apifyResponse = await fetch(
-          `https://api.apify.com/v2/actor-runs/${job.apify_run_id}?token=${APIFY_TOKEN}`
-        );
-        
-        if (!apifyResponse.ok) {
-          throw new Error(`Apify API error: ${apifyResponse.statusText}`);
-        }
-        
-        const apifyData = await apifyResponse.json();
-        const jobStatus = apifyData.data.status;
-        
-        // Update job status in database
-        await supabase
-          .from("social_jobs")
-          .update({
-            status: jobStatus.toLowerCase(),
-            finished_at: jobStatus === "SUCCEEDED" || jobStatus === "FAILED" || jobStatus === "TIMED_OUT" || jobStatus === "ABORTED" 
-              ? new Date().toISOString() 
-              : null
-          })
-          .eq("id", job.id);
-        
-        // If job succeeded, process the results
-        if (jobStatus === "SUCCEEDED") {
-          // Get the social account
-          const account = job.social_accounts;
-          
-          if (!account) {
-            throw new Error(`Social account not found for job ${job.id}`);
-          }
-          
-          // Determine if platform uses dual actors
-          const hasDualActors = usesDualActors(account.platform, account.actor_id);
-          
-          // Check if this is a dual-actor setup and if we need to wait for the other job
-          if (hasDualActors) {
-            // Mark this job as succeeded
-            await supabase
-              .from("social_jobs")
-              .update({ 
-                status: "succeeded"
-              })
-              .eq("id", job.id);
-            
-            // Check if the other job for this account is also succeeded
-            const { data: otherJob, error: otherJobError } = await supabase
-              .from("social_jobs")
-              .select("id, status")
-              .eq("account_id", account.id)
-              .neq("id", job.id)
-              .eq("actor_type", job.actor_type === "primary" ? "secondary" : "primary")
-              .maybeSingle();
-            
-            if (otherJobError) {
-              console.error(`Error checking other job: ${otherJobError.message}`);
-            }
-            
-            // If other job is not succeeded yet, wait for it
-            if (!otherJob || otherJob.status !== "succeeded") {
-              results.push({
-                jobId: job.id,
-                status: "waiting_for_other_job",
-                message: `Job succeeded, waiting for ${job.actor_type === "primary" ? "secondary" : "primary"} job to complete`
-              });
-              continue;
-            }
-            
-            // Both jobs are succeeded, mark them with all_jobs_complete flag
-            await supabase
-              .from("social_jobs")
-              .update({ 
-                all_jobs_complete: true 
-              })
-              .in("id", [job.id, otherJob.id]);
-            
-            // Get raw data from both jobs
-            const { data: primaryJob, error: primaryJobError } = await supabase
-              .from("social_jobs")
-              .select("raw_response")
-              .eq("account_id", account.id)
-              .eq("actor_type", "primary")
-              .single();
-            
-            const { data: secondaryJob, error: secondaryJobError } = await supabase
-              .from("social_jobs")
-              .select("raw_response")
-              .eq("account_id", account.id)
-              .eq("actor_type", "secondary")
-              .single();
-            
-            if (primaryJobError || secondaryJobError) {
-              throw new Error(`Failed to fetch job data: ${primaryJobError?.message || secondaryJobError?.message}`);
-            }
-            
-            if (!primaryJob.raw_response || !secondaryJob.raw_response) {
-              // Fetch dataset items from Apify
-              const primaryItems = await fetchApifyDataset(job.apify_run_id, APIFY_TOKEN);
-              const secondaryItems = await fetchApifyDataset(otherJob.apify_run_id, APIFY_TOKEN);
-              
-              // Store raw responses
-              await supabase
-                .from("social_jobs")
-                .update({ raw_response: primaryItems })
-                .eq("account_id", account.id)
-                .eq("actor_type", "primary");
-              
-              await supabase
-                .from("social_jobs")
-                .update({ raw_response: secondaryItems })
-                .eq("account_id", account.id)
-                .eq("actor_type", "secondary");
-              
-              // Process data using transformers
-              const primaryData = dataTransformers[account.platform].primary(primaryItems);
-              const secondaryData = dataTransformers[account.platform].secondary(secondaryItems);
-              const mergedData = dataTransformers[account.platform].merge(primaryData, secondaryData);
-              
-              // Add metrics to database
-              await processAndStoreMetrics(supabase, account, mergedData);
-            } else {
-              // Use stored raw responses
-              const primaryItems = primaryJob.raw_response;
-              const secondaryItems = secondaryJob.raw_response;
-              
-              // Process data using transformers
-              const primaryData = dataTransformers[account.platform].primary(primaryItems);
-              const secondaryData = dataTransformers[account.platform].secondary(secondaryItems);
-              const mergedData = dataTransformers[account.platform].merge(primaryData, secondaryData);
-              
-              // Add metrics to database
-              await processAndStoreMetrics(supabase, account, mergedData);
-            }
-          } else {
-            // Single actor setup
-            // Mark job as complete
-            await supabase
-              .from("social_jobs")
-              .update({ 
-                status: "succeeded",
-                all_jobs_complete: true
-              })
-              .eq("id", job.id);
-            
-            // Check if we already have raw response
-            const { data: jobData, error: jobDataError } = await supabase
-              .from("social_jobs")
-              .select("raw_response")
-              .eq("id", job.id)
-              .single();
-            
-            if (jobDataError) {
-              throw new Error(`Failed to fetch job data: ${jobDataError.message}`);
-            }
-            
-            let items;
-            
-            if (!jobData.raw_response) {
-              // Fetch dataset items from Apify
-              items = await fetchApifyDataset(job.apify_run_id, APIFY_TOKEN);
-              
-              // Store raw response
-              await supabase
-                .from("social_jobs")
-                .update({ raw_response: items })
-                .eq("id", job.id);
-            } else {
-              items = jobData.raw_response;
-            }
-            
-            // Process data using transformer
-            const transformedData = dataTransformers[account.platform](items);
-            
-            // Add metrics to database
-            await processAndStoreMetrics(supabase, account, transformedData);
-          }
-          
-          results.push({
-            jobId: job.id,
-            status: "processed",
-            message: "Job processed successfully"
-          });
-        } else if (jobStatus === "FAILED" || jobStatus === "TIMED_OUT" || jobStatus === "ABORTED") {
-          // Update account status to failed
-          await supabase
-            .from("creators_social_accounts")
-            .update({
-              status: "failed",
-              error: `Apify job ${jobStatus.toLowerCase()}`
-            })
-            .eq("id", job.social_accounts.id);
-          
-          results.push({
-            jobId: job.id,
-            status: "failed",
-            message: `Job ${jobStatus.toLowerCase()}`
-          });
-        } else {
-          // Job still running
-          results.push({
-            jobId: job.id,
-            status: "running",
-            message: `Job status: ${jobStatus}`
-          });
-        }
-      } catch (err) {
-        console.error(`Error processing job ${job.id}:`, err);
-        
-        // Update job status to failed
-        await supabase
-          .from("social_jobs")
-          .update({
-            status: "failed",
-            finished_at: new Date().toISOString(),
-            error: err.message
-          })
-          .eq("id", job.id);
-        
-        // Update account status to failed
-        if (job.social_accounts) {
-          await supabase
-            .from("creators_social_accounts")
-            .update({
-              status: "failed",
-              error: err.message
-            })
-            .eq("id", job.social_accounts.id);
-        }
-        
-        results.push({
-          jobId: job.id,
-          status: "error",
-          message: err.message
-        });
+    return {
+      username: extractValue(primaryData, ['uniqueId', 'username']),
+      profile_url: `https://tiktok.com/@${extractValue(primaryData, ['uniqueId', 'username'])}`,
+      profile_picture_url: extractValue(primaryData, ['avatarLarger', 'avatarThumb']),
+      followers_count: followers,
+      following_count: extractValue(primaryData, ['followingCount']),
+      bio: extractValue(primaryData, ['signature', 'bio']),
+      location: null,
+      engagement_rate: followers > 0 ? ((avgLikes + avgComments) / followers) * 100 : 0,
+      post_frequency: null,
+      is_verified: extractValue(primaryData, ['verified']),
+      account_type: extractValue(primaryData, ['isCommerce']) ? 'business' : 'personal',
+      platform_data: {
+        avg_likes: avgLikes,
+        avg_comments: avgComments,
+        avg_views: avgViews,
+        total_likes: extractValue(primaryData, ['heartCount', 'likes']),
+        videos_count: extractValue(primaryData, ['videoCount', 'videos']),
       }
-    }
-    
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: `Processed ${results.length} jobs`,
-        processed: results.length,
-        results
-      }),
-      { headers: corsHeaders }
-    );
-    
-  } catch (err) {
-    console.error("Unexpected error:", err);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: err.message
-      }),
-      {
-        headers: corsHeaders,
-        status: 500
-      }
-    );
-  }
-});
+    };
+  },
+  youtube: (primaryData: any, secondaryData: any) => {
+    const subscribers = extractValue(primaryData, ['subscriberCount', 'subscribers']);
+    const videos = extractValue(secondaryData, ['videos', 'items'], []);
+    const avgLikes = videos.slice(0, 10).reduce((sum, video) => sum + (extractValue(video, ['likeCount', 'likes'], 0)), 0) / (videos.length || 1);
+    const avgComments = videos.slice(0, 10).reduce((sum, video) => sum + (extractValue(video, ['commentCount', 'comments'], 0)), 0) / (videos.length || 1);
+    const avgViews = videos.slice(0, 10).reduce((sum, video) => sum + (extractValue(video, ['viewCount', 'views'], 0)), 0) / (videos.length || 1);
 
-// Helper function to fetch dataset items from Apify
+    return {
+      username: extractValue(primaryData, ['title', 'channelTitle']),
+      profile_url: `https://youtube.com/channel/${extractValue(primaryData, ['id', 'channelId'])}`,
+      profile_picture_url: extractValue(primaryData, ['thumbnails', 'avatarUrl'])?.high?.url,
+      followers_count: subscribers,
+      following_count: null,
+      bio: extractValue(primaryData, ['description']),
+      location: extractValue(primaryData, ['country']),
+      engagement_rate: avgViews > 0 ? ((avgLikes + avgComments) / avgViews) * 100 : 0,
+      post_frequency: null,
+      is_verified: extractValue(primaryData, ['verified']),
+      account_type: null,
+      platform_data: {
+        avg_likes: avgLikes,
+        avg_comments: avgComments,
+        avg_views: avgViews,
+        total_views: extractValue(primaryData, ['viewCount', 'views']),
+        video_count: extractValue(primaryData, ['videoCount', 'videos']),
+      }
+    };
+  },
+  linkedin: (primaryData: any, secondaryData: any) => {
+    const followers = extractValue(secondaryData, ['followerCount', 'followers']);
+    const posts = extractValue(primaryData, ['posts', 'activity'], []);
+    const avgLikes = posts.slice(0, 10).reduce((sum, post) => sum + (extractValue(post, ['likeCount', 'likes'], 0)), 0) / (posts.length || 1);
+    const avgComments = posts.slice(0, 10).reduce((sum, post) => sum + (extractValue(post, ['commentCount', 'comments'], 0)), 0) / (posts.length || 1);
+
+    return {
+      username: extractValue(primaryData, ['vanityName', 'publicIdentifier']),
+      profile_url: `https://linkedin.com/in/${extractValue(primaryData, ['vanityName', 'publicIdentifier'])}`,
+      profile_picture_url: extractValue(primaryData, ['profilePicture', 'avatar']),
+      followers_count: followers,
+      following_count: extractValue(primaryData, ['connectionsCount', 'connections']),
+      bio: extractValue(primaryData, ['headline', 'summary']),
+      location: extractValue(primaryData, ['locationName', 'location']),
+      engagement_rate: followers > 0 ? ((avgLikes + avgComments) / followers) * 100 : 0,
+      post_frequency: null,
+      is_verified: false,
+      account_type: extractValue(primaryData, ['companyPage']) ? 'company' : 'personal',
+      platform_data: {
+        avg_likes: avgLikes,
+        avg_comments: avgComments,
+        industry: extractValue(primaryData, ['industryName']),
+      }
+    };
+  },
+  twitter: (rawData: any) => {
+    const followers = extractValue(rawData, ['followers_count', 'followersCount']);
+    const tweets = extractValue(rawData, ['statuses', 'tweets'], []);
+    const avgLikes = tweets.slice(0, 10).reduce((sum, tweet) => sum + (extractValue(tweet, ['favorite_count', 'likes'], 0)), 0) / (tweets.length || 1);
+    const avgRetweets = tweets.slice(0, 10).reduce((sum, tweet) => sum + (extractValue(tweet, ['retweet_count', 'retweets'], 0)), 0) / (tweets.length || 1);
+
+    return {
+      username: extractValue(rawData, ['screen_name', 'username']),
+      profile_url: `https://twitter.com/${extractValue(rawData, ['screen_name', 'username'])}`,
+      profile_picture_url: extractValue(rawData, ['profile_image_url_https', 'profile_image_url']),
+      followers_count: followers,
+      following_count: extractValue(rawData, ['friends_count', 'followingCount']),
+      bio: extractValue(rawData, ['description', 'bio']),
+      location: extractValue(rawData, ['location']),
+      engagement_rate: followers > 0 ? ((avgLikes + avgRetweets) / followers) * 100 : 0,
+      post_frequency: null,
+      is_verified: extractValue(rawData, ['verified']),
+      account_type: null,
+      platform_data: {
+        avg_likes: avgLikes,
+        avg_retweets: avgRetweets,
+        tweet_count: extractValue(rawData, ['statuses_count', 'tweetCount']),
+      }
+    };
+  },
+};
+
+/**
+ * Fetches the dataset from a completed Apify run.
+ * @param runId The ID of the Apify actor run.
+ * @param apifyToken Your Apify API token.
+ * @returns The dataset items.
+ */
 async function fetchApifyDataset(runId: string, apifyToken: string) {
-  // Get dataset ID from run
-  const runResponse = await fetch(
-    `https://api.apify.com/v2/actor-runs/${runId}?token=${apifyToken}`
-  );
-  
-  if (!runResponse.ok) {
-    throw new Error(`Failed to fetch run data: ${runResponse.statusText}`);
-  }
+  const runResponse = await fetch(`https://api.apify.com/v2/actor-runs/${runId}?token=${apifyToken}`);
+  if (!runResponse.ok) throw new Error(`Failed to fetch run data for ${runId}`);
   
   const runData = await runResponse.json();
   const datasetId = runData.data.defaultDatasetId;
+  if (!datasetId) throw new Error(`No dataset found for run ${runId}`);
   
-  if (!datasetId) {
-    throw new Error("No dataset found for this run");
-  }
-  
-  // Fetch dataset items
-  const datasetResponse = await fetch(
-    `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apifyToken}`
-  );
-  
-  if (!datasetResponse.ok) {
-    throw new Error(`Failed to fetch dataset items: ${datasetResponse.statusText}`);
-  }
+  const datasetResponse = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${apifyToken}`);
+  if (!datasetResponse.ok) throw new Error(`Failed to fetch dataset items for ${datasetId}`);
   
   return await datasetResponse.json();
 }
 
-// Helper function to process and store metrics
-async function processAndStoreMetrics(supabase: any, account: any, metricsData: any) {
-  try {
-    // Calculate follower growth metrics
-    // Get previous metrics
-    const { data: prevMetrics, error: prevMetricsError } = await supabase
-      .from("social_metrics")
-      .select("followers, snapshot_ts")
+/**
+ * Processes a completed job, normalizes data, and upserts it into the database.
+ * @param supabase The Supabase client instance.
+ * @param job The job object to process.
+ * @param apifyToken Your Apify API token.
+ */
+async function processSucceededJob(supabase, job, apifyToken) {
+  const account = job.creators_social_accounts;
+  const platform = account.platform;
+  const isDualActor = typeof PLATFORM_ACTORS[platform] === 'object';
+
+  // Fetch raw data from Apify and store it in the job record
+  const rawData = await fetchApifyDataset(job.apify_run_id, apifyToken);
+  await supabase.from("social_jobs").update({ raw_response: rawData }).eq("id", job.id);
+
+  let normalizedData;
+
+  if (isDualActor) {
+    // For dual-actor platforms, wait for both jobs to succeed
+    const otherJobType = job.actor_type === 'primary' ? 'secondary' : 'primary';
+    const { data: otherJob, error } = await supabase
+      .from("social_jobs")
+      .select("status, raw_response")
       .eq("account_id", account.id)
-      .order("snapshot_ts", { ascending: false })
+      .eq("actor_type", otherJobType)
+      .order("started_at", { ascending: false })
       .limit(1)
-      .maybeSingle();
-    
-    if (prevMetricsError) {
-      console.error(`Error fetching previous metrics: ${prevMetricsError.message}`);
+      .single();
+
+    if (error || !otherJob || otherJob.status !== 'succeeded') {
+      // The other job isn't ready yet, so we'll wait for the next poll.
+      return { status: 'waiting', message: `Job ${job.id} succeeded, but waiting for sibling job.` };
     }
     
-    // Get metrics from 30 days ago
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    const { data: oldMetrics, error: oldMetricsError } = await supabase
-      .from("social_metrics")
-      .select("followers, snapshot_ts")
-      .eq("account_id", account.id)
-      .lt("snapshot_ts", thirtyDaysAgo.toISOString())
-      .order("snapshot_ts", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    
-    if (oldMetricsError) {
-      console.error(`Error fetching old metrics: ${oldMetricsError.message}`);
-    }
-    
-    // Calculate growth metrics
-    const followers_prev = prevMetrics?.followers || null;
-    const followers_30d_ago = oldMetrics?.followers || null;
-    
-    // Calculate growth rates
-    let growth_rate_30d = null;
-    if (followers_30d_ago && metricsData.followers) {
-      growth_rate_30d = parseFloat(
-        ((metricsData.followers - followers_30d_ago) / followers_30d_ago * 100).toFixed(2)
-      );
-    }
-    
-    // Insert metrics into database
-    const { error: insertError } = await supabase
-      .from("social_metrics")
-      .insert({
-        account_id: account.id,
-        snapshot_ts: new Date().toISOString(),
-        followers: metricsData.followers,
-        followers_prev,
-        followers_30d_ago,
-        growth_rate_30d,
-        ...metricsData
-      });
-    
-    if (insertError) {
-      throw new Error(`Failed to insert metrics: ${insertError.message}`);
-    }
-    
-    // Calculate next refresh time (7 days from now)
-    const nextRun = new Date();
-    nextRun.setDate(nextRun.getDate() + 7);
-    
-    // Update account status
-    await supabase
-      .from("creators_social_accounts")
-      .update({
-        status: "ready",
-        last_run: new Date().toISOString(),
-        next_run: nextRun.toISOString(),
-        error: null
-      })
-      .eq("id", account.id);
-    
-    return true;
-  } catch (error) {
-    console.error("Error processing metrics:", error);
-    
-    // Update account status to failed
-    await supabase
-      .from("creators_social_accounts")
-      .update({
-        status: "failed",
-        error: error.message
-      })
-      .eq("id", account.id);
-    
-    throw error;
+    // Both jobs are ready, let's merge
+    const primaryRaw = job.actor_type === 'primary' ? rawData : otherJob.raw_response;
+    const secondaryRaw = job.actor_type === 'secondary' ? rawData : otherJob.raw_response;
+    normalizedData = dataTransformers[platform](primaryRaw[0], secondaryRaw[0]);
+
+  } else {
+    // Single actor platform
+    normalizedData = dataTransformers[platform](rawData[0]);
   }
+
+  // Upsert the normalized metrics
+  const { error: upsertError } = await supabase.from("social_metrics").upsert({
+    creator_id: account.creator_id,
+    platform: platform,
+    ...normalizedData,
+  }, { onConflict: 'creator_id, platform' });
+
+  if (upsertError) throw upsertError;
+
+  // Mark the social account as 'ready'
+  await supabase.from("creators_social_accounts").update({ status: 'ready' }).eq("id", account.id);
+  
+  return { status: 'processed', metrics: normalizedData };
 }
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+    const apifyToken = Deno.env.get("APIFY_TOKEN");
+    if (!apifyToken) throw new Error("APIFY_TOKEN is not set");
+
+    // Fetch all jobs that are not yet fully processed
+    const { data: jobs, error: jobsError } = await supabase
+      .from("social_jobs")
+      .select("*, creators_social_accounts(*)")
+      .in("status", ["running", "pending"]);
+    
+    if (jobsError) throw jobsError;
+    if (!jobs || jobs.length === 0) {
+      return new Response(JSON.stringify({ message: "No jobs to process." }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    const results = [];
+    for (const job of jobs) {
+      try {
+        const apifyResponse = await fetch(`https://api.apify.com/v2/actor-runs/${job.apify_run_id}?token=${apifyToken}`);
+        if (!apifyResponse.ok) throw new Error(`Apify API error: ${apifyResponse.statusText}`);
+        
+        const apifyData = await apifyResponse.json();
+        const jobStatus = apifyData.data.status;
+
+        await supabase.from("social_jobs").update({ status: jobStatus.toLowerCase() }).eq("id", job.id);
+
+        if (jobStatus === "SUCCEEDED") {
+          const result = await processSucceededJob(supabase, job, apifyToken);
+          results.push({ jobId: job.id, ...result });
+        } else if (["FAILED", "TIMED_OUT", "ABORTED"].includes(jobStatus)) {
+          await supabase.from("creators_social_accounts").update({ status: 'failed', error: `Apify job ${jobStatus}` }).eq("id", job.creators_social_accounts.id);
+          results.push({ jobId: job.id, status: 'failed', error: `Apify job ${jobStatus}` });
+        } else {
+          results.push({ jobId: job.id, status: 'running' });
+        }
+      } catch (error) {
+        console.error(`Error processing job ${job.id}:`, error.message);
+        results.push({ jobId: job.id, status: 'error', error: error.message });
+      }
+    }
+
+    return new Response(JSON.stringify({ success: true, results }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+
+  } catch (error) {
+    console.error("Error in poll-apify-jobs:", error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});

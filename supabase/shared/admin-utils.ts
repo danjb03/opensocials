@@ -1,87 +1,70 @@
+// Shared headers for CORS
 export const corsHeaders = {
-  "Content-Type": "application/json",
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+/**
+ * Validates if the user associated with the provided JWT has 'admin' or 'super_admin' role.
+ * It checks multiple sources for the role to ensure robustness.
+ * @param supabase The Supabase client instance.
+ * @param token The JWT from the Authorization header.
+ * @returns An object indicating if the user is a valid admin, their user ID, and error details if any.
+ */
 export async function validateSuperAdmin(supabase: any, token: string) {
   try {
-    console.log('Validating admin access...');
-    
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser(token);
+    if (!token) {
+      return { isValid: false, status: 401, message: "Missing authorization token" };
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
-      console.error('Auth validation failed:', authError?.message);
-      return { isValid: false, status: 401, message: "Authentication failed" };
+      return { isValid: false, status: 401, message: `Authentication failed: ${authError?.message}` };
     }
 
-    console.log('User authenticated, checking role for user:', user.id);
-
-    // First try user_roles table (primary source)
-    const { data: userRoles, error: userRoleError } = await supabase
+    // 1. Check the dedicated user_roles table (preferred method)
+    const { data: userRole, error: roleError } = await supabase
       .from("user_roles")
-      .select("role, status")
+      .select("role")
       .eq("user_id", user.id)
-      .eq("status", "approved");
+      .in("role", ["admin", "super_admin"])
+      .single();
 
-    if (!userRoleError && userRoles && userRoles.length > 0) {
-      console.log('Found user roles in user_roles table:', userRoles);
-      const adminRole = userRoles.find(role => 
-        role.role === "super_admin" || role.role === "admin"
-      );
-      if (adminRole) {
-        console.log('Admin validation successful via user_roles for user:', user.id);
-        return { isValid: true, userId: user.id };
-      }
+    if (!roleError && userRole) {
+      return { isValid: true, userId: user.id };
     }
 
-    // Fallback to profiles table
-    const { data: profiles, error: profileError } = await supabase
+    // 2. Fallback to checking the 'role' column in the profiles table
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("role")
-      .eq("id", user.id);
+      .eq("id", user.id)
+      .single();
 
-    if (profileError) {
-      console.error('Profile fetch error:', profileError.message);
-      // Don't fail completely, try checking auth metadata
-      console.log('Trying auth metadata fallback...');
-    } else {
-      console.log('Profiles found:', profiles);
-      // Check if any profile has admin role
-      const adminProfile = profiles?.find(p => p.role === "super_admin" || p.role === "admin");
-      
-      if (adminProfile) {
-        console.log('Admin validation successful via profiles for user:', user.id, 'role:', adminProfile.role);
-        return { isValid: true, userId: user.id };
-      }
-    }
-
-    // Final fallback: check auth metadata for known super admin
-    if (user.user_metadata?.role === "super_admin" || user.user_metadata?.role === "admin") {
-      console.log('Admin validation successful via auth metadata for user:', user.id);
+    if (!profileError && profile && (profile.role === 'admin' || profile.role === 'super_admin')) {
       return { isValid: true, userId: user.id };
     }
 
-    // Special case for known super admin user ID
-    if (user.id === 'af6ad2ce-be6c-4620-a440-867c52d66918') {
-      console.log('Admin validation successful for known super admin user:', user.id);
+    // 3. Final fallback to user metadata (useful for initial setup)
+    if (user.user_metadata?.role === 'admin' || user.user_metadata?.role === 'super_admin') {
       return { isValid: true, userId: user.id };
     }
 
-    console.log('User does not have admin role. User ID:', user.id);
     return { isValid: false, status: 403, message: "Unauthorized: Admin access required" };
-    
+
   } catch (err) {
-    console.error('Admin validation error:', err);
-    return { isValid: false, status: 500, message: `Authentication error: ${err.message}` };
+    console.error("Admin validation error:", err);
+    return { isValid: false, status: 500, message: `Server error during authentication: ${err.message}` };
   }
 }
 
-// Helper function to safely parse JSON with fallback
+/**
+ * Safely parses a JSON string with a fallback value.
+ * @param jsonString The string to parse.
+ * @param fallback The value to return on parsing error.
+ * @returns The parsed object or the fallback value.
+ */
 export function safeJsonParse(jsonString: string, fallback: any = null) {
   try {
     return JSON.parse(jsonString);
@@ -91,30 +74,28 @@ export function safeJsonParse(jsonString: string, fallback: any = null) {
   }
 }
 
-// Helper function for standardized error responses
+/**
+ * Creates a standardized error response object.
+ * @param message The error message.
+ * @param status The HTTP status code.
+ * @returns A Response object.
+ */
 export function errorResponse(message: string, status: number = 400) {
   return new Response(
-    JSON.stringify({ 
-      success: false, 
-      error: message 
-    }),
-    { 
-      headers: corsHeaders, 
-      status: status 
-    }
+    JSON.stringify({ success: false, error: message }),
+    { headers: { ...corsHeaders, "Content-Type": "application/json" }, status }
   );
 }
 
-// Helper function for standardized success responses
+/**
+ * Creates a standardized success response object.
+ * @param data The data payload to include in the response.
+ * @param status The HTTP status code.
+ * @returns A Response object.
+ */
 export function successResponse(data: any, status: number = 200) {
   return new Response(
-    JSON.stringify({
-      success: true,
-      data
-    }),
-    {
-      headers: corsHeaders,
-      status: status
-    }
+    JSON.stringify({ success: true, data }),
+    { headers: { ...corsHeaders, "Content-Type": "application/json" }, status }
   );
 }
