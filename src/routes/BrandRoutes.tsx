@@ -12,6 +12,8 @@ import CampaignWizard from '@/components/brand/campaign-wizard/CampaignWizard';
 import CampaignReview from '@/pages/brand/CampaignReview';
 
 const BrandRoutes = () => {
+  console.log('🔍 BrandRoutes rendering');
+  
   return (
     <BrandGuard>
       <BrandLayout>

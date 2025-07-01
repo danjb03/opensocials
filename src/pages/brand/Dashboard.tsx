@@ -15,6 +15,13 @@ const BrandDashboard = () => {
     projectStats
   } = useBrandDashboard();
 
+  console.log('🔍 BrandDashboard Debug:', {
+    isLoading,
+    projectsCount: projects?.length || 0,
+    todoItemsCount: todoItems?.length || 0,
+    projectStats
+  });
+
   const handleMarkTodoComplete = (todoId: string) => {
     console.log('Marking todo as complete:', todoId);
     // Todo: Implement todo completion logic

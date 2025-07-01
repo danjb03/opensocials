@@ -4,6 +4,8 @@ import { Outlet } from 'react-router-dom';
 import BrandSidebar from './brand/BrandSidebar';
 
 const BrandLayout = ({ children }: { children?: React.ReactNode }) => {
+  console.log('🔍 BrandLayout rendering with children:', !!children);
+  
   return (
     <div className="min-h-screen bg-background flex w-full">
       <BrandSidebar />
