@@ -1,7 +1,7 @@
 
 import { memo } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
 import Footer from './Footer';
 import SuperAdminSidebar from './super-admin/SuperAdminSidebar';
 import SuperAdminHeader from './super-admin/SuperAdminHeader';
@@ -30,12 +30,12 @@ const SuperAdminLayout = memo(({ children }: SuperAdminLayoutProps) => {
       <div className="min-h-screen flex w-full bg-background">
         <SuperAdminSidebar 
           userEmail={user?.email}
-          role={role}
+          role={role || 'unknown'}
           isActiveRoute={isActiveRoute}
         />
         
         <SidebarInset className="flex flex-col flex-1">
-          <SuperAdminHeader role={role} />
+          <SuperAdminHeader role={role || 'unknown'} />
           
           <main className="flex-1 overflow-auto p-6 bg-background">
             <div className="max-w-7xl mx-auto">

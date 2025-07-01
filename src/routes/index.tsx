@@ -25,6 +25,14 @@ import AgencyRoutes from './AgencyRoutes';
 const AppRoutes = () => {
   const { user, role, brandProfile, creatorProfile, isLoading } = useUnifiedAuth();
 
+  console.log('🔍 AppRoutes Debug:', {
+    user: !!user,
+    userId: user?.id,
+    role,
+    isLoading,
+    pathname: window.location.pathname
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
