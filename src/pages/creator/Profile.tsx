@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { useCreatorProfile } from '@/hooks/useCreatorProfile';
@@ -48,21 +47,7 @@ const CreatorProfile = () => {
           {/* UnifiedProfileForm is reused for both onboarding and editing */}
           <UnifiedProfileForm
             isNewUser={false}
-            initialData={{
-              ...profile,
-              id: user?.id || '',
-              avatarUrl: profile?.avatarUrl || null,
-              bannerUrl: profile?.bannerUrl || null,
-              contentTypes: profile?.contentTypes || [],
-              visibilitySettings: {
-                showInstagram: true,
-                showTiktok: true,
-                showYoutube: true,
-                showLinkedin: true,
-                showLocation: true,
-                showAnalytics: true,
-              }
-            }}
+            initialData={profile}
             onProfileComplete={() => setIsEditing(false)}
           />
         </div>
@@ -122,12 +107,12 @@ const CreatorProfile = () => {
                 <h3 className="text-lg font-medium text-white mb-2">Profile Completion</h3>
                 <div className="w-full bg-muted h-2 rounded">
                   <div
-                    style={{ width: `${(profile.socialAccountsConnected || profile.social_accounts_connected ? 80 : 60)}%` }}
+                    style={{ width: `${profile.completion || 80}%` }}
                     className="h-2 rounded bg-primary transition-all"
                   />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {(profile.socialAccountsConnected || profile.social_accounts_connected ? 80 : 60)}% complete — finish connecting more socials to reach 100%.
+                  {(profile.completion || 80)}% complete — finish connecting more socials to reach 100%.
                 </p>
               </div>
 
@@ -200,5 +185,6 @@ const AudienceSection = () => (
     Audience demographics and insights will appear here once enough data is available.
   </div>
 );
+
 
 export default CreatorProfile;

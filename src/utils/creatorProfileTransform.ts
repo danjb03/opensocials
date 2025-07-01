@@ -42,7 +42,6 @@ export const transformCreatorProfile = (data: CreatorProfileRecord): CreatorProf
     engagementRate: data.engagement_rate ? `${data.engagement_rate}%` : '0%',
     isProfileComplete: isComplete,
     platforms: data.platform_types || [], // Map platform_types to platforms
-    contentTypes: data.categories || [], // Map categories to contentTypes
     socialConnections: {
       instagram: false, // Will need to be handled separately if needed
       tiktok: false,
@@ -69,8 +68,7 @@ export const transformCreatorProfile = (data: CreatorProfileRecord): CreatorProf
       ]
     },
     industries: data.industries || [],
-    creatorType: data.creator_type || '',
-    socialAccountsConnected: false // Default to false, will be updated when social accounts are connected
+    creatorType: data.creator_type || ''
   };
 };
 
@@ -89,7 +87,6 @@ export const createEmptyCreatorProfile = (userId: string): CreatorProfile => {
     engagementRate: '0%',
     isProfileComplete: false,
     platforms: [], // Add empty platforms array
-    contentTypes: [], // Add empty contentTypes array
     socialConnections: {
       instagram: false,
       tiktok: false,
@@ -116,7 +113,6 @@ export const createEmptyCreatorProfile = (userId: string): CreatorProfile => {
       ]
     },
     industries: [],
-    creatorType: '',
-    socialAccountsConnected: false
+    creatorType: ''
   };
 };

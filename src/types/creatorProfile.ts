@@ -1,11 +1,12 @@
 
+
 export interface CreatorProfile {
   id: string;
   firstName: string;
   lastName: string;
   bio: string;
   avatarUrl: string | null;
-  bannerUrl?: string | null; // Make this optional
+  bannerUrl: string | null;
   primaryPlatform: string;
   contentType: string;
   audienceType: string;
@@ -34,10 +35,6 @@ export interface CreatorProfile {
   industries: string[];
   creatorType: string;
   platforms: string[];
-  contentTypes: string[];
-  // Add missing properties that components expect
-  completion?: number;
-  socialAccountsConnected?: boolean;
   // Database field mappings (snake_case) - These match the actual database columns
   follower_count?: number;
   engagement_rate?: number;
@@ -48,10 +45,6 @@ export interface CreatorProfile {
   avatar_url?: string;
   primary_platform?: string;
   audience_location?: any;
-  content_types?: string[];
-  audience_type?: string;
-  is_profile_complete?: boolean;
-  social_accounts_connected?: boolean;
 }
 
 export interface CreatorProfileRecord {
@@ -93,3 +86,4 @@ export interface CreatorProfileRecord {
   created_at?: string | null;
   updated_at?: string | null;
 }
+

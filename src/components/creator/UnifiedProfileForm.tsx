@@ -104,16 +104,16 @@ export const UnifiedProfileForm: React.FC<UnifiedProfileFormProps> = ({
   useEffect(() => {
     if (initialData) {
       setFormState({
-        firstName: initialData.first_name || initialData.firstName || '',
-        lastName: initialData.last_name || initialData.lastName || '',
+        firstName: initialData.first_name || '',
+        lastName: initialData.last_name || '',
         bio: initialData.bio || '',
-        profilePictureUrl: initialData.avatar_url || initialData.avatarUrl || null,
+        profilePictureUrl: initialData.avatar_url || null,
         selectedPlatforms: initialData.platforms || [],
-        selectedContentTypes: initialData.content_types || initialData.contentTypes || [],
+        selectedContentTypes: initialData.content_types || [],
         selectedIndustries: initialData.industries || [],
-        audienceType: initialData.audience_type || initialData.audienceType || '',
-        audienceLocation: initialData.audienceLocation?.primary || 'Global',
-        socialAccountsConnected: initialData.social_accounts_connected || initialData.socialAccountsConnected || false,
+        audienceType: initialData.audience_type || '',
+        audienceLocation: initialData.audience_location?.primary || 'Global',
+        socialAccountsConnected: initialData.social_accounts_connected || false, // Assuming this field exists
       });
     }
   }, [initialData, setFormState]);
@@ -224,7 +224,7 @@ export const UnifiedProfileForm: React.FC<UnifiedProfileFormProps> = ({
           industries: selectedIndustries,
           audience_type: audienceType,
           audience_location: { primary: audienceLocation },
-          is_profile_complete: isNewUser ? true : initialData?.is_profile_complete || initialData?.isProfileComplete,
+          is_profile_complete: isNewUser ? true : initialData?.is_profile_complete, // Mark complete only if new user
           updated_at: new Date().toISOString(),
         }, {
           onConflict: 'user_id',
