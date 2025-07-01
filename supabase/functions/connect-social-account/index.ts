@@ -1,176 +1,322 @@
+
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// Shared headers for CORS
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// Map platforms to their recommended Apify actors
-const PLATFORM_ACTORS = {
-  // Use official Apify actors as PRIMARY for better reliability.
-  // Keep a well-known community actor as SECONDARY backup.
-  instagram: "apify/instagram-profile-scraper",
-  tiktok: {
-    primary: "apify/tiktok-scraper",
-    secondary: "clockworks/tiktok-profile-scraper"
-  },
-  youtube: {
-    primary: "apify/youtube-channel-scraper",
-    secondary: "streamers/youtube-channel-scraper"
-  },
-  linkedin: {
-    primary: "apify/linkedin-profile-scraper",
-    secondary: "ahmed-khaled/linkedin-engagement-scraper"
-  },
-  twitter: "apify/twitter-scraper"
-};
-
-/**
- * Triggers an Apify actor run.
- * IMPORTANT: It correctly URL-encodes the actor ID by replacing '/' with '~'.
- * @param actorId The ID of the actor to run (e.g., "apify/instagram-profile-scraper").
- * @param handle The social media handle to pass as input.
- * @param apifyToken Your Apify API token.
- * @returns The response from the Apify API.
- */
-async function triggerApifyRun(actorId: string, handle: string, apifyToken: string) {
-  // Apify API requires actor IDs with '/' to be encoded with '~'
-  const encodedActorId = actorId.replace('/', '~');
-  const url = `https://api.apify.com/v2/acts/${encodedActorId}/runs?token=${apifyToken}`;
-  
-  const apifyResponse = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    // Using a consistent input structure for simplicity
-    body: JSON.stringify({ username: handle }) 
-  });
-  
-  if (!apifyResponse.ok) {
-    const errorText = await apifyResponse.text();
-    throw new Error(`Failed to trigger Apify actor ${actorId}: ${errorText}`);
-  }
-  
-  return await apifyResponse.json();
-}
 
 serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders, status: 204 });
   }
 
   try {
-    const { platform, handle, creator_id } = await req.json();
-
-    // Validate inputs
-    if (!platform || !handle || !creator_id) {
-      return new Response(JSON.stringify({ error: "Missing required fields: platform, handle, creator_id" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    console.log('🚀 connect-social-account function started');
+    
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('❌ Missing Supabase environment variables');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Server configuration error' }),
+        { headers: corsHeaders, status: 500 }
+      );
     }
 
-    // Initialize Supabase client with service role key for backend operations
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Get the authorization token
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+      console.error('❌ No authorization header provided');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Authorization required' }),
+        { headers: corsHeaders, status: 401 }
+      );
+    }
+
+    // Verify the user
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    
+    if (userError || !user) {
+      console.error('❌ Invalid user token:', userError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid user token' }),
+        { headers: corsHeaders, status: 401 }
+      );
+    }
+
+    console.log('👤 User verified:', user.id);
+
+    // Parse request body
+    let requestBody;
+    try {
+      requestBody = await req.json();
+    } catch (parseError) {
+      console.error('❌ Failed to parse request body:', parseError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid request format' }),
+        { headers: corsHeaders, status: 400 }
+      );
+    }
+
+    const { platform, handle } = requestBody;
+
+    if (!platform || !handle) {
+      console.error('❌ Missing required fields:', { platform, handle });
+      return new Response(
+        JSON.stringify({ success: false, error: 'Platform and handle are required' }),
+        { headers: corsHeaders, status: 400 }
+      );
+    }
+
+    console.log(`🔗 Connecting ${platform} account for user ${user.id} with handle: ${handle}`);
+
+    // Check if account already exists
+    const { data: existingAccount, error: queryError } = await supabase
+      .from('creators_social_accounts')
+      .select('id, status, last_run')
+      .eq('creator_id', user.id)
+      .eq('platform', platform.toLowerCase())
+      .eq('handle', handle.toLowerCase())
+      .maybeSingle();
+
+    if (queryError) {
+      console.error('❌ Database query error:', queryError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Database error occurred' }),
+        { headers: corsHeaders, status: 500 }
+      );
+    }
+
+    // Platform-specific Apify actor configuration
+    const platformActors = {
+      instagram: "apify/instagram-profile-scraper",
+      tiktok: "apify/tiktok-scraper", 
+      youtube: "apify/youtube-channel-scraper",
+      linkedin: "apify/linkedin-profile-scraper"
+    };
+
+    const actorId = platformActors[platform.toLowerCase()];
+    if (!actorId) {
+      console.error('❌ Unsupported platform:', platform);
+      return new Response(
+        JSON.stringify({ success: false, error: `Platform ${platform} is not currently supported` }),
+        { headers: corsHeaders, status: 400 }
+      );
+    }
+
+    let accountId;
+    let isNewAccount = false;
+
+    if (existingAccount) {
+      console.log('✅ Account already exists:', existingAccount);
+      accountId = existingAccount.id;
+      
+      // If account exists but never ran, we'll trigger a new run
+      if (!existingAccount.last_run) {
+        console.log('🔄 Existing account never ran, will trigger scraping');
+      }
+    } else {
+      // Create new social account record
+      const { data: newAccount, error: insertError } = await supabase
+        .from('creators_social_accounts')
+        .insert({
+          creator_id: user.id,
+          platform: platform.toLowerCase(),
+          handle: handle.toLowerCase(),
+          actor_id: actorId,
+          status: 'ready',
+          next_run: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select('id')
+        .single();
+
+      if (insertError) {
+        console.error('❌ Database insert error:', insertError);
+        return new Response(
+          JSON.stringify({ success: false, error: 'Failed to save social account connection' }),
+          { headers: corsHeaders, status: 500 }
+        );
+      }
+
+      console.log('✅ Social account created successfully:', newAccount);
+      accountId = newAccount.id;
+      isNewAccount = true;
+    }
+
+    // Always trigger Apify scraping for new accounts or existing accounts that haven't run
+    const apifyToken = Deno.env.get("APIFY_TOKEN");
+    let apifyJobId = null;
+    let scrapingTriggered = false;
+    
+    if (apifyToken && (isNewAccount || !existingAccount?.last_run)) {
+      try {
+        console.log(`🤖 Triggering Apify actor ${actorId} for ${handle} on ${platform}`);
+        
+        // Platform-specific input configuration - FIXED FORMAT
+        let apifyInput = {};
+        
+        switch (platform.toLowerCase()) {
+          case 'instagram':
+            apifyInput = { 
+              usernames: [handle], // Instagram expects usernames as array
+              resultsLimit: 1,
+              scrapeComments: false,
+              scrapeStories: false
+            };
+            break;
+          case 'tiktok':
+            apifyInput = { 
+              profiles: [handle], // TikTok expects profiles as array
+              resultsLimit: 1
+            };
+            break;
+          case 'youtube':
+            apifyInput = { 
+              handles: [handle], // YouTube expects handles as array
+              resultsLimit: 1
+            };
+            break;
+          case 'linkedin':
+            apifyInput = { 
+              startUrls: [`https://www.linkedin.com/in/${handle}`], // LinkedIn expects full URLs
+              resultsLimit: 1
+            };
+            break;
+        }
+        
+        // Properly encode the actor ID for Apify API
+        const encodedActorId = encodeURIComponent(actorId);
+        const apifyUrl = `https://api.apify.com/v2/acts/${encodedActorId}/runs?token=${apifyToken}`;
+        console.log('🔗 Apify URL:', apifyUrl);
+        console.log('📤 Apify Input:', JSON.stringify(apifyInput, null, 2));
+        
+        const apifyResponse = await fetch(apifyUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(apifyInput)
+        });
+
+        console.log('📡 Apify Response Status:', apifyResponse.status);
+
+        if (apifyResponse.ok) {
+          const apifyResult = await apifyResponse.json();
+          apifyJobId = apifyResult.data.id;
+          console.log('✅ Apify job started successfully:', apifyJobId);
+          scrapingTriggered = true;
+          
+          // Update the account status to running and set last_run
+          const { error: updateError } = await supabase
+            .from('creators_social_accounts')
+            .update({
+              status: 'running',
+              last_run: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', accountId);
+
+          if (updateError) {
+            console.error('❌ Failed to update account status:', updateError);
+          } else {
+            console.log('✅ Account status updated to running');
+          }
+
+          // Log the job in social_jobs table
+          const { error: jobError } = await supabase
+            .from('social_jobs')
+            .insert({
+              account_id: accountId,
+              apify_run_id: apifyJobId,
+              actor_type: 'primary',
+              status: 'running',
+              started_at: new Date().toISOString()
+            });
+
+          if (jobError) {
+            console.error('❌ Failed to log social job:', jobError);
+          } else {
+            console.log('✅ Social job logged successfully');
+          }
+
+        } else {
+          const errorText = await apifyResponse.text();
+          console.error('❌ Apify API error response:', errorText);
+          
+          // Update account with error status
+          await supabase
+            .from('creators_social_accounts')
+            .update({
+              status: 'failed',
+              error_message: `Apify API error: ${errorText}`,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', accountId);
+        }
+      } catch (apifyError) {
+        console.error('❌ Error triggering Apify job:', apifyError);
+        
+        // Update account with error status
+        await supabase
+          .from('creators_social_accounts')
+          .update({
+            status: 'failed',
+            error_message: `Failed to trigger scraping: ${apifyError.message}`,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', accountId);
+      }
+    } else if (!apifyToken) {
+      console.warn('⚠️ APIFY_TOKEN not configured, analytics collection will be delayed');
+    }
+
+    // Determine response message and status
+    const isExisting = !isNewAccount;
+    let message, note;
+    
+    if (isExisting && existingAccount?.last_run) {
+      message = `${platform.charAt(0).toUpperCase() + platform.slice(1)} account is already connected`;
+      note = 'Your analytics are being updated automatically.';
+    } else if (scrapingTriggered) {
+      message = `${platform.charAt(0).toUpperCase() + platform.slice(1)} account connected successfully`;
+      note = 'Analytics collection started - data will be available shortly.';
+    } else {
+      message = `${platform.charAt(0).toUpperCase() + platform.slice(1)} account connected`;
+      note = 'Analytics collection will begin shortly.';
+    }
+
+    console.log('✅ Connection process completed successfully');
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message,
+        account_id: accountId,
+        status: scrapingTriggered ? 'running' : 'ready',
+        apify_job_id: apifyJobId,
+        isExisting,
+        note,
+        scraping_triggered: scrapingTriggered
+      }),
+      { headers: corsHeaders, status: isExisting ? 200 : 201 }
     );
 
-    // Get Apify token from environment variables
-    const apifyToken = Deno.env.get("APIFY_TOKEN");
-    if (!apifyToken) {
-      throw new Error("APIFY_TOKEN environment variable not set");
-    }
-
-    const platformConfig = PLATFORM_ACTORS[platform];
-    if (!platformConfig) {
-      throw new Error(`Unsupported platform: ${platform}`);
-    }
-
-    const isDualActor = typeof platformConfig === 'object';
-    const actorMetadata = isDualActor ? JSON.stringify(platformConfig) : platformConfig;
-
-    // Create or update the social account record
-    const { data: account, error: upsertError } = await supabase
-      .from("creators_social_accounts")
-      .upsert({
-        creator_id: creator_id,
-        platform: platform,
-        handle: handle,
-        actor_id: actorMetadata,
-        status: 'pending',
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'creator_id, platform' })
-      .select()
-      .single();
-
-    if (upsertError) throw upsertError;
-
-    const accountId = account.id;
-    const jobPromises = [];
-    const jobResults = [];
-    const now = new Date().toISOString();
-
-    // Trigger Apify runs and prepare job records
-    if (isDualActor) {
-      // Primary actor
-      jobPromises.push(
-        triggerApifyRun(platformConfig.primary, handle, apifyToken).then(result => ({ type: 'primary', result }))
-      );
-      // Secondary actor
-      jobPromises.push(
-        triggerApifyRun(platformConfig.secondary, handle, apifyToken).then(result => ({ type: 'secondary', result }))
-      );
-    } else {
-      // Single actor
-      jobPromises.push(
-        triggerApifyRun(platformConfig, handle, apifyToken).then(result => ({ type: 'primary', result }))
-      );
-    }
-
-    // Wait for all Apify runs to be triggered
-    const triggeredRuns = await Promise.all(jobPromises);
-
-    // Prepare job records for batch insertion
-    const jobsToInsert = triggeredRuns.map(run => {
-      jobResults.push({ type: run.type, runId: run.result.data.id });
-      return {
-        account_id: accountId,
-        apify_run_id: run.result.data.id,
-        actor_type: run.type,
-        status: "running",
-        started_at: now
-      };
-    });
-
-    // Batch insert job records
-    const { error: jobInsertError } = await supabase.from("social_jobs").insert(jobsToInsert);
-    if (jobInsertError) throw jobInsertError;
-
-    // Update the account status to 'running'
-    await supabase
-      .from("creators_social_accounts")
-      .update({ status: 'running', last_run: now })
-      .eq('id', accountId);
-
-    return new Response(JSON.stringify({
-      success: true,
-      message: `Successfully triggered data collection for ${platform} account.`,
-      data: {
-        accountId,
-        jobs: jobResults,
-      }
-    }), { 
-      headers: { ...corsHeaders, "Content-Type": "application/json" } 
-    });
-
   } catch (error) {
-    console.error("Error in connect-social-account:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error('💥 Unexpected error in connect-social-account:', error);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error.message || 'An unexpected server error occurred'
+      }),
+      { headers: corsHeaders, status: 500 }
+    );
   }
 });

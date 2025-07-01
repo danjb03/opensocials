@@ -7,8 +7,7 @@ import {
   FolderOpen, 
   Heart, 
   BarChart3,
-  Settings,
-  Share2
+  Settings 
 } from 'lucide-react';
 
 interface CreatorSidebarNavigationProps {
@@ -27,16 +26,16 @@ const CreatorSidebarNavigation = ({ isSidebarOpen }: CreatorSidebarNavigationPro
       description: 'Overview and analytics'
     },
     { 
-      name: 'Profile', 
-      href: '/creator/profile', 
-      icon: Settings,
-      description: 'Account settings'
+      name: 'Campaigns', 
+      href: '/creator/campaigns', 
+      icon: FolderOpen,
+      description: 'Active projects'
     },
     { 
-      name: 'Social Accounts', 
-      href: '/creator/social-accounts', 
-      icon: Share2,
-      description: 'Connect & view socials'
+      name: 'Deals', 
+      href: '/creator/deals', 
+      icon: Heart,
+      description: 'Brand partnerships'
     },
     { 
       name: 'Analytics', 
@@ -45,10 +44,10 @@ const CreatorSidebarNavigation = ({ isSidebarOpen }: CreatorSidebarNavigationPro
       description: 'Performance insights'
     },
     { 
-      name: 'Deals', 
-      href: '/creator/deals', 
-      icon: Heart,
-      description: 'Brand partnerships'
+      name: 'Profile', 
+      href: '/creator/profile', 
+      icon: Settings,
+      description: 'Account settings'
     }
   ];
 

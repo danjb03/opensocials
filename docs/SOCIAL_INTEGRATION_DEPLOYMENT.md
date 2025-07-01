@@ -1,102 +1,100 @@
-# Social Integration Deployment Guide  
-Apify actors + Supabase (back-end) + React (front-end)
+# Social Media Integration Deployment Guide (Apify + Supabase)
+
+This guide explains how to deploy the Apify–powered social-media integration for OpenSocials.
 
 ---
 
 ## 1  Prerequisites
 
-| Tool / Service | Purpose | Quick Link |
-|---------------|---------|-----------|
-| **Apify account** | Runs the scrapers (“actors”). | https://apify.com |
-| **Apify API token** | Auth for all Edge Function → Apify calls. | Apify → Settings → Integrations |
-| **Supabase project** | DB, Edge Functions, Storage, Auth. | https://supabase.com |
-| **Supabase CLI** (`supabase`) | Deploy SQL, functions, schedules, secrets. | `npm i -g supabase` |
-| **Node ≥ 18 & npm** | Build / run the React front-end. | |
-| **Git** | Pull / commit code, migrations, functions. | |
+| Tool | Purpose | Docs / Download |
+|------|---------|-----------------|
+| **Apify account** | Runs the social-media scrapers (“actors”). | https://apify.com/ |
+| **Apify API token** | Authenticates Edge Functions when calling Apify. | Apify → Settings → Integrations → API |
+| **Supabase CLI** (`supabase`) | Deploys edge functions, schedules, and migrations. | https://supabase.com/docs/guides/cli |
+| **Node ≥ 18 LTS / npm** | Builds the frontend. |
+| **Git** | Pull latest code & migrations. |
 
-> Keep `APIFY_TOKEN` secret — never commit it.
+> Keep the token secret. **Never** hard-code it in source control.
 
 ---
 
 ## 2  Database Schema
 
-Single-table strategy: all metrics live in `social_metrics` (one row per **creator + platform**).  
-Additional tables keep account handles and job tracking.
+The integration adds five objects:
 
-```
-supabase/migrations/20250625_social_media_integration.sql
-```
+* `social_platform_type`, `social_job_status` (enum types)  
+* `creators_social_accounts`, `social_jobs`, `social_metrics`, `admin_operations` (tables)  
+* `v_creator_social_overview` (view)
 
-Objects created:
+All objects are defined in  
+`supabase/migrations/20250625_social_media_integration.sql`.
 
-* `creators_social_accounts` – handle + actor config  
-* `social_jobs` – each Apify run  
-* `social_metrics` – normalized snapshot (JSONB `platform_data` for extras)  
-* `admin_operations` – audit log  
-* `social_platform_type`, `social_job_status` (enum)  
-* `v_creator_social_overview` – latest snapshot per account
-
-Apply locally:
+### Apply migration
 
 ```bash
-git pull
-supabase db reset             # wipes & seeds local
-# or prod:
-# supabase db push            # runs pending migrations
+# pull latest code
+git checkout main && git pull
+
+# apply schema locally (for dev)
+supabase db reset      # or supabase db push
+# or in prod: use Supabase Dashboard → SQL editor → run file
 ```
 
 ---
 
-## 3  Secrets
+## 3  Edge Functions
+
+| Function | Role |
+|----------|------|
+| `connect-social-account` | Called by frontend. Validates handle, triggers Apify actor run(s), inserts job rows. |
+| `poll-apify-jobs` | Runs every 5 min. Pulls finished Apify runs, transforms data, stores `social_metrics`. |
+| `schedule-social-refreshes` | Cron (4 h). Picks accounts whose `next_run` is due and starts new Apify runs. |
+| `refresh-all-social-accounts` | Admin-only HTTP endpoint to force-refresh everything (rate-limited). |
+
+### Deploy / update functions
 
 ```bash
-supabase secrets set APIFY_TOKEN="YOUR_REAL_APIFY_TOKEN"
+# 1. Set Supabase project keys
+export SUPABASE_ACCESS_TOKEN=<your_personal_access_token>
+supabase link --project-ref <PROJECT_REF>
+
+# 2. Deploy each function (–no-verify-jwt for public endpoints)
+supabase functions deploy connect-social-account --no-verify-jwt
+supabase functions deploy poll-apify-jobs          --no-verify-jwt
+supabase functions deploy schedule-social-refreshes --no-verify-jwt
+supabase functions deploy refresh-all-social-accounts
 ```
 
-*(runs once per environment)*
+> If this is your first deploy run `supabase login` to auth the CLI.
 
 ---
 
-## 4  Edge Functions (serverless)
-
-| Function | Trigger | What it does |
-|----------|---------|--------------|
-| `connect-social-account` | HTTP (frontend) | Validates handle, inserts/updates `creators_social_accounts`, *triggers Apify run(s)*, inserts `social_jobs`. |
-| `poll-apify-jobs` | CRON 5 min | Checks Apify run status, fetches dataset, **normalizes & upserts** into `social_metrics`, updates job + account status. |
-| `schedule-social-refreshes` | CRON 4 h | Finds accounts whose `next_run` ≤ NOW, kicks off new Apify runs, writes new `social_jobs`, updates `next_run`. |
-| `refresh-all-social-accounts` | Admin HTTP | Force-sets `next_run = NOW` for a batch (rate-limited). |
-
-### Deploy / update
+## 4  Project Secrets
 
 ```bash
-# link CLI to project once
-supabase link --project-ref YOUR_PROJECT_REF
-
-supabase functions deploy connect-social-account        --no-verify-jwt
-supabase functions deploy poll-apify-jobs               --no-verify-jwt
-supabase functions deploy schedule-social-refreshes     --no-verify-jwt
-supabase functions deploy refresh-all-social-accounts   --no-verify-jwt
+# One-time: add Apify token to Supabase secrets
+supabase secrets set APIFY_TOKEN=<your_real_apify_api_token>
 ```
 
 ---
 
-## 5  Cron schedules
+## 5  Cron / Schedules
 
 ```bash
-# poll Apify every 5 min
+# Poll Apify every 5 minutes
 supabase functions schedule create poll-apify-cron \
   --function-name poll-apify-jobs \
   --schedule "*/5 * * * *" \
   --description "Poll Apify jobs"
 
-# schedule refresh finder every 4 h
+# Kick refresh finder every 4 hours
 supabase functions schedule create social-refresh-cron \
   --function-name schedule-social-refreshes \
   --schedule "0 */4 * * *" \
-  --description "Schedule social data refresh"
+  --description "Schedule social data refreshes"
 ```
 
-Check:
+Verify schedules:
 
 ```bash
 supabase functions schedule list
@@ -104,106 +102,53 @@ supabase functions schedule list
 
 ---
 
-## 6  Apify actor mapping
-
-| Platform | Primary actor | Secondary / detailed actor |
-|----------|---------------|----------------------------|
-| instagram | `apify/instagram-profile-scraper` | — |
-| tiktok    | `apify/tiktok-scraper` | `clockworks/tiktok-profile-scraper` |
-| youtube   | `apify/youtube-channel-scraper` | `streamers/youtube-channel-scraper` |
-| linkedin  | `apify/linkedin-profile-scraper` | `ahmed-khaled/linkedin-engagement-scraper` |
-| twitter   | `apify/twitter-scraper` | — |
-
-Dual-actor platforms get both runs; Edge logic merges datasets before writing `social_metrics`.
-
----
-
-## 7  Front-end integration
-
-1. **Env vars**
-
-```
-VITE_SUPABASE_URL=...
-VITE_SUPABASE_ANON_KEY=...
-```
-
-2. **Components added**
-
-* `src/components/creator/SocialPlatformConnectApify.tsx` – connect UI  
-* `src/components/creator/SocialMetricsCards.tsx` – metrics display  
-* `src/pages/creator/SocialAccounts.tsx` – page wrapper  
-* Sidebar link & routes updated.
-
-3. **Build**
+## 6  Frontend Build & Deploy
 
 ```bash
+# install & build
 npm ci
-npm run build
-# deploy /dist with Vercel / Netlify / S3 / Cloudflare …
+npm run build    # output in /dist
+
+# deploy /dist to your hosting (Vercel, Netlify, S3, etc.)
 ```
 
 ---
 
-## 8  One-shot deploy script (optional)
+## 7  Smoke-Test Checklist
 
-```bash
-scripts/deploy-social-integration.sh
-```
-
-Runs: migrations → edge deploy → schedules → secret set → smoke test.
-
----
-
-## 9  Smoke-test checklist
-
-1. Creator navigates to **Social Accounts** → connects Instagram handle.  
-2. Toast “Connection Started” appears; DB `creators_social_accounts.status = running`.  
-3. Wait ≤ 5 min → `social_metrics` row appears; UI card shows followers.  
-4. Supabase Logs: no errors for `poll-apify-jobs`.  
-5. Cron `social-refresh-cron list` shows next run scheduled.
+1. Log in as creator → **Connect Account** (`/creator/social-accounts`)  
+   • expect toast “account connected”  
+2. Wait ≤5 min → metrics appear in dashboard.  
+3. In Supabase » Logs, confirm no errors from `poll-apify-jobs`.  
+4. In DB → `social_metrics` one row exists for the account.
 
 ---
 
-## 10  Troubleshooting
+## 8  Troubleshooting
 
-| Problem | Likely cause | Fix |
+| Symptom | Likely Cause | Fix |
 |---------|--------------|-----|
-| 500 “APIFY_TOKEN not set” | Secret missing | `supabase secrets set APIFY_TOKEN=...` |
-| Edge function returns **403** | Missing `Authorization` header from frontend | pass `access_token` in request |
-| Account stuck in *running* | `poll-apify-jobs` schedule missing or failing | check `supabase functions logs poll-apify-jobs` |
-| Apify error *page-not-found* | Actor ID not URL-encoded | function now replaces `/` with `~` |
-| Metrics `null` | Actor JSON changed | adjust transformer in `poll-apify-jobs` |
-| Too many Apify CUs | Lower refresh frequency `REFRESH_INTERVAL_HOURS` |
+| `500` “APIFY_TOKEN not set” | Secret missing | `supabase secrets set APIFY_TOKEN=…` |
+| `connect-social-account` returns *403 Unauthorized* | Creator not logged in or wrong token | Pass `supabase.auth.session().access_token` in header |
+| Social account stuck in **pending/running** | Poll job schedule missing | Verify `poll-apify-cron` exists and logs show success |
+| Job status **failed** | Actor exceeded rate-limit / captcha | Re-run, consider residential proxy add-on in Apify |
+| Growth shows `N/A` | Need at least 2 snapshots | Wait 24 h+ or seed `followers_prev` columns |
+| CORS error from frontend | Your domain not allowed | Add domain to Supabase » Auth » Settings **Allowed Origins** |
 
 ---
 
-## 11  FAQ
+## 9  FAQ
 
-**Do creators need to log in to social platforms?**  
-No. Actors scrape public data; creators only supply handles/URLs.
+**Q: Do creators need to log in to social platforms?**  
+A: No. We scrape only public data with Apify actors; creators just provide their handle/profile URL.
 
-**How often is data refreshed?**  
-Every 7 days (4 h scheduler just *decides* which accounts are due).
+**Q: How often is data refreshed?**  
+A: Default 7 days (configurable in `schedule-social-refreshes` via `REFRESH_INTERVALS`).
 
-**Where is engagement rate stored?**  
-`social_metrics.engagement_rate` (percentage, already calculated).
-
-**Can I add another platform?**  
-Add enum value, actor mapping, transformer in `poll-apify-jobs`, update front-end list.
+**Q: Costs?**  
+A: Apify charges compute units per run. Typical profile run uses 0.10 – 0.20 CU. Budget accordingly.
 
 ---
 
-## 12  Back-out / Delete
-
-```bash
--- remove cron
-supabase functions schedule delete poll-apify-cron
-supabase functions schedule delete social-refresh-cron
-
--- (optional) drop tables
-drop table social_metrics, social_jobs, creators_social_accounts cascade;
-```
-
----
-
-Deployment complete — happy shipping 🚀
+Deployment complete! Reach out in `#devops` if anything is unclear.  
+Happy scraping 🚀
