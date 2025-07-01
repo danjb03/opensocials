@@ -59,13 +59,6 @@ const BrandGuard = ({ children, redirectTo = '/auth' }: BrandGuardProps) => {
         return;
       }
 
-      // For super admin, don't require brand profile
-      if (role === 'super_admin') {
-        console.log('🔍 BrandGuard - Super admin bypass for brand profile check');
-        setIsChecking(false);
-        return;
-      }
-
       // Check if we have a brand profile for regular brand users
       console.log('🔍 BrandGuard - Checking brand profile status:', brandProfile);
       
