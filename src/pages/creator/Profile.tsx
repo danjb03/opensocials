@@ -51,6 +51,8 @@ const CreatorProfile = () => {
             initialData={{
               ...profile,
               id: user?.id || '',
+              avatarUrl: profile?.avatarUrl || null,
+              contentTypes: profile?.contentTypes || [],
               visibilitySettings: {
                 showInstagram: true,
                 showTiktok: true,
@@ -119,12 +121,12 @@ const CreatorProfile = () => {
                 <h3 className="text-lg font-medium text-white mb-2">Profile Completion</h3>
                 <div className="w-full bg-muted h-2 rounded">
                   <div
-                    style={{ width: `${(profile.completion || profile.socialConnections ? 80 : 60)}%` }}
+                    style={{ width: `${(profile.socialAccountsConnected ? 80 : 60)}%` }}
                     className="h-2 rounded bg-primary transition-all"
                   />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {(profile.completion || profile.socialConnections ? 80 : 60)}% complete — finish connecting more socials to reach 100%.
+                  {(profile.socialAccountsConnected ? 80 : 60)}% complete — finish connecting more socials to reach 100%.
                 </p>
               </div>
 
