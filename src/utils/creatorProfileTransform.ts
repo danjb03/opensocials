@@ -69,7 +69,8 @@ export const transformCreatorProfile = (data: CreatorProfileRecord): CreatorProf
       ]
     },
     industries: data.industries || [],
-    creatorType: data.creator_type || ''
+    creatorType: data.creator_type || '',
+    socialAccountsConnected: false // Default to false, will be updated when social accounts are connected
   };
 };
 
@@ -115,6 +116,7 @@ export const createEmptyCreatorProfile = (userId: string): CreatorProfile => {
       ]
     },
     industries: [],
-    creatorType: ''
+    creatorType: '',
+    socialAccountsConnected: false
   };
 };

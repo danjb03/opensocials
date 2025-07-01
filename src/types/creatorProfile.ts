@@ -5,7 +5,7 @@ export interface CreatorProfile {
   lastName: string;
   bio: string;
   avatarUrl: string | null;
-  bannerUrl: string | null;
+  bannerUrl?: string | null; // Make this optional
   primaryPlatform: string;
   contentType: string;
   audienceType: string;
