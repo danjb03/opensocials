@@ -38,12 +38,12 @@ export const useInvitationSimulation = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
 
-  // Generate mock invitations
+  // Generate mock invitations immediately
   const generateMockInvitations = (): MockInvitation[] => {
-    const mockData = [
+    return [
       {
-        id: 'inv-001',
-        project_id: 'proj-001',
+        id: 'mock-inv-001',
+        project_id: 'mock-proj-001',
         project_name: 'Summer Fashion Collection Launch',
         brand_name: 'StyleCo',
         brand_logo: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=100&h=100&fit=crop&crop=center',
@@ -58,18 +58,18 @@ export const useInvitationSimulation = () => {
           mentions: ['@styleco_official']
         },
         campaign_details: {
-          objective: 'Drive brand awareness and summer collection sales',
-          timeline: '2-week campaign duration',
-          usage_rights: '6 months usage rights for ads',
+          objective: 'Drive brand awareness and summer collection sales through authentic creator content',
+          timeline: '2-week campaign duration with flexible posting schedule',
+          usage_rights: '6 months usage rights for paid advertising',
           exclusivity: false,
-          deliverables: ['3 Instagram Reels', '2 TikTok videos', '1 story series']
+          deliverables: ['3 Instagram Reels showcasing outfits', '2 TikTok videos with styling tips', '1 Instagram story series']
         },
         invitation_date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        notes: 'We love your aesthetic and think you\'d be perfect for our summer campaign!'
+        notes: 'We love your aesthetic and think you would be perfect for our summer campaign! Your style aligns perfectly with our brand values.'
       },
       {
-        id: 'inv-002',
-        project_id: 'proj-002',
+        id: 'mock-inv-002',
+        project_id: 'mock-proj-002',
         project_name: 'Tech Product Review Campaign',
         brand_name: 'TechNova',
         brand_logo: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=100&h=100&fit=crop&crop=center',
@@ -83,18 +83,18 @@ export const useInvitationSimulation = () => {
           mentions: ['@technova']
         },
         campaign_details: {
-          objective: 'Authentic product review and demonstration',
-          timeline: '3-week campaign with specific posting dates',
-          usage_rights: '12 months usage rights',
+          objective: 'Authentic product review and demonstration of our latest smartphone',
+          timeline: '3-week campaign with specific posting dates provided',
+          usage_rights: '12 months usage rights including website and social media',
           exclusivity: true,
-          deliverables: ['1 YouTube review video', '1 Instagram Reel', 'Story highlights']
+          deliverables: ['1 YouTube review video (8-12 minutes)', '1 Instagram Reel unboxing', 'Instagram story highlights']
         },
         invitation_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-        notes: 'Exclusive partnership opportunity with our latest product line.'
+        notes: 'Exclusive partnership opportunity with our latest product line. We were impressed by your tech review content and would love to collaborate!'
       },
       {
-        id: 'inv-003',
-        project_id: 'proj-003',
+        id: 'mock-inv-003',
+        project_id: 'mock-proj-003',
         project_name: 'Wellness Brand Partnership',
         brand_name: 'PureWell',
         brand_logo: 'https://images.unsplash.com/photo-1544947958-a40e1ece9b95?w=100&h=100&fit=crop&crop=center',
@@ -108,29 +108,24 @@ export const useInvitationSimulation = () => {
           mentions: ['@purewell_official']
         },
         campaign_details: {
-          objective: 'Promote wellness lifestyle and product integration',
-          timeline: '4-week ongoing partnership',
-          usage_rights: '3 months usage rights',
+          objective: 'Promote wellness lifestyle and product integration into daily routines',
+          timeline: '4-week ongoing partnership with weekly check-ins',
+          usage_rights: '3 months usage rights for social media only',
           exclusivity: false,
-          deliverables: ['4 Instagram posts', '2 TikTok videos', 'Weekly stories']
+          deliverables: ['4 Instagram posts featuring products', '2 TikTok wellness routine videos', 'Weekly story updates']
         },
         invitation_date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        notes: 'Long-term partnership potential with monthly campaigns.'
+        notes: 'Long-term partnership potential with monthly campaigns. Your wellness content resonates with our audience and we see great synergy!'
       }
     ];
-
-    return mockData;
   };
 
   useEffect(() => {
-    if (user && creatorProfile) {
-      // Simulate loading delay
-      setTimeout(() => {
-        setInvitations(generateMockInvitations());
-        setIsLoading(false);
-      }, 1000);
-    }
-  }, [user, creatorProfile]);
+    // Always generate mock invitations regardless of auth state for testing
+    const mockData = generateMockInvitations();
+    setInvitations(mockData);
+    setIsLoading(false);
+  }, []);
 
   const acceptInvitation = async (invitationId: string) => {
     try {
@@ -141,43 +136,6 @@ export const useInvitationSimulation = () => {
 
       // Simulate backend processing
       await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Create campaign entry
-      const { error: campaignError } = await supabase
-        .from('projects_new')
-        .insert({
-          id: invitation.project_id,
-          name: invitation.project_name,
-          brand_id: user?.id, // In real system, this would be the actual brand ID
-          status: 'active',
-          budget: invitation.agreed_amount,
-          currency: invitation.currency,
-          platforms: invitation.content_requirements.platforms,
-          brief_data: {
-            objective: invitation.campaign_details.objective,
-            deliverables: invitation.campaign_details.deliverables,
-            content_requirements: invitation.content_requirements
-          },
-          start_date: new Date().toISOString().split('T')[0],
-          end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-        });
-
-      if (campaignError) console.warn('Campaign creation error:', campaignError);
-
-      // Create deal entry
-      const { error: dealError } = await supabase
-        .from('creator_deals')
-        .insert({
-          id: `deal-${invitationId}`,
-          project_id: invitation.project_id,
-          creator_id: user?.id,
-          deal_value: invitation.agreed_amount,
-          status: 'accepted',
-          individual_requirements: invitation.content_requirements,
-          responded_at: new Date().toISOString()
-        });
-
-      if (dealError) console.warn('Deal creation error:', dealError);
 
       // Update invitation status
       setInvitations(prev => 
