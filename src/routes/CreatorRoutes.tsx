@@ -9,6 +9,7 @@ import CreatorDeals from '@/pages/creator/Deals';
 import CreatorCampaigns from '@/pages/creator/Campaigns';
 import CampaignDetail from '@/pages/creator/CampaignDetail';
 import ContentUpload from '@/pages/creator/ContentUpload';
+import CreatorInvitations from '@/pages/creator/Invitations';
 import ProfileSetup from '@/pages/creator/profile/Setup';
 import CreatorProfile from '@/pages/creator/Profile';
 
@@ -29,6 +30,7 @@ export const CreatorRoutes = () => {
               <Route path="campaigns" element={<CreatorCampaigns />} />
               <Route path="campaigns/:id" element={<CampaignDetail />} />
               <Route path="campaigns/:id/upload" element={<ContentUpload />} />
+              <Route path="invitations" element={<CreatorInvitations />} />
             </Routes>
           </CreatorLayout>
         </ProtectedRoute>

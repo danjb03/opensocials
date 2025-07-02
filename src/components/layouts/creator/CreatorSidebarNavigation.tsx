@@ -1,13 +1,13 @@
 
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { NavLink } from 'react-router-dom';
 import { 
-  LayoutDashboard, 
-  FolderOpen, 
-  Heart, 
-  BarChart3,
-  Settings 
+  Home, 
+  BarChart3, 
+  Briefcase, 
+  Camera, 
+  User,
+  Mail
 } from 'lucide-react';
 
 interface CreatorSidebarNavigationProps {
@@ -15,79 +15,33 @@ interface CreatorSidebarNavigationProps {
 }
 
 const CreatorSidebarNavigation = ({ isSidebarOpen }: CreatorSidebarNavigationProps) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const navigationItems = [
-    { 
-      name: 'Dashboard', 
-      href: '/creator', 
-      icon: LayoutDashboard,
-      description: 'Overview and analytics'
-    },
-    { 
-      name: 'Campaigns', 
-      href: '/creator/campaigns', 
-      icon: FolderOpen,
-      description: 'Active projects'
-    },
-    { 
-      name: 'Deals', 
-      href: '/creator/deals', 
-      icon: Heart,
-      description: 'Brand partnerships'
-    },
-    { 
-      name: 'Analytics', 
-      href: '/creator/analytics', 
-      icon: BarChart3,
-      description: 'Performance insights'
-    },
-    { 
-      name: 'Profile', 
-      href: '/creator/profile', 
-      icon: Settings,
-      description: 'Account settings'
-    }
+  const navItems = [
+    { icon: Home, label: 'Dashboard', path: '/creator/dashboard' },
+    { icon: Mail, label: 'Invitations', path: '/creator/invitations' },
+    { icon: Briefcase, label: 'Deals', path: '/creator/deals' },
+    { icon: Camera, label: 'Campaigns', path: '/creator/campaigns' },
+    { icon: BarChart3, label: 'Analytics', path: '/creator/analytics' },
+    { icon: User, label: 'Profile', path: '/creator/profile' },
   ];
 
-  const isActiveRoute = (href: string) => {
-    if (href === '/creator') {
-      return location.pathname === '/creator' || location.pathname === '/creator/dashboard';
-    }
-    return location.pathname === href || location.pathname.startsWith(href + '/');
-  };
-
   return (
-    <nav className="flex-1 p-4">
-      <ul className="space-y-2">
-        {navigationItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = isActiveRoute(item.href);
-          
-          return (
-            <li key={item.name}>
-              <Button
-                variant="ghost"
-                onClick={() => navigate(item.href)}
-                className={`w-full justify-start h-auto p-3 rounded-lg ${
-                  isActive 
-                    ? 'bg-white text-black hover:bg-white hover:text-black' 
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
-                }`}
-              >
-                <Icon className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : ''}`} />
-                {isSidebarOpen && (
-                  <div className="text-left">
-                    <div className="font-medium text-sm">{item.name}</div>
-                    <div className="text-xs opacity-70">{item.description}</div>
-                  </div>
-                )}
-              </Button>
-            </li>
-          );
-        })}
-      </ul>
+    <nav className="flex-1 px-4 py-4 space-y-2">
+      {navItems.map((item) => (
+        <NavLink
+          key={item.path}
+          to={item.path}
+          className={({ isActive }) =>
+            `flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              isActive
+                ? 'bg-accent text-accent-foreground'
+                : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground'
+            }`
+          }
+        >
+          <item.icon className="h-5 w-5" />
+          {isSidebarOpen && <span>{item.label}</span>}
+        </NavLink>
+      ))}
     </nav>
   );
 };
