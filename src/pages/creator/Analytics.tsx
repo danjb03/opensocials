@@ -13,10 +13,10 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 const CreatorAnalytics = () => {
   const { user, role } = useUnifiedAuth();
   
-  const { data: earnings, isLoading: earningsLoading, error: earningsError } = useQuery({
+  const { data: earnings, isLoading: earningsLoading } = useQuery({
     queryKey: ['creator-earnings', user?.id],
     queryFn: async () => {
-      if (!user?.id) throw new Error('User not authenticated');
+      if (!user?.id) return [];
       
       const { data, error } = await supabase
         .from('deal_earnings')
@@ -24,16 +24,19 @@ const CreatorAnalytics = () => {
         .eq('creator_id', user.id)
         .order('earned_at', { ascending: true });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching earnings:', error);
+        return [];
+      }
       return data || [];
     },
     enabled: !!user?.id
   });
 
-  const { data: deals, isLoading: dealsLoading, error: dealsError } = useQuery({
+  const { data: deals, isLoading: dealsLoading } = useQuery({
     queryKey: ['creator-deals-analytics', user?.id],
     queryFn: async () => {
-      if (!user?.id) throw new Error('User not authenticated');
+      if (!user?.id) return [];
       
       const { data, error } = await supabase
         .from('deals')
@@ -41,16 +44,19 @@ const CreatorAnalytics = () => {
         .eq('creator_id', user.id)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching deals:', error);
+        return [];
+      }
       return data || [];
     },
     enabled: !!user?.id
   });
 
-  const { data: connections, isLoading: connectionsLoading, error: connectionsError } = useQuery({
+  const { data: connections, isLoading: connectionsLoading } = useQuery({
     queryKey: ['creator-brand-connections', user?.id],
     queryFn: async () => {
-      if (!user?.id) throw new Error('User not authenticated');
+      if (!user?.id) return [];
       
       const { data, error } = await supabase
         .from('brand_creator_connections')
@@ -58,14 +64,16 @@ const CreatorAnalytics = () => {
         .eq('creator_id', user.id)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching connections:', error);
+        return [];
+      }
       return data || [];
     },
     enabled: !!user?.id
   });
 
   const isLoading = earningsLoading || dealsLoading || connectionsLoading;
-  const hasError = earningsError || dealsError || connectionsError;
 
   // Calculate metrics safely
   const totalEarnings = earnings?.reduce((sum, earning) => sum + Number(earning.amount || 0), 0) || 0;
@@ -85,19 +93,6 @@ const CreatorAnalytics = () => {
           <div className="text-center">
             <div className="w-8 h-8 border-t-2 border-b-2 border-white rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-white">Loading your analytics...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (hasError) {
-    return (
-      <div className="container mx-auto p-6 bg-background">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <p className="text-red-400 mb-2">Error loading analytics data</p>
-            <p className="text-sm text-muted-foreground">Please refresh the page to try again</p>
           </div>
         </div>
       </div>
@@ -201,6 +196,7 @@ const CreatorAnalytics = () => {
           </Card>
         </div>
 
+        {/* Charts and Analytics */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ErrorBoundary fallback={() => (
             <Card>
