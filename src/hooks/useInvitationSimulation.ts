@@ -1,7 +1,5 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { toast } from 'sonner';
 
 export interface MockInvitation {
@@ -33,13 +31,14 @@ export interface MockInvitation {
 }
 
 export const useInvitationSimulation = () => {
-  const { user, creatorProfile } = useUnifiedAuth();
   const [invitations, setInvitations] = useState<MockInvitation[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
 
   // Generate mock invitations immediately
   const generateMockInvitations = (): MockInvitation[] => {
+    console.log('🎯 Generating mock invitations...');
+    
     return [
       {
         id: 'mock-inv-001',
@@ -121,8 +120,13 @@ export const useInvitationSimulation = () => {
   };
 
   useEffect(() => {
-    // Always generate mock invitations regardless of auth state for testing
+    console.log('🔄 useInvitationSimulation: Initializing...');
+    
+    // Generate mock invitations immediately
     const mockData = generateMockInvitations();
+    console.log('📧 Generated invitations:', mockData.length);
+    console.log('📧 Mock invitations data:', mockData);
+    
     setInvitations(mockData);
     setIsLoading(false);
   }, []);
@@ -200,6 +204,12 @@ export const useInvitationSimulation = () => {
       setActionLoading(prev => ({ ...prev, [invitationId]: false }));
     }
   };
+
+  console.log('🎯 useInvitationSimulation returning:', {
+    invitations: invitations.length,
+    isLoading,
+    actionLoading: Object.keys(actionLoading).length
+  });
 
   return {
     invitations,

@@ -8,7 +8,7 @@ import { MockInvitationCard } from './MockInvitationCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { MailPlus, CheckCircle, XCircle, Briefcase, Zap } from 'lucide-react';
+import { MailPlus, CheckCircle, Briefcase, Zap } from 'lucide-react';
 
 export const InvitationsList: React.FC = () => {
   const { 
@@ -35,19 +35,27 @@ export const InvitationsList: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'active' | 'projects' | 'general' | 'all'>('active');
 
   // Debug logging
-  console.log('Mock invitations:', mockInvitations);
-  console.log('Mock loading:', mockLoading);
+  console.log('📧 InvitationsList - Mock invitations:', mockInvitations);
+  console.log('📧 InvitationsList - Mock loading:', mockLoading);
+  console.log('📧 InvitationsList - Mock invitations count:', mockInvitations?.length || 0);
 
   const isLoading = generalLoading || projectLoading || mockLoading;
 
-  const pendingMockInvitations = mockInvitations.filter(inv => inv.status === 'invited');
-  const acceptedMockInvitations = mockInvitations.filter(inv => inv.status === 'accepted');
-  const declinedMockInvitations = mockInvitations.filter(inv => inv.status === 'declined');
+  const pendingMockInvitations = mockInvitations?.filter(inv => inv.status === 'invited') || [];
+  const acceptedMockInvitations = mockInvitations?.filter(inv => inv.status === 'accepted') || [];
+  const declinedMockInvitations = mockInvitations?.filter(inv => inv.status === 'declined') || [];
 
   const pendingProjectInvitations = projectInvitations.filter(inv => inv.status === 'invited');
   const pendingGeneralInvitations = invitations.filter(inv => inv.status === 'invited');
 
   const totalPending = pendingMockInvitations.length + pendingProjectInvitations.length + pendingGeneralInvitations.length;
+
+  console.log('📊 InvitationsList - Stats:', {
+    pendingMock: pendingMockInvitations.length,
+    acceptedMock: acceptedMockInvitations.length,
+    totalPending,
+    isLoading
+  });
 
   const EmptyState = ({ message, icon: Icon }: { message: string; icon: React.ElementType }) => (
     <Card>
@@ -111,15 +119,31 @@ export const InvitationsList: React.FC = () => {
                 {pendingMockInvitations.length} Pending
               </Badge>
             </div>
-            {pendingMockInvitations.map((invitation) => (
-              <MockInvitationCard
-                key={invitation.id}
-                invitation={invitation}
-                onAccept={acceptMockInvitation}
-                onDecline={declineMockInvitation}
-                isLoading={mockActionLoading[invitation.id]}
-              />
-            ))}
+            
+            {/* Debug info */}
+            <div className="text-xs text-muted-foreground">
+              Debug: Found {mockInvitations?.length || 0} total mock invitations, {pendingMockInvitations.length} pending
+            </div>
+            
+            {pendingMockInvitations.length > 0 ? (
+              pendingMockInvitations.map((invitation) => (
+                <MockInvitationCard
+                  key={invitation.id}
+                  invitation={invitation}
+                  onAccept={acceptMockInvitation}
+                  onDecline={declineMockInvitation}
+                  isLoading={mockActionLoading[invitation.id]}
+                />
+              ))
+            ) : (
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <div className="text-muted-foreground">
+                    No pending invitations found. Debug: isLoading={isLoading.toString()}, mockInvitations length={mockInvitations?.length || 0}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Accepted Campaigns */}
@@ -141,13 +165,6 @@ export const InvitationsList: React.FC = () => {
                 />
               ))}
             </div>
-          )}
-
-          {pendingMockInvitations.length === 0 && acceptedMockInvitations.length === 0 && (
-            <EmptyState 
-              message="No active campaign invitations at the moment."
-              icon={Zap}
-            />
           )}
         </TabsContent>
 
@@ -199,7 +216,7 @@ export const InvitationsList: React.FC = () => {
               <Zap className="h-5 w-5" />
               Campaign Invitations
             </h3>
-            {mockInvitations.length > 0 ? (
+            {mockInvitations && mockInvitations.length > 0 ? (
               <div className="space-y-4">
                 {mockInvitations.map((invitation) => (
                   <MockInvitationCard
