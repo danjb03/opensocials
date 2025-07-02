@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, Target, BarChart3 } from "lucide-react";
 
@@ -18,7 +19,7 @@ export const FeaturesSection = () => {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
-          <Card className="border border-gray-700/50 p-8 rounded-3xl backdrop-blur-sm shadow-2xl shadow-gray-900/20 bg-slate-300">
+          <Card className="bg-gray-900/80 border border-gray-700/50 p-8 rounded-3xl backdrop-blur-sm shadow-2xl shadow-gray-900/20">
             <CardContent className="p-0">
               <div className="mb-8">
                 <div className="w-20 h-20 bg-gradient-to-br from-gray-500 to-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-gray-900/30">
@@ -26,7 +27,7 @@ export const FeaturesSection = () => {
                 </div>
               </div>
               <h3 className="text-2xl font-light text-white mb-4">High-performing creators.</h3>
-              <p className="text-lg leading-relaxed text-slate-200">Pre-vetted. High-performing. Ready to go live.</p>
+              <p className="text-lg leading-relaxed text-slate-300">Pre-vetted. High-performing. Ready to go live.</p>
             </CardContent>
           </Card>
 
@@ -42,7 +43,7 @@ export const FeaturesSection = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-gray-900/80 border border-gray-700/50 p-8 rounded-3xl backdrop-blur-sm shadow-2xl shadow-gray-900/20 px-[30px]">
+          <Card className="bg-gray-900/80 border border-gray-700/50 p-8 rounded-3xl backdrop-blur-sm shadow-2xl shadow-gray-900/20">
             <CardContent className="p-0">
               <div className="mb-8">
                 <div className="w-20 h-20 bg-gradient-to-br from-gray-500 to-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-gray-900/30">
