@@ -99,62 +99,17 @@ const CreatorAnalytics = () => {
     );
   }
 
-  // Super admin preview mode
-  if (role === 'super_admin') {
-    return (
-      <div className="container mx-auto p-6 bg-background">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2 text-white">Creator Analytics</h1>
-          <p className="text-muted-foreground">You are viewing the creator analytics page as a super admin.</p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white">Total Earnings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">$0.00</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white">Completed Deals</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">0</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white">Active Deals</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">0</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white">Pipeline Value</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">$0.00</div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <ErrorBoundary>
       <div className="container mx-auto p-6 space-y-6 bg-background">
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2 text-white">Creator Analytics</h1>
-          <p className="text-muted-foreground">Track your earnings, performance, and growth across all brand campaigns.</p>
+          <p className="text-muted-foreground">
+            Track your earnings, performance, and growth across all brand campaigns.
+            {role === 'super_admin' && (
+              <span className="ml-2 text-blue-400">(Super Admin View)</span>
+            )}
+          </p>
         </div>
 
         {/* Earnings Overview */}
