@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useCreatorInvitations } from '@/hooks/useCreatorInvitations';
 import { useProjectInvitations } from '@/hooks/queries/useProjectInvitations';
@@ -39,7 +40,8 @@ export const InvitationsList: React.FC = () => {
   console.log('📧 InvitationsList - Mock loading:', mockLoading);
   console.log('📧 InvitationsList - Mock invitations count:', mockInvitations?.length || 0);
 
-  const isLoading = generalLoading || projectLoading || mockLoading;
+  // Show content if mock invitations are loaded, don't wait for database queries
+  const showContent = !mockLoading && mockInvitations && mockInvitations.length > 0;
 
   const pendingMockInvitations = mockInvitations?.filter(inv => inv.status === 'invited') || [];
   const acceptedMockInvitations = mockInvitations?.filter(inv => inv.status === 'accepted') || [];
@@ -54,7 +56,8 @@ export const InvitationsList: React.FC = () => {
     pendingMock: pendingMockInvitations.length,
     acceptedMock: acceptedMockInvitations.length,
     totalPending,
-    isLoading
+    showContent,
+    mockLoading
   });
 
   const EmptyState = ({ message, icon: Icon }: { message: string; icon: React.ElementType }) => (
@@ -69,7 +72,8 @@ export const InvitationsList: React.FC = () => {
     </Card>
   );
 
-  if (isLoading) {
+  // Show loading only if mock invitations are still loading
+  if (mockLoading) {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map(i => (
@@ -120,11 +124,6 @@ export const InvitationsList: React.FC = () => {
               </Badge>
             </div>
             
-            {/* Debug info */}
-            <div className="text-xs text-muted-foreground">
-              Debug: Found {mockInvitations?.length || 0} total mock invitations, {pendingMockInvitations.length} pending
-            </div>
-            
             {pendingMockInvitations.length > 0 ? (
               pendingMockInvitations.map((invitation) => (
                 <MockInvitationCard
@@ -139,7 +138,7 @@ export const InvitationsList: React.FC = () => {
               <Card>
                 <CardContent className="p-6 text-center">
                   <div className="text-muted-foreground">
-                    No pending invitations found. Debug: isLoading={isLoading.toString()}, mockInvitations length={mockInvitations?.length || 0}
+                    No pending campaign invitations at the moment.
                   </div>
                 </CardContent>
               </Card>
@@ -169,7 +168,17 @@ export const InvitationsList: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="projects" className="space-y-4">
-          {pendingProjectInvitations.length > 0 ? (
+          {projectLoading ? (
+            <div className="space-y-4">
+              {[1, 2].map(i => (
+                <Card key={i} className="animate-pulse">
+                  <CardContent className="p-6">
+                    <div className="h-16 bg-muted/20 rounded"></div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : pendingProjectInvitations.length > 0 ? (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-white">Pending Project Invitations</h3>
               {pendingProjectInvitations.map((invitation) => (
@@ -188,7 +197,17 @@ export const InvitationsList: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="general" className="space-y-4">
-          {pendingGeneralInvitations.length > 0 ? (
+          {generalLoading ? (
+            <div className="space-y-4">
+              {[1, 2].map(i => (
+                <Card key={i} className="animate-pulse">
+                  <CardContent className="p-6">
+                    <div className="h-16 bg-muted/20 rounded"></div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : pendingGeneralInvitations.length > 0 ? (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-white">Pending General Invitations</h3>
               {pendingGeneralInvitations.map((invitation) => (
@@ -242,7 +261,17 @@ export const InvitationsList: React.FC = () => {
               <Briefcase className="h-5 w-5" />
               Project Invitations
             </h3>
-            {projectInvitations.length > 0 ? (
+            {projectLoading ? (
+              <div className="space-y-4">
+                {[1, 2].map(i => (
+                  <Card key={i} className="animate-pulse">
+                    <CardContent className="p-6">
+                      <div className="h-16 bg-muted/20 rounded"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : projectInvitations.length > 0 ? (
               <div className="space-y-4">
                 {projectInvitations.map((invitation) => (
                   <ProjectInvitationCard
@@ -265,7 +294,17 @@ export const InvitationsList: React.FC = () => {
               <MailPlus className="h-5 w-5" />
               General Invitations
             </h3>
-            {invitations.length > 0 ? (
+            {generalLoading ? (
+              <div className="space-y-4">
+                {[1, 2].map(i => (
+                  <Card key={i} className="animate-pulse">
+                    <CardContent className="p-6">
+                      <div className="h-16 bg-muted/20 rounded"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : invitations.length > 0 ? (
               <div className="space-y-4">
                 {invitations.map((invitation) => (
                   <InvitationCard
