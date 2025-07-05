@@ -70,7 +70,7 @@ export const MockInvitationCard: React.FC<MockInvitationCardProps> = ({
   const isHighValue = invitation.agreed_amount >= 3000;
 
   return (
-    <Card className="bg-gray-900 border border-gray-800 hover:border-gray-700 transition-all duration-300 hover:shadow-lg">
+    <Card className="bg-black border border-gray-800 hover:border-gray-600 transition-all duration-300 hover:shadow-lg">
       <CardHeader className="pb-4">
         {/* Header with Brand Info and Status */}
         <div className="flex items-start justify-between mb-4">
@@ -108,7 +108,7 @@ export const MockInvitationCard: React.FC<MockInvitationCardProps> = ({
         </div>
 
         {/* Campaign Value */}
-        <div className="bg-gray-800 rounded-lg p-4 mb-4">
+        <div className="bg-gray-900 rounded-lg p-4 mb-4 border border-gray-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-emerald-500/20 rounded-lg">
@@ -126,7 +126,7 @@ export const MockInvitationCard: React.FC<MockInvitationCardProps> = ({
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className="bg-gray-800 rounded-lg p-3 flex items-center gap-2">
+          <div className="bg-gray-900 rounded-lg p-3 flex items-center gap-2 border border-gray-800">
             <Video className="h-4 w-4 text-blue-400" />
             <div>
               <p className="text-sm font-medium text-white">
@@ -135,7 +135,7 @@ export const MockInvitationCard: React.FC<MockInvitationCardProps> = ({
               <p className="text-xs text-gray-400">Required</p>
             </div>
           </div>
-          <div className="bg-gray-800 rounded-lg p-3 flex items-center gap-2">
+          <div className="bg-gray-900 rounded-lg p-3 flex items-center gap-2 border border-gray-800">
             <Users className="h-4 w-4 text-purple-400" />
             <div>
               <p className="text-sm font-medium text-white">
@@ -149,7 +149,7 @@ export const MockInvitationCard: React.FC<MockInvitationCardProps> = ({
 
       <CardContent className="pt-0">
         {/* Campaign Objective */}
-        <div className="bg-gray-800 rounded-lg p-4 mb-4">
+        <div className="bg-gray-900 rounded-lg p-4 mb-4 border border-gray-800">
           <div className="flex items-start gap-3">
             <Target className="h-5 w-5 text-orange-400 mt-0.5 flex-shrink-0" />
             <div>
@@ -163,7 +163,7 @@ export const MockInvitationCard: React.FC<MockInvitationCardProps> = ({
 
         {/* Brand Message */}
         {invitation.notes && (
-          <div className="bg-gray-800 rounded-lg p-4 mb-4 border-l-4 border-blue-500">
+          <div className="bg-gray-900 rounded-lg p-4 mb-4 border-l-4 border-blue-500 border border-gray-800">
             <div className="flex items-start gap-2">
               <Eye className="h-4 w-4 text-blue-400 mt-1 flex-shrink-0" />
               <p className="text-sm text-gray-300 italic">
@@ -177,7 +177,7 @@ export const MockInvitationCard: React.FC<MockInvitationCardProps> = ({
         <Button
           variant="ghost"
           onClick={() => setShowDetails(!showDetails)}
-          className="w-full justify-between text-gray-300 hover:text-white hover:bg-gray-800 border border-gray-700 hover:border-gray-600"
+          className="w-full justify-between text-gray-300 hover:text-white hover:bg-gray-900 border border-gray-700 hover:border-gray-600"
         >
           <span>Campaign Details</span>
           {showDetails ? (
@@ -192,7 +192,7 @@ export const MockInvitationCard: React.FC<MockInvitationCardProps> = ({
             <Separator className="bg-gray-700" />
             
             {/* Timeline */}
-            <div className="bg-gray-800 rounded-lg p-4">
+            <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="h-4 w-4 text-blue-400" />
                 <span className="font-medium text-white">Timeline</span>
@@ -203,7 +203,7 @@ export const MockInvitationCard: React.FC<MockInvitationCardProps> = ({
             </div>
 
             {/* Deliverables */}
-            <div className="bg-gray-800 rounded-lg p-4">
+            <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle className="h-4 w-4 text-green-400" />
                 <span className="font-medium text-white">Deliverables</span>
@@ -219,7 +219,7 @@ export const MockInvitationCard: React.FC<MockInvitationCardProps> = ({
             </div>
 
             {/* Content Requirements */}
-            <div className="bg-gray-800 rounded-lg p-4">
+            <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
               <div className="flex items-center gap-2 mb-2">
                 <Video className="h-4 w-4 text-purple-400" />
                 <span className="font-medium text-white">Content Requirements</span>
@@ -239,7 +239,7 @@ export const MockInvitationCard: React.FC<MockInvitationCardProps> = ({
             </div>
 
             {/* Usage Rights */}
-            <div className="bg-gray-800 rounded-lg p-4">
+            <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
               <div className="flex items-center gap-2 mb-2">
                 <Building2 className="h-4 w-4 text-gray-400" />
                 <span className="font-medium text-white">Usage Rights</span>
@@ -259,11 +259,11 @@ export const MockInvitationCard: React.FC<MockInvitationCardProps> = ({
       </CardContent>
 
       {invitation.status === 'invited' && (
-        <CardFooter className="pt-4 gap-3 bg-gray-800/50">
+        <CardFooter className="pt-4 gap-3 bg-gray-900/50 border-t border-gray-800">
           <Button
             onClick={() => onDecline(invitation.id)}
             variant="outline"
-            className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-gray-500 hover:text-white"
+            className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-800 hover:border-gray-500 hover:text-white"
             disabled={isLoading}
           >
             {isLoading ? 'Processing...' : 'Decline'}
@@ -284,7 +284,7 @@ export const MockInvitationCard: React.FC<MockInvitationCardProps> = ({
       )}
 
       {invitation.status === 'accepted' && (
-        <CardFooter className="pt-4 bg-gray-800/50">
+        <CardFooter className="pt-4 bg-gray-900/50 border-t border-gray-800">
           <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300">
             Start Campaign
             <ArrowRight className="ml-2 h-4 w-4" />
