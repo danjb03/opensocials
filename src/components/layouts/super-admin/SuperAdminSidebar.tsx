@@ -72,19 +72,19 @@ const SuperAdminSidebar = memo(({ userEmail, role, isActiveRoute }: SuperAdminSi
   ];
 
   return (
-    <Sidebar collapsible="icon" className="bg-sidebar border-r border-sidebar-border">
-      <SidebarHeader className="p-4 flex items-center justify-center min-h-[80px]">
+    <Sidebar collapsible="icon" className="bg-black border-r border-gray-800">
+      <SidebarHeader className="p-4 flex items-center justify-center min-h-[80px] bg-black">
         <SidebarLogo className="group-data-[collapsible=icon]:scale-75" />
       </SidebarHeader>
       
-      <SidebarContent className="px-4">
+      <SidebarContent className="px-4 bg-black">
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton 
                 asChild
                 isActive={item.isActive}
-                className="h-12 mr-2 hover:bg-accent hover:text-accent-foreground transition-colors"
+                className="h-12 mr-2 hover:bg-gray-900 text-white transition-colors"
                 tooltip={item.title}
               >
                 <Link to={item.url} className="flex items-center gap-3 w-full">
@@ -97,14 +97,14 @@ const SuperAdminSidebar = memo(({ userEmail, role, isActiveRoute }: SuperAdminSi
         </SidebarMenu>
       </SidebarContent>
       
-      <SidebarFooter className="p-4 border-t border-sidebar-border">
-        <div className="text-sm text-sidebar-foreground/70 mb-2 truncate group-data-[collapsible=icon]:hidden">
+      <SidebarFooter className="p-4 border-t border-gray-800 bg-black">
+        <div className="text-sm text-gray-400 mb-2 truncate group-data-[collapsible=icon]:hidden">
           {userEmail}
         </div>
         <Button 
           variant="default" 
           onClick={handleSignOut}
-          className="w-full h-12 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:text-xs hover:bg-accent hover:text-accent-foreground transition-colors"
+          className="w-full h-12 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:text-xs bg-white text-black hover:bg-gray-200 transition-colors"
         >
           <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
           <LogOut className="hidden group-data-[collapsible=icon]:block h-4 w-4" />

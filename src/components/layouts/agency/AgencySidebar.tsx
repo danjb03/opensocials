@@ -27,7 +27,7 @@ const AgencySidebar = () => {
   };
 
   return (
-    <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} transition-all duration-300 bg-card border-r border-border flex flex-col`}>
+    <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} transition-all duration-300 bg-black border-r border-gray-800 flex flex-col`}>
       <AgencySidebarHeader 
         isSidebarOpen={isSidebarOpen} 
         onToggle={toggleSidebar} 
@@ -35,12 +35,12 @@ const AgencySidebar = () => {
 
       {/* Super Admin Back Button */}
       {role === 'super_admin' && isSidebarOpen && (
-        <div className="p-4 border-b border-border">
+        <div className="p-4 border-b border-gray-800">
           <Button 
             variant="outline" 
             size="sm" 
             onClick={() => navigate('/super_admin')}
-            className="w-full flex items-center gap-2"
+            className="w-full flex items-center gap-2 bg-black border-gray-700 text-white hover:bg-gray-900"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Super Admin
