@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import DashboardHeader from '@/components/admin/super-admin/DashboardHeader';
 import OverviewTab from '@/components/admin/super-admin/OverviewTab';
 import DashboardAccessTab from '@/components/admin/super-admin/DashboardAccessTab';
@@ -34,19 +34,21 @@ const SuperAdminDashboard = () => {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <p className="text-red-500 mb-4">Error loading dashboard. Please try refreshing the page.</p>
-          <p className="text-muted-foreground text-sm">If the problem persists, please check your authentication status.</p>
+          <p className="text-red-500 mb-4">Authentication required</p>
+          <p className="text-muted-foreground text-sm">Please sign in to access the dashboard.</p>
         </div>
       </div>
     );
   }
 
-  if (role !== 'super_admin' && role !== 'admin') {
+  // Allow super_admin role to view dashboard, don't restrict to just admin
+  if (role !== 'super_admin') {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <p className="text-red-500 mb-4">Access Denied</p>
           <p className="text-muted-foreground text-sm">You don't have permission to access this dashboard.</p>
+          <p className="text-muted-foreground text-xs mt-2">Current role: {role || 'None'}</p>
         </div>
       </div>
     );
