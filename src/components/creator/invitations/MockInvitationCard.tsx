@@ -24,6 +24,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { MockInvitation } from '@/hooks/useInvitationSimulation';
+import { useNavigate } from 'react-router-dom';
 
 interface MockInvitationCardProps {
   invitation: MockInvitation;
@@ -39,6 +40,7 @@ export const MockInvitationCard: React.FC<MockInvitationCardProps> = ({
   isLoading = false
 }) => {
   const [showDetails, setShowDetails] = useState(false);
+  const navigate = useNavigate();
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -64,6 +66,11 @@ export const MockInvitationCard: React.FC<MockInvitationCardProps> = ({
           </Badge>
         );
     }
+  };
+
+  const handleStartCampaign = () => {
+    // Navigate to campaigns page where they can see their active campaigns
+    navigate('/creator/campaigns');
   };
 
   const isExclusive = invitation.campaign_details.exclusivity;
@@ -285,7 +292,10 @@ export const MockInvitationCard: React.FC<MockInvitationCardProps> = ({
 
       {invitation.status === 'accepted' && (
         <CardFooter className="pt-4 bg-gray-900/50 border-t border-gray-800">
-          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300">
+          <Button 
+            onClick={handleStartCampaign}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300"
+          >
             Start Campaign
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>

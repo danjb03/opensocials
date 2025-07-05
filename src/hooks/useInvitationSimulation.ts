@@ -37,7 +37,7 @@ const mockInvitations: MockInvitation[] = [
     project_id: 'mock-proj-001',
     project_name: 'Summer Fashion Collection Launch',
     brand_name: 'StyleCo',
-    brand_logo: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=100&h=100&fit=crop&crop=center',
+    brand_logo: 'https://images.unsplash.com/photo-1560472354-b43ff0c44a43?w=100&h=100&fit=crop&crop=center',
     status: 'invited',
     agreed_amount: 2500,
     currency: 'USD',
@@ -160,12 +160,15 @@ export const useInvitationSimulation = () => {
     if (!user?.id) return;
 
     try {
+      // Create a valid UUID for the mock brand - use the user's ID as base
+      const mockBrandId = user.id; // Use current user as mock brand for simplicity
+
       // First create a project record
       const { data: project, error: projectError } = await supabase
         .from('projects_new')
         .insert({
           name: invitation.project_name,
-          brand_id: 'mock-brand-' + invitation.id, // Mock brand ID
+          brand_id: mockBrandId,
           budget: invitation.agreed_amount,
           currency: invitation.currency,
           campaign_type: 'Single',
@@ -206,6 +209,7 @@ export const useInvitationSimulation = () => {
 
       if (dealError) {
         console.error('Error creating deal:', dealError);
+        return;
       }
 
       console.log('✅ Successfully created database records for accepted invitation');
