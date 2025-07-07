@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import type { Campaign } from './CampaignRow';
 
 interface CampaignFilters {
@@ -26,7 +26,7 @@ export function useCampaigns(): UseCampaignsReturn {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<CampaignFilters>({});
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useUnifiedAuth();
 
   const fetchCampaigns = useCallback(async () => {
     try {
@@ -41,38 +41,50 @@ export function useCampaigns(): UseCampaignsReturn {
 
       console.log('🔍 useCampaigns - Fetching campaigns for user ID:', user.id);
 
-      // First, try to fetch from projects_new table (new campaign wizard campaigns)
-      console.log('📥 useCampaigns - Fetching from projects_new table...');
-      const { data: newProjectsData, error: newProjectsError } = await supabase
-        .from('projects_new')
-        .select(`
-          id,
-          name,
-          status,
-          start_date,
-          end_date,
-          budget,
-          created_at,
-          campaign_type,
-          platforms,
-          brand_id
-        `)
-        .eq('brand_id', user.id)
-        .order('created_at', { ascending: false });
+      // Fetch from both tables in parallel
+      const [newProjectsResult, legacyProjectsResult] = await Promise.allSettled([
+        supabase
+          .from('projects_new')
+          .select(`
+            id,
+            name,
+            status,
+            start_date,
+            end_date,
+            budget,
+            created_at,
+            campaign_type,
+            platforms,
+            brand_id
+          `)
+          .eq('brand_id', user.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('projects')
+          .select(`
+            id,
+            name,
+            status,
+            start_date,
+            end_date,
+            budget,
+            currency,
+            created_at,
+            campaign_type,
+            platforms,
+            brand_id
+          `)
+          .eq('brand_id', user.id)
+          .order('created_at', { ascending: false })
+      ]);
 
       let allCampaigns: Campaign[] = [];
 
       // Process new projects data
-      if (!newProjectsError && newProjectsData) {
-        console.log('✅ useCampaigns - Found', newProjectsData.length, 'campaigns in projects_new');
-        console.log('📊 useCampaigns - Projects_new campaigns:', newProjectsData.map(p => ({
-          id: p.id,
-          name: p.name,
-          brand_id: p.brand_id,
-          status: p.status
-        })));
+      if (newProjectsResult.status === 'fulfilled' && newProjectsResult.value.data) {
+        console.log('✅ useCampaigns - Found', newProjectsResult.value.data.length, 'campaigns in projects_new');
         
-        const transformedNewCampaigns: Campaign[] = newProjectsData.map(project => ({
+        const transformedNewCampaigns: Campaign[] = newProjectsResult.value.data.map(project => ({
           id: project.id,
           name: project.name || 'Untitled Campaign',
           status: (project.status as 'draft' | 'active' | 'completed' | 'paused') || 'draft',
@@ -87,34 +99,14 @@ export function useCampaigns(): UseCampaignsReturn {
             : 'Multiple'
         }));
         allCampaigns = [...transformedNewCampaigns];
-      } else if (newProjectsError) {
-        console.error('❌ useCampaigns - Error fetching from projects_new:', newProjectsError);
+      } else if (newProjectsResult.status === 'rejected') {
+        console.error('❌ useCampaigns - Error fetching from projects_new:', newProjectsResult.reason);
       }
 
-      // Also try to fetch from legacy projects table for backwards compatibility
-      console.log('📥 useCampaigns - Fetching from legacy projects table...');
-      const { data: legacyProjectsData, error: legacyProjectsError } = await supabase
-        .from('projects')
-        .select(`
-          id,
-          name,
-          status,
-          start_date,
-          end_date,
-          budget,
-          currency,
-          created_at,
-          campaign_type,
-          platforms,
-          brand_id
-        `)
-        .eq('brand_id', user.id)
-        .order('created_at', { ascending: false });
-
       // Process legacy projects data
-      if (!legacyProjectsError && legacyProjectsData) {
-        console.log('✅ useCampaigns - Found', legacyProjectsData.length, 'campaigns in legacy projects');
-        const transformedLegacyCampaigns: Campaign[] = legacyProjectsData.map(project => ({
+      if (legacyProjectsResult.status === 'fulfilled' && legacyProjectsResult.value.data) {
+        console.log('✅ useCampaigns - Found', legacyProjectsResult.value.data.length, 'campaigns in legacy projects');
+        const transformedLegacyCampaigns: Campaign[] = legacyProjectsResult.value.data.map(project => ({
           id: project.id,
           name: project.name || 'Untitled Campaign',
           status: (project.status as 'draft' | 'active' | 'completed' | 'paused') || 'draft',
@@ -133,8 +125,8 @@ export function useCampaigns(): UseCampaignsReturn {
         const existingIds = new Set(allCampaigns.map(c => c.id));
         const uniqueLegacyCampaigns = transformedLegacyCampaigns.filter(c => !existingIds.has(c.id));
         allCampaigns = [...allCampaigns, ...uniqueLegacyCampaigns];
-      } else if (legacyProjectsError) {
-        console.error('❌ useCampaigns - Error fetching from legacy projects:', legacyProjectsError);
+      } else if (legacyProjectsResult.status === 'rejected') {
+        console.error('❌ useCampaigns - Error fetching from legacy projects:', legacyProjectsResult.reason);
       }
 
       // Apply filters
@@ -161,8 +153,8 @@ export function useCampaigns(): UseCampaignsReturn {
       
       console.log('📊 useCampaigns - Final summary:', {
         totalCampaigns: filteredData.length,
-        newTableCampaigns: newProjectsData?.length || 0,
-        legacyTableCampaigns: legacyProjectsData?.length || 0,
+        newTableCampaigns: newProjectsResult.status === 'fulfilled' ? newProjectsResult.value.data?.length || 0 : 0,
+        legacyTableCampaigns: legacyProjectsResult.status === 'fulfilled' ? legacyProjectsResult.value.data?.length || 0 : 0,
         userId: user.id,
         campaignsByStatus: filteredData.reduce((acc, c) => {
           acc[c.status] = (acc[c.status] || 0) + 1;
@@ -174,12 +166,7 @@ export function useCampaigns(): UseCampaignsReturn {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch campaigns';
       console.error('❌ useCampaigns - Error:', err);
       setError(errorMessage);
-      
-      // Don't show toast for expected empty states
-      if (errorMessage.includes('relation') || errorMessage.includes('does not exist')) {
-        setCampaigns([]); // Set empty array for new users
-        setError(null);
-      }
+      setCampaigns([]);
     } finally {
       setIsLoading(false);
     }
