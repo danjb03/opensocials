@@ -20,8 +20,8 @@ const BrandCampaigns = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen bg-background">
+        <div className="max-w-7xl mx-auto px-8 py-12">
           <div className="animate-pulse space-y-8">
             <div className="space-y-4">
               <div className="h-10 bg-muted rounded-lg w-80"></div>
@@ -40,8 +40,8 @@ const BrandCampaigns = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background p-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen bg-background">
+        <div className="max-w-7xl mx-auto px-8 py-12">
           <div className="flex flex-col items-center justify-center py-24">
             <div className="text-center space-y-4">
               <h2 className="text-2xl font-semibold text-foreground">Something went wrong</h2>
@@ -62,7 +62,7 @@ const BrandCampaigns = () => {
     <>
       <div className="min-h-screen bg-background">
         {/* Header Section */}
-        <div className="border-b border-border bg-card/30">
+        <div className="border-b border-border">
           <div className="max-w-7xl mx-auto px-8 py-12">
             <div className="flex items-center justify-between">
               <div className="space-y-3">
@@ -96,9 +96,9 @@ const BrandCampaigns = () => {
         </div>
 
         {/* Content Section */}
-        <div className="max-w-7xl mx-auto px-8 py-12">
+        <div className="max-w-7xl mx-auto px-8">
           {draftCampaigns.length > 0 ? (
-            <div className="space-y-8">
+            <div className="py-12 space-y-8">
               {/* Stats */}
               <div className="flex items-center gap-8">
                 <div className="flex items-center gap-3">
@@ -175,6 +175,27 @@ const BrandCampaigns = () => {
                   </Card>
                 ))}
               </div>
+
+              {/* Info Section */}
+              <div className="pt-12 border-t border-border">
+                <div className="text-center space-y-4">
+                  <h3 className="text-lg font-medium text-foreground">
+                    Ready to publish?
+                  </h3>
+                  <p className="text-muted-foreground max-w-2xl mx-auto">
+                    Published campaigns move to the Orders section where they undergo review 
+                    and enter the execution phase with your selected creators.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate('/brand/orders')}
+                    className="border-border hover:bg-muted/50"
+                  >
+                    View Orders
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="py-24">
@@ -189,29 +210,6 @@ const BrandCampaigns = () => {
                   variant: "default" as const
                 }}
               />
-            </div>
-          )}
-
-          {/* Info Section */}
-          {draftCampaigns.length > 0 && (
-            <div className="mt-16 pt-12 border-t border-border">
-              <div className="text-center space-y-4">
-                <h3 className="text-lg font-medium text-foreground">
-                  Ready to publish?
-                </h3>
-                <p className="text-muted-foreground max-w-2xl mx-auto">
-                  Published campaigns move to the Orders section where they undergo review 
-                  and enter the execution phase with your selected creators.
-                </p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => navigate('/brand/orders')}
-                  className="border-border hover:bg-muted/50"
-                >
-                  View Orders
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              </div>
             </div>
           )}
         </div>
