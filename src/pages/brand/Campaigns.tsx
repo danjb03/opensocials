@@ -2,9 +2,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Plus, FileText, ArrowRight, Search } from 'lucide-react';
+import { Plus, Search, ArrowRight } from 'lucide-react';
 import { useDraftCampaigns } from '@/hooks/brand/useDraftCampaigns';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { CampaignSearch } from '@/components/brand/campaigns/CampaignSearch';
@@ -20,10 +20,19 @@ const BrandCampaigns = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-1/3"></div>
-          <div className="h-64 bg-muted rounded"></div>
+      <div className="min-h-screen bg-background p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="animate-pulse space-y-8">
+            <div className="space-y-4">
+              <div className="h-10 bg-muted rounded-lg w-80"></div>
+              <div className="h-6 bg-muted rounded w-96"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-48 bg-muted rounded-xl"></div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -31,13 +40,19 @@ const BrandCampaigns = () => {
 
   if (error) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center py-12">
-          <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Campaigns</h2>
-          <p className="text-muted-foreground mb-4">We encountered an issue loading your draft campaigns.</p>
-          <Button onClick={() => refetch()}>
-            Try Again
-          </Button>
+      <div className="min-h-screen bg-background p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col items-center justify-center py-24">
+            <div className="text-center space-y-4">
+              <h2 className="text-2xl font-semibold text-foreground">Something went wrong</h2>
+              <p className="text-muted-foreground max-w-md">
+                We encountered an issue loading your draft campaigns. Please try again.
+              </p>
+              <Button onClick={() => refetch()} variant="outline">
+                Try Again
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -45,112 +60,161 @@ const BrandCampaigns = () => {
 
   return (
     <>
-      <div className="container mx-auto p-6 space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold text-foreground">Draft Campaigns</h1>
-            <p className="text-muted-foreground">Create and manage your campaign drafts. Once published, campaigns move to Orders for review.</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowSearch(true)}>
-              <Search className="h-4 w-4 mr-2" />
-              Find Missing Campaigns
-            </Button>
-            <Button onClick={() => navigate('/brand/create-campaign')} size="lg">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Campaign
-            </Button>
+      <div className="min-h-screen bg-background">
+        {/* Header Section */}
+        <div className="border-b border-border bg-card/30">
+          <div className="max-w-7xl mx-auto px-8 py-12">
+            <div className="flex items-center justify-between">
+              <div className="space-y-3">
+                <h1 className="text-4xl font-light text-foreground tracking-tight">
+                  Draft Campaigns
+                </h1>
+                <p className="text-lg text-muted-foreground font-light max-w-2xl">
+                  Create and refine your campaigns before they go live. 
+                  <span className="text-foreground font-medium"> Published campaigns</span> move to Orders for execution.
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowSearch(true)}
+                  className="border-border hover:bg-muted/50"
+                >
+                  <Search className="h-4 w-4 mr-2" />
+                  Search
+                </Button>
+                <Button 
+                  onClick={() => navigate('/brand/create-campaign')}
+                  className="bg-foreground text-background hover:bg-foreground/90 px-6"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Campaign
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Info Card */}
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-3">
-              <div className="bg-blue-100 p-2 rounded-lg">
-                <ArrowRight className="h-5 w-5 text-blue-600" />
+        {/* Content Section */}
+        <div className="max-w-7xl mx-auto px-8 py-12">
+          {draftCampaigns.length > 0 ? (
+            <div className="space-y-8">
+              {/* Stats */}
+              <div className="flex items-center gap-8">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  <span className="text-muted-foreground">
+                    {draftCampaigns.length} {draftCampaigns.length === 1 ? 'draft' : 'drafts'}
+                  </span>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-blue-900 mb-1">Campaign Workflow</h3>
-                <p className="text-blue-700 text-sm">
-                  Draft campaigns are saved here until you're ready to publish. Once published, campaigns move to the 
-                  <span className="font-medium"> Orders tab</span> where they undergo review before going live.
+
+              {/* Campaigns Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {draftCampaigns.map((campaign) => (
+                  <Card 
+                    key={campaign.id} 
+                    className="group cursor-pointer border-border hover:shadow-lg hover:shadow-black/5 transition-all duration-300 hover:-translate-y-1 bg-card/50 backdrop-blur-sm"
+                    onClick={() => handleContinueDraft(campaign.id)}
+                  >
+                    <CardContent className="p-8 space-y-6">
+                      {/* Header */}
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between">
+                          <Badge 
+                            variant="secondary" 
+                            className="bg-yellow-100 text-yellow-800 border-yellow-200 font-medium"
+                          >
+                            Draft
+                          </Badge>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all duration-200" />
+                        </div>
+                        <h3 className="text-xl font-medium text-foreground group-hover:text-foreground line-clamp-2">
+                          {campaign.name}
+                        </h3>
+                        <p className="text-muted-foreground text-sm">
+                          {campaign.campaign_type}
+                        </p>
+                      </div>
+
+                      {/* Progress */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Progress</span>
+                          <span className="font-medium text-foreground">
+                            Step {campaign.current_step}/5
+                          </span>
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-2">
+                          <div 
+                            className="bg-foreground h-2 rounded-full transition-all duration-300" 
+                            style={{ width: `${(campaign.current_step / 5) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Details */}
+                      <div className="space-y-4 pt-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Budget</span>
+                          <span className="font-medium text-foreground">
+                            {campaign.currency} {campaign.budget.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Last updated</span>
+                          <span className="text-sm text-muted-foreground">
+                            {new Date(campaign.updated_at).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="py-24">
+              <EmptyState
+                icon={Plus}
+                title="No draft campaigns yet"
+                description="Create your first campaign to start collaborating with creators and growing your brand's reach."
+                className="border-0 shadow-none bg-transparent"
+                action={{
+                  label: "Create Campaign",
+                  onClick: () => navigate('/brand/create-campaign'),
+                  variant: "default" as const
+                }}
+              />
+            </div>
+          )}
+
+          {/* Info Section */}
+          {draftCampaigns.length > 0 && (
+            <div className="mt-16 pt-12 border-t border-border">
+              <div className="text-center space-y-4">
+                <h3 className="text-lg font-medium text-foreground">
+                  Ready to publish?
+                </h3>
+                <p className="text-muted-foreground max-w-2xl mx-auto">
+                  Published campaigns move to the Orders section where they undergo review 
+                  and enter the execution phase with your selected creators.
                 </p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/brand/orders')}
+                  className="border-border hover:bg-muted/50"
+                >
+                  View Orders
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Draft Campaigns Grid */}
-        {draftCampaigns.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {draftCampaigns.map((campaign) => (
-              <Card key={campaign.id} className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-lg">{campaign.name}</CardTitle>
-                      <p className="text-sm text-muted-foreground">
-                        {campaign.campaign_type} • Step {campaign.current_step}/5
-                      </p>
-                    </div>
-                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                      Draft
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Budget</span>
-                    <span className="font-medium">{campaign.currency} {campaign.budget.toLocaleString()}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Last Updated</span>
-                    <span className="font-medium">{new Date(campaign.updated_at).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex gap-2 pt-2">
-                    <Button
-                      size="sm"
-                      onClick={() => handleContinueDraft(campaign.id)}
-                      className="flex-1"
-                    >
-                      <FileText className="h-4 w-4 mr-1" />
-                      Continue Editing
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            icon={FileText}
-            title="No draft campaigns"
-            description="Get started by creating your first campaign. Draft campaigns are saved here until you're ready to publish them."
-            className="animate-fade-in py-12"
-            action={{
-              label: "Create Campaign",
-              onClick: () => navigate('/brand/create-campaign'),
-              variant: "default" as const
-            }}
-          />
-        )}
-
-        {/* Additional Info */}
-        <Card className="bg-muted/30">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-2">
-              <h3 className="font-semibold">Looking for published campaigns?</h3>
-              <p className="text-muted-foreground text-sm">
-                Published campaigns are managed in the Orders tab where they go through review and execution phases.
-              </p>
-              <Button variant="outline" onClick={() => navigate('/brand/orders')}>
-                View Orders
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          )}
+        </div>
       </div>
 
       {/* Campaign Search Modal */}
