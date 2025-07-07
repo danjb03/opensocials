@@ -51,13 +51,8 @@ export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps
     setLocalFilters(filters);
   }, [filters, isOpen]);
 
-  const handleTogglePlatform = (platform: string) => {
-    setLocalFilters(prev => {
-      const platforms = prev.platforms.includes(platform)
-        ? prev.platforms.filter(p => p !== platform)
-        : [...prev.platforms, platform];
-      return { ...prev, platforms };
-    });
+  const handlePlatformChange = (platforms: string[]) => {
+    setLocalFilters(prev => ({ ...prev, platforms }));
   };
 
   const handleApplyFilters = () => {
@@ -105,7 +100,7 @@ export function ProjectFilters({ filters, onFiltersChange }: ProjectFiltersProps
           {/* Platforms Filter */}
           <PlatformFilter
             selectedPlatforms={localFilters.platforms}
-            onTogglePlatform={handleTogglePlatform}
+            onChange={handlePlatformChange}
           />
 
           {/* Campaign Name Filter */}

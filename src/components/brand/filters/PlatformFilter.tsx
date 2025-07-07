@@ -12,22 +12,34 @@ const PLATFORMS = [
   { id: 'twitter', name: 'Twitter', color: 'bg-sky-100 text-sky-800' },
 ];
 
+// Export platform options for backward compatibility
+export const platformOptions = PLATFORMS.map(p => p.name);
+
 interface PlatformFilterProps {
   selectedPlatforms: string[];
   onChange: (platforms: string[]) => void;
+  onTogglePlatform?: (platform: string) => void; // For backward compatibility
   className?: string;
 }
 
 export const PlatformFilter: React.FC<PlatformFilterProps> = ({
   selectedPlatforms,
   onChange,
+  onTogglePlatform,
   className = ""
 }) => {
   const togglePlatform = (platformId: string) => {
     if (selectedPlatforms.includes(platformId)) {
-      onChange(selectedPlatforms.filter(p => p !== platformId));
+      const newPlatforms = selectedPlatforms.filter(p => p !== platformId);
+      onChange(newPlatforms);
     } else {
-      onChange([...selectedPlatforms, platformId]);
+      const newPlatforms = [...selectedPlatforms, platformId];
+      onChange(newPlatforms);
+    }
+    
+    // Call legacy prop if provided
+    if (onTogglePlatform) {
+      onTogglePlatform(platformId);
     }
   };
 
