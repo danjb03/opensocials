@@ -48,7 +48,7 @@ export const useRealCreators = (filters?: CreatorFilters) => {
           industries,
           avatar_url,
           audience_type,
-          creator_public_analytics!inner(
+          creator_public_analytics(
             image_url,
             profile_url,
             platform,
@@ -81,7 +81,10 @@ export const useRealCreators = (filters?: CreatorFilters) => {
 
       return data?.map(creator => {
         // Use analytics data if available, otherwise fall back to profile data
-        const analyticsData = creator.creator_public_analytics?.[0];
+        const analyticsData = Array.isArray(creator.creator_public_analytics) && creator.creator_public_analytics.length > 0 
+          ? creator.creator_public_analytics[0] 
+          : null;
+        
         const followerCount = analyticsData?.follower_count || creator.follower_count || 0;
         const engagementRate = analyticsData?.engagement_rate || creator.engagement_rate || 0;
         
