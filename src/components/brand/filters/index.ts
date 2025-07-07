@@ -6,7 +6,12 @@ export * from './MonthYearFilter';
 export * from './FilterButton';
 export * from './SkillsFilter';
 export * from './IndustryFilter';
-// export * from './RelevanceFilter'; -- Removed temporarily
+
+// New enhanced filter components
+export * from './SearchFilter';
+export * from './RangeFilter';
+export * from './MultiSelectFilter';
+export * from './EnhancedCreatorFilters';
 
 // Re-export the creator matching utilities
 export { calculateMatchScore } from '@/utils/creatorMatching';
