@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -19,55 +18,70 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+      },
+      fontWeight: {
+        'light': '300',
+        'normal': '400',
+        'medium': '500',
+        'semibold': '600',
+        'bold': '700',
+      },
       colors: {
-        border: "#000000",
-        input: "#000000",
-        ring: "#000000",
-        background: "#FFFFFF",
-        foreground: "#000000",
+        border: "#404040",
+        input: "#404040",
+        ring: "#F8F8F8",
+        background: "#000000",
+        foreground: "#FFFFFF",
         primary: {
-          DEFAULT: "#000000",
-          foreground: "#FFFFFF",
-        },
-        secondary: {
           DEFAULT: "#FFFFFF",
           foreground: "#000000",
+        },
+        secondary: {
+          DEFAULT: "#404040",
+          foreground: "#FFFFFF",
         },
         destructive: {
           DEFAULT: "#000000",
           foreground: "#FFFFFF",
         },
         muted: {
-          DEFAULT: "#F5F5F5",
-          foreground: "#000000",
+          DEFAULT: "#1A1A20",
+          foreground: "#909090",
         },
         accent: {
           DEFAULT: "#FFFFFF",
           foreground: "#000000",
         },
         popover: {
-          DEFAULT: "#FFFFFF",
-          foreground: "#000000",
+          DEFAULT: "#0F0F15",
+          foreground: "#FFFFFF",
         },
         card: {
-          DEFAULT: "#FFFFFF",
-          foreground: "#000000",
+          DEFAULT: "#0F0F15",
+          foreground: "#FFFFFF",
         },
         sidebar: {
           DEFAULT: "#000000",
           foreground: "#FFFFFF",
           primary: "#000000",
           'primary-foreground': "#FFFFFF",
-          accent: "#333333",
+          accent: "#404040",
           'accent-foreground': "#FFFFFF",
-          border: "#000000",
-          ring: "#000000"
+          border: "#404040",
+          ring: "#F8F8F8"
         }
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)'
+      },
+      perspective: {
+        '1000': '1000px',
+        '1500': '1500px',
+        '2000': '2000px',
       },
       keyframes: {
         'accordion-down': {
@@ -156,10 +170,10 @@ export default {
         },
         'pulse-glow': {
           '0%, 100%': {
-            boxShadow: '0 0 5px rgba(0, 0, 0, 0.1)'
+            boxShadow: '0 0 5px rgba(255,255,255,0.1)'
           },
           '50%': {
-            boxShadow: '0 0 20px rgba(0, 0, 0, 0.2)'
+            boxShadow: '0 0 20px rgba(255,255,255,0.2)'
           }
         },
         'shimmer': {
@@ -199,6 +213,14 @@ export default {
           '100%': {
             transform: 'rotate(360deg)'
           }
+        },
+        'scroll': {
+          '0%': {
+            transform: 'translateX(0)'
+          },
+          '100%': {
+            transform: 'translateX(-50%)'
+          }
         }
       },
       animation: {
@@ -214,7 +236,8 @@ export default {
         'shimmer': 'shimmer 2s infinite linear',
         'float': 'float 3s ease-in-out infinite',
         'shake': 'shake 0.82s cubic-bezier(.36,.07,.19,.97) both',
-        'spin-slow': 'spin-slow 3s linear infinite'
+        'spin-slow': 'spin-slow 3s linear infinite',
+        'scroll': 'scroll 30s linear infinite'
       },
       spacing: {
         '18': '4.5rem',
