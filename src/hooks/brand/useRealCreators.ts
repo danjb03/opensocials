@@ -47,7 +47,14 @@ export const useRealCreators = (filters?: CreatorFilters) => {
           platforms,
           industries,
           avatar_url,
-          audience_type
+          audience_type,
+          creator_public_analytics!inner(
+            image_url,
+            profile_url,
+            platform,
+            follower_count,
+            engagement_rate
+          )
         `)
         .eq('is_profile_complete', true);
 
@@ -73,7 +80,11 @@ export const useRealCreators = (filters?: CreatorFilters) => {
       if (error) throw error;
 
       return data?.map(creator => {
-        const followerCount = creator.follower_count || 0;
+        // Use analytics data if available, otherwise fall back to profile data
+        const analyticsData = creator.creator_public_analytics?.[0];
+        const followerCount = analyticsData?.follower_count || creator.follower_count || 0;
+        const engagementRate = analyticsData?.engagement_rate || creator.engagement_rate || 0;
+        
         let priceRange = '$250-600';
         
         // Estimate price range based on follower count
@@ -85,17 +96,22 @@ export const useRealCreators = (filters?: CreatorFilters) => {
           priceRange = '$500-1000';
         }
 
+        // Use actual profile image from analytics data, fallback to avatar_url, then to a default
+        const profileImage = analyticsData?.image_url || 
+                           creator.avatar_url || 
+                           `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80`;
+
         return {
           id: creator.id,
           name: `${creator.first_name} ${creator.last_name}`,
           platform: creator.primary_platform || 'instagram',
           audience: creator.audience_type || 'millennials',
           contentType: creator.content_types?.[0] || 'photo',
-          followers: creator.follower_count ? `${Math.floor(creator.follower_count / 1000)}K` : '0K',
-          engagement: `${creator.engagement_rate || 0}%`,
+          followers: followerCount ? `${Math.floor(followerCount / 1000)}K` : '0K',
+          engagement: `${engagementRate || 0}%`,
           priceRange,
           skills: creator.industries || [],
-          imageUrl: creator.avatar_url || `https://images.unsplash.com/photo-${Math.random() > 0.5 ? '1472099645785-5658abf4ff4e' : '1494790108377-be9c29b29330'}?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80`,
+          imageUrl: profileImage,
           username: creator.username,
           bio: creator.bio,
           industries: creator.industries,

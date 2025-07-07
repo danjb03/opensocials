@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,13 +14,24 @@ interface CreatorCardProps {
 }
 
 const CreatorCard = ({ creator, onInvite, onFavorite, isFavorited }: CreatorCardProps) => {
+  const [imageError, setImageError] = useState(false);
+  
+  // Fallback image if the original fails to load
+  const fallbackImage = `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80`;
+  
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 bg-card border-border">
       <div className="relative">
         <img
-          src={creator.imageUrl}
+          src={imageError ? fallbackImage : creator.imageUrl}
           alt={creator.name}
           className="w-full h-48 object-cover"
+          onError={handleImageError}
+          loading="lazy"
         />
         <Button
           variant="outline"
