@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
 import { CampaignWizardData } from '@/types/campaignWizard';
 import { handleStepCompletion } from './utils/stepCompletion';
 import { handleSaveAndExit } from './utils/saveAndExit';

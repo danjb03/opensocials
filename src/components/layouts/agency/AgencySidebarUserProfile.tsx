@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
 
 interface AgencySidebarUserProfileProps {
   isSidebarOpen: boolean;
