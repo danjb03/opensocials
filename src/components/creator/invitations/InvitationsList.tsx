@@ -1,83 +1,50 @@
 
 import React, { useState } from 'react';
-import { useCreatorInvitations } from '@/hooks/useCreatorInvitations';
 import { useProjectInvitations } from '@/hooks/queries/useProjectInvitations';
-import { useInvitationSimulation } from '@/hooks/useInvitationSimulation';
-import { InvitationCard } from './InvitationCard';
 import { ProjectInvitationCard } from './ProjectInvitationCard';
-import { MockInvitationCard } from './MockInvitationCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { MailPlus, CheckCircle, Briefcase, Zap } from 'lucide-react';
+import { MailPlus, CheckCircle, Briefcase, Clock } from 'lucide-react';
 
 export const InvitationsList: React.FC = () => {
   const { 
-    invitations, 
-    isLoading: generalLoading, 
-    actionLoading, 
-    acceptInvitation, 
-    declineInvitation 
-  } = useCreatorInvitations();
-  
-  const { 
     data: projectInvitations = [], 
-    isLoading: projectLoading 
+    isLoading: projectLoading,
+    error: projectError 
   } = useProjectInvitations();
-
-  const {
-    invitations: mockInvitations,
-    isLoading: mockLoading,
-    actionLoading: mockActionLoading,
-    acceptInvitation: acceptMockInvitation,
-    declineInvitation: declineMockInvitation
-  } = useInvitationSimulation();
   
-  const [activeTab, setActiveTab] = useState<'active' | 'projects' | 'general' | 'all'>('active');
+  const [activeTab, setActiveTab] = useState<'pending' | 'accepted' | 'declined' | 'all'>('pending');
 
-  // Debug logging
-  console.log('📧 InvitationsList - Mock invitations:', mockInvitations);
-  console.log('📧 InvitationsList - Mock loading:', mockLoading);
-  console.log('📧 InvitationsList - Mock invitations count:', mockInvitations?.length || 0);
+  // Filter invitations by status
+  const pendingInvitations = projectInvitations.filter(inv => inv.status === 'invited');
+  const acceptedInvitations = projectInvitations.filter(inv => inv.status === 'accepted');
+  const declinedInvitations = projectInvitations.filter(inv => inv.status === 'declined');
 
-  // Show content if mock invitations are loaded, don't wait for database queries
-  const showContent = !mockLoading && mockInvitations && mockInvitations.length > 0;
-
-  const pendingMockInvitations = mockInvitations?.filter(inv => inv.status === 'invited') || [];
-  const acceptedMockInvitations = mockInvitations?.filter(inv => inv.status === 'accepted') || [];
-  const declinedMockInvitations = mockInvitations?.filter(inv => inv.status === 'declined') || [];
-
-  const pendingProjectInvitations = projectInvitations.filter(inv => inv.status === 'invited');
-  const pendingGeneralInvitations = invitations.filter(inv => inv.status === 'invited');
-
-  const totalPending = pendingMockInvitations.length + pendingProjectInvitations.length + pendingGeneralInvitations.length;
-
-  console.log('📊 InvitationsList - Stats:', {
-    pendingMock: pendingMockInvitations.length,
-    acceptedMock: acceptedMockInvitations.length,
-    totalPending,
-    showContent,
-    mockLoading
+  console.log('📧 InvitationsList - Real invitations:', {
+    pending: pendingInvitations.length,
+    accepted: acceptedInvitations.length,
+    declined: declinedInvitations.length,
+    total: projectInvitations.length
   });
 
   const EmptyState = ({ message, icon: Icon }: { message: string; icon: React.ElementType }) => (
-    <Card>
+    <Card className="border-border bg-card/30 backdrop-blur">
       <CardContent className="flex flex-col items-center justify-center py-12 text-center">
         <div className="rounded-full bg-muted/20 p-3 mb-4">
           <Icon className="h-6 w-6 text-muted-foreground" />
         </div>
-        <h3 className="font-medium text-base mb-2 text-white">No invitations found</h3>
+        <h3 className="font-medium text-base mb-2 text-foreground">No invitations found</h3>
         <p className="text-sm text-muted-foreground">{message}</p>
       </CardContent>
     </Card>
   );
 
-  // Show loading only if mock invitations are still loading
-  if (mockLoading) {
+  if (projectLoading) {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map(i => (
-          <Card key={i} className="animate-pulse">
+          <Card key={i} className="animate-pulse border-border bg-card/30">
             <CardContent className="p-6">
               <div className="h-24 bg-muted/20 rounded"></div>
             </CardContent>
@@ -87,242 +54,109 @@ export const InvitationsList: React.FC = () => {
     );
   }
 
+  if (projectError) {
+    return (
+      <Card className="border-red-500/20 bg-red-500/5">
+        <CardContent className="p-6 text-center">
+          <h3 className="font-medium text-red-400 mb-2">Error Loading Invitations</h3>
+          <p className="text-sm text-muted-foreground">Please try refreshing the page</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="active" className="flex items-center gap-2">
-            <Zap className="h-4 w-4" />
-            Active Campaigns
-            {totalPending > 0 && (
-              <Badge variant="destructive" className="ml-1 px-1.5 py-0.5 text-xs">
-                {totalPending}
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)}>
+        <TabsList className="grid w-full grid-cols-4 bg-muted/20">
+          <TabsTrigger value="pending" className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            Pending
+            {pendingInvitations.length > 0 && (
+              <Badge variant="secondary" className="ml-1 text-xs">
+                {pendingInvitations.length}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="projects" className="flex items-center gap-2">
-            <Briefcase className="h-4 w-4" />
-            Project Invites ({pendingProjectInvitations.length})
+          <TabsTrigger value="accepted" className="flex items-center gap-2">
+            <CheckCircle className="h-4 w-4" />
+            Accepted
+            {acceptedInvitations.length > 0 && (
+              <Badge variant="secondary" className="ml-1 text-xs">
+                {acceptedInvitations.length}
+              </Badge>
+            )}
           </TabsTrigger>
-          <TabsTrigger value="general" className="flex items-center gap-2">
+          <TabsTrigger value="declined" className="flex items-center gap-2">
             <MailPlus className="h-4 w-4" />
-            General Invites ({pendingGeneralInvitations.length})
+            Declined
+            {declinedInvitations.length > 0 && (
+              <Badge variant="secondary" className="ml-1 text-xs">
+                {declinedInvitations.length}
+              </Badge>
+            )}
           </TabsTrigger>
           <TabsTrigger value="all" className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4" />
-            All History
+            <Briefcase className="h-4 w-4" />
+            All
+            {projectInvitations.length > 0 && (
+              <Badge variant="secondary" className="ml-1 text-xs">
+                {projectInvitations.length}
+              </Badge>
+            )}
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="active" className="space-y-6">
-          {/* Campaign Invitations - Always show these for testing */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-semibold text-white">Campaign Invitations</h3>
-              <Badge className="bg-green-600 hover:bg-green-700">
-                {pendingMockInvitations.length} Pending
-              </Badge>
-            </div>
-            
-            {pendingMockInvitations.length > 0 ? (
-              pendingMockInvitations.map((invitation) => (
-                <MockInvitationCard
-                  key={invitation.id}
-                  invitation={invitation}
-                  onAccept={acceptMockInvitation}
-                  onDecline={declineMockInvitation}
-                  isLoading={mockActionLoading[invitation.id]}
-                />
-              ))
-            ) : (
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <div className="text-muted-foreground">
-                    No pending campaign invitations at the moment.
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Accepted Campaigns */}
-          {acceptedMockInvitations.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold text-white">Ready to Start</h3>
-                <Badge variant="outline" className="border-green-600 text-green-600">
-                  {acceptedMockInvitations.length} Accepted
-                </Badge>
-              </div>
-              {acceptedMockInvitations.map((invitation) => (
-                <MockInvitationCard
-                  key={invitation.id}
-                  invitation={invitation}
-                  onAccept={acceptMockInvitation}
-                  onDecline={declineMockInvitation}
-                  isLoading={mockActionLoading[invitation.id]}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="projects" className="space-y-4">
-          {projectLoading ? (
-            <div className="space-y-4">
-              {[1, 2].map(i => (
-                <Card key={i} className="animate-pulse">
-                  <CardContent className="p-6">
-                    <div className="h-16 bg-muted/20 rounded"></div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : pendingProjectInvitations.length > 0 ? (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white">Pending Project Invitations</h3>
-              {pendingProjectInvitations.map((invitation) => (
-                <ProjectInvitationCard
-                  key={invitation.id}
-                  invitation={invitation}
-                />
-              ))}
-            </div>
+        <TabsContent value="pending" className="space-y-4">
+          {pendingInvitations.length > 0 ? (
+            pendingInvitations.map((invitation) => (
+              <ProjectInvitationCard key={invitation.id} invitation={invitation} />
+            ))
           ) : (
             <EmptyState 
-              message="You don't have any pending project invitations."
-              icon={Briefcase}
+              message="No pending invitations at the moment. New opportunities will appear here when brands invite you to campaigns."
+              icon={Clock}
             />
           )}
         </TabsContent>
 
-        <TabsContent value="general" className="space-y-4">
-          {generalLoading ? (
-            <div className="space-y-4">
-              {[1, 2].map(i => (
-                <Card key={i} className="animate-pulse">
-                  <CardContent className="p-6">
-                    <div className="h-16 bg-muted/20 rounded"></div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : pendingGeneralInvitations.length > 0 ? (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white">Pending General Invitations</h3>
-              {pendingGeneralInvitations.map((invitation) => (
-                <InvitationCard
-                  key={invitation.id}
-                  invitation={invitation}
-                  onAccept={acceptInvitation}
-                  onDecline={declineInvitation}
-                  isLoading={actionLoading[invitation.id]}
-                />
-              ))}
-            </div>
+        <TabsContent value="accepted" className="space-y-4">
+          {acceptedInvitations.length > 0 ? (
+            acceptedInvitations.map((invitation) => (
+              <ProjectInvitationCard key={invitation.id} invitation={invitation} />
+            ))
           ) : (
             <EmptyState 
-              message="You don't have any pending general invitations."
+              message="You haven't accepted any invitations yet. Accepted campaigns will be shown here."
+              icon={CheckCircle}
+            />
+          )}
+        </TabsContent>
+
+        <TabsContent value="declined" className="space-y-4">
+          {declinedInvitations.length > 0 ? (
+            declinedInvitations.map((invitation) => (
+              <ProjectInvitationCard key={invitation.id} invitation={invitation} />
+            ))
+          ) : (
+            <EmptyState 
+              message="No declined invitations. Campaigns you've declined will appear here."
               icon={MailPlus}
             />
           )}
         </TabsContent>
 
-        <TabsContent value="all" className="space-y-6">
-          {/* All Mock Invitations */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2 text-white">
-              <Zap className="h-5 w-5" />
-              Campaign Invitations
-            </h3>
-            {mockInvitations && mockInvitations.length > 0 ? (
-              <div className="space-y-4">
-                {mockInvitations.map((invitation) => (
-                  <MockInvitationCard
-                    key={invitation.id}
-                    invitation={invitation}
-                    onAccept={acceptMockInvitation}
-                    onDecline={declineMockInvitation}
-                    isLoading={mockActionLoading[invitation.id]}
-                  />
-                ))}
-              </div>
-            ) : (
-              <EmptyState 
-                message="No campaign invitations yet."
-                icon={Zap}
-              />
-            )}
-          </div>
-
-          {/* Project Invitations History */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2 text-white">
-              <Briefcase className="h-5 w-5" />
-              Project Invitations
-            </h3>
-            {projectLoading ? (
-              <div className="space-y-4">
-                {[1, 2].map(i => (
-                  <Card key={i} className="animate-pulse">
-                    <CardContent className="p-6">
-                      <div className="h-16 bg-muted/20 rounded"></div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : projectInvitations.length > 0 ? (
-              <div className="space-y-4">
-                {projectInvitations.map((invitation) => (
-                  <ProjectInvitationCard
-                    key={invitation.id}
-                    invitation={invitation}
-                  />
-                ))}
-              </div>
-            ) : (
-              <EmptyState 
-                message="No project invitations yet."
-                icon={Briefcase}
-              />
-            )}
-          </div>
-
-          {/* General Invitations History */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2 text-white">
-              <MailPlus className="h-5 w-5" />
-              General Invitations
-            </h3>
-            {generalLoading ? (
-              <div className="space-y-4">
-                {[1, 2].map(i => (
-                  <Card key={i} className="animate-pulse">
-                    <CardContent className="p-6">
-                      <div className="h-16 bg-muted/20 rounded"></div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : invitations.length > 0 ? (
-              <div className="space-y-4">
-                {invitations.map((invitation) => (
-                  <InvitationCard
-                    key={invitation.id}
-                    invitation={invitation}
-                    onAccept={acceptInvitation}
-                    onDecline={declineInvitation}
-                    isLoading={actionLoading[invitation.id]}
-                  />
-                ))}
-              </div>
-            ) : (
-              <EmptyState 
-                message="No general invitations yet."
-                icon={MailPlus}
-              />
-            )}
-          </div>
+        <TabsContent value="all" className="space-y-4">
+          {projectInvitations.length > 0 ? (
+            projectInvitations.map((invitation) => (
+              <ProjectInvitationCard key={invitation.id} invitation={invitation} />
+            ))
+          ) : (
+            <EmptyState 
+              message="No campaign invitations yet. When brands discover your profile and want to collaborate, their invitations will appear here."
+              icon={Briefcase}
+            />
+          )}
         </TabsContent>
       </Tabs>
     </div>

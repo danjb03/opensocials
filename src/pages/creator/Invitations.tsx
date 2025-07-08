@@ -4,10 +4,12 @@ import { InvitationsList } from '@/components/creator/invitations/InvitationsLis
 
 const CreatorInvitations = () => {
   return (
-    <div className="container mx-auto p-6 bg-background">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2 text-white">Invitations</h1>
-        <p className="text-muted-foreground">
+    <div className="container mx-auto p-6 bg-background min-h-screen">
+      <div className="mb-8">
+        <h1 className="text-4xl font-light text-foreground tracking-tight mb-3">
+          Campaign Invitations
+        </h1>
+        <p className="text-lg text-muted-foreground font-light">
           Manage your campaign invitations and brand collaboration requests.
         </p>
       </div>

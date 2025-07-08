@@ -8,6 +8,8 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('🎯 invite-creator-to-project function called');
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -21,32 +23,47 @@ serve(async (req) => {
 
     // Get user from auth header
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header");
+    if (!authHeader) {
+      console.error('❌ No authorization header');
+      throw new Error("No authorization header");
+    }
 
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError || !userData.user) throw new Error("Invalid user token");
+    if (userError || !userData.user) {
+      console.error('❌ Invalid user token:', userError);
+      throw new Error("Invalid user token");
+    }
+
+    console.log('✅ Authenticated user:', userData.user.id);
 
     const { project_id, creator_id, agreed_amount, currency = 'USD', content_requirements, notes } = await req.json();
 
     if (!project_id || !creator_id) {
+      console.error('❌ Missing required fields');
       throw new Error("Missing required fields: project_id and creator_id");
     }
 
-    // Check if brand owns the project
+    console.log('🎯 Inviting creator:', { project_id, creator_id, agreed_amount });
+
+    // Verify brand owns the project (RLS will handle this, but double-check)
     const { data: project, error: projectError } = await supabaseClient
-      .from('projects')
-      .select('brand_id, status')
+      .from('projects_new')
+      .select('brand_id, name, status')
       .eq('id', project_id)
       .single();
 
     if (projectError || !project) {
+      console.error('❌ Project not found:', projectError);
       throw new Error("Project not found");
     }
 
     if (project.brand_id !== userData.user.id) {
+      console.error('❌ Unauthorized: User does not own project');
       throw new Error("Unauthorized: You don't own this project");
     }
+
+    console.log('✅ Project verified:', project.name);
 
     // Check if creator already invited to this project
     const { data: existingInvitation } = await supabaseClient
@@ -57,6 +74,7 @@ serve(async (req) => {
       .single();
 
     if (existingInvitation) {
+      console.error('❌ Creator already invited');
       throw new Error(`Creator already ${existingInvitation.status} for this project`);
     }
 
@@ -77,10 +95,13 @@ serve(async (req) => {
       .single();
 
     if (invitationError) {
+      console.error('❌ Failed to create invitation:', invitationError);
       throw new Error(`Failed to create invitation: ${invitationError.message}`);
     }
 
-    // Get creator info for notification
+    console.log('✅ Invitation created:', invitation.id);
+
+    // Get creator info for response
     const { data: creator } = await supabaseClient
       .from('creator_profiles')
       .select('first_name, last_name')
@@ -89,25 +110,7 @@ serve(async (req) => {
 
     const creatorName = creator ? `${creator.first_name || ''} ${creator.last_name || ''}`.trim() : 'Creator';
 
-    // Send invitation email (using existing send-email function)
-    try {
-      await supabaseClient.functions.invoke('send-email', {
-        body: {
-          to: creator_id, // This should be the creator's email
-          subject: 'New Campaign Invitation',
-          template: 'project-invitation',
-          data: {
-            project_id,
-            project_name: project.name || 'Campaign',
-            agreed_amount,
-            currency,
-          }
-        }
-      });
-    } catch (emailError) {
-      console.warn('Failed to send invitation email:', emailError);
-      // Don't fail the invitation if email fails
-    }
+    console.log('✅ Invitation sent successfully');
 
     return new Response(JSON.stringify({
       success: true,
@@ -119,7 +122,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error in invite-creator-to-project:', error);
+    console.error('❌ Error in invite-creator-to-project:', error);
     return new Response(JSON.stringify({ 
       success: false, 
       error: error.message 

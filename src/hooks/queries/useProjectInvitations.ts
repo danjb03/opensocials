@@ -25,6 +25,8 @@ export const useProjectInvitations = () => {
     queryFn: async (): Promise<ProjectInvitation[]> => {
       if (!user?.id) return [];
 
+      console.log('🎯 Fetching project invitations for user:', user.id);
+
       const { data, error } = await supabase
         .from('project_creators')
         .select(`
@@ -37,7 +39,7 @@ export const useProjectInvitations = () => {
           notes,
           invitation_date,
           response_date,
-          projects!inner (
+          projects_new!inner (
             name,
             brand_profiles!inner (
               company_name
@@ -48,15 +50,17 @@ export const useProjectInvitations = () => {
         .order('invitation_date', { ascending: false });
 
       if (error) {
-        console.error('Error fetching project invitations:', error);
+        console.error('❌ Error fetching project invitations:', error);
         throw error;
       }
 
-      return data?.map((invitation: any) => ({
+      console.log('✅ Raw project invitations data:', data);
+
+      const invitations = data?.map((invitation: any) => ({
         id: invitation.id,
         project_id: invitation.project_id,
-        project_name: invitation.projects.name,
-        brand_name: invitation.projects.brand_profiles.company_name,
+        project_name: invitation.projects_new.name,
+        brand_name: invitation.projects_new.brand_profiles.company_name,
         status: invitation.status,
         agreed_amount: invitation.agreed_amount,
         currency: invitation.currency,
@@ -65,6 +69,9 @@ export const useProjectInvitations = () => {
         invitation_date: invitation.invitation_date,
         response_date: invitation.response_date,
       })) || [];
+
+      console.log('🎯 Processed project invitations:', invitations);
+      return invitations;
     },
     enabled: !!user?.id,
   });

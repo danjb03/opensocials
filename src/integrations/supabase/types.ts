@@ -633,6 +633,13 @@ export type Database = {
             referencedRelation: "projects_new"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_creator_deals_project"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_new"
+            referencedColumns: ["id"]
+          },
         ]
       }
       creator_industries: {
@@ -1437,6 +1444,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_project_creators_project"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_new"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "project_creators_creator_id_fkey"
             columns: ["creator_id"]
             isOneToOne: false
@@ -2132,6 +2146,13 @@ export type Database = {
           },
           {
             foreignKeyName: "creator_deals_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_new"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_creator_deals_project"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects_new"
