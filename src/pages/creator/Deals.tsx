@@ -1,84 +1,65 @@
 
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
-import PendingDeals from '@/components/deals/PendingDeals';
-import PastDeals from '@/components/deals/PastDeals';
+import { useProjectInvitations } from '@/hooks/queries/useProjectInvitations';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import ErrorBoundary from '@/components/ErrorBoundary';
-import { Deal, transformDealToLegacy } from '@/types/deals';
+import { Badge } from '@/components/ui/badge';
+import { ProjectInvitationCard } from '@/components/creator/invitations/ProjectInvitationCard';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { Clock, CheckCircle, XCircle, DollarSign } from 'lucide-react';
 
 const CreatorDeals = () => {
   const { user, role } = useUnifiedAuth();
+  const { 
+    data: invitations = [], 
+    isLoading, 
+    error 
+  } = useProjectInvitations();
 
-  // Fetch deals data using creator_deals table
-  const { data: deals, isLoading, error } = useQuery({
-    queryKey: ['creator-deals', user?.id],
-    queryFn: async () => {
-      if (!user?.id) {
-        throw new Error('User not authenticated');
-      }
+  console.log('CreatorDeals - Invitations data:', invitations);
 
-      const { data, error } = await supabase
-        .from('creator_deals')
-        .select(`
-          id,
-          project_id,
-          deal_value,
-          status,
-          invited_at,
-          projects:project_id(
-            name,
-            description,
-            campaign_type,
-            start_date,
-            end_date,
-            brand_profiles:brand_id(
-              company_name,
-              logo_url
-            )
-          )
-        `)
-        .eq('creator_id', user.id)
-        .order('created_at', { ascending: false });
+  // Filter invitations by status to create deal categories
+  const activeDeals = invitations.filter(inv => 
+    ['accepted', 'contracted', 'in_progress'].includes(inv.status)
+  );
+  const pendingDeals = invitations.filter(inv => inv.status === 'invited');
+  const completedDeals = invitations.filter(inv => 
+    ['completed', 'submitted'].includes(inv.status)
+  );
+  const rejectedDeals = invitations.filter(inv => inv.status === 'declined');
 
-      if (error) throw error;
-
-      // Transform the data to match the Deal interface
-      const transformedDeals: Deal[] = (data || []).map(deal => ({
-        id: deal.id,
-        project_id: deal.project_id,
-        deal_value: deal.deal_value,
-        status: deal.status,
-        invited_at: deal.invited_at,
-        project: deal.projects ? {
-          name: (deal.projects as any).name || 'Untitled Project',
-          description: (deal.projects as any).description,
-          campaign_type: (deal.projects as any).campaign_type || 'campaign',
-          start_date: (deal.projects as any).start_date,
-          end_date: (deal.projects as any).end_date,
-          brand_profile: (deal.projects as any).brand_profiles ? {
-            company_name: (deal.projects as any).brand_profiles.company_name || 'Unknown Brand',
-            logo_url: (deal.projects as any).brand_profiles.logo_url
-          } : undefined
-        } : undefined
-      }));
-
-      return transformedDeals;
-    },
-    enabled: !!user?.id
-  });
+  const EmptyState = ({ message, icon: Icon }: { message: string; icon: React.ElementType }) => (
+    <Card className="border-border bg-card/30 backdrop-blur">
+      <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+        <div className="rounded-full bg-muted/20 p-3 mb-4">
+          <Icon className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <h3 className="font-medium text-base mb-2 text-foreground">No deals found</h3>
+        <p className="text-sm text-muted-foreground">{message}</p>
+      </CardContent>
+    </Card>
+  );
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6 bg-background">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="w-8 h-8 border-t-2 border-b-2 border-white rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-white">Loading your deals...</p>
-          </div>
+      <div className="container mx-auto p-6 bg-background min-h-screen">
+        <div className="mb-8">
+          <h1 className="text-4xl font-light text-foreground tracking-tight mb-3">
+            My Deals
+          </h1>
+          <p className="text-lg text-muted-foreground font-light">
+            Track your brand partnerships and collaborations.
+          </p>
+        </div>
+        
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => (
+            <Card key={i} className="animate-pulse border-border bg-card/30">
+              <CardContent className="p-6">
+                <div className="h-24 bg-muted/20 rounded"></div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     );
@@ -86,13 +67,21 @@ const CreatorDeals = () => {
 
   if (error) {
     return (
-      <div className="container mx-auto p-6 bg-background">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <p className="text-red-400 mb-2">Error loading deals</p>
-            <p className="text-sm text-muted-foreground">Please refresh the page to try again</p>
-          </div>
+      <div className="container mx-auto p-6 bg-background min-h-screen">
+        <div className="mb-8">
+          <h1 className="text-4xl font-light text-foreground tracking-tight mb-3">
+            My Deals
+          </h1>
         </div>
+        
+        <Card className="border-red-500/20 bg-red-500/5">
+          <CardContent className="p-6 text-center">
+            <h3 className="font-medium text-red-400 mb-2">Error Loading Deals</h3>
+            <p className="text-sm text-muted-foreground">
+              {error.message || 'Please try refreshing the page'}
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -100,95 +89,160 @@ const CreatorDeals = () => {
   // Super admin preview mode
   if (role === 'super_admin') {
     return (
-      <div className="container mx-auto p-6 bg-background">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2 text-white">My Deals</h1>
-          <p className="text-muted-foreground">You are viewing the creator deals page as a super admin.</p>
+      <div className="container mx-auto p-6 bg-background min-h-screen">
+        <div className="mb-8">
+          <h1 className="text-4xl font-light text-foreground tracking-tight mb-3">
+            My Deals
+          </h1>
+          <p className="text-lg text-muted-foreground font-light">
+            You are viewing the creator deals page as a super admin.
+          </p>
         </div>
         
-        <Tabs defaultValue="pending" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6 bg-black border border-white/10">
-            <TabsTrigger value="pending" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
-              Pending Deals (0)
-            </TabsTrigger>
-            <TabsTrigger value="past" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
-              Past Deals (0)
-            </TabsTrigger>
+        <Tabs defaultValue="active" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 bg-muted/20">
+            <TabsTrigger value="active">Active (0)</TabsTrigger>
+            <TabsTrigger value="pending">Pending (0)</TabsTrigger>
+            <TabsTrigger value="completed">Completed (0)</TabsTrigger>
+            <TabsTrigger value="rejected">Rejected (0)</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="pending">
-            <Card>
-              <CardContent className="p-6 text-center">
-                <p className="text-white">No pending deals available</p>
-              </CardContent>
-            </Card>
+          <TabsContent value="active">
+            <EmptyState 
+              message="No active deals available in preview mode"
+              icon={DollarSign}
+            />
           </TabsContent>
           
-          <TabsContent value="past">
-            <Card>
-              <CardContent className="p-6 text-center">
-                <p className="text-white">No past deals available</p>
-              </CardContent>
-            </Card>
+          <TabsContent value="pending">
+            <EmptyState 
+              message="No pending deals available in preview mode"
+              icon={Clock}
+            />
+          </TabsContent>
+          
+          <TabsContent value="completed">
+            <EmptyState 
+              message="No completed deals available in preview mode"
+              icon={CheckCircle}
+            />
+          </TabsContent>
+          
+          <TabsContent value="rejected">
+            <EmptyState 
+              message="No rejected deals available in preview mode"
+              icon={XCircle}
+            />
           </TabsContent>
         </Tabs>
       </div>
     );
   }
 
-  const pendingDeals = deals?.filter(deal => ['pending', 'negotiating'].includes(deal.status || '')) || [];
-  const pastDeals = deals?.filter(deal => ['accepted', 'completed', 'rejected', 'cancelled'].includes(deal.status || '')) || [];
-
-  // Transform deals to legacy format for components
-  const transformedPendingDeals = pendingDeals.map(transformDealToLegacy);
-  const transformedPastDeals = pastDeals.map(transformDealToLegacy);
-
   return (
-    <ErrorBoundary>
-      <div className="container mx-auto p-6 bg-background">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2 text-white">My Deals</h1>
-          <p className="text-muted-foreground">
-            Track your brand partnerships and collaborations.
-          </p>
-        </div>
-
-        <Tabs defaultValue="pending" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6 bg-black border border-white/10">
-            <TabsTrigger value="pending" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
-              Pending Deals ({transformedPendingDeals.length})
-            </TabsTrigger>
-            <TabsTrigger value="past" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
-              Past Deals ({transformedPastDeals.length})
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="pending">
-            <ErrorBoundary fallback={() => (
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <p className="text-white">Pending deals temporarily unavailable</p>
-                </CardContent>
-              </Card>
-            )}>
-              <PendingDeals deals={transformedPendingDeals} />
-            </ErrorBoundary>
-          </TabsContent>
-          
-          <TabsContent value="past">
-            <ErrorBoundary fallback={() => (
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <p className="text-white">Past deals temporarily unavailable</p>
-                </CardContent>
-              </Card>
-            )}>
-              <PastDeals deals={transformedPastDeals} />
-            </ErrorBoundary>
-          </TabsContent>
-        </Tabs>
+    <div className="container mx-auto p-6 bg-background min-h-screen">
+      <div className="mb-8">
+        <h1 className="text-4xl font-light text-foreground tracking-tight mb-3">
+          My Deals
+        </h1>
+        <p className="text-lg text-muted-foreground font-light">
+          Track your brand partnerships and collaborations.
+        </p>
       </div>
-    </ErrorBoundary>
+
+      <Tabs defaultValue="active" className="w-full">
+        <TabsList className="grid w-full grid-cols-4 bg-muted/20">
+          <TabsTrigger value="active" className="flex items-center gap-2">
+            <DollarSign className="h-4 w-4" />
+            Active
+            {activeDeals.length > 0 && (
+              <Badge variant="secondary" className="ml-1 text-xs">
+                {activeDeals.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="pending" className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            Pending
+            {pendingDeals.length > 0 && (
+              <Badge variant="secondary" className="ml-1 text-xs">
+                {pendingDeals.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="completed" className="flex items-center gap-2">
+            <CheckCircle className="h-4 w-4" />
+            Completed
+            {completedDeals.length > 0 && (
+              <Badge variant="secondary" className="ml-1 text-xs">
+                {completedDeals.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="rejected" className="flex items-center gap-2">
+            <XCircle className="h-4 w-4" />
+            Rejected
+            {rejectedDeals.length > 0 && (
+              <Badge variant="secondary" className="ml-1 text-xs">
+                {rejectedDeals.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="active" className="space-y-4">
+          {activeDeals.length > 0 ? (
+            activeDeals.map((invitation) => (
+              <ProjectInvitationCard key={invitation.id} invitation={invitation} />
+            ))
+          ) : (
+            <EmptyState 
+              message="No active deals at the moment. Accepted invitations will appear here."
+              icon={DollarSign}
+            />
+          )}
+        </TabsContent>
+
+        <TabsContent value="pending" className="space-y-4">
+          {pendingDeals.length > 0 ? (
+            pendingDeals.map((invitation) => (
+              <ProjectInvitationCard key={invitation.id} invitation={invitation} />
+            ))
+          ) : (
+            <EmptyState 
+              message="No pending deals. New brand invitations will appear here."
+              icon={Clock}
+            />
+          )}
+        </TabsContent>
+
+        <TabsContent value="completed" className="space-y-4">
+          {completedDeals.length > 0 ? (
+            completedDeals.map((invitation) => (
+              <ProjectInvitationCard key={invitation.id} invitation={invitation} />
+            ))
+          ) : (
+            <EmptyState 
+              message="No completed deals yet. Finished collaborations will be shown here."
+              icon={CheckCircle}
+            />
+          )}
+        </TabsContent>
+
+        <TabsContent value="rejected" className="space-y-4">
+          {rejectedDeals.length > 0 ? (
+            rejectedDeals.map((invitation) => (
+              <ProjectInvitationCard key={invitation.id} invitation={invitation} />
+            ))
+          ) : (
+            <EmptyState 
+              message="No rejected deals. Declined invitations will appear here."
+              icon={XCircle}
+            />
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 

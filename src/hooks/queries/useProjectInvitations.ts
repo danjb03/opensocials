@@ -1,14 +1,14 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 
 export interface ProjectInvitation {
   id: string;
   project_id: string;
   project_name: string;
   brand_name: string;
-  status: 'invited' | 'accepted' | 'declined';
+  status: 'invited' | 'accepted' | 'declined' | 'contracted' | 'in_progress' | 'submitted' | 'completed' | 'cancelled';
   agreed_amount?: number;
   currency: string;
   content_requirements?: any;
@@ -18,7 +18,7 @@ export interface ProjectInvitation {
 }
 
 export const useProjectInvitations = () => {
-  const { user } = useAuth();
+  const { user } = useUnifiedAuth();
 
   return useQuery({
     queryKey: ['project-invitations', user?.id],
