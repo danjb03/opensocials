@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
@@ -5,6 +6,15 @@ import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
 interface InvitationResult {
   success: boolean;
   message: string;
+}
+
+export interface MockInvitation {
+  id: string;
+  brand_name: string;
+  campaign_name: string;
+  offer_amount: number;
+  deadline: string;
+  status: 'pending' | 'accepted' | 'rejected';
 }
 
 export const useInvitationSimulation = () => {
@@ -52,4 +62,3 @@ export const useInvitationSimulation = () => {
     isLoading,
   };
 };
-

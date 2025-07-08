@@ -1,6 +1,6 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
 
 interface Favorite {
@@ -8,14 +8,21 @@ interface Favorite {
   creator_id: string;
   brand_id: string;
   created_at: string;
+  creator_profiles?: {
+    first_name: string;
+    last_name: string;
+    username: string;
+    avatar_url: string;
+  };
 }
 
 interface UseCreatorFavoritesReturn {
   favorites: Favorite[];
   isLoading: boolean;
   error: string | null;
-  addFavorite: (brandId: string) => Promise<void>;
-  removeFavorite: (brandId: string) => Promise<void>;
+  addFavorite: (creatorId: string) => Promise<void>;
+  removeFavorite: (creatorId: string) => Promise<void>;
+  isFavorite: (creatorId: string) => boolean;
 }
 
 export const useCreatorFavorites = (): UseCreatorFavoritesReturn => {
@@ -23,13 +30,9 @@ export const useCreatorFavorites = (): UseCreatorFavoritesReturn => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useUnifiedAuth();
-  const { toast } = useToast();
 
   useEffect(() => {
     const fetchFavorites = async () => {
-      setIsLoading(true);
-      setError(null);
-
       if (!user?.id) {
         setIsLoading(false);
         return;
@@ -37,17 +40,25 @@ export const useCreatorFavorites = (): UseCreatorFavoritesReturn => {
 
       try {
         const { data, error } = await supabase
-          .from('creator_favorites')
-          .select('*')
-          .eq('creator_id', user.id);
+          .from('brand_creator_favorites')
+          .select(`
+            *,
+            creator_profiles (
+              first_name,
+              last_name,
+              username,
+              avatar_url
+            )
+          `)
+          .eq('brand_id', user.id);
 
         if (error) {
           setError(error.message);
         } else {
           setFavorites(data || []);
         }
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err) {
+        setError('Failed to fetch favorites');
       } finally {
         setIsLoading(false);
       }
@@ -56,94 +67,63 @@ export const useCreatorFavorites = (): UseCreatorFavoritesReturn => {
     fetchFavorites();
   }, [user?.id]);
 
-  const addFavorite = async (brandId: string) => {
-    if (!user?.id) {
-      toast({
-        title: 'Error',
-        description: 'User ID not found. Please sign in.',
-        variant: 'destructive',
-      });
-      return;
-    }
+  const addFavorite = async (creatorId: string) => {
+    if (!user?.id) return;
 
     try {
       const { data, error } = await supabase
-        .from('creator_favorites')
-        .insert([{ creator_id: user.id, brand_id: brandId }]);
+        .from('brand_creator_favorites')
+        .insert({
+          brand_id: user.id,
+          creator_id: creatorId,
+        })
+        .select(`
+          *,
+          creator_profiles (
+            first_name,
+            last_name,
+            username,
+            avatar_url
+          )
+        `)
+        .single();
 
       if (error) {
-        toast({
-          title: 'Error',
-          description: `Failed to add to favorites: ${error.message}`,
-          variant: 'destructive',
-        });
-      } else {
-        setFavorites([...favorites, {
-          id: data[0].id,
-          creator_id: user.id,
-          brand_id: brandId,
-          created_at: data[0].created_at,
-        }]);
-        toast({
-          title: 'Success',
-          description: 'Added to favorites!',
-        });
-      }
-    } catch (err: any) {
-      toast({
-        title: 'Error',
-        description: `Failed to add to favorites: ${err.message}`,
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const removeFavorite = async (brandId: string) => {
-    if (!user?.id) {
-      toast({
-        title: 'Error',
-        description: 'User ID not found. Please sign in.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    try {
-      const favoriteToRemove = favorites.find(fav => fav.brand_id === brandId);
-
-      if (!favoriteToRemove) {
-        toast({
-          title: 'Info',
-          description: 'This brand is not in your favorites.',
-        });
+        console.error('Error adding favorite:', error);
         return;
       }
 
+      if (data) {
+        setFavorites(prev => [...prev, data]);
+      }
+    } catch (err) {
+      console.error('Failed to add favorite:', err);
+    }
+  };
+
+  const removeFavorite = async (creatorId: string) => {
+    if (!user?.id) return;
+
+    try {
       const { error } = await supabase
-        .from('creator_favorites')
+        .from('brand_creator_favorites')
         .delete()
-        .eq('id', favoriteToRemove.id);
+        .eq('brand_id', user.id)
+        .eq('creator_id', creatorId);
 
       if (error) {
-        toast({
-          title: 'Error',
-          description: `Failed to remove from favorites: ${error.message}`,
-          variant: 'destructive',
-        });
-      } else {
-        setFavorites(favorites.filter(fav => fav.id !== favoriteToRemove.id));
-        toast({
-          title: 'Success',
-          description: 'Removed from favorites!',
-        });
+        console.error('Error removing favorite:', error);
+        return;
       }
-    } catch (err: any) {
-      toast({
-        title: 'Error',
-        description: `Failed to remove from favorites: ${err.message}`,
-        variant: 'destructive',
-      });
+
+      setFavorites(prev => prev.filter(fav => fav.creator_id !== creatorId));
+    } catch (err) {
+      console.error('Failed to remove favorite:', err);
     }
+  };
+
+  const isFavorite = (creatorId: string) => {
+    return favorites.some(fav => fav.creator_id === creatorId);
   };
 
   return {
@@ -152,5 +132,6 @@ export const useCreatorFavorites = (): UseCreatorFavoritesReturn => {
     error,
     addFavorite,
     removeFavorite,
+    isFavorite,
   };
 };

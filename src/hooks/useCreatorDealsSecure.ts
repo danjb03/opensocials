@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
@@ -62,3 +63,38 @@ export const useCreatorDealsSecure = (): UseCreatorDealsReturn => {
   };
 };
 
+export const useCreatorDealStats = () => {
+  const { deals } = useCreatorDealsSecure();
+  
+  const totalEarnings = deals.reduce((sum, deal) => {
+    // Assuming deals have a value field, fallback to 0
+    return sum + (deal as any).value || 0;
+  }, 0);
+
+  const activeDeals = deals.filter(deal => deal.status === 'active').length;
+  const completedDeals = deals.filter(deal => deal.status === 'completed').length;
+
+  return {
+    totalEarnings,
+    activeDeals,
+    completedDeals,
+    totalDeals: deals.length,
+  };
+};
+
+export const useCreatorDealActions = () => {
+  const acceptDeal = async (dealId: string) => {
+    // Implementation for accepting deals
+    console.log('Accepting deal:', dealId);
+  };
+
+  const rejectDeal = async (dealId: string) => {
+    // Implementation for rejecting deals
+    console.log('Rejecting deal:', dealId);
+  };
+
+  return {
+    acceptDeal,
+    rejectDeal,
+  };
+};

@@ -1,3 +1,4 @@
+
 import { useMemo } from 'react';
 import { useProjectData } from './useProjectData';
 import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
@@ -16,7 +17,11 @@ export const useBrandDashboard = () => {
       };
     }
 
-    const brandProjects = projects?.filter(project => project.brand_id === user.id) || [];
+    // Filter projects by user ID since projects might have user_id or brand_id
+    const brandProjects = projects?.filter(project => 
+      project.user_id === user.id || (project as any).brand_id === user.id
+    ) || [];
+    
     const activeProjects = brandProjects.filter(project => project.status === 'active').length;
     const completedProjects = brandProjects.filter(project => project.status === 'completed').length;
     const totalBudget = brandProjects.reduce((sum, project) => sum + (project.budget || 0), 0);
