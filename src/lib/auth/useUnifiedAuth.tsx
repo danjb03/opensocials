@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { getUserRole, updateUserMetadata } from '@/utils/getUserRole';
 import type { Session, User } from '@supabase/supabase-js';
@@ -71,40 +71,64 @@ export const UnifiedAuthProvider = ({ children }: { children: ReactNode }) => {
   const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [emailConfirmed, setEmailConfirmed] = useState<boolean | null>(null);
-  const [hasFetched, setHasFetched] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
-  // One-time initialization function
-  const init = async () => {
-    if (hasFetched) return;
+  // Memoized fetch functions to prevent re-creation
+  const fetchBrandProfile = useCallback(async (userId: string) => {
+    console.log('👔 UnifiedAuthProvider - Fetching brand profile for:', userId);
+    try {
+      const { data: brandData, error: brandError } = await supabase
+        .from('brand_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (brandError) {
+        console.error('❌ UnifiedAuthProvider - Brand profile error:', brandError);
+        return null;
+      }
+
+      if (brandData) {
+        console.log('✅ UnifiedAuthProvider - Brand profile loaded');
+        return brandData;
+      }
+      return null;
+    } catch (error) {
+      console.error('❌ UnifiedAuthProvider - Brand profile fetch error:', error);
+      return null;
+    }
+  }, []);
+
+  const fetchCreatorProfile = useCallback(async (userId: string) => {
+    console.log('🎨 UnifiedAuthProvider - Fetching creator profile for:', userId);
+    try {
+      const { data: creatorData, error: creatorError } = await supabase
+        .from('creator_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (creatorError) {
+        console.error('❌ UnifiedAuthProvider - Creator profile error:', creatorError);
+        return null;
+      }
+
+      if (creatorData) {
+        console.log('✅ UnifiedAuthProvider - Creator profile loaded');
+        return creatorData;
+      }
+      return null;
+    } catch (error) {
+      console.error('❌ UnifiedAuthProvider - Creator profile fetch error:', error);
+      return null;
+    }
+  }, []);
+
+  // Initialize user data
+  const initializeUserData = useCallback(async (currentUser: User) => {
+    console.log('🚀 UnifiedAuthProvider - Initializing user data for:', currentUser.id);
     
     try {
-      console.log('🚀 UnifiedAuthProvider - Starting initialization...');
-      
-      // Get current session
-      const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('❌ UnifiedAuthProvider - Session error:', sessionError);
-        setIsLoading(false);
-        setHasFetched(true);
-        return;
-      }
-
-      setSession(currentSession);
-      
-      if (!currentSession?.user) {
-        console.log('🔍 UnifiedAuthProvider - No user found in session');
-        setIsLoading(false);
-        setHasFetched(true);
-        return;
-      }
-
-      const currentUser = currentSession.user;
-      setUser(currentUser);
-      setEmailConfirmed(!!currentUser.email_confirmed_at);
-
-      console.log('👤 UnifiedAuthProvider - User found:', currentUser.id);
-
       // Get user role
       let userRole = await getUserRole(currentUser.id);
       
@@ -120,61 +144,38 @@ export const UnifiedAuthProvider = ({ children }: { children: ReactNode }) => {
 
       // Fetch role-specific profiles
       if (userRole === 'brand') {
-        console.log('👔 UnifiedAuthProvider - Fetching brand profile');
-        const { data: brandData, error: brandError } = await supabase
-          .from('brand_profiles')
-          .select('*')
-          .eq('user_id', currentUser.id)
-          .maybeSingle();
-
-        if (brandError) {
-          console.error('❌ UnifiedAuthProvider - Brand profile error:', brandError);
-        } else if (brandData) {
-          console.log('✅ UnifiedAuthProvider - Brand profile loaded');
-          setBrandProfile(brandData);
-        }
+        const brandData = await fetchBrandProfile(currentUser.id);
+        setBrandProfile(brandData);
       } else if (userRole === 'creator') {
-        console.log('🎨 UnifiedAuthProvider - Fetching creator profile');
-        const { data: creatorData, error: creatorError } = await supabase
-          .from('creator_profiles')
-          .select('*')
-          .eq('user_id', currentUser.id)
-          .maybeSingle();
-
-        if (creatorError) {
-          console.error('❌ UnifiedAuthProvider - Creator profile error:', creatorError);
-        } else if (creatorData) {
-          console.log('✅ UnifiedAuthProvider - Creator profile loaded');
-          setCreatorProfile(creatorData);
-        }
+        const creatorData = await fetchCreatorProfile(currentUser.id);
+        setCreatorProfile(creatorData);
       }
 
     } catch (error) {
-      console.error('❌ UnifiedAuthProvider - Initialization error:', error);
-    } finally {
-      setIsLoading(false);
-      setHasFetched(true);
-      console.log('✅ UnifiedAuthProvider - Initialization complete');
+      console.error('❌ UnifiedAuthProvider - User data initialization error:', error);
     }
-  };
+  }, [fetchBrandProfile, fetchCreatorProfile]);
 
   // Clear all auth state
-  const clearAuthState = () => {
+  const clearAuthState = useCallback(() => {
+    console.log('🧹 UnifiedAuthProvider - Clearing auth state');
     setSession(null);
     setUser(null);
     setRole(null);
     setBrandProfile(null);
     setCreatorProfile(null);
     setEmailConfirmed(null);
-  };
+  }, []);
 
-  // Set up auth state listener and initialize
+  // Set up auth state listener and initialize - only run once
   useEffect(() => {
+    if (initialized) return;
+
     console.log('🔐 UnifiedAuthProvider - Setting up auth state listener...');
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
+      (event, newSession) => {
         console.log('🔐 UnifiedAuthProvider - Auth state change:', event);
         
         setSession(newSession);
@@ -182,22 +183,63 @@ export const UnifiedAuthProvider = ({ children }: { children: ReactNode }) => {
         
         if (newSession?.user) {
           setEmailConfirmed(!!newSession.user.email_confirmed_at);
+          // Defer user data initialization to prevent auth loops
+          setTimeout(() => {
+            initializeUserData(newSession.user);
+          }, 100);
         } else {
           clearAuthState();
-          setHasFetched(false); // Allow re-fetch on next login
         }
+        
+        setIsLoading(false);
       }
     );
 
-    // Run initialization
-    init();
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
+        console.log('🔍 UnifiedAuthProvider - Getting initial session...');
+        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('❌ UnifiedAuthProvider - Session error:', sessionError);
+          setIsLoading(false);
+          return;
+        }
+
+        setSession(currentSession);
+        
+        if (!currentSession?.user) {
+          console.log('🔍 UnifiedAuthProvider - No user found in session');
+          setIsLoading(false);
+          return;
+        }
+
+        const currentUser = currentSession.user;
+        setUser(currentUser);
+        setEmailConfirmed(!!currentUser.email_confirmed_at);
+
+        // Initialize user data with delay to prevent auth loops
+        setTimeout(() => {
+          initializeUserData(currentUser);
+        }, 100);
+
+      } catch (error) {
+        console.error('❌ UnifiedAuthProvider - Initialization error:', error);
+        setIsLoading(false);
+      }
+    };
+
+    getInitialSession();
+    setInitialized(true);
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []); // Empty dependency array - only run once on mount
+  }, [initialized, initializeUserData, clearAuthState]);
 
-  const contextValue: UnifiedAuthState = {
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo<UnifiedAuthState>(() => ({
     session,
     user,
     role,
@@ -205,7 +247,7 @@ export const UnifiedAuthProvider = ({ children }: { children: ReactNode }) => {
     creatorProfile,
     isLoading,
     emailConfirmed,
-  };
+  }), [session, user, role, brandProfile, creatorProfile, isLoading, emailConfirmed]);
 
   return (
     <UnifiedAuthContext.Provider value={contextValue}>
@@ -227,43 +269,43 @@ export const useUnifiedAuth = () => {
 export const useBrandAuth = () => {
   const authData = useUnifiedAuth();
   
-  return {
+  return useMemo(() => ({
     user: authData.user,
     profile: authData.brandProfile,
     isLoading: authData.isLoading,
     role: authData.role,
-  };
+  }), [authData.user, authData.brandProfile, authData.isLoading, authData.role]);
 };
 
 export const useCreatorAuth = () => {
   const authData = useUnifiedAuth();
   
-  return {
+  return useMemo(() => ({
     user: authData.user,
     profile: authData.creatorProfile,
     isLoading: authData.isLoading,
     role: authData.role,
-  };
+  }), [authData.user, authData.creatorProfile, authData.isLoading, authData.role]);
 };
 
 export const useAdminAuth = () => {
   const authData = useUnifiedAuth();
   
-  return {
+  return useMemo(() => ({
     user: authData.user,
     profile: authData.user, // Admins use basic user data
     isLoading: authData.isLoading,
     role: authData.role,
-  };
+  }), [authData.user, authData.isLoading, authData.role]);
 };
 
 export const useAgencyAuth = () => {
   const authData = useUnifiedAuth();
   
-  return {
+  return useMemo(() => ({
     user: authData.user,
     profile: authData.user, // Agencies use basic user data
     isLoading: authData.isLoading,
     role: authData.role,
-  };
+  }), [authData.user, authData.isLoading, authData.role]);
 };
