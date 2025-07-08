@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,7 +6,7 @@ import {
   BarChart, Bar, PieChart, Pie, Cell
 } from 'recharts';
 import { useRealAnalytics, getPerformanceBadge } from '@/hooks/brand/useRealAnalytics';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
 
 const CampaignAnalytics = () => {
   const { user } = useUnifiedAuth();

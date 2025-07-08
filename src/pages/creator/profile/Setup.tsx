@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,13 +7,13 @@ import { BasicInfoSection } from '@/components/creator/form-sections/BasicInfoSe
 import { IndustryContentSection } from '@/components/creator/form-sections/IndustryContentSection';
 import { CreatorTypeDropdown } from '@/components/creator/setup/CreatorTypeDropdown';
 import { SocialPlatformConnect } from '@/components/creator/SocialPlatformConnect';
-import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
+import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
-  const { user } = useCreatorAuth();
+  const { user } = useUnifiedAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 

@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react';
-import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
+import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
 import { useInsightIQData } from '@/hooks/useInsightIQData';
 
 export interface CreatorProfile {
