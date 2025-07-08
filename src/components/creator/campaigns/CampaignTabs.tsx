@@ -53,12 +53,19 @@ const CampaignTabs: React.FC<CampaignTabsProps> = ({
     const filteredCampaigns = getFilteredCampaigns(tab);
 
     if (isLoading) {
-      return <div className="flex justify-center p-8 text-foreground">Loading campaigns...</div>;
+      return (
+        <div className="flex justify-center p-12">
+          <div className="text-center space-y-4">
+            <div className="w-8 h-8 border-t-2 border-b-2 border-foreground rounded-full animate-spin mx-auto"></div>
+            <p className="text-foreground font-light">Loading campaigns...</p>
+          </div>
+        </div>
+      );
     }
 
     if (filteredCampaigns.length > 0) {
       return (
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {filteredCampaigns.map((campaign) => (
             <CampaignCard 
               key={campaign.id} 
@@ -74,16 +81,16 @@ const CampaignTabs: React.FC<CampaignTabsProps> = ({
 
   return (
     <Tabs value={activeTab} onValueChange={value => setActiveTab(value as any)} className="w-full">
-      <TabsList className="grid w-full grid-cols-3 mb-6 bg-black border border-white/10">
-        <TabsTrigger value="active" className="flex items-center gap-2 data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
+      <TabsList className="grid w-full grid-cols-3 mb-8 bg-muted/20 p-1">
+        <TabsTrigger value="active" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground">
           <Clock className="h-4 w-4" />
           Active ({activeCampaigns.length})
         </TabsTrigger>
-        <TabsTrigger value="upcoming" className="flex items-center gap-2 data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
+        <TabsTrigger value="upcoming" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground">
           <CalendarDays className="h-4 w-4" />
           Upcoming ({upcomingCampaigns.length})
         </TabsTrigger>
-        <TabsTrigger value="completed" className="flex items-center gap-2 data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 hover:text-white">
+        <TabsTrigger value="completed" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground">
           <CheckCircle className="h-4 w-4" />
           Completed ({completedCampaigns.length})
         </TabsTrigger>

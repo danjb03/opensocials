@@ -25,7 +25,6 @@ const CreatorCampaigns = () => {
   const { user, role } = useUnifiedAuth();
   const [activeTab, setActiveTab] = useState<'active' | 'upcoming' | 'completed'>('active');
 
-  // Fetch campaigns where the creator is assigned
   const { data: campaigns = [], isLoading, error } = useQuery({
     queryKey: ['creator-campaigns', user?.id],
     queryFn: async () => {
@@ -44,7 +43,6 @@ const CreatorCampaigns = () => {
           throw error;
         }
 
-        // Format the campaigns to include only necessary data
         const formattedCampaigns = (data || []).map(campaign => ({
           id: campaign.id,
           name: campaign.name || 'Untitled Campaign',
@@ -72,54 +70,67 @@ const CreatorCampaigns = () => {
 
   if (error) {
     return (
-      <div className="container mx-auto p-6 bg-background">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <p className="text-red-400 mb-2">Error loading campaigns</p>
-            <p className="text-sm text-muted-foreground">Please refresh the page to try again</p>
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-6 py-12 max-w-6xl">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center space-y-4">
+              <p className="text-red-400 text-lg">Error loading campaigns</p>
+              <p className="text-sm text-muted-foreground">Please refresh the page to try again</p>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  // Super admin preview mode
   if (role === 'super_admin') {
     return (
-      <div className="container mx-auto p-6 bg-background">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2 text-white">My Campaigns</h1>
-          <p className="text-muted-foreground">You are viewing the creator campaigns page as a super admin.</p>
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-6 py-12 max-w-6xl">
+          <div className="mb-12">
+            <h1 className="text-4xl font-light text-foreground tracking-tight mb-3">
+              My Campaigns
+            </h1>
+            <p className="text-lg text-muted-foreground font-light">
+              You are viewing the creator campaigns page as a super admin.
+            </p>
+          </div>
+          
+          <CampaignTabs
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            activeCampaigns={[]}
+            upcomingCampaigns={[]}
+            completedCampaigns={[]}
+            isLoading={false}
+          />
         </div>
-        
-        <CampaignTabs
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          activeCampaigns={[]}
-          upcomingCampaigns={[]}
-          completedCampaigns={[]}
-          isLoading={false}
-        />
       </div>
     );
   }
 
   return (
     <ErrorBoundary>
-      <div className="container mx-auto p-6 bg-background">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2 text-white">My Campaigns</h1>
-          <p className="text-muted-foreground">Manage your active campaigns and track your content delivery.</p>
-        </div>
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-6 py-12 max-w-6xl">
+          <div className="mb-12">
+            <h1 className="text-4xl font-light text-foreground tracking-tight mb-3">
+              My Campaigns
+            </h1>
+            <p className="text-lg text-muted-foreground font-light">
+              Manage your active campaigns and track your content delivery.
+            </p>
+          </div>
 
-        <CampaignTabs
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          activeCampaigns={activeCampaigns}
-          upcomingCampaigns={upcomingCampaigns}
-          completedCampaigns={completedCampaigns}
-          isLoading={isLoading}
-        />
+          <CampaignTabs
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            activeCampaigns={activeCampaigns}
+            upcomingCampaigns={upcomingCampaigns}
+            completedCampaigns={completedCampaigns}
+            isLoading={isLoading}
+          />
+        </div>
       </div>
     </ErrorBoundary>
   );

@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, DollarSign, Eye, Clock } from 'lucide-react';
+import { Calendar, DollarSign, Eye, Clock, Building } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface CampaignCardProps {
@@ -41,15 +41,15 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'invited':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
       case 'accepted':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-500/10 text-green-400 border-green-500/20';
       case 'declined':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-500/10 text-red-400 border-red-500/20';
       case 'completed':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted/20 text-muted-foreground border-muted/20';
     }
   };
 
@@ -73,10 +73,10 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
   };
 
   return (
-    <Card className={`hover:shadow-md transition-all ${isUnderReview ? 'opacity-60' : ''}`}>
+    <Card className={`border-border bg-card/30 backdrop-blur hover:bg-card/50 transition-all duration-200 ${isUnderReview ? 'opacity-60' : ''}`}>
       {isUnderReview && (
-        <div className="bg-yellow-100 border-b border-yellow-200 px-4 py-2">
-          <div className="flex items-center gap-2 text-yellow-800">
+        <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-6 py-3">
+          <div className="flex items-center gap-2 text-yellow-400">
             <Clock className="h-4 w-4" />
             <span className="text-sm font-medium">
               {getReviewStatusLabel(campaign.review_status!)} - Campaign not yet available
@@ -85,34 +85,42 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
         </div>
       )}
       
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg font-semibold line-clamp-1">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-lg font-medium line-clamp-1 text-foreground">
               {campaign.name}
             </CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">
-              {campaign.brand_profiles?.company_name}
-            </p>
+            {campaign.brand_profiles?.company_name && (
+              <div className="flex items-center gap-2 mt-2">
+                <Building className="h-3 w-3 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">
+                  {campaign.brand_profiles.company_name}
+                </p>
+              </div>
+            )}
           </div>
           {deal && (
-            <Badge className={getStatusColor(deal.status)}>
+            <Badge className={`${getStatusColor(deal.status)} font-light px-3 py-1`}>
               {deal.status}
             </Badge>
           )}
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center gap-2">
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center gap-2 text-sm">
             <DollarSign className="h-4 w-4 text-muted-foreground" />
-            <span>
-              {campaign.currency} {deal?.deal_value?.toLocaleString() || campaign.budget?.toLocaleString()}
+            <span className="text-foreground font-medium">
+              {campaign.currency} {deal?.deal_value?.toLocaleString() || campaign.budget?.toLocaleString() || 'TBD'}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="font-medium">{campaign.campaign_type}</span>
+          <div className="text-sm">
+            <span className="text-muted-foreground">Type:</span>
+            <span className="text-foreground font-medium ml-1">
+              {campaign.campaign_type}
+            </span>
           </div>
         </div>
 
@@ -126,11 +134,11 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
         )}
 
         {showActions && (
-          <div className="flex gap-2 pt-2">
+          <div className="flex gap-3 pt-2">
             <Button 
               variant="outline" 
               size="sm" 
-              className="flex-1 gap-2"
+              className="flex-1 gap-2 border-border hover:bg-muted/50"
               onClick={handleViewCampaign}
               disabled={isUnderReview}
             >
@@ -139,7 +147,10 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
             </Button>
             
             {deal?.status === 'invited' && !isUnderReview && (
-              <Button size="sm" className="flex-1">
+              <Button 
+                size="sm" 
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              >
                 Accept
               </Button>
             )}
