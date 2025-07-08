@@ -1,7 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
 
 interface ConnectedAccount {
   id: string;
@@ -11,6 +11,8 @@ interface ConnectedAccount {
   last_run: string | null;
   created_at: string;
   error_message: string | null;
+  followers?: number;
+  engagement_rate?: number;
 }
 
 export const useConnectedAccounts = () => {

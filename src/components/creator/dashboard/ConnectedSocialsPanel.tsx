@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, AlertTriangle, RefreshCw, Instagram, Youtube } from 'lucide-react';
 import { TikTokIcon } from '@/components/icons/SocialIcons';
 import { useConnectedAccounts } from '@/hooks/creator/useConnectedAccounts';
+import { useSocialMetricsRefresh } from '@/hooks/creator/useSocialMetricsRefresh';
 import { useInsightIQData } from '@/hooks/useInsightIQData';
 import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
 import SocialConnectionModal from './SocialConnectionModal';
@@ -14,6 +15,7 @@ const ConnectedSocialsPanel = () => {
   const { user } = useUnifiedAuth();
   const { data: connectedAccounts = [], isLoading } = useConnectedAccounts();
   const { data: analyticsData = [] } = useInsightIQData(user?.id || '');
+  const refreshMetrics = useSocialMetricsRefresh();
   const [isConnectionModalOpen, setIsConnectionModalOpen] = useState(false);
 
   const getPlatformIcon = (platform: string) => {
@@ -55,6 +57,10 @@ const ConnectedSocialsPanel = () => {
       return <Badge variant="destructive">Needs Update</Badge>;
     }
     return <Badge variant="default">Active</Badge>;
+  };
+
+  const handleRefreshMetrics = async (platform: string, username: string) => {
+    await refreshMetrics.mutateAsync({ platform, username });
   };
 
   if (isLoading) {
@@ -112,6 +118,7 @@ const ConnectedSocialsPanel = () => {
               {connectedAccounts.map((account) => {
                 const analytics = analyticsData.find(a => a.platform === account.platform);
                 const isStale = isDataStale(account.last_run);
+                const isRefreshing = refreshMetrics.isPending;
                 
                 return (
                   <div
@@ -154,11 +161,19 @@ const ConnectedSocialsPanel = () => {
 
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
                       {getStatusBadge(account.status, account.last_run)}
-                      {isStale && (
-                        <Button variant="ghost" size="sm" className="text-xs">
-                          Refresh
-                        </Button>
-                      )}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-xs"
+                        onClick={() => handleRefreshMetrics(account.platform, account.handle)}
+                        disabled={isRefreshing}
+                      >
+                        {isRefreshing ? (
+                          <RefreshCw className="h-3 w-3 animate-spin" />
+                        ) : (
+                          'Refresh'
+                        )}
+                      </Button>
                     </div>
                   </div>
                 );

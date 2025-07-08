@@ -16,7 +16,6 @@ const ProfileOverviewPanel = () => {
 
   // Calculate total followers across all platforms
   const totalFollowers = connectedAccounts.reduce((total, account) => {
-    // This would come from the social metrics data
     return total + (account.followers || 0);
   }, 0);
 
