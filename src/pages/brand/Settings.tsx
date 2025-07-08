@@ -1,255 +1,265 @@
-
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
-import { useBrandProfile } from '@/hooks/useBrandProfile';
-import StripePaymentSetup from '@/components/brand/StripePaymentSetup';
 import { toast } from 'sonner';
+import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { Loader2, Save, User, Building, Globe, DollarSign } from 'lucide-react';
 
 const BrandSettings = () => {
-  const { user } = useUnifiedAuth();
-  const { profile, updateProfile } = useBrandProfile();
-  const [isUpdating, setIsUpdating] = useState(false);
-  
-  // Form state for company information
-  const [companyData, setCompanyData] = useState({
-    companyName: '',
-    website: '',
-    description: '',
-    instagramUrl: '',
-    tiktokUrl: '',
-    youtubeUrl: '',
-    linkedinUrl: '',
-    twitterUrl: '',
-  });
+  const { user, brandProfile } = useUnifiedAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Update form state when profile loads
+  // Form state
+  const [companyName, setCompanyName] = useState('');
+  const [website, setWebsite] = useState('');
+  const [industry, setIndustry] = useState('');
+  const [budgetRange, setBudgetRange] = useState('');
+  const [bio, setBio] = useState('');
+  const [goal, setGoal] = useState('');
+  const [campaignFocus, setCampaignFocus] = useState<string[]>([]);
+
+  // Load existing profile data
   useEffect(() => {
-    if (profile) {
-      setCompanyData({
-        companyName: profile.company_name || '',
-        website: profile.website_url || '',
-        description: profile.brand_bio || '',
-        instagramUrl: profile.social_urls?.instagram || '',
-        tiktokUrl: profile.social_urls?.tiktok || '',
-        youtubeUrl: profile.social_urls?.youtube || '',
-        linkedinUrl: profile.social_urls?.linkedin || '',
-        twitterUrl: profile.social_urls?.twitter || '',
-      });
+    if (brandProfile) {
+      setCompanyName(brandProfile.company_name || '');
+      setWebsite(brandProfile.website_url || '');
+      setIndustry(brandProfile.industry || '');
+      setBudgetRange(brandProfile.budget_range || '');
+      setBio(brandProfile.brand_bio || '');
+      setGoal(brandProfile.brand_goal || '');
+      setCampaignFocus(brandProfile.campaign_focus || []);
     }
-  }, [profile]);
+  }, [brandProfile]);
 
-  const handleCompanyDataChange = (field: string, value: string) => {
-    setCompanyData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
+  const handleSave = async () => {
+    if (!user) return;
 
-  const handleSaveCompanyInfo = async () => {
-    setIsUpdating(true);
+    setIsSaving(true);
     try {
-      const socialUrls = {
-        instagram: companyData.instagramUrl || null,
-        tiktok: companyData.tiktokUrl || null,
-        youtube: companyData.youtubeUrl || null,
-        linkedin: companyData.linkedinUrl || null,
-        twitter: companyData.twitterUrl || null,
-      };
+      const { error } = await supabase
+        .from('brand_profiles')
+        .upsert({
+          user_id: user.id,
+          company_name: companyName,
+          website_url: website,
+          industry,
+          budget_range: budgetRange,
+          brand_bio: bio,
+          brand_goal: goal,
+          campaign_focus: campaignFocus,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
 
-      const result = await updateProfile({
-        company_name: companyData.companyName,
-        website_url: companyData.website || null,
-        brand_bio: companyData.description || null,
-        social_urls: socialUrls,
-      });
-
-      if (result.success) {
-        toast.success('Company information updated successfully');
+      if (error) {
+        console.error('Error updating brand profile:', error);
+        toast.error('Failed to save settings');
+        return;
       }
+
+      toast.success('Settings saved successfully');
     } catch (error) {
-      toast.error('Failed to update company information');
+      console.error('Error saving brand settings:', error);
+      toast.error('Failed to save settings');
     } finally {
-      setIsUpdating(false);
+      setIsSaving(false);
     }
   };
+
+  const industryOptions = [
+    'Technology',
+    'Fashion & Beauty',
+    'Food & Beverage',
+    'Health & Wellness',
+    'Travel & Tourism',
+    'Entertainment',
+    'Sports & Fitness',
+    'Education',
+    'Finance',
+    'Real Estate',
+    'Automotive',
+    'Home & Garden',
+    'Other'
+  ];
+
+  const budgetOptions = [
+    'Under $1,000',
+    '$1,000 - $5,000',
+    '$5,000 - $10,000',
+    '$10,000 - $25,000',
+    '$25,000 - $50,000',
+    '$50,000 - $100,000',
+    'Over $100,000'
+  ];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto p-6 bg-background">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="container mx-auto p-6 max-w-4xl space-y-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-          <p className="text-muted-foreground">Manage your account and preferences</p>
+          <h1 className="text-3xl font-bold">Brand Settings</h1>
+          <p className="text-muted-foreground">
+            Manage your brand profile and preferences
+          </p>
         </div>
+        <Button onClick={handleSave} disabled={isSaving}>
+          {isSaving ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="mr-2 h-4 w-4" />
+              Save Changes
+            </>
+          )}
+        </Button>
+      </div>
 
+      <div className="grid gap-6">
         {/* Company Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Company Information</CardTitle>
-            <CardDescription>Update your company details and social media links</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Building className="h-5 w-5" />
+              Company Information
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="company-name">Company Name</Label>
-                <Input 
-                  id="company-name" 
-                  value={companyData.companyName}
-                  onChange={(e) => handleCompanyDataChange('companyName', e.target.value)}
-                  placeholder="Enter company name" 
+                <Label htmlFor="company-name">Company Name *</Label>
+                <Input
+                  id="company-name"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="Enter your company name"
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="website">Website</Label>
-                <Input 
-                  id="website" 
-                  value={companyData.website}
-                  onChange={(e) => handleCompanyDataChange('website', e.target.value)}
-                  placeholder="https://yourcompany.com" 
+                <Input
+                  id="website"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder="https://yourcompany.com"
                 />
               </div>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="description">Company Description</Label>
-              <Input 
-                id="description" 
-                value={companyData.description}
-                onChange={(e) => handleCompanyDataChange('description', e.target.value)}
-                placeholder="Brief description of your company" 
-              />
-            </div>
-
-            <Separator />
-            
-            <div className="space-y-4">
-              <h4 className="text-sm font-medium">Social Media Links</h4>
-              <p className="text-sm text-muted-foreground">
-                Add your social media profiles so creators can learn more about your brand
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="instagram-url">Instagram URL</Label>
-                  <Input 
-                    id="instagram-url" 
-                    value={companyData.instagramUrl}
-                    onChange={(e) => handleCompanyDataChange('instagramUrl', e.target.value)}
-                    placeholder="https://instagram.com/yourcompany" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="tiktok-url">TikTok URL</Label>
-                  <Input 
-                    id="tiktok-url" 
-                    value={companyData.tiktokUrl}
-                    onChange={(e) => handleCompanyDataChange('tiktokUrl', e.target.value)}
-                    placeholder="https://tiktok.com/@yourcompany" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="youtube-url">YouTube URL</Label>
-                  <Input 
-                    id="youtube-url" 
-                    value={companyData.youtubeUrl}
-                    onChange={(e) => handleCompanyDataChange('youtubeUrl', e.target.value)}
-                    placeholder="https://youtube.com/@yourcompany" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="linkedin-url">LinkedIn URL</Label>
-                  <Input 
-                    id="linkedin-url" 
-                    value={companyData.linkedinUrl}
-                    onChange={(e) => handleCompanyDataChange('linkedinUrl', e.target.value)}
-                    placeholder="https://linkedin.com/company/yourcompany" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="twitter-url">Twitter URL</Label>
-                  <Input 
-                    id="twitter-url" 
-                    value={companyData.twitterUrl}
-                    onChange={(e) => handleCompanyDataChange('twitterUrl', e.target.value)}
-                    placeholder="https://twitter.com/yourcompany" 
-                  />
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="industry">Industry</Label>
+                <Select value={industry} onValueChange={setIndustry}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your industry" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {industryOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="budget-range">Budget Range</Label>
+                <Select value={budgetRange} onValueChange={setBudgetRange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your budget range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {budgetOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-
-            <Button 
-              onClick={handleSaveCompanyInfo}
-              disabled={isUpdating}
-            >
-              {isUpdating ? 'Saving...' : 'Save Changes'}
-            </Button>
           </CardContent>
         </Card>
 
-        {/* Account Settings */}
+        {/* Brand Details */}
         <Card>
           <CardHeader>
-            <CardTitle>Account Settings</CardTitle>
-            <CardDescription>Manage your account preferences</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Brand Details
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input id="email" type="email" defaultValue={user?.email || ''} disabled />
-              <p className="text-sm text-muted-foreground">Contact support to change your email address</p>
+              <Label htmlFor="bio">Brand Bio</Label>
+              <Textarea
+                id="bio"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Tell us about your brand, values, and what makes you unique..."
+                rows={4}
+              />
             </div>
-            <Separator />
-            <div className="space-y-4">
-              <h4 className="text-sm font-medium">Notifications</h4>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="email-notifications">Email Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive updates about your campaigns</p>
-                </div>
-                <Switch id="email-notifications" defaultChecked />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="marketing-emails">Marketing Emails</Label>
-                  <p className="text-sm text-muted-foreground">Receive tips and product updates</p>
-                </div>
-                <Switch id="marketing-emails" />
-              </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="goal">Brand Goals</Label>
+              <Textarea
+                id="goal"
+                value={goal}
+                onChange={(e) => setGoal(e.target.value)}
+                placeholder="What are your main goals for influencer marketing campaigns?"
+                rows={3}
+              />
             </div>
           </CardContent>
         </Card>
 
-        {/* Billing & Usage */}
+        {/* Account Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Billing & Usage</CardTitle>
-            <CardDescription>Manage your subscription and billing details</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              Account Information
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <StripePaymentSetup />
-          </CardContent>
-        </Card>
-
-        {/* Danger Zone */}
-        <Card className="border-destructive">
-          <CardHeader>
-            <CardTitle className="text-slate-50">Danger Zone</CardTitle>
-            <CardDescription>Irreversible and destructive actions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-sm font-medium">Delete Account</h4>
-                <p className="text-sm text-muted-foreground">
-                  Permanently delete your account and all associated data
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Email Address</Label>
+                <Input
+                  value={user?.email || ''}
+                  disabled
+                  className="bg-muted"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Contact support to change your email address
                 </p>
               </div>
-              <Button variant="destructive">Delete Account</Button>
+              <div className="space-y-2">
+                <Label>Account Type</Label>
+                <Input
+                  value="Brand Account"
+                  disabled
+                  className="bg-muted"
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

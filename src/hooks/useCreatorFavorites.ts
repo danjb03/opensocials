@@ -1,113 +1,156 @@
-
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
+import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
 
-export const useCreatorFavorites = () => {
+interface Favorite {
+  id: string;
+  creator_id: string;
+  brand_id: string;
+  created_at: string;
+}
+
+interface UseCreatorFavoritesReturn {
+  favorites: Favorite[];
+  isLoading: boolean;
+  error: string | null;
+  addFavorite: (brandId: string) => Promise<void>;
+  removeFavorite: (brandId: string) => Promise<void>;
+}
+
+export const useCreatorFavorites = (): UseCreatorFavoritesReturn => {
+  const [favorites, setFavorites] = useState<Favorite[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useUnifiedAuth();
-  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-  // Fetch user's favorite creators
-  const { data: favorites = [], isLoading } = useQuery({
-    queryKey: ['creator-favorites', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      
-      // First get the favorite relationships
-      const { data: favoriteRelations, error: favError } = await supabase
-        .from('brand_creator_favorites')
-        .select('creator_id')
-        .eq('brand_id', user.id);
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      setIsLoading(true);
+      setError(null);
 
-      if (favError) throw favError;
-      if (!favoriteRelations || favoriteRelations.length === 0) return [];
+      if (!user?.id) {
+        setIsLoading(false);
+        return;
+      }
 
-      // Then get the creator profiles for those IDs
-      const creatorIds = favoriteRelations.map(f => f.creator_id);
-      const { data: creatorProfiles, error: profileError } = await supabase
-        .from('creator_profiles')
-        .select('*')
-        .in('user_id', creatorIds);
+      try {
+        const { data, error } = await supabase
+          .from('creator_favorites')
+          .select('*')
+          .eq('creator_id', user.id);
 
-      if (profileError) throw profileError;
+        if (error) {
+          setError(error.message);
+        } else {
+          setFavorites(data || []);
+        }
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-      // Combine the data
-      return favoriteRelations.map(fav => ({
-        creator_id: fav.creator_id,
-        creator_profiles: creatorProfiles?.find(p => p.user_id === fav.creator_id) || null
-      })).filter(item => item.creator_profiles !== null);
-    },
-    enabled: !!user?.id
-  });
+    fetchFavorites();
+  }, [user?.id]);
 
-  // Add creator to favorites
-  const addToFavoritesMutation = useMutation({
-    mutationFn: async (creatorId: string) => {
-      if (!user?.id) throw new Error('User not authenticated');
-      
-      const { error } = await supabase
-        .from('brand_creator_favorites')
-        .insert({
-          brand_id: user.id,
-          creator_id: creatorId
+  const addFavorite = async (brandId: string) => {
+    if (!user?.id) {
+      toast({
+        title: 'Error',
+        description: 'User ID not found. Please sign in.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('creator_favorites')
+        .insert([{ creator_id: user.id, brand_id: brandId }]);
+
+      if (error) {
+        toast({
+          title: 'Error',
+          description: `Failed to add to favorites: ${error.message}`,
+          variant: 'destructive',
         });
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['creator-favorites'] });
-      toast.success('Creator added to favorites!');
-    },
-    onError: (error) => {
-      console.error('Error adding to favorites:', error);
-      toast.error('Failed to add creator to favorites');
-    }
-  });
-
-  // Remove creator from favorites
-  const removeFromFavoritesMutation = useMutation({
-    mutationFn: async (creatorId: string) => {
-      if (!user?.id) throw new Error('User not authenticated');
-      
-      const { error } = await supabase
-        .from('brand_creator_favorites')
-        .delete()
-        .eq('brand_id', user.id)
-        .eq('creator_id', creatorId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['creator-favorites'] });
-      toast.success('Creator removed from favorites');
-    },
-    onError: (error) => {
-      console.error('Error removing from favorites:', error);
-      toast.error('Failed to remove creator from favorites');
-    }
-  });
-
-  const toggleFavorite = (creatorId: string) => {
-    const isFavorite = favorites.some(fav => fav.creator_id === creatorId);
-    
-    if (isFavorite) {
-      removeFromFavoritesMutation.mutate(creatorId);
-    } else {
-      addToFavoritesMutation.mutate(creatorId);
+      } else {
+        setFavorites([...favorites, {
+          id: data[0].id,
+          creator_id: user.id,
+          brand_id: brandId,
+          created_at: data[0].created_at,
+        }]);
+        toast({
+          title: 'Success',
+          description: 'Added to favorites!',
+        });
+      }
+    } catch (err: any) {
+      toast({
+        title: 'Error',
+        description: `Failed to add to favorites: ${err.message}`,
+        variant: 'destructive',
+      });
     }
   };
 
-  const isFavorite = (creatorId: string) => {
-    return favorites.some(fav => fav.creator_id === creatorId);
+  const removeFavorite = async (brandId: string) => {
+    if (!user?.id) {
+      toast({
+        title: 'Error',
+        description: 'User ID not found. Please sign in.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const favoriteToRemove = favorites.find(fav => fav.brand_id === brandId);
+
+      if (!favoriteToRemove) {
+        toast({
+          title: 'Info',
+          description: 'This brand is not in your favorites.',
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('creator_favorites')
+        .delete()
+        .eq('id', favoriteToRemove.id);
+
+      if (error) {
+        toast({
+          title: 'Error',
+          description: `Failed to remove from favorites: ${error.message}`,
+          variant: 'destructive',
+        });
+      } else {
+        setFavorites(favorites.filter(fav => fav.id !== favoriteToRemove.id));
+        toast({
+          title: 'Success',
+          description: 'Removed from favorites!',
+        });
+      }
+    } catch (err: any) {
+      toast({
+        title: 'Error',
+        description: `Failed to remove from favorites: ${err.message}`,
+        variant: 'destructive',
+      });
+    }
   };
 
   return {
     favorites,
     isLoading,
-    toggleFavorite,
-    isFavorite,
-    isToggling: addToFavoritesMutation.isPending || removeFromFavoritesMutation.isPending
+    error,
+    addFavorite,
+    removeFavorite,
   };
 };

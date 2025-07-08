@@ -39,7 +39,7 @@ export interface CreatorProfile {
 }
 
 export const useCreatorProfile = () => {
-  const { user, profile: rawProfile, isLoading: authLoading } = useCreatorAuth();
+  const { user, creatorProfile: rawProfile, isLoading: authLoading } = useUnifiedAuth();
   const { data: analyticsData, isLoading: analyticsLoading, error: analyticsError } = useInsightIQData(user?.id || '');
 
   const profile = useMemo((): CreatorProfile | null => {
