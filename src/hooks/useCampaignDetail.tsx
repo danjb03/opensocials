@@ -1,91 +1,154 @@
-import { useState, useEffect, useMemo } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
 
-interface CampaignDetails {
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'react-router-dom';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { Instagram, Youtube } from 'lucide-react';
+import { TikTokIcon } from '@/components/icons/TikTokIcon';
+import { toast } from 'sonner';
+
+export interface Campaign {
   id: string;
-  name: string;
-  status: string;
+  title: string;
+  description: string;
   startDate: string;
   endDate: string;
-  budget: number;
-  campaign_type: string;
+  status: string;
+  contentRequirements: Record<string, any>;
+  brandId: string;
   platforms: string[];
-  brand_id: string;
-  created_at: string;
+  dealId: string;
+  value: number;
+  deadline: string;
+  brandName: string;
+  brandLogo: string | null;
+  uploads: any[];
 }
 
-interface UseCampaignDetailReturn {
-  campaign: CampaignDetails | null;
-  isLoading: boolean;
-  error: string | null;
-}
-
-export function useCampaignDetail(campaignId: string | undefined): UseCampaignDetailReturn {
-  const [campaign, setCampaign] = useState<CampaignDetails | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
+export const useCampaignDetail = () => {
+  const { id } = useParams<{ id: string }>();
   const { user } = useUnifiedAuth();
+  const [activeTab, setActiveTab] = useState('overview');
 
-  useEffect(() => {
-    const fetchCampaign = async () => {
-      if (!campaignId) {
-        console.warn('No campaign ID provided');
-        setIsLoading(false);
-        return;
-      }
+  const getPlatformIcon = (platform: string) => {
+    switch (platform.toLowerCase()) {
+      case 'instagram':
+        return <Instagram className="h-4 w-4" />;
+      case 'tiktok':
+        return <TikTokIcon className="h-4 w-4" />;
+      case 'youtube':
+        return <Youtube className="h-4 w-4" />;
+      default:
+        return null;
+    }
+  };
 
-      setIsLoading(true);
-      setError(null);
-
+  const { data: campaign, isLoading } = useQuery({
+    queryKey: ['campaign', id],
+    queryFn: async () => {
       try {
-        const { data, error } = await supabase
-          .from('projects_new')
+        if (!user?.id) throw new Error('User not authenticated');
+        
+        // Get deals first to identify campaign the creator is involved in
+        const { data: deals, error: dealsError } = await supabase
+          .from('deals')
           .select('*')
-          .eq('id', campaignId)
+          .eq('creator_id', user.id)
+          .eq('status', 'accepted');
+        
+        if (dealsError) throw dealsError;
+        
+        if (!deals || deals.length === 0) {
+          throw new Error('No deals found');
+        }
+
+        // Find the relevant deal
+        const deal = deals.find(d => d.id === id);
+        
+        if (!deal) {
+          throw new Error('Campaign not found');
+        }
+
+        // Now fetch the project associated with this deal
+        const { data: project, error: projectError } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', id)
           .single();
 
-        if (error) {
-          console.error('Error fetching campaign:', error);
-          setError(error.message);
-          toast({
-            title: 'Error fetching campaign',
-            description: error.message,
-            variant: 'destructive',
-          });
+        // Initialize campaign with combined data
+        const campaignData: Campaign = {
+          id: (project?.id || deal.id || ''),
+          title: (project?.name || deal.title || 'Untitled Campaign'),
+          description: (project?.description || deal.description || ''),
+          startDate: (project?.start_date || new Date().toISOString()),
+          endDate: (project?.end_date || new Date().toISOString()),
+          status: (project?.status || 'in_progress'),
+          contentRequirements: {},
+          brandId: (project?.brand_id || deal.brand_id || ''),
+          platforms: [],
+          dealId: deal.id,
+          value: deal.value || 0,
+          deadline: (project?.submission_deadline || project?.end_date || new Date().toISOString()),
+          brandName: '',
+          brandLogo: null,
+          uploads: []
+        };
+        
+        // Safe assign content_requirements if it's an object
+        if (project?.content_requirements && 
+            typeof project.content_requirements === 'object' && 
+            !Array.isArray(project.content_requirements)) {
+          campaignData.contentRequirements = project.content_requirements as Record<string, any>;
+        }
+        
+        // Safe assign platforms if it's an array
+        if (project?.platforms && Array.isArray(project.platforms)) {
+          campaignData.platforms = project.platforms;
         }
 
-        if (data) {
-          setCampaign({
-            id: data.id,
-            name: data.name || 'Untitled Campaign',
-            status: data.status || 'draft',
-            startDate: data.start_date || '',
-            endDate: data.end_date || '',
-            budget: data.budget || 0,
-            campaign_type: data.campaign_type || '',
-            platforms: data.platforms || [],
-            brand_id: data.brand_id || '',
-            created_at: data.created_at || '',
-          });
+        // Get brand info if brandId is available
+        if (campaignData.brandId) {
+          const { data: brandData } = await supabase
+            .from('profiles')
+            .select('company_name, logo_url')
+            .eq('id', campaignData.brandId)
+            .single();
+          
+          if (brandData) {
+            campaignData.brandName = brandData?.company_name || 'Unknown Brand';
+            campaignData.brandLogo = brandData?.logo_url;
+          }
         }
-      } catch (err) {
-        console.error('Unexpected error fetching campaign:', err);
-        setError('Failed to fetch campaign');
-        toast({
-          title: 'Unexpected error',
-          description: 'Failed to fetch campaign',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
+        
+        // Get upload history
+        if (id) {
+          const { data: contentData } = await supabase
+            .from('campaign_content')
+            .select('*')
+            .eq('campaign_id', campaignData.id)
+            .eq('creator_id', user.id);
+          
+          campaignData.uploads = contentData || [];
+        }
+        
+        return campaignData;
+      } catch (error) {
+        console.error('Error fetching campaign:', error);
+        toast.error('Failed to load campaign details');
+        return null;
       }
-    };
+    },
+    enabled: !!id && !!user?.id,
+  });
 
-    fetchCampaign();
-  }, [campaignId, toast]);
-
-  return { campaign, isLoading, error };
-}
+  return {
+    id,
+    campaign,
+    isLoading,
+    activeTab,
+    setActiveTab,
+    getPlatformIcon
+  };
+};

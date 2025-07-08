@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useInsightIQData } from '@/hooks/useInsightIQData';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
 import { ProfileHeader } from './ProfileHeader';
 import { PlatformCard } from './PlatformCard';
 import { AudienceDemographics } from './AudienceDemographics';
@@ -11,7 +12,7 @@ import { TopInterests } from './TopInterests';
 import { PerformanceOverview } from './PerformanceOverview';
 
 export const CreatorAnalyticsProfile: React.FC = () => {
-  const { user } = useUnifiedAuth();
+  const { user } = useCreatorAuth();
   const { data: analyticsData, isLoading, error } = useInsightIQData(user?.id || '');
 
   if (isLoading) {

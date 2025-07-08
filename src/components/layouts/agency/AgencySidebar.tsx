@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import AgencySidebarHeader from './AgencySidebarHeader';
 import AgencySidebarQuickActions from './AgencySidebarQuickActions';
 import AgencySidebarNavigation from './AgencySidebarNavigation';

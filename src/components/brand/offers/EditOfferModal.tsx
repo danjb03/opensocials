@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { PricingValidationInput } from '@/components/brand/pricing/PricingValidationInput';
 import { PricingRejectionModal } from './PricingRejectionModal';
 import { useCreatorTier } from '@/hooks/useCreatorTier';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { validateOfferAmount } from '@/utils/tierPricing';
 import { parsePricingError, isPricingError, PricingError } from '@/utils/pricingErrors';
 import { toast } from 'sonner';

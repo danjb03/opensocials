@@ -3,7 +3,7 @@ import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";

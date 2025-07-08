@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Navigate } from 'react-router-dom';
 

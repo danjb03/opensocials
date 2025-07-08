@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, CheckCircle, AlertCircle, Instagram, Youtube, Twitter, Linkedin, Info, Play, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 

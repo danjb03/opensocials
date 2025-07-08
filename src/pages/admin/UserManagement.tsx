@@ -1,10 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+
+import { useState } from 'react';
 import { useAuthUsers } from '@/hooks/admin/useAuthUsers';
 import DeleteUserModal from '@/components/admin/DeleteUserModal';
 import UserManagementHeader from '@/components/admin/user-management/UserManagementHeader';
@@ -12,6 +7,8 @@ import UserSearchCard from '@/components/admin/user-management/UserSearchCard';
 import UserLoadingState from '@/components/admin/user-management/UserLoadingState';
 import UserTable from '@/components/admin/user-management/UserTable';
 import UserPagination from '@/components/admin/user-management/UserPagination';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { Button } from '@/components/ui/button';
 import { RefreshCw, AlertCircle } from 'lucide-react';
 
 interface AuthUser {

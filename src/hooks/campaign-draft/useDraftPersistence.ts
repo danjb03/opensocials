@@ -1,6 +1,6 @@
 
 import { useRef, useEffect } from 'react';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { CampaignWizardData } from '@/types/campaignWizard';
 import { useDraftQuery } from './useDraftQuery';
 import { useDraftMutation } from './useDraftMutation';

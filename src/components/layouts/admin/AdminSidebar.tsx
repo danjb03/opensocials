@@ -1,3 +1,4 @@
+
 import { memo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { LogOut, Menu, X, ArrowLeft } from 'lucide-react';
 import { getAdminMenuItems } from './AdminMenuItems';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 
 interface AdminSidebarProps {
   userEmail?: string;

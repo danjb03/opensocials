@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useInsightIQConnect } from '@/hooks/useInsightIQConnect';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
 import { toast } from 'sonner';
 
 const PLATFORM_OPTIONS = [
@@ -24,7 +25,7 @@ interface SocialPlatformConnectProps {
 }
 
 export const SocialPlatformConnect: React.FC<SocialPlatformConnectProps> = ({ onSuccess }) => {
-  const { user } = useUnifiedAuth();
+  const { user } = useCreatorAuth();
   const { connect, isLoading, isSuccess, error } = useInsightIQConnect();
   
   const [selectedPlatform, setSelectedPlatform] = useState<string>('');

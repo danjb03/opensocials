@@ -1,285 +1,306 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
-import { AlertTriangle, CheckCircle2, Clock, FileText, Shield, Trash2, User, Database, Eye, Download } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { useState } from "react";
+import { Trash2, Shield, Mail, Database } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 
-const DataDeletionPage = () => {
-  const navigate = useNavigate();
+const DataDeletion = () => {
+  const { toast } = useToast();
   const { user } = useUnifiedAuth();
-  const [deletionReason, setDeletionReason] = useState('');
-  const [understandTerms, setUnderstandTerms] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deletionConfirmed, setDeletionConfirmed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isMetaLoading, setIsMetaLoading] = useState(false);
 
-  const { data: userData, isLoading: isUserDataLoading, error: userDataError } = useQuery(
-    ['user-data', user?.id],
-    async () => {
-      if (!user?.id) return null;
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching user data:', error);
-        throw error;
-      }
-      return data;
-    },
-    {
-      enabled: !!user?.id,
-    }
-  );
-
-  useEffect(() => {
-    if (deletionConfirmed) {
-      const timeoutId = setTimeout(() => {
-        navigate('/auth');
-      }, 5000);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [deletionConfirmed, navigate]);
-
-  const handleDeleteAccount = async () => {
-    if (!user) {
-      toast.error('No user session found. Please sign in again.');
-      return;
-    }
-
-    if (!deletionReason) {
-      toast.error('Please provide a reason for deleting your account.');
-      return;
-    }
-
-    if (!understandTerms) {
-      toast.error('Please confirm that you understand the data deletion terms.');
-      return;
-    }
-
-    setIsDeleting(true);
-
+  const handleRequestDeletion = async () => {
+    setIsLoading(true);
+    
     try {
-      // 1. Delete user data from Supabase tables
-      const tablesToDelete = [
-        'brand_profiles',
-        'creator_profiles',
-        'user_profiles',
-        'campaign_favorites',
-        'campaign_invites',
-        'campaign_responses',
-        'campaign_views',
-        'creator_favorites',
-        'creator_views',
-        'project_invites',
-        'project_responses',
-        'project_views',
-        'projects',
-        'projects_new',
-        'user_settings',
-        'user_social_accounts',
-        'creator_public_analytics'
-      ];
+      // Get the current session
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      const response = await fetch("https://pcnrnciwgdrukzciwexi.supabase.co/functions/v1/request-data-deletion", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${sessionData.session?.access_token || ""}`,
+        },
+        body: JSON.stringify({
+          userId: user?.id || null,
+          userEmail: user?.email || null,
+        }),
+      });
 
-      for (const table of tablesToDelete) {
-        const { error: deleteError } = await supabase
-          .from(table)
-          .delete()
-          .eq('user_id', user.id);
+      const result = await response.json();
 
-        if (deleteError) {
-          console.error(`Error deleting from ${table}:`, deleteError);
-          toast.error(`Failed to delete data from ${table}. Please try again.`);
-          setIsDeleting(false);
-          return;
-        }
-        console.log(`Deleted data from ${table} for user ${user.id}`);
+      if (result.success) {
+        toast({
+          title: "Request Submitted",
+          description: "Your data deletion request has been submitted successfully.",
+        });
+      } else {
+        toast({
+          title: "Request Failed",
+          description: "There was a problem submitting your request. Please try again later.",
+          variant: "destructive",
+        });
       }
-
-      // 2. Delete the user account from Supabase Auth
-      const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
-
-      if (authError) {
-        console.error('Error deleting user from auth:', authError);
-        toast.error('Failed to delete your account. Please contact support.');
-        setIsDeleting(false);
-        return;
-      }
-
-      console.log(`User ${user.id} deleted from auth`);
-
-      // 3. Sign the user out
-      await supabase.auth.signOut();
-
-      // 4. Set deletion confirmed state
-      setDeletionConfirmed(true);
-      toast.success('Your account has been successfully deleted. Redirecting to the homepage...');
-
     } catch (error) {
-      console.error('Error during account deletion:', error);
-      toast.error('An unexpected error occurred during account deletion. Please try again.');
+      console.error("Error submitting data deletion request:", error);
+      toast({
+        title: "Request Failed",
+        description: "There was a problem submitting your request. Please try again later.",
+        variant: "destructive",
+      });
     } finally {
-      setIsDeleting(false);
+      setIsLoading(false);
     }
   };
 
-  if (deletionConfirmed) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-        <CheckCircle2 className="h-16 w-16 text-green-500 mb-4" />
-        <h2 className="text-2xl font-semibold text-gray-900 mb-2">Account Deletion Successful</h2>
-        <p className="text-gray-600 text-center">
-          Your account has been successfully deleted. You will be redirected to the homepage in a few seconds...
-        </p>
-      </div>
-    );
-  }
+  const handleMetaDataDeletion = async () => {
+    setIsMetaLoading(true);
+    
+    try {
+      if (!user?.id) {
+        throw new Error("User ID not available");
+      }
+      
+      const response = await fetch(`https://pcnrnciwgdrukzciwexi.supabase.co/functions/v1/meta-delete?user_id=${user.id}`, {
+        method: "GET",
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "Meta Data Deleted",
+          description: "Your connected social account data has been successfully deleted.",
+        });
+      } else {
+        toast({
+          title: "Deletion Failed",
+          description: result.error || "There was a problem deleting your meta data. Please try again later.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting meta data:", error);
+      toast({
+        title: "Deletion Failed",
+        description: "There was a problem deleting your meta data. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsMetaLoading(false);
+    }
+  };
 
   return (
-    <div className="container mx-auto p-6 max-w-3xl">
-      <Card>
-        <CardHeader className="space-y-2">
-          <CardTitle className="text-3xl font-bold flex items-center gap-2">
-            <Trash2 className="h-6 w-6 text-red-500" />
-            Delete Your Account
+    <div className="container max-w-4xl mx-auto py-10 px-4 md:px-6">
+      <h1 className="text-3xl font-bold mb-6">Data Deletion URL Documentation</h1>
+      
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trash2 className="h-5 w-5" />
+            Overview
           </CardTitle>
-          <p className="text-gray-600">
-            This action is permanent and will delete all your data. Please proceed with caution.
-          </p>
+          <CardDescription>
+            Information about our data deletion policy
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-
-          {/* User Data Summary */}
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              <User className="h-5 w-5 text-gray-500" />
-              Your Information
-            </h3>
-            {isUserDataLoading ? (
-              <p className="text-gray-500">Loading user data...</p>
-            ) : userDataError ? (
-              <p className="text-red-500">Error loading user data.</p>
-            ) : userData ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-700">Email:</p>
-                  <p className="text-gray-600">{user?.email}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-700">Full Name:</p>
-                  <p className="text-gray-600">{userData.full_name || 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-700">Created At:</p>
-                  <p className="text-gray-600">{new Date(user?.created_at || '').toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-700">Last Updated:</p>
-                  <p className="text-gray-600">{new Date(userData.updated_at || '').toLocaleDateString()}</p>
-                </div>
-              </div>
-            ) : (
-              <p className="text-gray-500">No user data found.</p>
-            )}
-          </div>
-
-          <Separator />
-
-          {/* Data Deletion Details */}
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              <Database className="h-5 w-5 text-gray-500" />
-              Data Deletion Details
-            </h3>
-            <p className="text-gray-700">
-              Upon account deletion, the following data will be permanently removed:
-            </p>
-            <ul className="list-disc list-inside space-y-1 text-gray-600">
-              <li>Your profile information (name, email, etc.)</li>
-              <li>All your created content and associated data</li>
-              <li>Any connected social media accounts</li>
-              <li>All your settings and preferences</li>
-            </ul>
-          </div>
-
-          <Separator />
-
-          {/* Confirmation Section */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-500" />
-              Confirmation
-            </h3>
-
-            {/* Deletion Reason */}
-            <div className="space-y-2">
-              <Label htmlFor="deletion-reason" className="text-gray-700">
-                Reason for Deletion
-              </Label>
-              <Textarea
-                id="deletion-reason"
-                placeholder="Please tell us why you are deleting your account."
-                value={deletionReason}
-                onChange={(e) => setDeletionReason(e.target.value)}
-                rows={3}
-              />
-            </div>
-
-            {/* Terms Checkbox */}
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="terms"
-                checked={understandTerms}
-                onCheckedChange={setUnderstandTerms}
-              />
-              <Label htmlFor="terms" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed text-gray-700">
-                I understand that this action is permanent and all my data will be deleted.
-              </Label>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Action Buttons */}
-          <div className="flex justify-between">
-            <Button variant="ghost" onClick={() => navigate('/')}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteAccount}
-              disabled={isDeleting}
-            >
-              {isDeleting ? (
-                <>
-                  <Clock className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting Account...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Confirm Delete Account
-                </>
-              )}
-            </Button>
-          </div>
-
+        <CardContent className="text-muted-foreground">
+          <p>
+            In compliance with data privacy regulations (such as GDPR), Open Socials provides a Data Deletion URL for users to request the removal of their personal data from the platform. This URL will facilitate the process of permanently deleting user data in accordance with the company's privacy policy.
+          </p>
         </CardContent>
       </Card>
+      
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Purpose</CardTitle>
+        </CardHeader>
+        <CardContent className="text-muted-foreground">
+          <p>
+            The Data Deletion URL serves as the endpoint where users can submit a request for their personal data to be erased from our system, ensuring that Open Socials complies with data protection laws and maintains user trust.
+          </p>
+        </CardContent>
+      </Card>
+      
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Endpoint URL</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4 text-muted-foreground">The endpoint for data deletion is hosted at:</p>
+          <div className="bg-muted p-3 rounded-md font-mono text-sm">
+            https://opensocials.net/data-deletion
+          </div>
+          <p className="mt-4 text-muted-foreground">
+            This URL is accessible by users who wish to have their personal information deleted. When a request is made, the system will initiate a secure deletion of user data.
+          </p>
+        </CardContent>
+      </Card>
+      
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>How It Works</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-muted-foreground">
+          <div className="flex gap-3">
+            <div className="bg-primary text-primary-foreground w-7 h-7 rounded-full flex items-center justify-center shrink-0">1</div>
+            <p><strong>User Access:</strong> The user will navigate to the Data Deletion URL.</p>
+          </div>
+          
+          <div className="flex gap-3">
+            <div className="bg-primary text-primary-foreground w-7 h-7 rounded-full flex items-center justify-center shrink-0">2</div>
+            <p><strong>Request Submission:</strong> Users will need to submit a request to delete their data by providing their account details.</p>
+          </div>
+          
+          <div className="flex gap-3">
+            <div className="bg-primary text-primary-foreground w-7 h-7 rounded-full flex items-center justify-center shrink-0">3</div>
+            <p><strong>Verification:</strong> The system will verify the identity of the user to prevent unauthorized deletion requests.</p>
+          </div>
+          
+          <div className="flex gap-3">
+            <div className="bg-primary text-primary-foreground w-7 h-7 rounded-full flex items-center justify-center shrink-0">4</div>
+            <p><strong>Data Deletion:</strong> Upon successful verification, the system will automatically delete all user data stored in Open Socials' databases. This includes profile information, activity logs, and any associated data with their account.</p>
+          </div>
+          
+          <div className="flex gap-3">
+            <div className="bg-primary text-primary-foreground w-7 h-7 rounded-full flex items-center justify-center shrink-0">5</div>
+            <p><strong>Confirmation:</strong> The user will receive an email confirming the completion of the deletion process.</p>
+          </div>
+          
+          <div className="mt-8">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="w-full">
+                  Request Data Deletion
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action will submit a request to delete all your personal data from our systems.
+                    Once processed, this action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleRequestDeletion}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Submitting..." : "Yes, submit request"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Meta Data Deletion
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-muted-foreground">
+          <p>
+            If you've connected your social media accounts to Open Socials, you can delete all meta data associated with these accounts using the button below. This will:
+          </p>
+          <ul className="list-disc pl-5 space-y-2">
+            <li>Remove all stored access tokens and refresh tokens</li>
+            <li>Delete all social account connections</li>
+            <li>Remove any cached profile data from third-party platforms</li>
+            <li>Revoke our application's access to your social accounts</li>
+          </ul>
+          
+          <div className="bg-muted p-4 rounded-md my-4 border border-muted-foreground/20">
+            <p className="font-medium text-sm mb-2">⚠️ Important Note:</p>
+            <p className="text-sm">This action only deletes your social media connection data from our servers. It does not delete your main Open Socials account or any other user data. To request a full account deletion, use the "Request Data Deletion" button above.</p>
+          </div>
+          
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="w-full">
+                Delete Meta Data
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Meta Data?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action will immediately delete all stored data related to your social media connections.
+                  You'll need to reconnect your accounts if you wish to use them with Open Socials in the future.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleMetaDataDeletion}
+                  disabled={isMetaLoading}
+                >
+                  {isMetaLoading ? "Deleting..." : "Yes, delete meta data"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </CardContent>
+      </Card>
+      
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Security and Compliance
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-muted-foreground">
+          <p>• The Data Deletion URL ensures secure data handling by using HTTPS to encrypt all communication.</p>
+          <p>• We follow all relevant data privacy laws, including GDPR, to ensure users have full control over their personal data.</p>
+          <p>• All deletions will be irreversible once processed.</p>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            Contact and Support
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-muted-foreground">
+          <p className="mb-2">For any inquiries or issues related to data deletion, please contact our support team at:</p>
+          <div className="bg-muted p-3 rounded-md font-mono text-sm">
+            support@opensocials.net
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Separator className="my-10" />
+      
+      <div className="text-center text-sm text-muted-foreground">
+        <p>© {new Date().getFullYear()} OpenSocials. All rights reserved.</p>
+      </div>
     </div>
   );
 };
 
-export default DataDeletionPage;
+export default DataDeletion;

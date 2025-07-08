@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { SocialMediaConnection } from '@/components/creator/SocialMediaConnection';
 import AnalyticsModule from '@/components/creator/AnalyticsModule';
 import { ConnectedAccountsList } from '@/components/creator/ConnectedAccountsList';
 import { useInsightIQData } from '@/hooks/useInsightIQData';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -40,7 +41,7 @@ const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
   onConnect,
   isLoading
 }) => {
-  const { user } = useUnifiedAuth();
+  const { user } = useCreatorAuth();
   const { data: analyticsData, isLoading: analyticsLoading } = useInsightIQData(user?.id || '');
 
   const formatNumber = (num: number | null) => {

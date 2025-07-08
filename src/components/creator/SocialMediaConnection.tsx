@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,14 +7,14 @@ import { LinkIcon, Instagram, Youtube, Twitter, Loader2, CheckCircle, Linkedin }
 import { TikTokIcon } from '@/components/icons/TikTokIcon';
 import { useInsightIQConnect } from '@/hooks/useInsightIQConnect';
 import { useInsightIQData } from '@/hooks/useInsightIQData';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
 
 interface SocialMediaConnectionProps {
   onConnectionSuccess?: () => void;
 }
 
 export const SocialMediaConnection = ({ onConnectionSuccess }: SocialMediaConnectionProps) => {
-  const { user } = useUnifiedAuth();
+  const { user } = useCreatorAuth();
   const { connect, isLoading: isConnecting, isSuccess, error: connectError } = useInsightIQConnect();
   const { data: analyticsData, isLoading: isLoadingData, refetch } = useInsightIQData(user?.id || '');
   

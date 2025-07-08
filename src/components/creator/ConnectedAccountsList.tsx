@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -5,7 +6,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Instagram, Youtube, Twitter, Linkedin, CheckCircle, Clock, AlertCircle, Loader2, User, Eye, Heart, MessageCircle, FileText, ExternalLink } from 'lucide-react';
 import { useConnectedAccounts } from '@/hooks/creator/useConnectedAccounts';
 import { useInsightIQData } from '@/hooks/useInsightIQData';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 
 const PLATFORM_ICONS = {
   instagram: Instagram,

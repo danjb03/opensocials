@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { LogOut, User } from 'lucide-react';
@@ -39,27 +39,30 @@ const CreatorSidebarUserProfile = ({ isSidebarOpen }: CreatorSidebarUserProfileP
       <div className="p-4 border-t border-border">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" className="w-8 h-8">
-              <User className="h-4 w-4" />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full h-10 p-0 justify-center"
+            >
+              <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
+                <span className="text-xs font-medium text-muted-foreground">
+                  {creatorProfile?.first_name?.charAt(0) || user?.email?.charAt(0) || 'C'}
+                </span>
+              </div>
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-48 p-2" side="right">
-            <div className="space-y-2">
-              <div className="px-2 py-1">
-                <p className="text-sm font-medium text-foreground truncate">
-                  {creatorProfile?.first_name || user?.email}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {user?.email}
-                </p>
+          <PopoverContent side="right" className="w-48 p-2">
+            <div className="space-y-1">
+              <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                {user?.email}
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleSignOut}
-                className="w-full justify-start text-sm hover:bg-red-500/10 hover:text-red-500"
+                className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
               >
-                <LogOut className="h-4 w-4 mr-2" />
+                <LogOut className="mr-2 h-4 w-4" />
                 Sign Out
               </Button>
             </div>
@@ -70,34 +73,56 @@ const CreatorSidebarUserProfile = ({ isSidebarOpen }: CreatorSidebarUserProfileP
   }
 
   return (
-    <div className="border-t border-border p-4">
-      <div className="space-y-3">
-        {/* User Info */}
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-            <User className="h-4 w-4 text-primary-foreground" />
+    <div className="p-4 border-t border-border">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="ghost"
+            className="w-full h-auto p-3 justify-start hover:bg-accent/50"
+          >
+            <div className="flex items-center space-x-3 w-full">
+              <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+                <span className="text-sm font-medium text-muted-foreground">
+                  {creatorProfile?.first_name?.charAt(0) || user?.email?.charAt(0) || 'C'}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-sm font-medium text-foreground truncate">
+                  {creatorProfile?.first_name ? `${creatorProfile.first_name} ${creatorProfile.last_name || ''}` : 'Creator Account'}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user?.email}
+                </p>
+              </div>
+            </div>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent side="top" className="w-48 p-2">
+          <div className="space-y-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                navigate('/creator/profile');
+                setOpen(false);
+              }}
+              className="w-full justify-start"
+            >
+              <User className="mr-2 h-4 w-4" />
+              Profile
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </Button>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">
-              {creatorProfile?.first_name || user?.email}
-            </p>
-            <p className="text-xs text-muted-foreground truncate">
-              {user?.email}
-            </p>
-          </div>
-        </div>
-
-        {/* Action Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleSignOut}
-          className="w-full justify-start text-sm hover:bg-red-500/10 hover:text-red-500"
-        >
-          <LogOut className="h-4 w-4 mr-2" />
-          Sign Out
-        </Button>
-      </div>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 };

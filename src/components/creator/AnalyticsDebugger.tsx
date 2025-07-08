@@ -1,11 +1,12 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
 
 export const AnalyticsDebugger: React.FC = () => {
-  const { user } = useUnifiedAuth();
+  const { user } = useCreatorAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
 

@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react';
-import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
+import { useCreatorAuth } from '@/hooks/useUnifiedAuth';
 import { useInsightIQData } from '@/hooks/useInsightIQData';
 
 export interface CreatorProfile {
@@ -39,7 +39,7 @@ export interface CreatorProfile {
 }
 
 export const useCreatorProfile = () => {
-  const { user, creatorProfile: rawProfile, isLoading: authLoading } = useUnifiedAuth();
+  const { user, profile: rawProfile, isLoading: authLoading } = useCreatorAuth();
   const { data: analyticsData, isLoading: analyticsLoading, error: analyticsError } = useInsightIQData(user?.id || '');
 
   const profile = useMemo((): CreatorProfile | null => {
