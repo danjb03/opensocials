@@ -1,9 +1,8 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Calendar, CheckCircle, Clock, ArrowRight, Sparkles } from 'lucide-react';
-import { EmptyState } from '@/components/ui/empty-state';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { CalendarDays, CheckCircle, Clock, Search, Users } from 'lucide-react';
 
 interface EmptyCampaignsProps {
   type: 'active' | 'upcoming' | 'completed';
@@ -15,85 +14,73 @@ const EmptyCampaigns: React.FC<EmptyCampaignsProps> = ({ type }) => {
       case 'active':
         return {
           icon: Clock,
-          title: 'No Active Campaigns',
-          description: 'You don\'t have any campaigns currently running. Check your invitations to see if there are new opportunities waiting for you to accept.',
-          actionLabel: 'View Invitations',
-          actionPath: '/creator/invitations',
-          gradient: 'from-green-500/10 to-blue-500/10',
-          iconColor: 'text-green-400'
+          title: "No Active Campaigns",
+          description: "You don't have any active campaigns at the moment. Check your invitations or browse available opportunities.",
+          action: "Browse Opportunities",
+          color: "text-green-400",
+          bgColor: "bg-green-500/10"
         };
       case 'upcoming':
         return {
-          icon: Calendar,
-          title: 'No Upcoming Campaigns',
-          description: 'You don\'t have any campaigns scheduled to start soon. Once you accept invitations, they\'ll appear here when they\'re ready to begin.',
-          actionLabel: 'Browse Invitations',
-          actionPath: '/creator/invitations',
-          gradient: 'from-blue-500/10 to-purple-500/10',
-          iconColor: 'text-blue-400'
+          icon: CalendarDays,
+          title: "No Upcoming Campaigns",
+          description: "No campaigns are scheduled to start soon. Keep an eye on your invitations for new opportunities.",
+          action: "View Invitations",
+          color: "text-blue-400",
+          bgColor: "bg-blue-500/10"
         };
       case 'completed':
         return {
           icon: CheckCircle,
-          title: 'No Completed Campaigns',
-          description: 'You haven\'t finished any campaigns yet. Once you complete your active campaigns, they\'ll appear here with your performance results.',
-          actionLabel: 'View Active Campaigns',
-          actionPath: '/creator/campaigns',
-          gradient: 'from-purple-500/10 to-pink-500/10',
-          iconColor: 'text-purple-400'
+          title: "No Completed Campaigns",
+          description: "You haven't completed any campaigns yet. Once you finish your first campaign, it will appear here.",
+          action: "View Active Campaigns",
+          color: "text-purple-400",
+          bgColor: "bg-purple-500/10"
         };
       default:
         return {
-          icon: Clock,
-          title: 'No Campaigns Found',
-          description: 'No campaigns match your current filter.',
-          actionLabel: 'View All Campaigns',
-          actionPath: '/creator/campaigns',
-          gradient: 'from-gray-500/10 to-gray-500/10',
-          iconColor: 'text-gray-400'
+          icon: Search,
+          title: "No Campaigns Found",
+          description: "No campaigns match your current filters.",
+          action: "Clear Filters",
+          color: "text-muted-foreground",
+          bgColor: "bg-muted/10"
         };
     }
   };
 
   const config = getEmptyStateConfig();
+  const IconComponent = config.icon;
 
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-6">
-      <div className={`w-24 h-24 rounded-2xl bg-gradient-to-r ${config.gradient} backdrop-blur flex items-center justify-center mb-8`}>
-        <config.icon className={`h-12 w-12 ${config.iconColor}`} />
-      </div>
-      
-      <div className="text-center max-w-md mb-8">
-        <h3 className="text-2xl font-light text-foreground mb-3">{config.title}</h3>
-        <p className="text-muted-foreground leading-relaxed">{config.description}</p>
-      </div>
-      
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Button
-          asChild
-          variant="outline"
-          size="lg"
-          className="border-border hover:bg-muted/50 hover:border-blue-500/20 hover:text-blue-400 transition-all group"
-        >
-          <Link to={config.actionPath} className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 group-hover:scale-110 transition-transform" />
-            {config.actionLabel}
-            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </Button>
+    <Card className="border-dashed border-2 border-border bg-muted/5">
+      <CardContent className="flex flex-col items-center justify-center py-16 px-8 text-center">
+        <div className={`w-16 h-16 rounded-full ${config.bgColor} flex items-center justify-center mb-6`}>
+          <IconComponent className={`h-8 w-8 ${config.color}`} />
+        </div>
         
-        <Button
-          asChild
-          variant="ghost"
-          size="lg"
-          className="text-muted-foreground hover:text-foreground"
-        >
-          <Link to="/creator/dashboard">
-            Back to Dashboard
-          </Link>
-        </Button>
-      </div>
-    </div>
+        <h3 className="text-xl font-semibold text-foreground mb-3">
+          {config.title}
+        </h3>
+        
+        <p className="text-muted-foreground mb-6 max-w-md leading-relaxed">
+          {config.description}
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button variant="outline" className="gap-2">
+            <Users className="h-4 w-4" />
+            {config.action}
+          </Button>
+          
+          <Button variant="ghost" className="gap-2">
+            <Search className="h-4 w-4" />
+            Browse All Campaigns
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

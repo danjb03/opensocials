@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
+import { useUnifiedAuth } from '@/lib/auth/useUnifiedAuth';
 import { useCampaignFilters } from '@/hooks/creator/useCampaignFilters';
 import CampaignTabs from '@/components/creator/campaigns/CampaignTabs';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -93,7 +93,6 @@ const CreatorCampaigns = () => {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-6 py-12 max-w-7xl">
-          {/* Header Section */}
           <div className="mb-12">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 flex items-center justify-center">
@@ -109,7 +108,6 @@ const CreatorCampaigns = () => {
               </div>
             </div>
             
-            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="bg-card/30 backdrop-blur border border-border rounded-xl p-6">
                 <div className="flex items-center justify-between">
@@ -163,79 +161,75 @@ const CreatorCampaigns = () => {
   }
 
   return (
-    <ErrorBoundary>
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-6 py-12 max-w-7xl">
-          {/* Header Section */}
-          <div className="mb-12">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-blue-400" />
-              </div>
-              <div>
-                <h1 className="text-4xl font-light text-foreground tracking-tight">
-                  My Campaigns
-                </h1>
-                <p className="text-lg text-muted-foreground font-light mt-1">
-                  Manage your active campaigns and track your content delivery progress
-                </p>
-              </div>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-6 py-12 max-w-7xl">
+        <div className="mb-12">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 flex items-center justify-center">
+              <TrendingUp className="h-6 w-6 text-blue-400" />
             </div>
-            
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-card/30 backdrop-blur border border-border rounded-xl p-6 hover:bg-card/40 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Active</p>
-                    <p className="text-2xl font-light text-foreground">{activeCampaigns.length}</p>
-                  </div>
-                  <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-                    <TrendingUp className="h-5 w-5 text-green-400" />
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">Currently running</p>
-              </div>
-              
-              <div className="bg-card/30 backdrop-blur border border-border rounded-xl p-6 hover:bg-card/40 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Upcoming</p>
-                    <p className="text-2xl font-light text-foreground">{upcomingCampaigns.length}</p>
-                  </div>
-                  <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                    <Calendar className="h-5 w-5 text-blue-400" />
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">Starting soon</p>
-              </div>
-              
-              <div className="bg-card/30 backdrop-blur border border-border rounded-xl p-6 hover:bg-card/40 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Completed</p>
-                    <p className="text-2xl font-light text-foreground">{completedCampaigns.length}</p>
-                  </div>
-                  <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                    <CheckCircle2 className="h-5 w-5 text-purple-400" />
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">Successfully finished</p>
-              </div>
+            <div>
+              <h1 className="text-4xl font-light text-foreground tracking-tight">
+                My Campaigns
+              </h1>
+              <p className="text-lg text-muted-foreground font-light mt-1">
+                Manage your active campaigns and track your content delivery progress
+              </p>
             </div>
           </div>
-
-          <CampaignTabs
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            activeCampaigns={activeCampaigns}
-            upcomingCampaigns={upcomingCampaigns}
-            completedCampaigns={completedCampaigns}
-            isLoading={isLoading}
-          />
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-card/30 backdrop-blur border border-border rounded-xl p-6 hover:bg-card/40 transition-colors">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Active</p>
+                  <p className="text-2xl font-light text-foreground">{activeCampaigns.length}</p>
+                </div>
+                <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+                  <TrendingUp className="h-5 w-5 text-green-400" />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">Currently running</p>
+            </div>
+            
+            <div className="bg-card/30 backdrop-blur border border-border rounded-xl p-6 hover:bg-card/40 transition-colors">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Upcoming</p>
+                  <p className="text-2xl font-light text-foreground">{upcomingCampaigns.length}</p>
+                </div>
+                <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-blue-400" />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">Starting soon</p>
+            </div>
+            
+            <div className="bg-card/30 backdrop-blur border border-border rounded-xl p-6 hover:bg-card/40 transition-colors">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Completed</p>
+                  <p className="text-2xl font-light text-foreground">{completedCampaigns.length}</p>
+                </div>
+                <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                  <CheckCircle2 className="h-5 w-5 text-purple-400" />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">Successfully finished</p>
+            </div>
+          </div>
         </div>
+
+        <CampaignTabs
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          activeCampaigns={activeCampaigns}
+          upcomingCampaigns={upcomingCampaigns}
+          completedCampaigns={completedCampaigns}
+          isLoading={isLoading}
+        />
       </div>
-    </ErrorBoundary>
+    </div>
   );
 };
 
